@@ -86,6 +86,11 @@ interface EnsayoDisplay {
       <!-- MAIN CONTENT -->
       <main class="main-content">
         <header class="page-header">
+          <div style="margin-bottom: 1rem;">
+            <button class="btn btn-ghost" routerLink="/dashboard" style="padding: 0; display: inline-flex; align-items: center; gap: 0.5rem;">
+              ← Volver al Inicio
+            </button>
+          </div>
           <div>
             <h1>Ensayos Disponibles</h1>
             <p class="page-subtitle">Practica con ensayos completos en condiciones reales de la PAES</p>

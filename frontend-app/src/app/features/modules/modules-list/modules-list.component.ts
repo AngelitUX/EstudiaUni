@@ -9,6 +9,11 @@ import { ModulesService } from '../services/modules.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="modules-container animate-fade-in">
+      <div style="margin-bottom: 1rem;">
+        <button class="btn btn-ghost" routerLink="/dashboard" style="padding: 0; display: inline-flex; align-items: center; gap: 0.5rem; color: #9da0a7; background: transparent; border: none; cursor: pointer;">
+          ← Volver al Inicio
+        </button>
+      </div>
       <h2>Mi Ruta de Aprendizaje</h2>
       <p class="subtitle text-secondary">Avanza paso a paso en tu preparación PAES.</p>
 
