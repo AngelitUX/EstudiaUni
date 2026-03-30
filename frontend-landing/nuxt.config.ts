@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     head: {
-      title: 'EstudiaaUni.cl - Preparación PAES Inteligente'
+      title: 'EstudiaUni.cl - Preparación PAES Inteligente'
     }
   },
   components: {
