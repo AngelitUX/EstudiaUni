@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============ FUNCIONES HELPER ============
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ============ USUARIOS ============
+    match /users/{userId} {
+      // El usuario solo puede leer y editar su propio documento
+      allow read, write: if isOwner(userId);
+    }
+    
+    // ============ ENSAYOS ============
+    match /ensayos/{ensayoId} {
+      // Todos los usuarios autenticados pueden ver los ensayos disponibles
+      allow read: if isAuthenticated();
+      // Solo admins pueden crear/editar ensayos
+      allow write: if isAdmin();
+    }
+    
+    // ============ PREGUNTAS ============
+    match /preguntas/{preguntaId} {
+      // Los usuarios autenticados pueden leer las preguntas
+      // NOTA: En producción, podrías querer ocultar correctAnswer
+      // Por ahora lo dejamos legible para que funcione el frontend
+      allow read: if isAuthenticated();
+      // Solo admins pueden crear/editar preguntas
+      allow write: if isAdmin();
+    }
+    
+    // ============ INTENTOS ============
+    match /intentos/{intentoId} {
+      // El usuario puede leer y escribir solo SUS propios intentos
+      allow read: if isAuthenticated() && resource.data.odId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.odId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.odId == request.auth.uid;
+      allow delete: if false; // No se pueden borrar intentos
+    }
+    
+    // ============ PROGRESO ============
+    match /progreso/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // ============ MÓDULOS (legacy) ============
+    match /modules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      
+      match /topics/{topicId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ============ ADMINS ============
+    match /admins/{adminId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Solo se puede agregar admins manualmente
+    }
+  }
+}

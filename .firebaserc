@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "estudiauni"
+  },
+  "targets": {
+    "estudiauni": {
+      "hosting": {
+        "app": [
+          "estudiauni"
+        ],
+        "landing": [
+          "estudiauni-landing"
+        ]
+      }
+    }
+  }
+}

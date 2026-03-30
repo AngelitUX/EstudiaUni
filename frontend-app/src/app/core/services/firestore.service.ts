@@ -1,0 +1,372 @@
+import { Injectable, inject } from '@angular/core';
+import { 
+  Firestore, 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  addDoc,
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  Timestamp,
+  DocumentData
+} from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
+import { from, map, Observable, of } from 'rxjs';
+
+/**
+ * ESTRUCTURA DE FIRESTORE PARA ESTUDIAUNI
+ * =========================================
+ * 
+ * Colecciones principales:
+ * 
+ * 1. users/{uid}
+ *    - email, displayName, photoURL
+ *    - plan: 'free' | 'premium'
+ *    - createdAt, lastLogin
+ *    - stats: { questionsAnswered, studyStreak, lastStudyDate }
+ * 
+ * 2. ensayos/{ensayoId}
+ *    - title: "Ensayo M1 - Forma 115"
+ *    - subject: 'matematica1' | 'lenguaje' | 'ciencias' | 'historia'
+ *    - questionCount: 65
+ *    - timeMinutes: 140
+ *    - difficulty: 'facil' | 'medio' | 'dificil'
+ *    - isActive: boolean
+ * 
+ * 3. preguntas/{preguntaId}
+ *    - ensayoId: referencia al ensayo
+ *    - subject: materia
+ *    - text: texto de la pregunta
+ *    - options: { A: "...", B: "...", C: "...", D: "...", E: "..." }
+ *    - correctAnswer: 'A' | 'B' | 'C' | 'D' | 'E'
+ *    - explanation: explicación de la respuesta correcta
+ *    - difficulty: 1-5
+ *    - topic: tema específico
+ * 
+ * 4. intentos/{intentoId}
+ *    - odId
+ *    - ensayoId
+ *    - startedAt, finishedAt
+ *    - status: 'in_progress' | 'completed' | 'abandoned'
+ *    - answers: [{ preguntaId, selectedAnswer, isCorrect }]
+ *    - score: puntaje final
+ *    - timeSpent: segundos
+ * 
+ * 5. progreso/{odId}
+ *    - globalMastery: 0-100
+ *    - subjectMastery: { matematica1: 75, lenguaje: 60, ... }
+ *    - weakTopics: ['ecuaciones', 'inferencia']
+ *    - strongTopics: ['algebra', 'comprension_literal']
+ */
+
+// Interfaces para tipado
+export interface UserProfile {
+  odId: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  plan: 'free' | 'premium';
+  createdAt: Timestamp;
+  lastLogin: Timestamp;
+  stats: {
+    questionsAnswered: number;
+    studyStreak: number;
+    lastStudyDate: Timestamp | null;
+  };
+}
+
+export interface Ensayo {
+  id?: string;
+  title: string;
+  subject: 'matematica1' | 'matematica2' | 'lenguaje' | 'ciencias' | 'historia';
+  questionCount: number;
+  timeMinutes: number;
+  difficulty: 'facil' | 'medio' | 'dificil';
+  isActive: boolean;
+}
+
+export interface Pregunta {
+  id?: string;
+  ensayoId: string;
+  subject: string;
+  text: string;
+  options: { A: string; B: string; C: string; D: string; E: string };
+  correctAnswer: 'A' | 'B' | 'C' | 'D' | 'E';
+  explanation: string;
+  difficulty: number;
+  topic: string;
+}
+
+export interface Intento {
+  id?: string;
+  odId: string;
+  ensayoId: string;
+  startedAt: Timestamp;
+  finishedAt?: Timestamp;
+  status: 'in_progress' | 'completed' | 'abandoned';
+  answers: Array<{
+    preguntaId: string;
+    selectedAnswer: string;
+    isCorrect: boolean;
+  }>;
+  score?: number;
+  timeSpent?: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class FirestoreService {
+  private firestore = inject(Firestore);
+  private auth = inject(Auth);
+
+  // ============ USUARIOS ============
+
+  /** Obtener perfil del usuario actual */
+  getUserProfile(): Observable<UserProfile | null> {
+    const user = this.auth.currentUser;
+    if (!user) return of(null);
+    
+    const userRef = doc(this.firestore, 'users', user.uid);
+    return from(getDoc(userRef)).pipe(
+      map(snap => snap.exists() ? { odId: snap.id, ...snap.data() } as UserProfile : null)
+    );
+  }
+
+  /** Crear o actualizar perfil de usuario */
+  async saveUserProfile(data: Partial<UserProfile>): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
+    
+    const userRef = doc(this.firestore, 'users', user.uid);
+    const existing = await getDoc(userRef);
+    
+    if (existing.exists()) {
+      await updateDoc(userRef, { ...data, lastLogin: Timestamp.now() });
+    } else {
+      await setDoc(userRef, {
+        email: user.email,
+        displayName: user.displayName || 'Estudiante',
+        photoURL: user.photoURL || null,
+        plan: 'free',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        stats: {
+          questionsAnswered: 0,
+          studyStreak: 0,
+          lastStudyDate: null
+        },
+        ...data
+      });
+    }
+  }
+
+  /** Actualizar estadísticas del usuario */
+  async updateUserStats(stats: Partial<UserProfile['stats']>): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) return;
+    
+    const userRef = doc(this.firestore, 'users', user.uid);
+    await updateDoc(userRef, { 
+      [`stats.questionsAnswered`]: stats.questionsAnswered,
+      [`stats.studyStreak`]: stats.studyStreak,
+      [`stats.lastStudyDate`]: stats.lastStudyDate
+    });
+  }
+
+  // ============ ENSAYOS ============
+
+  /** Obtener todos los ensayos activos */
+  getEnsayos(subjectFilter?: string): Observable<Ensayo[]> {
+    const ensayosRef = collection(this.firestore, 'ensayos');
+    let q = query(ensayosRef, where('isActive', '==', true));
+    
+    if (subjectFilter && subjectFilter !== 'todos') {
+      q = query(ensayosRef, where('isActive', '==', true), where('subject', '==', subjectFilter));
+    }
+    
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        if (snapshot.empty) {
+          // Si no hay ensayos en Firestore, devolver mock data
+          return this.getMockEnsayos(subjectFilter);
+        }
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Ensayo));
+      })
+    );
+  }
+
+  /** Obtener un ensayo por ID */
+  getEnsayo(ensayoId: string): Observable<Ensayo | null> {
+    const ensayoRef = doc(this.firestore, 'ensayos', ensayoId);
+    return from(getDoc(ensayoRef)).pipe(
+      map(snap => snap.exists() ? { id: snap.id, ...snap.data() } as Ensayo : null)
+    );
+  }
+
+  // ============ PREGUNTAS ============
+
+  /** Obtener preguntas de un ensayo */
+  getPreguntas(ensayoId: string): Observable<Pregunta[]> {
+    const preguntasRef = collection(this.firestore, 'preguntas');
+    const q = query(preguntasRef, where('ensayoId', '==', ensayoId), orderBy('order'));
+    
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        if (snapshot.empty) {
+          // Mock data si no hay preguntas
+          return this.getMockPreguntas(ensayoId);
+        }
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Pregunta));
+      })
+    );
+  }
+
+  // ============ INTENTOS ============
+
+  /** Iniciar un nuevo intento de ensayo */
+  async startIntento(ensayoId: string): Promise<string> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('Debes iniciar sesión');
+    
+    const intentosRef = collection(this.firestore, 'intentos');
+    const newIntento: Omit<Intento, 'id'> = {
+      odId: user.uid,
+      ensayoId,
+      startedAt: Timestamp.now(),
+      status: 'in_progress',
+      answers: []
+    };
+    
+    const docRef = await addDoc(intentosRef, newIntento);
+    return docRef.id;
+  }
+
+  /** Guardar respuesta de una pregunta */
+  async saveAnswer(intentoId: string, preguntaId: string, selectedAnswer: string, isCorrect: boolean): Promise<void> {
+    const intentoRef = doc(this.firestore, 'intentos', intentoId);
+    const intentoSnap = await getDoc(intentoRef);
+    
+    if (!intentoSnap.exists()) return;
+    
+    const intento = intentoSnap.data() as Intento;
+    const answers = intento.answers || [];
+    
+    // Buscar si ya existe respuesta para esta pregunta
+    const existingIndex = answers.findIndex(a => a.preguntaId === preguntaId);
+    if (existingIndex >= 0) {
+      answers[existingIndex] = { preguntaId, selectedAnswer, isCorrect };
+    } else {
+      answers.push({ preguntaId, selectedAnswer, isCorrect });
+    }
+    
+    await updateDoc(intentoRef, { answers });
+  }
+
+  /** Finalizar intento y calcular puntaje */
+  async finishIntento(intentoId: string, timeSpent: number): Promise<number> {
+    const intentoRef = doc(this.firestore, 'intentos', intentoId);
+    const intentoSnap = await getDoc(intentoRef);
+    
+    if (!intentoSnap.exists()) return 0;
+    
+    const intento = intentoSnap.data() as Intento;
+    const correctAnswers = intento.answers.filter(a => a.isCorrect).length;
+    const totalQuestions = intento.answers.length || 1;
+    const score = Math.round((correctAnswers / totalQuestions) * 1000); // Puntaje PAES estilo
+    
+    await updateDoc(intentoRef, {
+      status: 'completed',
+      finishedAt: Timestamp.now(),
+      timeSpent,
+      score
+    });
+    
+    // Actualizar stats del usuario
+    const user = this.auth.currentUser;
+    if (user) {
+      const userRef = doc(this.firestore, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const currentQuestions = userData['stats']?.questionsAnswered || 0;
+        await updateDoc(userRef, {
+          'stats.questionsAnswered': currentQuestions + intento.answers.length
+        });
+      }
+    }
+    
+    return score;
+  }
+
+  /** Obtener intentos del usuario actual */
+  getIntentosUsuario(): Observable<Intento[]> {
+    const user = this.auth.currentUser;
+    if (!user) return of([]);
+    
+    const intentosRef = collection(this.firestore, 'intentos');
+    const q = query(intentosRef, where('odId', '==', user.uid), orderBy('startedAt', 'desc'), limit(20));
+    
+    return from(getDocs(q)).pipe(
+      map(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Intento)))
+    );
+  }
+
+  /** Obtener un intento específico */
+  getIntento(intentoId: string): Observable<Intento | null> {
+    const intentoRef = doc(this.firestore, 'intentos', intentoId);
+    return from(getDoc(intentoRef)).pipe(
+      map(snap => snap.exists() ? { id: snap.id, ...snap.data() } as Intento : null)
+    );
+  }
+
+  // ============ MOCK DATA (mientras no hay datos reales) ============
+
+  private getMockEnsayos(subjectFilter?: string): Ensayo[] {
+    const allEnsayos: Ensayo[] = [
+      { id: 'mat1-f115', title: 'Ensayo M1 - Forma 115', subject: 'matematica1', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
+      { id: 'mat1-f116', title: 'Ensayo M1 - Forma 116', subject: 'matematica1', questionCount: 65, timeMinutes: 140, difficulty: 'dificil', isActive: true },
+      { id: 'mat1-f117', title: 'Ensayo M1 - Forma 117', subject: 'matematica1', questionCount: 65, timeMinutes: 140, difficulty: 'facil', isActive: true },
+      { id: 'leng-f201', title: 'Ensayo CL - Forma 201', subject: 'lenguaje', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
+      { id: 'leng-f202', title: 'Ensayo CL - Forma 202', subject: 'lenguaje', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
+      { id: 'ciencias-f301', title: 'Ensayo Ciencias - Forma 301', subject: 'ciencias', questionCount: 80, timeMinutes: 150, difficulty: 'medio', isActive: true },
+      { id: 'historia-f401', title: 'Ensayo Historia - Forma 401', subject: 'historia', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
+    ];
+    
+    if (subjectFilter && subjectFilter !== 'todos') {
+      return allEnsayos.filter(e => e.subject === subjectFilter);
+    }
+    return allEnsayos;
+  }
+
+  private getMockPreguntas(ensayoId: string): Pregunta[] {
+    // Generar 65 preguntas mock
+    const preguntas: Pregunta[] = [];
+    const topics = ['Álgebra', 'Geometría', 'Probabilidad', 'Funciones', 'Trigonometría'];
+    
+    for (let i = 1; i <= 65; i++) {
+      preguntas.push({
+        id: `${ensayoId}-q${i}`,
+        ensayoId,
+        subject: 'matematica1',
+        text: `Pregunta ${i}: Si $x^2 + ${i}x + ${i * 2} = 0$, ¿cuál es el valor de la suma de las raíces?`,
+        options: {
+          A: `${-i}`,
+          B: `${i}`,
+          C: `${i * 2}`,
+          D: `${-i * 2}`,
+          E: `${i / 2}`
+        },
+        correctAnswer: 'A',
+        explanation: `Por el teorema de Vieta, la suma de las raíces de $ax^2 + bx + c = 0$ es $-b/a$. En este caso, $-${i}/1 = ${-i}$.`,
+        difficulty: (i % 5) + 1,
+        topic: topics[i % 5]
+      });
+    }
+    
+    return preguntas;
+  }
+}

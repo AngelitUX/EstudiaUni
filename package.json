@@ -1,0 +1,43 @@
+{
+  "name": "estudiauni-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EstudiaUni.cl - Plataforma de preparación PAES",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend-app && npm install && cd ../frontend-landing && npm install && cd ..",
+    "build:app": "cd frontend-app && npm run build && cd ..",
+    "build:landing": "cd frontend-landing && npm run generate && cd ..",
+    "build:backend": "cd backend && npm run build && cd ..",
+    "build:all": "npm run build:backend && npm run build:app && npm run build:landing",
+    "deploy:app": "npm run build:app && firebase deploy --only hosting:app",
+    "deploy:landing": "npm run build:landing && firebase deploy --only hosting:landing",
+    "deploy:hosting": "npm run build:app && npm run build:landing && firebase deploy --only hosting",
+    "deploy:firestore": "firebase deploy --only firestore",
+    "deploy:all": "npm run build:all && firebase deploy",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:app": "cd frontend-app && npm start",
+    "dev:landing": "cd frontend-landing && npm run dev",
+    "seed": "cd backend && npm run seed && cd .."
+  },
+  "devDependencies": {},
+  "keywords": ["paes", "education", "chile"],
+  "license": "UNLICENSED",
+  "comments": {
+    "bugfixes_29_03_2026": [
+      "✅ Admin Guard: Protección de endpoints administrativos",
+      "✅ Endpoints faltantes: Quiz submit y simulations con params en URL",
+      "✅ Topic response format: Ajustado para coincidir con frontend {topic, progress}",
+      "✅ Timer funcional: Countdown con auto-submit y persistencia en localStorage",
+      "✅ Toast notifications: Reemplazado alert() por sistema elegante",
+      "✅ Loading states: Botones deshabilitados durante requests",
+      "Ver comentarios en archivos: admin.guard.ts, toast.service.ts, simulation-runner.component.ts"
+    ],
+    "deploy": [
+      "Windows: deploy.bat [app|landing|all]",
+      "Linux/Mac: ./deploy.sh [app|landing|all]",
+      "NPM: npm run deploy:hosting (app+landing) o deploy:all (todo)",
+      "Ver DEPLOY.md para más info"
+    ]
+  }
+}
+

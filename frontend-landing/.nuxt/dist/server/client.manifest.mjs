@@ -1,0 +1,104 @@
+export default {
+  "_B3UYiQBW.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "B3UYiQBW.js",
+    "name": "vue.-sixQ7xP",
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ]
+  },
+  "node_modules/@nuxt/ui-templates/dist/templates/error-404.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "CBU4MVKd.js",
+    "name": "error-404",
+    "src": "node_modules/@nuxt/ui-templates/dist/templates/error-404.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js",
+      "_B3UYiQBW.js"
+    ],
+    "css": [
+      "error-404.CRYEpd01.css"
+    ]
+  },
+  "error-404.CRYEpd01.css": {
+    "file": "error-404.CRYEpd01.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "node_modules/@nuxt/ui-templates/dist/templates/error-500.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "CDt8W_za.js",
+    "name": "error-500",
+    "src": "node_modules/@nuxt/ui-templates/dist/templates/error-500.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_B3UYiQBW.js",
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "css": [
+      "error-500.BGYtU8Uo.css"
+    ]
+  },
+  "error-500.BGYtU8Uo.css": {
+    "file": "error-500.BGYtU8Uo.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "node_modules/nuxt/dist/app/entry.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "B6EUKMJ1.js",
+    "name": "entry",
+    "src": "node_modules/nuxt/dist/app/entry.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "node_modules/@nuxt/ui-templates/dist/templates/error-404.vue",
+      "node_modules/@nuxt/ui-templates/dist/templates/error-500.vue"
+    ],
+    "css": [
+      "entry.DpgJYFO-.css"
+    ]
+  },
+  "entry.DpgJYFO-.css": {
+    "file": "entry.DpgJYFO-.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "pages/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "DWGbSid3.js",
+    "name": "index",
+    "src": "pages/index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "css": [
+      "index.LhetGCKD.css"
+    ]
+  },
+  "index.LhetGCKD.css": {
+    "file": "index.LhetGCKD.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  }
+}
