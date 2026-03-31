@@ -18,7 +18,6 @@ import { Router, RouterModule } from '@angular/router';
           <a (click)="scrollTo('features')">Características</a>
           <a (click)="scrollTo('pricing')">Precios</a>
           <a (click)="scrollTo('testimonials')">Testimonios</a>
-          <a (click)="scrollTo('universidades')">Universidades</a>
         </div>
         
         <div class="nav-actions">
