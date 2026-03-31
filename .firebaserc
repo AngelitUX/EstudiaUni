@@ -7,9 +7,6 @@
       "hosting": {
         "app": [
           "estudiauni"
-        ],
-        "landing": [
-          "estudiauni-landing"
         ]
       }
     }
