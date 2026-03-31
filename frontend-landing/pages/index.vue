@@ -85,7 +85,7 @@
             <h3>Básico</h3>
             <div class="price">Gratis<span>/siempre</span></div>
             <ul class="features-list">
-              <li>✔️ 1 Ensayo Diario</li>
+              <li>✔️ 5 Ensayo Diario</li>
               <li>✔️ 5 Mini-quizzes /día</li>
               <li>✔️ Todo el contenido Mineduc</li>
               <li>❌ Análisis profundo IA</li>
