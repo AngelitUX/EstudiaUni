@@ -40,10 +40,6 @@ import { Router, RouterModule } from '@angular/router';
             <span class="nav-icon">📊</span>
             <span class="nav-text" *ngIf="!sidebarCollapsed">Mi Progreso</span>
           </a>
-          <a class="nav-item" routerLink="/dashboard">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-text" *ngIf="!sidebarCollapsed">Configuración</span>
-          </a>
         </nav>
         
         <div class="sidebar-footer">
