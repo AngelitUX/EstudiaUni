@@ -1,0 +1,68 @@
+/* Uses same styles as login.component.css */
+@import '../login/login.component.css';
+
+.info-box {
+  background: rgba(255, 159, 67, 0.1);
+  border: 2px solid rgba(255, 159, 67, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.info-box h3 {
+  color: #ff9f43;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.info-box p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.steps {
+  text-align: left;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: rgba(88, 204, 2, 0.05);
+  border-radius: 12px;
+  border: 2px solid rgba(88, 204, 2, 0.2);
+}
+
+.steps h4 {
+  color: var(--accent-primary);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.steps ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: var(--text-primary);
+}
+
+.steps li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-top: 1rem;
+  transition: color 0.2s;
+}
+
+.btn-text:hover {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}

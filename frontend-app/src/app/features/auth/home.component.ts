@@ -194,6 +194,37 @@ import { Router, RouterModule } from '@angular/router';
         </div>
       </section>
 
+      <!-- VIDEOS SECTION -->
+      <section class="videos-section">
+        <h2 class="section-title">Mira cómo <span class="text-gradient">funciona</span></h2>
+        
+        <div class="videos-grid">
+          <div class="video-card glass-card">
+            <div class="video-placeholder">
+              <div class="play-icon">▶</div>
+            </div>
+            <h3>Así funciona la práctica adaptativa</h3>
+            <p>Descubre cómo nuestro sistema se ajusta a tu nivel</p>
+          </div>
+
+          <div class="video-card glass-card">
+            <div class="video-placeholder">
+              <div class="play-icon">▶</div>
+            </div>
+            <h3>Mira cómo GPT-4 te explica tus errores</h3>
+            <p>IA que analiza y explica cada respuesta incorrecta</p>
+          </div>
+
+          <div class="video-card glass-card">
+            <div class="video-placeholder">
+              <div class="play-icon">▶</div>
+            </div>
+            <h3>Simulacros idénticos a la PAES real</h3>
+            <p>Practica con ensayos que replican el examen oficial</p>
+          </div>
+        </div>
+      </section>
+
       <!-- TESTIMONIALS SECTION -->
       <section id="testimonials" class="testimonials-section">
         <h2 class="section-title">Lo que dicen nuestros <span class="text-gradient">estudiantes</span></h2>
@@ -336,12 +367,13 @@ import { Router, RouterModule } from '@angular/router';
       z-index: 1000;
       padding: 1rem 2rem;
       transition: all 0.3s ease;
+      background: var(--bg-color);
     }
     .navbar.scrolled {
-      background: rgba(13, 15, 23, 0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.98);
+      border-bottom: 2px solid var(--glass-border);
       padding: 0.75rem 2rem;
+      box-shadow: var(--shadow);
     }
     .nav-container {
       max-width: 1400px;
@@ -362,25 +394,29 @@ import { Router, RouterModule } from '@angular/router';
     }
     .nav-links a {
       color: var(--text-secondary);
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: color 0.2s;
     }
-    .nav-links a:hover { color: #fff; }
+    .nav-links a:hover { color: var(--accent-primary); }
     .nav-actions {
       display: flex;
       gap: 1rem;
     }
     .btn-ghost {
       background: transparent;
-      color: var(--text-secondary);
-      border: none;
+      color: var(--text-primary);
+      border: 2px solid var(--glass-border);
       padding: 0.6rem 1.2rem;
       cursor: pointer;
-      font-weight: 500;
-      transition: color 0.2s;
+      font-weight: 600;
+      transition: all 0.2s;
+      border-radius: 9999px;
     }
-    .btn-ghost:hover { color: #fff; }
+    .btn-ghost:hover { 
+      background: var(--bg-secondary);
+      border-color: var(--accent-primary);
+    }
     .mobile-menu-btn {
       display: none;
       flex-direction: column;
@@ -393,7 +429,7 @@ import { Router, RouterModule } from '@angular/router';
     .mobile-menu-btn span {
       width: 25px;
       height: 2px;
-      background: #fff;
+      background: var(--text-primary);
       transition: 0.3s;
     }
     .mobile-menu {
@@ -401,14 +437,15 @@ import { Router, RouterModule } from '@angular/router';
       flex-direction: column;
       gap: 1rem;
       padding: 1rem 2rem 2rem;
-      background: rgba(13, 15, 23, 0.95);
-      backdrop-filter: blur(20px);
+      background: white;
+      border-bottom: 2px solid var(--glass-border);
     }
     .mobile-menu.open { display: flex; }
     .mobile-menu a {
-      color: var(--text-secondary);
+      color: var(--text-primary);
       padding: 0.5rem 0;
       cursor: pointer;
+      font-weight: 600;
     }
     .mobile-menu hr {
       border: none;
@@ -426,12 +463,12 @@ import { Router, RouterModule } from '@angular/router';
     .hero-badge {
       display: inline-block;
       padding: 0.5rem 1.25rem;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: var(--accent-yellow);
+      border: none;
       border-radius: 999px;
-      color: #a855f7;
+      color: var(--text-primary);
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 700;
       margin-bottom: 2rem;
     }
     .hero-title {
@@ -457,40 +494,23 @@ import { Router, RouterModule } from '@angular/router';
     }
     .btn-large { padding: 1rem 2.5rem; font-size: 1.1rem; }
     .btn-outline {
-      background: transparent;
-      border: 2px solid var(--glass-border);
-      color: white;
+      background: white;
+      border: 3px solid var(--accent-primary);
+      color: var(--accent-primary);
       cursor: pointer;
       border-radius: 9999px;
       transition: all 0.2s;
+      font-weight: 700;
     }
     .btn-outline:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--accent-primary);
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 4px 0 #45a302;
     }
     
-    /* Botón con brillo animado */
+    /* Eliminado botón con brillo animado - ahora simple */
     .btn-glow {
-      position: relative;
-      animation: pulse-glow 2s ease-in-out infinite;
-    }
-    .btn-glow::before {
-      content: '';
-      position: absolute;
-      inset: -3px;
-      background: var(--gradient-brand);
-      border-radius: inherit;
-      z-index: -1;
-      opacity: 0;
-      animation: glow-pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse-glow {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-    }
-    @keyframes glow-pulse {
-      0%, 100% { opacity: 0; filter: blur(10px); }
-      50% { opacity: 0.6; filter: blur(15px); }
+      /* Sin efectos glow */
     }
 
     .stats {
@@ -523,31 +543,22 @@ import { Router, RouterModule } from '@angular/router';
       margin: 0 auto;
       padding: 2rem;
     }
-    .mockup-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      height: 80%;
-      background: radial-gradient(ellipse, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
-      filter: blur(60px);
-      z-index: 0;
-    }
+    /* Eliminado glow effect */
     .mockup-container {
       position: relative;
       z-index: 1;
-      border-radius: 16px;
+      border-radius: var(--border-radius);
       overflow: hidden;
-      background: rgba(20, 22, 35, 0.8);
-      border: 1px solid var(--glass-border);
+      background: white;
+      border: 2px solid var(--glass-border);
+      box-shadow: var(--shadow);
     }
     .mockup-header {
       display: flex;
       align-items: center;
       padding: 0.75rem 1rem;
-      background: rgba(0, 0, 0, 0.3);
-      border-bottom: 1px solid var(--glass-border);
+      background: var(--bg-secondary);
+      border-bottom: 2px solid var(--glass-border);
     }
     .mockup-dots {
       display: flex;
@@ -573,19 +584,20 @@ import { Router, RouterModule } from '@angular/router';
     }
     .mockup-sidebar {
       width: 60px;
-      background: rgba(0, 0, 0, 0.2);
+      background: var(--bg-secondary);
       padding: 1rem 0.5rem;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      border-right: 2px solid var(--glass-border);
     }
     .mockup-nav-item {
       height: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
       border-radius: 4px;
     }
     .mockup-nav-item.active {
-      background: var(--gradient-brand);
+      background: var(--accent-primary);
     }
     .mockup-content {
       flex: 1;
@@ -599,25 +611,23 @@ import { Router, RouterModule } from '@angular/router';
     .mockup-stat-card {
       flex: 1;
       height: 60px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-secondary);
       border-radius: 8px;
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
     }
     .mockup-chart {
       height: 150px;
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--bg-secondary);
       border-radius: 8px;
-      border: 1px solid var(--glass-border);
-      background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+      border: 2px solid var(--glass-border);
     }
 
     /* ===== LOGOS CAROUSEL ===== */
     .logos-section {
       padding: 3rem 0;
       overflow: hidden;
-      border-top: 1px solid var(--glass-border);
-      border-bottom: 1px solid var(--glass-border);
-      background: rgba(0, 0, 0, 0.2);
+      border-top: 2px solid var(--glass-border);
+      border-bottom: 2px solid var(--glass-border);
     }
     .logos-title {
       text-align: center;
@@ -642,12 +652,12 @@ import { Router, RouterModule } from '@angular/router';
       font-family: var(--font-heading);
       font-size: 1.2rem;
       font-weight: 700;
-      color: #555;
+      color: var(--text-secondary);
       white-space: nowrap;
       opacity: 0.6;
       transition: opacity 0.3s;
     }
-    .logo-item:hover { opacity: 1; color: #888; }
+    .logo-item:hover { opacity: 1; }
     @keyframes scroll-logos {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
@@ -673,30 +683,17 @@ import { Router, RouterModule } from '@angular/router';
     }
     .bento-card {
       padding: 2rem;
-      border-radius: 20px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border-radius: var(--border-radius);
+      transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      border: 2px solid var(--glass-border);
     }
-    .bento-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(135deg, transparent, transparent);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      transition: background 0.4s;
-    }
+    /* Eliminado efecto before con gradiente */
     .bento-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 60px rgba(99, 102, 241, 0.25);
-    }
-    .bento-card:hover::before {
-      background: var(--gradient-brand);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-primary);
     }
     .bento-large {
       grid-column: span 2;
@@ -737,18 +734,20 @@ import { Router, RouterModule } from '@angular/router';
     }
     .adaptive-bars .bar {
       flex: 1;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--bg-secondary);
       border-radius: 4px;
       transition: all 0.3s;
+      border: 2px solid var(--glass-border);
     }
     .adaptive-bars .bar.highlight {
-      background: var(--gradient-brand);
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
     }
     .ai-visual {
-      background: rgba(99, 102, 241, 0.1);
+      background: #e0f2fe;
       padding: 1rem;
       border-radius: 12px;
-      border: 1px solid rgba(99, 102, 241, 0.2);
+      border: 2px solid var(--accent-secondary);
     }
     .ai-message {
       display: flex;
@@ -759,15 +758,90 @@ import { Router, RouterModule } from '@angular/router';
       font-size: 1.5rem;
     }
     .ai-text {
-      color: #e2e8f0;
+      color: var(--text-primary);
       font-size: 0.9rem;
       font-style: italic;
+    }
+
+    /* ===== VIDEOS SECTION ===== */
+    .videos-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+
+    .videos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .video-card {
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 2px solid var(--glass-border);
+      background: white;
+    }
+
+    .video-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-primary);
+    }
+
+    .video-placeholder {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 2px solid var(--glass-border);
+    }
+
+    .play-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 0 #45a302;
+    }
+
+    .video-card:hover .play-icon {
+      background: #45a302;
+      transform: scale(1.1);
+      box-shadow: 0 2px 0 #3a8702;
+    }
+
+    .video-card h3 {
+      padding: 1.5rem 1.5rem 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+    }
+
+    .video-card p {
+      padding: 0 1.5rem 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
     /* ===== TESTIMONIALS ===== */
     .testimonials-section {
       padding: 6rem 2rem;
-      background: rgba(0, 0, 0, 0.2);
     }
     .testimonials-grid {
       display: grid;
@@ -778,19 +852,22 @@ import { Router, RouterModule } from '@angular/router';
       align-items: start;
     }
     .testimonial-card {
-      background: rgba(30, 35, 50, 0.6);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
+      background: #ffffff;
+      border: 3px solid #d1fae5;
+      border-radius: var(--border-radius);
       padding: 2rem;
-      transition: transform 0.3s, box-shadow 0.3s;
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
     .testimonial-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-primary);
     }
     .testimonial-card.featured {
       border-color: var(--accent-primary);
-      background: rgba(99, 102, 241, 0.08);
+      background: #ffffff;
+      border-width: 4px;
       transform: scale(1.02);
     }
     .testimonial-header {
@@ -804,7 +881,8 @@ import { Router, RouterModule } from '@angular/router';
       height: 50px;
       border-radius: 50%;
       overflow: hidden;
-      border: 2px solid var(--accent-primary);
+      border: 3px solid var(--accent-primary);
+      background: var(--bg-secondary);
     }
     .testimonial-avatar img {
       width: 100%;
@@ -814,7 +892,7 @@ import { Router, RouterModule } from '@angular/router';
     .testimonial-info h4 {
       font-size: 1rem;
       font-weight: 600;
-      color: #fff;
+      color: var(--text-primary);
     }
     .testimonial-info p {
       font-size: 0.85rem;
@@ -869,28 +947,31 @@ import { Router, RouterModule } from '@angular/router';
     }
     .pricing-card {
       padding: 2.5rem;
-      border-radius: 20px;
+      border-radius: var(--border-radius);
       text-align: left;
       position: relative;
+      border: 2px solid var(--glass-border);
+      background: white;
     }
     .pricing-card.premium {
-      border: 2px solid var(--accent-primary);
-      background: rgba(99, 102, 241, 0.05);
+      border: 3px solid var(--accent-primary);
+      background: #f0fdf4;
     }
     .premium-badge {
       position: absolute;
       top: -12px;
       right: 2rem;
-      background: var(--gradient-brand);
+      background: var(--accent-yellow);
       padding: 0.3rem 1rem;
       border-radius: 999px;
       font-size: 0.8rem;
       font-weight: 700;
+      color: var(--text-primary);
     }
     .pricing-card h3 {
       font-size: 1.5rem;
       margin-bottom: 0.5rem;
-      color: #fff;
+      color: var(--text-primary);
     }
     .price {
       font-size: 3rem;
@@ -909,7 +990,7 @@ import { Router, RouterModule } from '@angular/router';
     }
     .pricing-features li {
       padding: 0.6rem 0;
-      color: #e2e8f0;
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -926,7 +1007,9 @@ import { Router, RouterModule } from '@angular/router';
       margin: 0 auto;
       text-align: center;
       padding: 4rem;
-      border-radius: 24px;
+      border-radius: var(--border-radius);
+      background: white;
+      border: 2px solid var(--glass-border);
     }
     .cta-content h2 {
       font-size: 2.5rem;
@@ -941,9 +1024,10 @@ import { Router, RouterModule } from '@angular/router';
 
     /* ===== FOOTER ===== */
     .footer {
-      border-top: 1px solid var(--glass-border);
+      border-top: 2px solid var(--glass-border);
       padding: 3rem 2rem;
       text-align: center;
+      background: var(--bg-secondary);
     }
     .footer-content {
       max-width: 1200px;
@@ -992,6 +1076,7 @@ import { Router, RouterModule } from '@angular/router';
       .stats { gap: 2rem; }
       .bento-grid { grid-template-columns: 1fr; }
       .bento-large { grid-column: span 1; }
+      .videos-grid { grid-template-columns: 1fr; max-width: 400px; }
       .pricing-grid { grid-template-columns: 1fr; }
       .section-title { font-size: 2rem; }
       .mockup-body { min-height: 200px; }

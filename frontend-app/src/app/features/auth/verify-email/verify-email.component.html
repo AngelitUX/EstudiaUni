@@ -1,0 +1,70 @@
+<div class="auth-container">
+  <div class="auth-box glass-card animate-fade-in">
+    <div class="brand">
+      <span class="text-gradient">EstudiaUni</span>.cl
+    </div>
+
+    <div class="verification-box">
+      <div class="verification-icon">📧</div>
+      <h2>Verifica tu Correo Electrónico</h2>
+      <p class="subtitle">
+        Hemos enviado un correo de verificación a<br>
+        <strong>{{ email }}</strong>
+      </p>
+      
+      <div class="info-box">
+        <h3>⚠️ Acceso Restringido</h3>
+        <p>
+          Para acceder al dashboard y comenzar a preparar tu PAES, debes verificar tu correo electrónico primero.
+        </p>
+      </div>
+
+      <div class="steps">
+        <h4>Pasos para verificar:</h4>
+        <ol>
+          <li>Abre tu correo electrónico</li>
+          <li>Busca el email de EstudiaUni (revisa spam si no lo ves)</li>
+          <li>Haz clic en el enlace de verificación</li>
+          <li>Regresa aquí y haz clic en "Ya verifiqué mi correo"</li>
+        </ol>
+      </div>
+
+      <div *ngIf="success" class="success-banner">
+        {{ success }}
+      </div>
+
+      <div *ngIf="error" class="error-banner">
+        {{ error }}
+      </div>
+
+      <div class="verification-actions">
+        <button 
+          class="btn btn-primary w-full" 
+          (click)="checkVerification()"
+          [disabled]="checkingVerification">
+          {{ checkingVerification ? 'Verificando...' : '✓ Ya verifiqué mi correo' }}
+        </button>
+        
+        <button 
+          class="btn btn-outline w-full" 
+          (click)="resendVerification()"
+          [disabled]="loading">
+          {{ loading ? 'Enviando...' : '📨 Reenviar correo de verificación' }}
+        </button>
+
+        <button class="btn-text" (click)="logout()">
+          Cerrar sesión y usar otra cuenta
+        </button>
+      </div>
+
+      <div class="help-text">
+        <small>
+          <strong>¿No recibiste el correo?</strong><br>
+          • Revisa tu carpeta de spam o correo no deseado<br>
+          • Asegúrate de que el correo {{ email }} sea correcto<br>
+          • Espera unos minutos, el correo puede tardar en llegar
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
