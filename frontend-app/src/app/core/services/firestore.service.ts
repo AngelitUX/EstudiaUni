@@ -70,6 +70,7 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoURL?: string;
+  emailVerified?: boolean;
   plan: 'free' | 'premium';
   createdAt: Timestamp;
   lastLogin: Timestamp;

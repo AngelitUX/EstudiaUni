@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
+import { VerifyEmailComponent } from './features/auth/verify-email/verify-email.component';
 import { HomeComponent } from './features/auth/home.component';
 import { ModulesListComponent } from './features/modules/modules-list/modules-list.component';
 import { TopicDetailComponent } from './features/modules/topic-detail/topic-detail.component';
@@ -9,23 +10,25 @@ import { EnsayosListComponent } from './features/simulations/ensayos-list.compon
 import { EnsayoRunnerComponent } from './features/simulations/ensayo-runner.component';
 import { EnsayoReviewComponent } from './features/simulations/ensayo-review.component';
 import { authGuard } from './core/guards/auth.guard';
+import { emailVerifiedGuard } from './core/guards/email-verified.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'verify-email', component: VerifyEmailComponent, canActivate: [authGuard] },
   { 
     path: 'dashboard', 
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, emailVerifiedGuard]
   },
-  { path: 'modules', component: ModulesListComponent, canActivate: [authGuard] },
-  { path: 'topic/:moduleId/:topicId', component: TopicDetailComponent, canActivate: [authGuard] },
-  { path: 'simulation/:attemptId', component: SimulationRunnerComponent, canActivate: [authGuard] },
+  { path: 'modules', component: ModulesListComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  { path: 'topic/:moduleId/:topicId', component: TopicDetailComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  { path: 'simulation/:attemptId', component: SimulationRunnerComponent, canActivate: [authGuard, emailVerifiedGuard] },
   // Ensayos PAES
-  { path: 'ensayos', component: EnsayosListComponent, canActivate: [authGuard] },
-  { path: 'ensayo/:id/run', component: EnsayoRunnerComponent, canActivate: [authGuard] },
-  { path: 'ensayo/:id/review', component: EnsayoReviewComponent, canActivate: [authGuard] },
+  { path: 'ensayos', component: EnsayosListComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  { path: 'ensayo/:id/run', component: EnsayoRunnerComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  { path: 'ensayo/:id/review', component: EnsayoReviewComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: '**', redirectTo: '' }
 ];
 

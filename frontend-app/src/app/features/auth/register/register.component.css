@@ -1,2 +1,9 @@
 /* Uses same styles as login.component.css */
 @import '../login/login.component.css';
+
+.success-text {
+  color: #22c55e;
+  font-size: 0.85rem;
+  display: block;
+  margin-top: 4px;
+}
