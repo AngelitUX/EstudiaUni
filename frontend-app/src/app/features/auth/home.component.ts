@@ -16,8 +16,8 @@ import { Router, RouterModule } from '@angular/router';
         
         <div class="nav-links">
           <a (click)="scrollTo('features')">Características</a>
-          <a (click)="scrollTo('pricing')">Precios</a>
           <a (click)="scrollTo('testimonials')">Testimonios</a>
+          <a (click)="scrollTo('pricing')">Precios</a>
         </div>
         
         <div class="nav-actions">
@@ -33,8 +33,8 @@ import { Router, RouterModule } from '@angular/router';
       <!-- Mobile Menu -->
       <div class="mobile-menu" [class.open]="mobileMenuOpen">
         <a (click)="scrollTo('features'); mobileMenuOpen = false">Características</a>
-        <a (click)="scrollTo('pricing'); mobileMenuOpen = false">Precios</a>
         <a (click)="scrollTo('testimonials'); mobileMenuOpen = false">Testimonios</a>
+        <a (click)="scrollTo('pricing'); mobileMenuOpen = false">Precios</a>
         <hr>
         <button class="btn btn-ghost w-full" (click)="goTo('/login')">Iniciar Sesión</button>
         <button class="btn btn-primary w-full" (click)="goTo('/register')">Crear Cuenta</button>
