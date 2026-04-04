@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-  --bg-color: #ffffff;
+  --bg-color: #fdf9f1;
   --bg-secondary: #f7f8fa;
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
-  --accent-primary: #58cc02;
+  --accent-primary: #855cd6;
   --accent-secondary: #1cb0f6;
   --accent-yellow: #ffc800;
   --accent-orange: #ff9600;
-  --gradient-brand: linear-gradient(135deg, #58cc02, #45a302);
-  --glass-bg: rgba(255, 255, 255, 0.95);
+  --gradient-brand: linear-gradient(135deg, #855cd6, #6b46b8);
+  --glass-bg: rgba(253, 249, 241, 0.95);
   --glass-border: rgba(0, 0, 0, 0.08);
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -78,13 +78,13 @@ a {
 .btn-primary {
   background: var(--accent-primary);
   color: white;
-  box-shadow: 0 4px 0 #45a302;
+  box-shadow: 0 4px 0 #6b46b8;
   font-weight: 700;
 }
 
 .btn-primary:hover {
-  background: #45a302;
-  box-shadow: 0 2px 0 #3a8702;
+  background: #6b46b8;
+  box-shadow: 0 2px 0 #5a3a9a;
   transform: translateY(2px);
 }
 
@@ -98,7 +98,7 @@ a {
 .btn-outline:hover {
   background: var(--accent-primary);
   color: white;
-  box-shadow: 0 4px 0 #45a302;
+  box-shadow: 0 4px 0 #6b46b8;
 }
 
 .btn:disabled {

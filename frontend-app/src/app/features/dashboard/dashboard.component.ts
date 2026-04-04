@@ -210,6 +210,8 @@ import { Router, RouterModule } from '@angular/router';
     .dashboard-layout {
       display: flex;
       min-height: 100vh;
+      background: #000000;
+      color: #ffffff;
     }
     .text-gradient {
       background: var(--gradient-brand);
@@ -222,7 +224,7 @@ import { Router, RouterModule } from '@angular/router';
     .sidebar {
       width: 260px;
       background: rgba(13, 15, 23, 0.95);
-      border-right: 1px solid var(--glass-border);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       flex-direction: column;
       transition: width 0.3s ease;
@@ -325,7 +327,7 @@ import { Router, RouterModule } from '@angular/router';
       height: 60px;
       background: rgba(13, 15, 23, 0.95);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       padding: 0 1rem;
       align-items: center;
       gap: 1rem;
@@ -384,12 +386,13 @@ import { Router, RouterModule } from '@angular/router';
       font-size: 2rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+      color: #ffffff;
     }
     .welcome-text p {
-      color: var(--text-secondary);
+      color: #9ca3af;
     }
     .welcome-date {
-      color: var(--text-secondary);
+      color: #9ca3af;
       font-size: 0.9rem;
       padding: 0.5rem 1rem;
       background: rgba(255, 255, 255, 0.05);
@@ -408,6 +411,8 @@ import { Router, RouterModule } from '@angular/router';
       border-radius: 16px;
       display: flex;
       flex-direction: column;
+      background: rgba(13, 15, 23, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .metric-header {
       display: flex;
@@ -417,7 +422,7 @@ import { Router, RouterModule } from '@angular/router';
     }
     .metric-label {
       font-size: 0.9rem;
-      color: var(--text-secondary);
+      color: #9ca3af;
       font-weight: 500;
     }
     .metric-icon {
@@ -445,19 +450,19 @@ import { Router, RouterModule } from '@angular/router';
     }
     .metric-unit {
       font-size: 1rem;
-      color: var(--text-secondary);
+      color: #9ca3af;
     }
     .metric-footer {
       margin-top: 1rem;
       padding-top: 1rem;
-      border-top: 1px solid var(--glass-border);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     .metric-change.positive {
-      color: #10b981;
+      color: #855cd6;
       font-size: 0.85rem;
     }
     .metric-subtext {
-      color: var(--text-secondary);
+      color: #9ca3af;
       font-size: 0.85rem;
     }
 
@@ -507,6 +512,8 @@ import { Router, RouterModule } from '@angular/router';
     .activity-card, .recent-activity {
       padding: 1.5rem;
       border-radius: 16px;
+      background: rgba(13, 15, 23, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .activity-header {
       display: flex;
@@ -517,9 +524,10 @@ import { Router, RouterModule } from '@angular/router';
     .activity-header h3 {
       font-size: 1.1rem;
       font-weight: 600;
+      color: #ffffff;
     }
     .activity-badge {
-      background: rgba(99, 102, 241, 0.2);
+      background: rgba(133, 92, 214, 0.2);
       color: var(--accent-primary);
       padding: 0.3rem 0.75rem;
       border-radius: 999px;
@@ -537,7 +545,7 @@ import { Router, RouterModule } from '@angular/router';
     }
     .recommendation-icon {
       font-size: 2.5rem;
-      background: rgba(99, 102, 241, 0.1);
+      background: rgba(133, 92, 214, 0.1);
       padding: 1rem;
       border-radius: 12px;
       height: fit-content;
@@ -548,7 +556,7 @@ import { Router, RouterModule } from '@angular/router';
       color: #fff;
     }
     .recommendation-text p {
-      color: var(--text-secondary);
+      color: #9ca3af;
       font-size: 0.95rem;
       line-height: 1.5;
       margin-bottom: 1rem;
@@ -557,7 +565,7 @@ import { Router, RouterModule } from '@angular/router';
       display: flex;
       gap: 1.5rem;
       font-size: 0.85rem;
-      color: var(--text-secondary);
+      color: #9ca3af;
     }
     .btn-large {
       padding: 1rem 2rem;
@@ -568,6 +576,7 @@ import { Router, RouterModule } from '@angular/router';
       font-size: 1.1rem;
       font-weight: 600;
       margin-bottom: 1.5rem;
+      color: #ffffff;
     }
     .activity-list {
       display: flex;
@@ -579,12 +588,12 @@ import { Router, RouterModule } from '@angular/router';
       align-items: center;
       gap: 1rem;
       padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 10px;
       transition: background 0.2s;
     }
     .activity-item:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
     }
     .activity-item .activity-icon {
       font-size: 1.25rem;
@@ -601,18 +610,18 @@ import { Router, RouterModule } from '@angular/router';
     }
     .activity-time {
       font-size: 0.8rem;
-      color: var(--text-secondary);
+      color: #9ca3af;
     }
     .activity-score {
       font-weight: 700;
-      color: #10b981;
+      color: #855cd6;
       font-size: 0.9rem;
     }
 
     /* ===== GLASS CARD ===== */
     .glass-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
+      background: rgba(13, 15, 23, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
     }
 

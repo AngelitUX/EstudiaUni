@@ -97,7 +97,7 @@
   outline: none;
   border-color: var(--accent-primary);
   background: white;
-  box-shadow: 0 0 0 3px rgba(88, 204, 2, 0.1);
+  box-shadow: 0 0 0 3px rgba(133, 92, 214, 0.1);
 }
 
 .error-banner {
@@ -217,7 +217,7 @@
 }
 
 .password-requirements small.valid {
-  color: #10b981;
+  color: #855cd6;
 }
 
 .password-requirements small.invalid {
@@ -260,9 +260,9 @@
 .help-text {
   margin-top: 2rem;
   padding: 1rem;
-  background: rgba(88, 204, 2, 0.05);
+  background: rgba(133, 92, 214, 0.05);
   border-radius: 8px;
-  border: 1px solid rgba(88, 204, 2, 0.2);
+  border: 1px solid rgba(133, 92, 214, 0.2);
 }
 
 .help-text small {

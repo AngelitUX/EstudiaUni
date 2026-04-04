@@ -51,30 +51,156 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     </div>
   `,
   styles: [`
-    .topic-detail-container { padding: 2rem; max-width: 900px; margin: auto; }
+    /* Contenedor principal con fondo completo */
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: #000000;
+      color: #ffffff;
+    }
+    
+    .topic-detail-container { 
+      padding: 2rem; 
+      max-width: 900px; 
+      margin: 0 auto;
+      min-height: 100vh;
+      color: #ffffff;
+    }
+    .topic-header h2 {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
     .mb-4 { margin-bottom: 1.5rem; }
     .mb-2 { margin-bottom: 0.5rem; }
+    .mt-4 { margin-top: 2rem; }
     .badges { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
-    .badge { background: rgba(99,102,241,0.2); color: #a855f7; padding: 0.3rem 1rem; border-radius: 99px; font-weight: 500;}
-    .status-badge { background: rgba(39, 201, 63, 0.2); color: #27c93f; }
+    .badge { 
+      background: rgba(133, 92, 214, 0.2); 
+      color: #a78bfa; 
+      padding: 0.4rem 1rem; 
+      border-radius: 99px; 
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .status-badge { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    
+    .btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(133, 92, 214, 0.5);
+      color: #a78bfa;
+    }
+    .btn-outline:hover {
+      background: rgba(133, 92, 214, 0.1);
+      border-color: #855cd6;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #855cd6, #6b46b8);
+      color: #ffffff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(133, 92, 214, 0.3);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .glass-card {
+      background: rgba(13, 15, 23, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+    }
     .content-section { margin-top: 2rem; }
-    .summary { font-size: 1.1rem; color: #cbd5e1; margin-bottom: 2rem; }
-    .markdown-body { font-size: 1.05rem; line-height: 1.7; color: #f8fafc; }
+    .content-section h3 {
+      color: #ffffff;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .summary { font-size: 1.1rem; color: #d1d5db; margin-bottom: 2rem; line-height: 1.6; }
+    .markdown-body { font-size: 1.05rem; line-height: 1.7; color: #e5e7eb; }
     
     ::ng-deep .markdown-body h1, 
     ::ng-deep .markdown-body h2, 
-    ::ng-deep .markdown-body h3 {
+    ::ng-deep .markdown-body h3,
+    ::ng-deep .markdown-body h4 {
       font-family: var(--font-heading);
       margin-top: 1.5rem;
       margin-bottom: 1rem;
-      color: #fff;
+      color: #ffffff;
     }
-    ::ng-deep .markdown-body p { margin-bottom: 1.2rem; }
-    ::ng-deep .markdown-body code { background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; color: #fdfba8;}
+    ::ng-deep .markdown-body p { margin-bottom: 1.2rem; color: #e5e7eb; }
+    ::ng-deep .markdown-body code { 
+      background: rgba(133, 92, 214, 0.2); 
+      padding: 0.2rem 0.5rem; 
+      border-radius: 6px; 
+      font-family: monospace; 
+      color: #c4b5fd;
+      font-size: 0.95em;
+    }
+    ::ng-deep .markdown-body ul,
+    ::ng-deep .markdown-body ol {
+      color: #e5e7eb;
+      margin-bottom: 1.2rem;
+    }
     
-    .examples { margin-top: 2rem; background: rgba(99,102,241,0.05); padding: 1.5rem; border-radius: 12px; border: 1px dashed rgba(99,102,241,0.3); }
-    .examples li { margin-bottom: 0.5rem; }
+    .examples { 
+      margin-top: 2rem; 
+      background: rgba(133, 92, 214, 0.1); 
+      padding: 1.5rem; 
+      border-radius: 12px; 
+      border: 1px solid rgba(133, 92, 214, 0.3); 
+    }
+    .examples h4 {
+      color: #a78bfa;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .examples li { 
+      margin-bottom: 0.5rem; 
+      color: #e5e7eb;
+    }
+    .action-section {
+      background: rgba(13, 15, 23, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2.5rem;
+    }
+    .action-section h3 {
+      color: #ffffff;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .text-secondary {
+      color: #9ca3af;
+    }
     .text-center { text-align: center; }
+    .loading-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #9ca3af;
+      font-size: 1.1rem;
+    }
   `]
 })
 export class TopicDetailComponent implements OnInit {
