@@ -505,7 +505,7 @@ import { Router, RouterModule } from '@angular/router';
     .btn-outline:hover {
       background: var(--accent-primary);
       color: white;
-      box-shadow: 0 4px 0 #45a302;
+      box-shadow: 0 4px 0 #6b46b8;
     }
     
     /* Eliminado botón con brillo animado - ahora simple */
@@ -815,13 +815,13 @@ import { Router, RouterModule } from '@angular/router';
       font-size: 24px;
       color: white;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 0 #45a302;
+      box-shadow: 0 4px 0 #6b46b8;
     }
 
     .video-card:hover .play-icon {
-      background: #45a302;
+      background: #6b46b8;
       transform: scale(1.1);
-      box-shadow: 0 2px 0 #3a8702;
+      box-shadow: 0 2px 0 #5a3a9a;
     }
 
     .video-card h3 {
@@ -853,7 +853,7 @@ import { Router, RouterModule } from '@angular/router';
     }
     .testimonial-card {
       background: #ffffff;
-      border: 3px solid #d1fae5;
+      border: 3px solid #e9d5ff;
       border-radius: var(--border-radius);
       padding: 2rem;
       transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
@@ -923,7 +923,7 @@ import { Router, RouterModule } from '@angular/router';
       color: var(--text-secondary);
     }
     .score-after {
-      color: #10b981;
+      color: #855cd6;
       font-size: 1.3rem;
     }
 
@@ -995,7 +995,7 @@ import { Router, RouterModule } from '@angular/router';
       align-items: center;
       gap: 0.75rem;
     }
-    .check { color: #10b981; }
+    .check { color: #855cd6; }
     .x { color: #ef4444; }
 
     /* ===== CTA SECTION ===== */

@@ -61,7 +61,7 @@ export class ToastService {
     toast.textContent = message;
     
     const colors = {
-      success: 'linear-gradient(135deg, #10b981, #059669)',
+      success: 'linear-gradient(135deg, #855cd6, #6b46b8)',
       error: 'linear-gradient(135deg, #ef4444, #dc2626)',
       info: 'linear-gradient(135deg, #6366f1, #4f46e5)'
     };

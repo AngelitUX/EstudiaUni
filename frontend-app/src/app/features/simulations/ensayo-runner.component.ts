@@ -171,7 +171,14 @@ interface Question {
     </div>
   `,
   styles: [`
-    .exam-container { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-color); }
+    /* Contenedor principal con fondo completo */
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: #000000;
+    }
+    
+    .exam-container { min-height: 100vh; display: flex; flex-direction: column; color: #ffffff; }
     
     /* ===== HEADER ===== */
     .exam-header {

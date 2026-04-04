@@ -167,7 +167,14 @@ interface ReviewQuestion {
     </div>
   `,
   styles: [`
-    .review-container { min-height: 100vh; background: var(--bg-color); }
+    /* Contenedor principal con fondo completo */
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: #000000;
+    }
+    
+    .review-container { min-height: 100vh; color: #ffffff; }
     
     /* ===== HEADER ===== */
     .review-header {

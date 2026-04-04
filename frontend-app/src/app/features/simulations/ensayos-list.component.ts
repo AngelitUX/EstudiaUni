@@ -164,6 +164,13 @@ interface EnsayoDisplay {
     </div>
   `,
   styles: [`
+    /* Contenedor principal con fondo completo */
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: #000000;
+    }
+    
     .ensayos-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .sidebar { width: 260px; background: rgba(13, 15, 23, 0.95); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; transition: width 0.3s ease; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
