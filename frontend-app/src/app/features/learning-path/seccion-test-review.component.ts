@@ -69,6 +69,10 @@ import { PaesContentService } from './services/paes-content.service';
 
         <p class="rq-enunciado"><span class="rq-num">{{ i + 1 }}</span> {{ p.enunciado }}</p>
 
+        <div class="rq-image-container" *ngIf="p.imagen_url">
+          <img [src]="p.imagen_url" alt="Imagen de la pregunta" class="rq-image" />
+        </div>
+
         <div class="rq-options">
           <div *ngFor="let key of optKeys" class="rq-option"
             [class.correct-answer]="key === p.respuesta_correcta"
@@ -155,6 +159,9 @@ import { PaesContentService } from './services/paes-content.service';
 
     .rq-enunciado { display: flex; align-items: flex-start; gap: 0.75rem; font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; margin: 0; padding: 1rem 1.25rem 0.75rem; }
     .rq-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; margin-top: 0.15rem; }
+
+    .rq-image-container { margin: 0 1.25rem 1rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
+    .rq-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
 
     .rq-options { display: flex; flex-direction: column; gap: 0.4rem; padding: 0 1.25rem 1rem; }
     .rq-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.9rem; border: 2px solid rgba(0,0,0,0.04); border-radius: 10px; font-size: 0.9rem; transition: all 0.15s; }

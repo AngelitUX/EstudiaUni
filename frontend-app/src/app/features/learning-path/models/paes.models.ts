@@ -40,6 +40,7 @@ export interface TestPaes {
 export interface PreguntaTest {
   id: number;
   enunciado: string;
+  imagen_url?: string;
   alternativas: { A: string; B: string; C: string; D: string };
   respuesta_correcta: 'A' | 'B' | 'C' | 'D';
   feedback_acierto: string;

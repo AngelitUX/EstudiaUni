@@ -30,6 +30,10 @@ import { PreguntaTest } from './models/paes.models';
         <div *ngFor="let p of t.preguntas; let i = index" class="question-card" [id]="'q-'+p.id">
           <p class="q-number"><span class="q-badge">{{ i + 1 }}</span> {{ p.enunciado }}</p>
 
+          <div class="q-image-container" *ngIf="p.imagen_url">
+            <img [src]="p.imagen_url" alt="Imagen de la pregunta" class="q-image" />
+          </div>
+
           <div class="options-list">
             <label *ngFor="let key of optionKeys" class="option-item"
               [class.selected]="answers().get(p.id) === key"
@@ -76,6 +80,9 @@ import { PreguntaTest } from './models/paes.models';
     .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 1.5rem; }
     .q-number { display: flex; align-items: flex-start; gap: 0.75rem; font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.25rem; }
     .q-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; margin-top: 0.1rem; }
+
+    .q-image-container { margin: 0 0 1.25rem 0; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
+    .q-image { max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; }
 
     .options-list { display: flex; flex-direction: column; gap: 0.5rem; }
     .option-item { display: flex; align-items: center; gap: 0.9rem; padding: 0.85rem 1rem; border: 2px solid rgba(0,0,0,0.06); border-radius: 12px; cursor: pointer; transition: all 0.15s; }

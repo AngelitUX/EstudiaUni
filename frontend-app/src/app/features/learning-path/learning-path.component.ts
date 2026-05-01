@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-learning-path',
@@ -20,6 +21,12 @@ import { PaesContentService } from './services/paes-content.service';
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
           <a class="nav-item" routerLink="/settings"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
         </nav>
+        <div class="sidebar-footer">
+          <button class="nav-item logout-btn" (click)="logout()">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Cerrar Sesión</span>
+          </button>
+        </div>
       </aside>
 
       <!-- MOBILE HEADER -->
@@ -33,7 +40,14 @@ import { PaesContentService } from './services/paes-content.service';
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/settings" (click)="mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
           </nav>
+          <div class="sidebar-footer" style="margin-top: auto; padding-top: 1rem;">
+            <button class="nav-item logout-btn" (click)="logout()">
+              <span class="nav-icon">🚪</span>
+              <span class="nav-text">Cerrar Sesión</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -113,6 +127,10 @@ import { PaesContentService } from './services/paes-content.service';
     .nav-item:hover { background: rgba(133,92,214,0.06); color: var(--text-primary); }
     .nav-item.active { background: rgba(133,92,214,0.1); color: var(--accent-primary); font-weight: 600; }
     .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    
+    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(0,0,0,0.06); }
+    .logout-btn { color: var(--text-secondary); }
+    .logout-btn:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
     /* MOBILE */
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
@@ -174,6 +192,7 @@ import { PaesContentService } from './services/paes-content.service';
 })
 export class LearningPathComponent {
   public paes = inject(PaesContentService);
+  private auth = inject(AuthService);
   private router = inject(Router);
 
   mobileOpen = false;
@@ -196,5 +215,10 @@ export class LearningPathComponent {
 
   goToCapitulo(cap: any) {
     this.router.navigate(['/ruta', this.selectedMateria(), cap.id]);
+  }
+
+  async logout() {
+    await this.auth.logout();
+    this.router.navigate(['/']);
   }
 }
