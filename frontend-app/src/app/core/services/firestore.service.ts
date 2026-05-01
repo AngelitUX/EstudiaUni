@@ -69,8 +69,16 @@ export interface UserProfile {
   odId: string;
   email: string;
   displayName: string;
-  photoURL?: string;
+  photoURL?: string | null;
+  profileEmoji?: string;
   emailVerified?: boolean;
+  bio?: string;
+  targetCareer?: string;
+  targetUniversity?: string;
+  targetExamDate?: string | null;
+  studyGoalMinutesPerDay?: number;
+  preferredStudyTime?: 'manana' | 'tarde' | 'noche';
+  notificationsEnabled?: boolean;
   plan: 'free' | 'premium';
   createdAt: Timestamp;
   lastLogin: Timestamp;
@@ -152,6 +160,14 @@ export class FirestoreService {
         email: user.email,
         displayName: user.displayName || 'Estudiante',
         photoURL: user.photoURL || null,
+        profileEmoji: '✨',
+        bio: '',
+        targetCareer: '',
+        targetUniversity: '',
+        targetExamDate: null,
+        studyGoalMinutesPerDay: 45,
+        preferredStudyTime: 'tarde',
+        notificationsEnabled: true,
         plan: 'free',
         createdAt: Timestamp.now(),
         lastLogin: Timestamp.now(),
@@ -163,6 +179,41 @@ export class FirestoreService {
         ...data
       });
     }
+  }
+
+  /** Actualizar configuración del perfil académico */
+  async updateProfileSettings(
+    data: Partial<
+      Pick<
+        UserProfile,
+        | 'displayName'
+        | 'photoURL'
+        | 'profileEmoji'
+        | 'bio'
+        | 'targetCareer'
+        | 'targetUniversity'
+        | 'targetExamDate'
+        | 'studyGoalMinutesPerDay'
+        | 'preferredStudyTime'
+        | 'notificationsEnabled'
+      >
+    >,
+  ): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
+
+    const userRef = doc(this.firestore, 'users', user.uid);
+    const existing = await getDoc(userRef);
+
+    if (!existing.exists()) {
+      await this.saveUserProfile(data);
+      return;
+    }
+
+    await updateDoc(userRef, {
+      ...data,
+      lastLogin: Timestamp.now(),
+    });
   }
 
   /** Actualizar estadísticas del usuario */

@@ -12,40 +12,36 @@ import { Router, RouterModule } from '@angular/router';
   template: `
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
-      <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <aside class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-logo" *ngIf="!sidebarCollapsed">
+          <span class="sidebar-logo">
             <span class="text-gradient">EstudiaUni</span>
           </span>
-          <span class="sidebar-logo-mini" *ngIf="sidebarCollapsed">EU</span>
-          <button class="sidebar-toggle" (click)="sidebarCollapsed = !sidebarCollapsed">
-            {{ sidebarCollapsed ? '→' : '←' }}
-          </button>
         </div>
         
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard">
             <span class="nav-icon">🏠</span>
-            <span class="nav-text" *ngIf="!sidebarCollapsed">Inicio</span>
-          </a>
-          <a class="nav-item" routerLink="/modules">
-            <span class="nav-icon">📚</span>
-            <span class="nav-text" *ngIf="!sidebarCollapsed">Ensayos PAES</span>
+            <span class="nav-text">Inicio</span>
           </a>
           <a class="nav-item" routerLink="/modules">
             <span class="nav-icon">🎯</span>
-            <span class="nav-text" *ngIf="!sidebarCollapsed">Práctica por Tema</span>
+            <span class="nav-text">Práctica por Tema</span>
           </a>
-          <a class="nav-item" routerLink="/dashboard">
-            <span class="nav-icon">📊</span>
-            <span class="nav-text" *ngIf="!sidebarCollapsed">Mi Progreso</span>
+          <a class="nav-item" routerLink="/modules">
+            <span class="nav-icon">📚</span>
+            <span class="nav-text">Ensayos PAES</span>
+          </a>
+          <a class="nav-item" routerLink="/settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Configuración</span>
           </a>
         </nav>
         
         <div class="sidebar-footer">
           <button class="nav-item logout-btn" (click)="logout()">
             <span class="nav-icon">🚪</span>
-            <span class="nav-text" *ngIf="!sidebarCollapsed">Cerrar Sesión</span>
+            <span class="nav-text">Cerrar Sesión</span>
           </button>
         </div>
       </aside>
@@ -65,16 +61,16 @@ import { Router, RouterModule } from '@angular/router';
               <span class="nav-text">Inicio</span>
             </a>
             <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">📚</span>
-              <span class="nav-text">Ensayos PAES</span>
-            </a>
-            <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
               <span class="nav-icon">🎯</span>
               <span class="nav-text">Práctica por Tema</span>
             </a>
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">📊</span>
-              <span class="nav-text">Mi Progreso</span>
+            <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">📚</span>
+              <span class="nav-text">Ensayos PAES</span>
+            </a>
+            <a class="nav-item" routerLink="/settings" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item" (click)="logout()">
               <span class="nav-icon">🚪</span>
@@ -91,9 +87,26 @@ import { Router, RouterModule } from '@angular/router';
           <div class="welcome-text">
             <h1>¡Hola, <span class="text-gradient">{{ userName }}</span>! 👋</h1>
             <p>Bienvenido de vuelta. Aquí está tu resumen de hoy.</p>
+            <div class="welcome-date">{{ currentDate }}</div>
           </div>
-          <div class="welcome-date">
-            {{ currentDate }}
+          <div class="welcome-actions">
+            <span class="plan-badge" [class.pro]="isProPlan">{{ isProPlan ? 'PRO' : 'BASICO' }}</span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" routerLink="/profile">
+                <span class="profile-avatar-wrap">
+                  <img
+                    *ngIf="userProfile?.photoURL; else avatarFallback"
+                    [src]="userProfile?.photoURL"
+                    alt="Foto de perfil"
+                    class="profile-avatar"
+                  />
+                  <ng-template #avatarFallback>
+                    <span class="profile-avatar fallback">{{ profileInitial }}</span>
+                  </ng-template>
+                  <span class="profile-emoji-badge">{{ userProfile?.profileEmoji || '✨' }}</span>
+                </span>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -227,49 +240,20 @@ import { Router, RouterModule } from '@angular/router';
       border-right: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       flex-direction: column;
-      transition: width 0.3s ease;
       position: fixed;
       top: 0;
       left: 0;
       height: 100vh;
       z-index: 100;
     }
-    .sidebar.collapsed {
-      width: 80px;
-    }
     .sidebar-header {
       padding: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       border-bottom: 1px solid var(--glass-border);
     }
     .sidebar-logo {
       font-family: var(--font-heading);
       font-size: 1.25rem;
       font-weight: 800;
-    }
-    .sidebar-logo-mini {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 800;
-      background: var(--gradient-brand);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .sidebar-toggle {
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      color: var(--text-secondary);
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .sidebar-toggle:hover {
-      background: var(--accent-primary);
-      color: #fff;
     }
     .sidebar-nav {
       flex: 1;
@@ -366,10 +350,6 @@ import { Router, RouterModule } from '@angular/router';
       flex: 1;
       margin-left: 260px;
       padding: 2rem;
-      transition: margin-left 0.3s ease;
-    }
-    .sidebar.collapsed ~ .main-content {
-      margin-left: 80px;
     }
 
     /* ===== WELCOME ===== */
@@ -393,12 +373,79 @@ import { Router, RouterModule } from '@angular/router';
     }
     .welcome-date {
       color: #9ca3af;
-      font-size: 0.9rem;
-      padding: 0.5rem 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-top: 0.45rem;
     }
-
+    .welcome-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .profile-menu-wrap {
+      position: relative;
+    }
+    .profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .profile-trigger:hover {
+      border-color: rgba(133, 92, 214, 0.6);
+    }
+    .profile-avatar-wrap {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .profile-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .profile-avatar.fallback {
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #855cd6, #6b46b8);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .profile-emoji-badge {
+      position: absolute;
+      right: -5px;
+      bottom: -5px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      padding: 0.08rem 0.28rem;
+      font-size: 0.72rem;
+      line-height: 1;
+    }
+    .plan-badge {
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      padding: 0.48rem 0.95rem;
+      border-radius: 999px;
+      font-weight: 700;
+      background: rgba(148, 163, 184, 0.2);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      line-height: 1;
+    }
+    .plan-badge.pro {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.35);
+    }
     /* ===== METRICS ===== */
     .metrics-section {
       display: grid;
@@ -645,6 +692,10 @@ import { Router, RouterModule } from '@angular/router';
         margin-left: 0;
         padding-top: 80px;
       }
+      .welcome-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
   `]
 })
@@ -654,7 +705,6 @@ export class DashboardComponent implements OnInit {
   router = inject(Router);
 
   userProfile: any = null;
-  sidebarCollapsed = false;
   mobileMenuOpen = false;
 
   // Datos (se actualizan desde Firestore)
@@ -672,6 +722,15 @@ export class DashboardComponent implements OnInit {
       day: 'numeric' 
     };
     return new Date().toLocaleDateString('es-CL', options);
+  }
+
+  get profileInitial(): string {
+    return this.userName?.charAt(0)?.toUpperCase() || 'U';
+  }
+
+  get isProPlan(): boolean {
+    const plan = this.userProfile?.plan || this.userProfile?.subscription?.tier;
+    return plan === 'premium' || plan === 'pro';
   }
 
   ngOnInit() {
