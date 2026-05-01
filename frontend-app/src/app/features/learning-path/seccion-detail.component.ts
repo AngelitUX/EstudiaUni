@@ -28,19 +28,6 @@ import { PaesContentService } from './services/paes-content.service';
       </div>
 
       <!-- DATOS CLAVES -->
-      <div class="section-block">
-        <h3 class="block-title">🔑 Claves para esta habilidad</h3>
-        <div class="datos-claves">
-          <div *ngFor="let dato of sec.datos_claves; let i = index" class="dato-card">
-            <div class="dato-num" [style.background]="barColors[i % barColors.length]">{{ i + 1 }}</div>
-            <div class="dato-content">
-              <p [innerHTML]="highlightBold(dato)"></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CONTEXTO BASE -->
       <div class="section-block" *ngIf="sec.test.contexto_base">
         <h3 class="block-title">📄 Texto de práctica</h3>
         <div class="contexto-box">
@@ -53,19 +40,24 @@ import { PaesContentService } from './services/paes-content.service';
         </div>
       </div>
 
-      <!-- CTA -->
-      <div class="cta-block">
-        <div class="cta-info">
-          <span class="cta-icon">🎯</span>
-          <div>
-            <strong>¿Listo para el test?</strong>
-            <p>Responde {{ sec.test.preguntas.length }} pregunta{{ sec.test.preguntas.length !== 1 ? 's' : '' }} sobre el texto de arriba.</p>
+      <!-- CLAVES -->
+      <div class="section-block">
+        <h3 class="block-title">🔑 Claves para esta habilidad</h3>
+        <div class="datos-claves">
+          <div *ngFor="let dato of sec.datos_claves; let i = index" class="dato-card">
+            <div class="dato-num" [style.background]="barColors[i % barColors.length]">{{ i + 1 }}</div>
+            <div class="dato-content">
+              <p [innerHTML]="highlightBold(dato)"></p>
+            </div>
           </div>
         </div>
-        <button class="btn-primary-lg" (click)="goToTest()">Comenzar test →</button>
       </div>
 
-      <button class="btn-back-text" [routerLink]="['/ruta', materiaId(), capituloId()]">← Volver al capítulo</button>
+      <!-- ACCIONES: UN SOLO BOTÓN -->
+      <div class="bottom-actions">
+        <button class="btn-back-text" [routerLink]="['/ruta', materiaId(), capituloId()]">← Volver al capítulo</button>
+        <button class="btn-primary-lg" (click)="goToTest()">Comenzar test →</button>
+      </div>
     </div>
   `,
   styles: [`
@@ -103,12 +95,8 @@ import { PaesContentService } from './services/paes-content.service';
     .context-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-secondary); }
     .dot { opacity: 0.4; }
 
-    /* CTA */
-    .cta-block { background: linear-gradient(135deg, rgba(133,92,214,0.08), rgba(133,92,214,0.04)); border: 2px solid rgba(133,92,214,0.15); border-radius: 16px; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-    .cta-info { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
-    .cta-icon { font-size: 2rem; flex-shrink: 0; }
-    .cta-info strong { display: block; font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
-    .cta-info p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; }
+    /* CTA / BOTTOM */
+    .bottom-actions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .btn-primary-lg { padding: 0.9rem 2rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; white-space: nowrap; }
     .btn-primary-lg:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
 
@@ -116,8 +104,8 @@ import { PaesContentService } from './services/paes-content.service';
     .btn-back-text:hover { color: var(--accent-primary); }
 
     @media (max-width: 640px) {
-      .cta-block { flex-direction: column; }
-      .btn-primary-lg { width: 100%; text-align: center; }
+      .bottom-actions { flex-direction: column; align-items: stretch; }
+      .btn-primary-lg { text-align: center; }
     }
   `]
 })
