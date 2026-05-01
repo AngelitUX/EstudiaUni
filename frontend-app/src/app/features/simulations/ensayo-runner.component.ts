@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Pregunta } from '../../core/services/firestore.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 interface Question {
   id: string;
@@ -455,6 +456,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private firestoreService = inject(FirestoreService);
+  private dashboardService = inject(DashboardService);
 
   examId = '';
   intentoId = '';
@@ -595,6 +597,23 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy {
     if (this.timerInterval) clearInterval(this.timerInterval);
     
     const timeSpent = Math.floor((Date.now() - this.startTime) / 1000);
+    
+    // Calculate score for dashboard logging
+    const correctAnswers = this.questions.filter(q => 
+      this.answers[q.id] === q.correctAnswer
+    ).length;
+    
+    // Log to dashboard service
+    try {
+      this.dashboardService.logEnsayoCompleted({
+        ensayoId: this.examId,
+        ensayoTitle: this.examTitle,
+        subject: 'matematica1',
+        correctAnswers,
+        totalQuestions: this.totalQuestions,
+        score: Math.round((correctAnswers / Math.max(this.totalQuestions, 1)) * 1000),
+      });
+    } catch { /* ignore */ }
     
     // Finalizar intento en Firestore
     if (this.intentoId) {

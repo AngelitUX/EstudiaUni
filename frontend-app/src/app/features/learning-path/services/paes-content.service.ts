@@ -1,10 +1,21 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, Injector } from '@angular/core';
 import { Materia, Capitulo, Seccion, TestPaes, SeccionProgress, TestResult, TestAnswer } from '../models/paes.models';
 import { Firestore, collection, getDocs } from '@angular/fire/firestore';
+import { DashboardService } from '../../../core/services/dashboard.service';
 
 @Injectable({ providedIn: 'root' })
 export class PaesContentService {
   private firestore = inject(Firestore);
+  private injector = inject(Injector);
+
+  // Lazy-loaded to avoid circular dependency  
+  private _dashboardService: DashboardService | null = null;
+  private get dashSvc(): DashboardService {
+    if (!this._dashboardService) {
+      this._dashboardService = this.injector.get(DashboardService);
+    }
+    return this._dashboardService;
+  }
 
   // ─── Signals de estado ───
   private _materias = signal<Materia[]>([]);
@@ -179,6 +190,21 @@ export class PaesContentService {
     this._lastTestResult.set(result);
 
     this.saveProgressToStorage();
+
+    // Log activity to dashboard
+    try {
+      const materia = this.getMateriaById(seccion?.materiaId || '');
+      this.dashSvc.logLessonCompleted({
+        seccionId,
+        title: seccion?.title || 'Lección',
+        subject: seccion?.materiaId || '',
+        subjectIcon: materia?.icon || '📚',
+        score,
+        totalCorrect,
+        totalQuestions: test.preguntas.length,
+      });
+    } catch { /* ignore */ }
+
     return result;
   }
 
