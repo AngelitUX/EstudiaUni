@@ -80,9 +80,7 @@ export interface UserProfile {
   preferredStudyTime?: 'manana' | 'tarde' | 'noche';
   notificationsEnabled?: boolean;
   theme?: 'dark' | 'light' | 'auto';
-  language?: 'es' | 'en';
   notificationIntensity?: 'baja' | 'normal' | 'alta';
-  preferredSubjects?: Array<'matematica1' | 'matematica2' | 'lenguaje' | 'ciencias' | 'historia'>;
   plan: 'free' | 'premium';
   createdAt: Timestamp;
   lastLogin: Timestamp;
@@ -201,9 +199,7 @@ export class FirestoreService {
         | 'preferredStudyTime'
         | 'notificationsEnabled'
         | 'theme'
-        | 'language'
         | 'notificationIntensity'
-        | 'preferredSubjects'
       >
     >,
   ): Promise<void> {
