@@ -13,27 +13,28 @@ import { PreguntaTest } from './models/paes.models';
       <!-- HEADER -->
       <div class="test-header">
         <div class="test-header-left">
-          <span class="test-label">EVALUACIÓN</span>
-          <h2>Test — {{ seccion()?.title }}</h2>
+          <span class="test-label">TEST</span>
+          <h2>{{ seccion()?.title }}</h2>
         </div>
-        <div class="test-timer">⏱ {{ formatTime(timer()) }}</div>
+        <div class="test-timer" [class.urgent]="timer() >= 300">⏱ {{ formatTime(timer()) }}</div>
+      </div>
+
+      <!-- CONTEXTO -->
+      <div class="context-card" *ngIf="t.contexto_base">
+        <p class="context-label">📄 Lee este texto</p>
+        <p class="context-text">{{ t.contexto_base }}</p>
       </div>
 
       <!-- QUESTIONS -->
       <div class="questions-scroll">
         <div *ngFor="let p of t.preguntas; let i = index" class="question-card" [id]="'q-'+p.id">
-          <div class="question-header">
-            <span class="q-number">{{ i + 1 }}. {{ p.enunciado }}</span>
-          </div>
-
-          <p class="q-instruction">▶ Selecciona 1 opción</p>
-          <p class="q-mark">Marca una sola alternativa.</p>
+          <p class="q-number"><span class="q-badge">{{ i + 1 }}</span> {{ p.enunciado }}</p>
 
           <div class="options-list">
             <label *ngFor="let key of optionKeys" class="option-item"
               [class.selected]="answers().get(p.id) === key"
               (click)="selectAnswer(p.id, key)">
-              <span class="option-radio" [class.checked]="answers().get(p.id) === key"></span>
+              <span class="option-letter" [class.checked]="answers().get(p.id) === key">{{ key }}</span>
               <span class="option-text">{{ p.alternativas[key] }}</span>
             </label>
           </div>
@@ -42,65 +43,60 @@ import { PreguntaTest } from './models/paes.models';
 
       <!-- FOOTER -->
       <div class="test-footer">
-        <div class="footer-left">
-          <span class="footer-timer">Tiempo restante</span>
-          <strong>{{ formatTime(timer()) }}</strong>
-        </div>
-        <div class="footer-center">
+        <div class="footer-progress">
           <div class="footer-progress-bar">
             <div class="footer-progress-fill" [style.width.%]="answeredPct()"></div>
           </div>
+          <span class="footer-pct">{{ answeredCount() }}/{{ totalQuestions() }} respondidas</span>
         </div>
-        <div class="footer-right">
-          <span>Respondidas <strong>{{ answeredCount() }} / {{ totalQuestions() }}</strong></span>
-          <button class="btn-submit" (click)="submitTest()" [disabled]="submitting()">
-            {{ submitting() ? 'Enviando...' : 'Enviar respuestas' }}
-          </button>
-        </div>
+        <button class="btn-submit" (click)="submitTest()" [disabled]="submitting() || answeredCount() === 0">
+          {{ submitting() ? 'Enviando...' : 'Enviar →' }}
+        </button>
       </div>
     </div>
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
-    .test-page { max-width: 800px; margin: 0 auto; padding: 1.5rem 1.5rem 7rem; }
+    .test-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 7rem; }
 
-    .test-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
-    .test-label { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-primary); background: rgba(133,92,214,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; margin-bottom: 0.3rem; }
-    .test-header h2 { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin: 0; }
-    .test-timer { font-family: monospace; font-size: 1.1rem; background: rgba(133,92,214,0.08); padding: 0.5rem 1rem; border-radius: 10px; color: var(--accent-primary); font-weight: 600; border: 1px solid rgba(133,92,214,0.2); }
+    /* HEADER */
+    .test-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
+    .test-label { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-primary); background: rgba(133,92,214,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; margin-bottom: 0.3rem; }
+    .test-header h2 { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .test-timer { font-family: monospace; font-size: 1rem; background: rgba(133,92,214,0.08); padding: 0.45rem 0.9rem; border-radius: 10px; color: var(--accent-primary); font-weight: 600; border: 1.5px solid rgba(133,92,214,0.2); }
+    .test-timer.urgent { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.2); }
 
-    .questions-scroll { display: flex; flex-direction: column; gap: 1.5rem; }
+    /* CONTEXT */
+    .context-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid var(--accent-primary); }
+    .context-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-primary); margin: 0 0 0.75rem; }
+    .context-text { font-size: 0.97rem; color: var(--text-primary); line-height: 1.8; margin: 0; font-style: italic; }
 
-    .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 1.5rem 1.75rem; }
-    .question-header { margin-bottom: 0.75rem; }
-    .q-number { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; }
-    .q-instruction { font-size: 0.8rem; color: var(--accent-primary); font-weight: 600; margin: 0 0 0.15rem; }
-    .q-mark { font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 1rem; font-style: italic; }
+    /* QUESTIONS */
+    .questions-scroll { display: flex; flex-direction: column; gap: 1.25rem; }
+    .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 1.5rem; }
+    .q-number { display: flex; align-items: flex-start; gap: 0.75rem; font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.25rem; }
+    .q-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; margin-top: 0.1rem; }
 
     .options-list { display: flex; flex-direction: column; gap: 0.5rem; }
-    .option-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border: 2px solid rgba(0,0,0,0.06); border-radius: 12px; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; color: var(--text-primary); }
+    .option-item { display: flex; align-items: center; gap: 0.9rem; padding: 0.85rem 1rem; border: 2px solid rgba(0,0,0,0.06); border-radius: 12px; cursor: pointer; transition: all 0.15s; }
     .option-item:hover { border-color: rgba(133,92,214,0.3); background: rgba(133,92,214,0.03); }
     .option-item.selected { border-color: var(--accent-primary); background: rgba(133,92,214,0.06); }
-    .option-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-    .option-radio.checked { border-color: var(--accent-primary); background: var(--accent-primary); }
-    .option-radio.checked::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
-    .option-text { flex: 1; line-height: 1.4; }
+    .option-letter { width: 28px; height: 28px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.12); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; color: var(--text-secondary); transition: all 0.15s; }
+    .option-letter.checked { border-color: var(--accent-primary); background: var(--accent-primary); color: #fff; }
+    .option-text { flex: 1; font-size: 0.93rem; color: var(--text-primary); line-height: 1.4; }
 
     /* FOOTER */
-    .test-footer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid rgba(0,0,0,0.06); padding: 0.75rem 2rem; display: flex; align-items: center; gap: 1.5rem; z-index: 50; }
-    .footer-left { display: flex; flex-direction: column; font-size: 0.8rem; color: var(--text-secondary); }
-    .footer-left strong { font-size: 1.1rem; color: var(--text-primary); }
-    .footer-center { flex: 1; }
-    .footer-progress-bar { height: 6px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
+    .test-footer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid rgba(0,0,0,0.06); padding: 0.85rem 2rem; display: flex; align-items: center; gap: 1.5rem; z-index: 50; }
+    .footer-progress { flex: 1; display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .footer-progress-bar { flex: 1; height: 6px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
     .footer-progress-fill { height: 100%; background: var(--accent-primary); border-radius: 99px; transition: width 0.3s; }
-    .footer-right { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; }
-    .btn-submit { padding: 0.7rem 1.5rem; border-radius: 10px; border: none; background: #ef4444; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 3px 0 #dc2626; transition: all 0.2s; }
-    .btn-submit:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #dc2626; }
-    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .footer-pct { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+    .btn-submit { padding: 0.7rem 1.5rem; border-radius: 10px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 3px 0 #6b46b8; transition: all 0.2s; white-space: nowrap; }
+    .btn-submit:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #6b46b8; }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
     @media (max-width: 640px) {
-      .test-footer { flex-wrap: wrap; padding: 0.75rem 1rem; gap: 0.75rem; }
-      .footer-center { width: 100%; order: -1; }
+      .test-footer { padding: 0.75rem 1rem; gap: 0.75rem; }
     }
   `]
 })
