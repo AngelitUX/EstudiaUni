@@ -1,4 +1,4 @@
-import { Component, inject, HostListener } from '@angular/core';
+import { Component, inject, HostListener, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -41,7 +41,7 @@ import { Router, RouterModule } from '@angular/router';
       </div>
     </nav>
 
-    <div class="home-container">
+    <div class="home-container" [class.animations-ready]="animationsReady">
       <!-- HERO SECTION -->
       <section class="hero-section">
         <div class="hero-content">
@@ -112,7 +112,7 @@ import { Router, RouterModule } from '@angular/router';
       </section>
 
       <!-- UNIVERSITY LOGOS CAROUSEL -->
-      <section class="logos-section">
+      <section class="logos-section section-fade logos-fade">
         <p class="logos-title">Nuestros estudiantes han ingresado a:</p>
         <div class="logos-carousel">
           <div class="logos-track">
@@ -138,7 +138,7 @@ import { Router, RouterModule } from '@angular/router';
       </section>
 
       <!-- FEATURES BENTO BOX -->
-      <section id="features" class="features-section">
+      <section id="features" class="features-section section-fade features-fade">
         <h2 class="section-title">¿Por qué <span class="text-gradient">EstudiaUni</span>?</h2>
         
         <div class="bento-grid">
@@ -195,7 +195,7 @@ import { Router, RouterModule } from '@angular/router';
       </section>
 
       <!-- VIDEOS SECTION -->
-      <section class="videos-section">
+      <section class="videos-section section-fade videos-fade">
         <h2 class="section-title">Mira cómo <span class="text-gradient">funciona</span></h2>
         
         <div class="videos-grid">
@@ -226,7 +226,7 @@ import { Router, RouterModule } from '@angular/router';
       </section>
 
       <!-- TESTIMONIALS SECTION -->
-      <section id="testimonials" class="testimonials-section">
+      <section id="testimonials" class="testimonials-section section-fade testimonials-fade">
         <h2 class="section-title">Lo que dicen nuestros <span class="text-gradient">estudiantes</span></h2>
         
         <div class="testimonials-grid">
@@ -290,7 +290,7 @@ import { Router, RouterModule } from '@angular/router';
       </section>
 
       <!-- PRICING SECTION -->
-      <section id="pricing" class="pricing-section">
+      <section id="pricing" class="pricing-section section-fade pricing-fade">
         <h2 class="section-title">Planes que se adaptan a ti</h2>
         <p class="section-subtitle">Comienza gratis y actualiza cuando quieras</p>
         
@@ -325,7 +325,7 @@ import { Router, RouterModule } from '@angular/router';
       </section>
 
       <!-- FINAL CTA -->
-      <section class="cta-section">
+      <section class="cta-section section-fade cta-fade">
         <div class="cta-content glass-card">
           <h2>¿Listo para mejorar tu puntaje?</h2>
           <p>Únete a miles de estudiantes preparándose con EstudiaUni</p>
@@ -355,6 +355,11 @@ import { Router, RouterModule } from '@angular/router';
   styles: [`
     /* ===== VARIABLES & BASE ===== */
     .home-container { min-height: 100vh; }
+    .section-fade {
+      opacity: 0;
+      transform: translateY(24px);
+      will-change: transform, opacity;
+    }
     .w-full { width: 100%; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
@@ -470,6 +475,8 @@ import { Router, RouterModule } from '@angular/router';
       font-size: 0.9rem;
       font-weight: 700;
       margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(-14px);
     }
     .hero-title {
       font-family: var(--font-heading);
@@ -477,6 +484,8 @@ import { Router, RouterModule } from '@angular/router';
       font-weight: 800;
       line-height: 1.1;
       margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(18px);
     }
     .hero-subtitle {
       font-size: 1.3rem;
@@ -484,6 +493,8 @@ import { Router, RouterModule } from '@angular/router';
       max-width: 700px;
       margin: 0 auto 3rem;
       line-height: 1.6;
+      opacity: 0;
+      transform: translateY(18px);
     }
     .hero-actions {
       display: flex;
@@ -491,6 +502,8 @@ import { Router, RouterModule } from '@angular/router';
       justify-content: center;
       flex-wrap: wrap;
       margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(18px);
     }
     .btn-large { padding: 1rem 2.5rem; font-size: 1.1rem; }
     .btn-outline {
@@ -520,7 +533,11 @@ import { Router, RouterModule } from '@angular/router';
       flex-wrap: wrap;
       margin-bottom: 4rem;
     }
-    .stat-item { text-align: center; }
+    .stat-item {
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
     .stat-number {
       font-size: 2.5rem;
       font-weight: 800;
@@ -552,7 +569,25 @@ import { Router, RouterModule } from '@angular/router';
       background: white;
       border: 2px solid var(--glass-border);
       box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(18px);
     }
+    .home-container.animations-ready .hero-badge { animation: fadeInDown 0.8s ease both; }
+    .home-container.animations-ready .hero-title { animation: fadeInUp 0.95s ease 0.08s both; }
+    .home-container.animations-ready .hero-subtitle { animation: fadeInUp 0.95s ease 0.22s both; }
+    .home-container.animations-ready .hero-actions { animation: fadeInUp 0.95s ease 0.36s both; }
+    .home-container.animations-ready .stat-item { animation: popIn 0.8s ease both; }
+    .home-container.animations-ready .stat-item:nth-child(1) { animation-delay: 0.46s; }
+    .home-container.animations-ready .stat-item:nth-child(2) { animation-delay: 0.56s; }
+    .home-container.animations-ready .stat-item:nth-child(3) { animation-delay: 0.66s; }
+    .home-container.animations-ready .mockup-container { animation: fadeInUp 0.95s ease 0.5s both; }
+    .home-container.animations-ready .section-fade { animation: fadeInUp 0.8s ease both; }
+    .home-container.animations-ready .logos-fade { animation-delay: 0.15s; }
+    .home-container.animations-ready .features-fade { animation-delay: 0.22s; }
+    .home-container.animations-ready .videos-fade { animation-delay: 0.3s; }
+    .home-container.animations-ready .testimonials-fade { animation-delay: 0.38s; }
+    .home-container.animations-ready .pricing-fade { animation-delay: 0.46s; }
+    .home-container.animations-ready .cta-fade { animation-delay: 0.54s; }
     .mockup-header {
       display: flex;
       align-items: center;
@@ -661,6 +696,18 @@ import { Router, RouterModule } from '@angular/router';
     @keyframes scroll-logos {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.9) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     /* ===== BENTO BOX FEATURES ===== */
@@ -1082,12 +1129,32 @@ import { Router, RouterModule } from '@angular/router';
       .mockup-body { min-height: 200px; }
       .mockup-sidebar { display: none; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-badge,
+      .hero-title,
+      .hero-subtitle,
+      .hero-actions,
+      .stat-item,
+      .mockup-container,
+      .section-fade {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+      }
+    }
   `]
 })
-export class HomeComponent {
+export class HomeComponent implements AfterViewInit {
   private router = inject(Router);
   isScrolled = false;
   mobileMenuOpen = false;
+  animationsReady = false;
+
+  ngAfterViewInit() {
+    requestAnimationFrame(() => {
+      this.animationsReady = true;
+    });
+  }
 
   @HostListener('window:scroll')
   onScroll() {

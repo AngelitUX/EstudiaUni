@@ -22,6 +22,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
+  {
+    path: 'profile',
+    loadComponent: () => import('./features/profile/profile-settings.component').then(m => m.ProfileSettingsComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./features/profile/profile-settings.component').then(m => m.ProfileSettingsComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   { path: 'modules', component: ModulesListComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'topic/:moduleId/:topicId', component: TopicDetailComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'simulation/:attemptId', component: SimulationRunnerComponent, canActivate: [authGuard, emailVerifiedGuard] },
