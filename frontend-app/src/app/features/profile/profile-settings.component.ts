@@ -83,8 +83,9 @@ import { ToastService } from '../../core/services/toast.service';
 
       <section class="card glass" *ngIf="isSettingsMode">
         <h2>Configuración</h2>
-        <p class="muted">Opciones de estudio separadas del perfil.</p>
+        <p class="muted">Personaliza tu experiencia de estudio.</p>
 
+        <h3>📚 Metas Académicas</h3>
         <div class="grid">
           <label>
             Carrera objetivo
@@ -104,6 +105,7 @@ import { ToastService } from '../../core/services/toast.service';
           </label>
         </div>
 
+        <h3>⏰ Preferencias de Estudio</h3>
         <label>
           Horario preferido
           <select [(ngModel)]="settingsForm.preferredStudyTime">
@@ -113,9 +115,69 @@ import { ToastService } from '../../core/services/toast.service';
           </select>
         </label>
 
+        <label>
+          Temas preferidos
+          <small>(Elige los temas donde quieres concentrarte)</small>
+          <div class="checkbox-group">
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="settingsForm.preferredSubjects" 
+                     [value]="'matematica1'" (change)="toggleSubject('matematica1')"/>
+              <span>Matemática PSU</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="settingsForm.preferredSubjects" 
+                     [value]="'matematica2'" (change)="toggleSubject('matematica2')"/>
+              <span>Matemática M2</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="settingsForm.preferredSubjects" 
+                     [value]="'lenguaje'" (change)="toggleSubject('lenguaje')"/>
+              <span>Lenguaje</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="settingsForm.preferredSubjects" 
+                     [value]="'ciencias'" (change)="toggleSubject('ciencias')"/>
+              <span>Ciencias</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="settingsForm.preferredSubjects" 
+                     [value]="'historia'" (change)="toggleSubject('historia')"/>
+              <span>Historia</span>
+            </label>
+          </div>
+        </label>
+
+        <h3>🎨 Interfaz</h3>
+        <label>
+          Tema visual
+          <select [(ngModel)]="settingsForm.theme">
+            <option value="dark">Oscuro</option>
+            <option value="light">Claro</option>
+            <option value="auto">Automático</option>
+          </select>
+        </label>
+
+        <label>
+          Idioma
+          <select [(ngModel)]="settingsForm.language">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+
+        <h3>🔔 Notificaciones</h3>
         <label class="switch">
           <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" />
           <span>Recordatorios activos</span>
+        </label>
+
+        <label>
+          Intensidad de recordatorios
+          <select [(ngModel)]="settingsForm.notificationIntensity" [disabled]="!settingsForm.notificationsEnabled">
+            <option value="baja">Baja (1 recordatorio/día)</option>
+            <option value="normal">Normal (2-3 recordatorios/día)</option>
+            <option value="alta">Alta (4+ recordatorios/día)</option>
+          </select>
         </label>
 
         <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">
@@ -169,6 +231,20 @@ import { ToastService } from '../../core/services/toast.service';
     h2 {
       margin: 0 0 0.35rem;
       font-size: 1.15rem;
+    }
+
+    h3 {
+      margin: 1.2rem 0 0.6rem;
+      font-size: 0.95rem;
+      color: #d1d5db;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.9rem;
+    }
+
+    h3:first-child {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
     }
 
     .muted {
@@ -302,6 +378,42 @@ import { ToastService } from '../../core/services/toast.service';
       margin: 0;
     }
 
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 0.35rem;
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.7rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      flex: 0 1 auto;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox:hover {
+      border-color: rgba(133, 92, 214, 0.5);
+      background: rgba(133, 92, 214, 0.1);
+    }
+
+    .checkbox input {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checkbox input:checked ~ span {
+      color: #c4b5fd;
+    }
+
     .primary {
       margin-top: 0.3rem;
       border: 0;
@@ -358,6 +470,10 @@ export class ProfileSettingsComponent implements OnInit {
     studyGoalMinutesPerDay: 45,
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
+    theme: 'dark' as 'dark' | 'light' | 'auto',
+    language: 'es' as 'es' | 'en',
+    notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
+    preferredSubjects: ['matematica1', 'lenguaje', 'ciencias'] as Array<'matematica1' | 'matematica2' | 'lenguaje' | 'ciencias' | 'historia'>,
   };
 
   get initial(): string {
@@ -382,6 +498,10 @@ export class ProfileSettingsComponent implements OnInit {
           this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
+          this.settingsForm.theme = profile.theme || 'dark';
+          this.settingsForm.language = profile.language || 'es';
+          this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
+          this.settingsForm.preferredSubjects = profile.preferredSubjects || ['matematica1', 'lenguaje', 'ciencias'];
         }
         this.loading = false;
       },
@@ -473,12 +593,25 @@ export class ProfileSettingsComponent implements OnInit {
         studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
+        theme: this.settingsForm.theme,
+        language: this.settingsForm.language,
+        notificationIntensity: this.settingsForm.notificationIntensity,
+        preferredSubjects: this.settingsForm.preferredSubjects,
       });
       this.toast.success('Configuración guardada.');
     } catch {
       this.toast.error('No se pudo guardar la configuración.');
     } finally {
       this.saving = false;
+    }
+  }
+
+  toggleSubject(subject: 'matematica1' | 'matematica2' | 'lenguaje' | 'ciencias' | 'historia'): void {
+    const index = this.settingsForm.preferredSubjects.indexOf(subject);
+    if (index > -1) {
+      this.settingsForm.preferredSubjects.splice(index, 1);
+    } else {
+      this.settingsForm.preferredSubjects.push(subject);
     }
   }
 }
