@@ -24,11 +24,11 @@ import { Router, RouterModule } from '@angular/router';
             <span class="nav-icon">🏠</span>
             <span class="nav-text">Inicio</span>
           </a>
-          <a class="nav-item" routerLink="/modules">
-            <span class="nav-icon">🎯</span>
-            <span class="nav-text">Práctica por Tema</span>
+          <a class="nav-item" routerLink="/ruta">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-text">Ruta de Aprendizaje</span>
           </a>
-          <a class="nav-item" routerLink="/modules">
+          <a class="nav-item" routerLink="/ensayos">
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
           </a>
@@ -60,11 +60,11 @@ import { Router, RouterModule } from '@angular/router';
               <span class="nav-icon">🏠</span>
               <span class="nav-text">Inicio</span>
             </a>
-            <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">🎯</span>
-              <span class="nav-text">Práctica por Tema</span>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🗺️</span>
+              <span class="nav-text">Ruta de Aprendizaje</span>
             </a>
-            <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
               <span class="nav-icon">📚</span>
               <span class="nav-text">Ensayos PAES</span>
             </a>
@@ -179,7 +179,7 @@ import { Router, RouterModule } from '@angular/router';
                   </div>
                 </div>
               </div>
-              <button class="btn btn-primary btn-large" routerLink="/modules">
+              <button class="btn btn-primary btn-large" routerLink="/ruta">
                 🚀 Comenzar Práctica
               </button>
             </div>
