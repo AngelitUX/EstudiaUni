@@ -46,6 +46,11 @@ export const routes: Routes = [
     canActivate: [authGuard, emailVerifiedGuard]
   },
   {
+    path: 'ruta/:materiaId',
+    loadComponent: () => import('./features/learning-path/materia-path.component').then(m => m.MateriaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
     path: 'ruta/:materiaId/:capituloId',
     loadComponent: () => import('./features/learning-path/capitulo-detail.component').then(m => m.CapituloDetailComponent),
     canActivate: [authGuard, emailVerifiedGuard]

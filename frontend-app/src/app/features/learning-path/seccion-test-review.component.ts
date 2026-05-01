@@ -10,53 +10,71 @@ import { PaesContentService } from './services/paes-content.service';
   template: `
     <div class="review-page" *ngIf="result() as r">
 
+      <!-- CONFETTI (CSS only) -->
+      <div class="confetti-container" *ngIf="r.score >= 60">
+        <div *ngFor="let c of confettiPieces" class="confetti-piece"
+          [style.left.%]="c.left"
+          [style.animationDelay]="c.delay + 's'"
+          [style.background]="c.color"></div>
+      </div>
+
       <!-- SCORE HERO -->
       <div class="score-hero" [class.passed]="r.score >= 60" [class.failed]="r.score < 60">
-        <div class="score-hero-inner">
-          <div class="score-ring">
-            <svg viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" class="ring-bg"/>
-              <circle cx="60" cy="60" r="52" class="ring-fill"
-                [style.strokeDashoffset]="327 - (327 * r.score / 100)"
-                [class.good]="r.score >= 60" [class.bad]="r.score < 60"/>
-            </svg>
-            <span class="score-pct">{{ r.score }}%</span>
+        <!-- Emoji burst -->
+        <div class="hero-emoji">{{ r.score >= 80 ? '🏆' : r.score >= 60 ? '🎉' : '💪' }}</div>
+
+        <div class="score-ring-wrap">
+          <svg viewBox="0 0 120 120" class="score-ring-svg">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="10"/>
+            <circle cx="60" cy="60" r="52" fill="none"
+              [attr.stroke]="r.score >= 60 ? '#58cc02' : '#ef4444'"
+              stroke-width="10"
+              stroke-linecap="round"
+              stroke-dasharray="327"
+              [attr.stroke-dashoffset]="327 - (327 * r.score / 100)"
+              transform="rotate(-90 60 60)"
+              class="ring-animated"/>
+          </svg>
+          <span class="score-big">{{ r.score }}%</span>
+        </div>
+
+        <h1 class="hero-title">
+          {{ r.score >= 80 ? '¡Excelente trabajo!' : r.score >= 60 ? '¡Buen trabajo!' : '¡Sigue practicando!' }}
+        </h1>
+        <p class="hero-subtitle">
+          {{ r.score >= 60 ? '¡Superaste el umbral de aprobación!' : 'Necesitas al menos 60% para avanzar.' }}
+        </p>
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat-box green">
+            <span class="sb-val">{{ r.totalCorrect }}</span>
+            <span class="sb-label">Correctas</span>
           </div>
-          <div class="score-meta">
-            <h1 class="score-title">
-              {{ r.score >= 80 ? '¡Excelente!' : r.score >= 60 ? '¡Buen trabajo!' : '¡Sigue practicando!' }}
-            </h1>
-            <p class="score-subtitle">
-              {{ r.score >= 60 ? 'Superaste el umbral de aprobación (60%)' : 'Necesitas al menos 60% para aprobar' }}
-            </p>
-            <div class="score-stats">
-              <div class="stat">
-                <span class="stat-val correct-col">{{ r.totalCorrect }}</span>
-                <span class="stat-lbl">Correctas</span>
-              </div>
-              <div class="stat-div"></div>
-              <div class="stat">
-                <span class="stat-val incorrect-col">{{ r.totalQuestions - r.totalCorrect }}</span>
-                <span class="stat-lbl">Incorrectas</span>
-              </div>
-              <div class="stat-div"></div>
-              <div class="stat">
-                <span class="stat-val">{{ r.totalQuestions }}</span>
-                <span class="stat-lbl">Total</span>
-              </div>
-            </div>
+          <div class="stat-box red">
+            <span class="sb-val">{{ r.totalQuestions - r.totalCorrect }}</span>
+            <span class="sb-label">Incorrectas</span>
+          </div>
+          <div class="stat-box neutral">
+            <span class="sb-val">{{ r.totalQuestions }}</span>
+            <span class="sb-label">Total</span>
           </div>
         </div>
 
-        <!-- ACTIONS dentro del hero -->
+        <!-- XP Badge -->
+        <div class="xp-badge" *ngIf="r.score >= 60">
+          +{{ r.totalCorrect * 10 }} XP ganados ⚡
+        </div>
+
+        <!-- Hero actions -->
         <div class="hero-actions">
-          <button class="btn-retry" (click)="retryTest()">↩ Repetir test</button>
-          <button class="btn-back-cap" (click)="goBack()">← Volver al capítulo</button>
+          <button class="btn-primary-hero" (click)="retryTest()" *ngIf="r.score < 100">↩ Repetir test</button>
+          <button class="btn-secondary-hero" (click)="goBack()">← Volver al capítulo</button>
         </div>
       </div>
 
-      <!-- REVIEW QUESTIONS -->
-      <h2 class="review-title">Revisión de respuestas</h2>
+      <!-- REVIEW SECTION -->
+      <h2 class="review-heading">📋 Revisión de respuestas</h2>
 
       <div *ngFor="let p of preguntas(); let i = index" class="review-q-card"
         [class.q-correct]="isCorrect(r, p.id)"
@@ -96,104 +114,121 @@ import { PaesContentService } from './services/paes-content.service';
         </div>
       </div>
 
-      <!-- BOTTOM ACTIONS -->
+      <!-- BOTTOM -->
       <div class="bottom-actions">
-        <button class="btn-secondary" (click)="goBack()">← Volver al capítulo</button>
-        <button class="btn-primary" (click)="retryTest()">↩ Intentar de nuevo</button>
+        <button class="btn-outline-bottom" (click)="goBack()">← Volver al capítulo</button>
+        <button class="btn-solid-bottom" (click)="retryTest()">↩ Intentar de nuevo</button>
       </div>
     </div>
 
     <div class="review-page empty" *ngIf="!result()">
       <p>No hay resultados para mostrar.</p>
-      <button class="btn-secondary" routerLink="/ruta">Volver a la ruta</button>
+      <button class="btn-outline-bottom" routerLink="/ruta">Volver a la ruta</button>
     </div>
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
-    .review-page { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+    .review-page { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem 5rem; position: relative; }
     .review-page.empty { text-align: center; padding-top: 6rem; color: var(--text-secondary); }
 
+    /* CONFETTI */
+    .confetti-container { position: fixed; top: 0; left: 0; right: 0; height: 100vh; pointer-events: none; z-index: 100; overflow: hidden; }
+    .confetti-piece { position: absolute; top: -10px; width: 10px; height: 10px; border-radius: 2px; animation: confettiFall 3.5s ease-in forwards; }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
     /* SCORE HERO */
-    .score-hero { border-radius: 20px; padding: 2rem; margin-bottom: 2.5rem; border: 2px solid; }
-    .score-hero.passed { background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(16,185,129,0.02)); border-color: rgba(16,185,129,0.25); }
-    .score-hero.failed { background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(239,68,68,0.02)); border-color: rgba(239,68,68,0.2); }
-    .score-hero-inner { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .score-hero { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 24px; padding: 2.5rem 2rem; margin-bottom: 2.5rem; text-align: center; animation: heroSlide 0.6s ease-out; }
+    .score-hero.passed { border-color: rgba(88,204,2,0.25); }
+    .score-hero.failed { border-color: rgba(239,68,68,0.2); }
+    .hero-emoji { font-size: 3rem; margin-bottom: 1rem; animation: emojiPop 0.6s ease-out 0.3s both; }
 
-    .score-ring { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
-    .score-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-    .score-ring circle { fill: none; stroke-width: 10; stroke-linecap: round; }
-    .ring-bg { stroke: rgba(0,0,0,0.07); }
-    .ring-fill { stroke-dasharray: 327; transition: stroke-dashoffset 1.2s ease; }
-    .ring-fill.good { stroke: #10b981; }
-    .ring-fill.bad { stroke: #ef4444; }
-    .score-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: var(--font-heading); font-size: 1.7rem; font-weight: 900; color: var(--text-primary); }
+    .score-ring-wrap { position: relative; width: 130px; height: 130px; margin: 0 auto 1.25rem; }
+    .score-ring-svg { width: 100%; height: 100%; }
+    .ring-animated { transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .score-big { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-heading); font-size: 2rem; font-weight: 900; color: var(--text-primary); }
 
-    .score-meta { flex: 1; min-width: 0; }
-    .score-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem; }
-    .score-subtitle { font-size: 0.88rem; color: var(--text-secondary); margin: 0 0 1.25rem; }
+    .hero-title { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.4rem; }
+    .hero-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 1.5rem; }
 
-    .score-stats { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .stat { display: flex; flex-direction: column; align-items: center; }
-    .stat-val { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
-    .stat-val.correct-col { color: #10b981; }
-    .stat-val.incorrect-col { color: #ef4444; }
-    .stat-lbl { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-    .stat-div { width: 1px; height: 30px; background: rgba(0,0,0,0.1); }
+    /* STATS */
+    .stats-row { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .stat-box { background: rgba(0,0,0,0.03); border-radius: 14px; padding: 0.75rem 1.25rem; text-align: center; min-width: 90px; }
+    .stat-box.green { background: rgba(88,204,2,0.08); }
+    .stat-box.red { background: rgba(239,68,68,0.06); }
+    .sb-val { display: block; font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .stat-box.green .sb-val { color: #3d8c00; }
+    .stat-box.red .sb-val { color: #dc2626; }
+    .stat-box.neutral .sb-val { color: var(--text-primary); }
+    .sb-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
 
-    .hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .btn-retry { padding: 0.7rem 1.4rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 3px 0 #6b46b8; transition: all 0.2s; }
-    .btn-retry:hover { transform: translateY(2px); box-shadow: 0 1px 0 #6b46b8; }
-    .btn-back-cap { padding: 0.7rem 1.4rem; border-radius: 999px; border: 2px solid rgba(0,0,0,0.1); background: #fff; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
-    .btn-back-cap:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    /* XP BADGE */
+    .xp-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1.2rem; border-radius: 999px; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 0.9rem; margin-bottom: 1.5rem; animation: xpPop 0.5s ease-out 0.8s both; box-shadow: 0 3px 0 #cc7a00; }
 
-    /* REVIEW QUESTIONS */
-    .review-title { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 1rem; }
-    .review-q-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; margin-bottom: 1.25rem; overflow: hidden; }
-    .review-q-card.q-correct { border-color: rgba(16,185,129,0.2); }
+    /* HERO ACTIONS */
+    .hero-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-primary-hero { padding: 0.75rem 1.5rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
+    .btn-primary-hero:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+    .btn-secondary-hero { padding: 0.75rem 1.5rem; border-radius: 999px; border: 2px solid rgba(0,0,0,0.1); background: #fff; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary-hero:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    /* REVIEW HEADING */
+    .review-heading { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 1rem; }
+
+    /* REVIEW CARDS */
+    .review-q-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 18px; margin-bottom: 1rem; overflow: hidden; animation: cardSlide 0.4s ease-out both; }
+    .review-q-card.q-correct { border-color: rgba(88,204,2,0.2); }
     .review-q-card.q-wrong { border-color: rgba(239,68,68,0.15); }
 
     .rq-status-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-    .q-correct .rq-status-bar { background: rgba(16,185,129,0.08); color: #10b981; }
-    .q-wrong .rq-status-bar { background: rgba(239,68,68,0.07); color: #ef4444; }
-    .rq-status-icon { font-size: 1rem; }
+    .q-correct .rq-status-bar { background: rgba(88,204,2,0.08); color: #3d8c00; }
+    .q-wrong .rq-status-bar { background: rgba(239,68,68,0.06); color: #ef4444; }
 
-    .rq-enunciado { display: flex; align-items: flex-start; gap: 0.75rem; font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; margin: 0; padding: 1rem 1.25rem 0.75rem; }
+    .rq-enunciado { display: flex; align-items: flex-start; gap: 0.75rem; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; margin: 0; padding: 1rem 1.25rem 0.75rem; }
     .rq-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; margin-top: 0.15rem; }
 
     .rq-image-container { margin: 0 1.25rem 1rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
     .rq-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
 
     .rq-options { display: flex; flex-direction: column; gap: 0.4rem; padding: 0 1.25rem 1rem; }
-    .rq-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.9rem; border: 2px solid rgba(0,0,0,0.04); border-radius: 10px; font-size: 0.9rem; transition: all 0.15s; }
-    .rq-option.correct-answer { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.06); }
+    .rq-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.9rem; border: 2px solid rgba(0,0,0,0.04); border-radius: 12px; font-size: 0.88rem; transition: all 0.15s; }
+    .rq-option.correct-answer { border-color: rgba(88,204,2,0.4); background: rgba(88,204,2,0.06); }
     .rq-option.wrong-selected { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.05); }
-    .rq-option.neutral { opacity: 0.5; }
-    .rq-letter { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; border: 2px solid rgba(0,0,0,0.1); color: var(--text-secondary); flex-shrink: 0; }
-    .rq-letter.letter-green { border-color: #10b981; background: #10b981; color: #fff; }
+    .rq-option.neutral { opacity: 0.45; }
+    .rq-letter { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; border: 2px solid rgba(0,0,0,0.1); color: var(--text-secondary); flex-shrink: 0; }
+    .rq-letter.letter-green { border-color: #58cc02; background: #58cc02; color: #fff; }
     .rq-letter.letter-red { border-color: #ef4444; background: #ef4444; color: #fff; }
-    .rq-text { flex: 1; color: var(--text-primary); }
-    .rq-tag { font-size: 0.72rem; font-weight: 700; white-space: nowrap; padding: 0.15rem 0.5rem; border-radius: 5px; }
-    .correct-tag { color: #10b981; background: rgba(16,185,129,0.1); }
+    .rq-text { flex: 1; color: var(--text-primary); line-height: 1.4; }
+    .rq-tag { font-size: 0.7rem; font-weight: 700; white-space: nowrap; padding: 0.15rem 0.5rem; border-radius: 6px; }
+    .correct-tag { color: #3d8c00; background: rgba(88,204,2,0.12); }
     .wrong-tag { color: #ef4444; background: rgba(239,68,68,0.1); }
 
     .explanation-box { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem 1.25rem; border-top: 1px solid rgba(0,0,0,0.04); }
-    .explanation-box.exp-success { background: rgba(16,185,129,0.04); }
+    .explanation-box.exp-success { background: rgba(88,204,2,0.04); }
     .explanation-box.exp-error { background: rgba(255,193,7,0.05); }
     .exp-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
     .explanation-box h4 { font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; margin: 0 0 0.3rem; color: var(--text-primary); }
-    .explanation-box p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+    .explanation-box p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
 
     /* BOTTOM */
     .bottom-actions { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
-    .btn-secondary { padding: 0.8rem 1.5rem; border-radius: 999px; border: 2px solid rgba(0,0,0,0.08); background: #fff; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
-    .btn-secondary:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-    .btn-primary { padding: 0.8rem 1.5rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
-    .btn-primary:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+    .btn-outline-bottom { padding: 0.8rem 1.5rem; border-radius: 999px; border: 2px solid rgba(0,0,0,0.08); background: #fff; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .btn-outline-bottom:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .btn-solid-bottom { padding: 0.8rem 1.5rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
+    .btn-solid-bottom:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+
+    @keyframes heroSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes emojiPop { from { transform: scale(0); } to { transform: scale(1); } }
+    @keyframes xpPop { from { transform: scale(0) rotate(-10deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+    @keyframes cardSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (max-width: 600px) {
-      .score-hero-inner { flex-direction: column; align-items: center; text-align: center; }
-      .score-stats { justify-content: center; }
-      .hero-actions { justify-content: center; }
+      .score-hero { padding: 1.75rem 1.25rem; }
+      .hero-title { font-size: 1.3rem; }
+      .stats-row { gap: 0.6rem; }
+      .stat-box { min-width: 75px; padding: 0.6rem 0.9rem; }
       .bottom-actions { flex-direction: column; }
     }
   `]
@@ -213,6 +248,12 @@ export class SeccionTestReviewComponent {
     return test?.preguntas || [];
   });
 
+  confettiPieces = Array.from({ length: 40 }, () => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 2,
+    color: ['#58cc02', '#ffc800', '#855cd6', '#ff9600', '#1cb0f6', '#ef4444'][Math.floor(Math.random() * 6)]
+  }));
+
   constructor() {
     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
   }
@@ -225,10 +266,6 @@ export class SeccionTestReviewComponent {
   isCorrect(r: any, preguntaId: number): boolean {
     const a = r.answers.find((a: any) => a.preguntaId === preguntaId);
     return a?.isCorrect || false;
-  }
-
-  getOmitted(r: any): number {
-    return r.answers.filter((a: any) => !a.selectedOption).length;
   }
 
   goBack() {
@@ -244,4 +281,3 @@ export class SeccionTestReviewComponent {
     this.router.navigate(['/test', this.seccionId()]);
   }
 }
-
