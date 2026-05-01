@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { updateProfile } from 'firebase/auth';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-profile-settings',
@@ -83,8 +84,9 @@ import { ToastService } from '../../core/services/toast.service';
 
       <section class="card glass" *ngIf="isSettingsMode">
         <h2>Configuración</h2>
-        <p class="muted">Opciones de estudio separadas del perfil.</p>
+        <p class="muted">Personaliza tu experiencia de estudio.</p>
 
+        <h3>📚 Metas Académicas</h3>
         <div class="grid">
           <label>
             Carrera objetivo
@@ -104,18 +106,39 @@ import { ToastService } from '../../core/services/toast.service';
           </label>
         </div>
 
+        <h3>⏰ Preferencias de Estudio</h3>
         <label>
           Horario preferido
           <select [(ngModel)]="settingsForm.preferredStudyTime">
-            <option value="manana">Mañana</option>
-            <option value="tarde">Tarde</option>
-            <option value="noche">Noche</option>
+            <option value="manana">Mañana (7:00 - 11:00)</option>
+            <option value="tarde">Tarde (14:00 - 18:00)</option>
+            <option value="noche">Noche (20:00 - 23:00)</option>
           </select>
         </label>
 
+        <h3>🎨 Interfaz</h3>
+        <label>
+          Tema visual
+          <select [(ngModel)]="settingsForm.theme">
+            <option value="dark">Oscuro</option>
+            <option value="light">Claro</option>
+            <option value="auto">Automático</option>
+          </select>
+        </label>
+
+        <h3>🔔 Notificaciones</h3>
         <label class="switch">
-          <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" />
+          <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" (change)="onNotificationsToggle()" />
           <span>Recordatorios activos</span>
+        </label>
+
+        <label>
+          Intensidad de recordatorios
+          <select [(ngModel)]="settingsForm.notificationIntensity" [disabled]="!settingsForm.notificationsEnabled">
+            <option value="baja">Baja (cada 4 horas)</option>
+            <option value="normal">Normal (cada 2 horas)</option>
+            <option value="alta">Alta (cada 45 minutos)</option>
+          </select>
         </label>
 
         <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">
@@ -169,6 +192,20 @@ import { ToastService } from '../../core/services/toast.service';
     h2 {
       margin: 0 0 0.35rem;
       font-size: 1.15rem;
+    }
+
+    h3 {
+      margin: 1.2rem 0 0.6rem;
+      font-size: 0.95rem;
+      color: #d1d5db;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.9rem;
+    }
+
+    h3:first-child {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
     }
 
     .muted {
@@ -329,11 +366,12 @@ import { ToastService } from '../../core/services/toast.service';
     }
   `],
 })
-export class ProfileSettingsComponent implements OnInit {
+export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
 
   isSettingsMode = false;
   loading = true;
@@ -358,6 +396,8 @@ export class ProfileSettingsComponent implements OnInit {
     studyGoalMinutesPerDay: 45,
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
+    theme: 'dark' as 'dark' | 'light' | 'auto',
+    notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
   };
 
   get initial(): string {
@@ -382,6 +422,8 @@ export class ProfileSettingsComponent implements OnInit {
           this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
+          this.settingsForm.theme = profile.theme || 'dark';
+          this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
         }
         this.loading = false;
       },
@@ -473,6 +515,8 @@ export class ProfileSettingsComponent implements OnInit {
         studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
+        theme: this.settingsForm.theme,
+        notificationIntensity: this.settingsForm.notificationIntensity,
       });
       this.toast.success('Configuración guardada.');
     } catch {
@@ -480,5 +524,23 @@ export class ProfileSettingsComponent implements OnInit {
     } finally {
       this.saving = false;
     }
+  }
+
+  onNotificationsToggle(): void {
+    if (this.settingsForm.notificationsEnabled) {
+      this.notificationService.startReminders({
+        preferredStudyTime: this.settingsForm.preferredStudyTime,
+        notificationIntensity: this.settingsForm.notificationIntensity,
+        notificationsEnabled: true,
+      });
+      this.toast.success('Recordatorios activados');
+    } else {
+      this.notificationService.stopReminders();
+      this.toast.info('Recordatorios desactivados');
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.notificationService.stopReminders();
   }
 }

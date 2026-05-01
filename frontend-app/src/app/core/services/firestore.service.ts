@@ -79,6 +79,8 @@ export interface UserProfile {
   studyGoalMinutesPerDay?: number;
   preferredStudyTime?: 'manana' | 'tarde' | 'noche';
   notificationsEnabled?: boolean;
+  theme?: 'dark' | 'light' | 'auto';
+  notificationIntensity?: 'baja' | 'normal' | 'alta';
   plan: 'free' | 'premium';
   createdAt: Timestamp;
   lastLogin: Timestamp;
@@ -196,6 +198,8 @@ export class FirestoreService {
         | 'studyGoalMinutesPerDay'
         | 'preferredStudyTime'
         | 'notificationsEnabled'
+        | 'theme'
+        | 'notificationIntensity'
       >
     >,
   ): Promise<void> {
