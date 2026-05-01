@@ -18,65 +18,95 @@ import { PaesContentService } from './services/paes-content.service';
         <span class="current">{{ cap.title }}</span>
       </nav>
 
-      <!-- HEADER CARD -->
-      <div class="cap-header-card">
-        <div class="cap-header-top">
-          <div class="cap-header-text">
-            <h1>{{ cap.title }}</h1>
-            <p class="cap-rule">Estudia y luego mide tu nivel. <strong>Apruebas con 60%.</strong></p>
-          </div>
-          <button *ngIf="cap.pdfUrl" class="btn-read" (click)="openPdf(cap.pdfUrl!)">
-            📖 Leer capítulo
-          </button>
+      <!-- HERO CARD -->
+      <div class="cap-hero">
+        <div class="cap-hero-badge">
+          <span class="badge-icon">📘</span>
         </div>
-        <div class="cap-intro">
-          <div class="intro-bar"></div>
-          <div>
-            <h3>Introducción</h3>
-            <p>{{ cap.introduccion }}</p>
+        <div class="cap-hero-text">
+          <h1>{{ cap.title }}</h1>
+          <p class="cap-intro-text">{{ cap.introduccion }}</p>
+        </div>
+        <div class="cap-hero-stats">
+          <div class="stat-ring">
+            <svg viewBox="0 0 40 40" class="ring-svg">
+              <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4"/>
+              <circle cx="20" cy="20" r="16" fill="none"
+                [attr.stroke]="capPct() >= 100 ? '#58cc02' : '#855cd6'"
+                stroke-width="4"
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="100.53"
+                [attr.stroke-dashoffset]="100.53 - (100.53 * capPct() / 100)"
+                transform="rotate(-90 20 20)"/>
+            </svg>
+            <span class="ring-pct">{{ capPct() }}%</span>
           </div>
+          <button *ngIf="cap.pdfUrl" class="btn-pdf" (click)="openPdf(cap.pdfUrl!)">📖 Leer material</button>
         </div>
       </div>
 
-      <!-- SECCIONES -->
-      <div class="secciones-list">
-        <div *ngFor="let sec of cap.secciones; let i = index"
-          class="seccion-card"
-          [class.completed]="getProgress(sec.id).completed"
-          [class.attempted]="getProgress(sec.id).attempts > 0 && !getProgress(sec.id).completed">
+      <!-- RULE -->
+      <div class="rule-bar">
+        <span class="rule-icon">🎯</span>
+        <span>Apruebas cada lección con <strong>60%</strong> o más</span>
+      </div>
 
-          <div class="seccion-icon">
-            <span *ngIf="getProgress(sec.id).completed">⭐</span>
-            <span *ngIf="!getProgress(sec.id).completed && getProgress(sec.id).attempts > 0">🔄</span>
-            <span *ngIf="getProgress(sec.id).attempts === 0">☆</span>
-          </div>
+      <!-- LECCIONES PATH -->
+      <div class="lessons-path">
+        <div *ngFor="let sec of cap.secciones; let i = index; let last = last" class="lesson-row">
+          <!-- Vertical connector -->
+          <div class="lesson-connector" *ngIf="!last"
+            [class.done]="getProgress(sec.id).completed"></div>
 
-          <div class="seccion-body">
-            <h3>{{ sec.title }}</h3>
-            <div class="seccion-progress-bar">
-              <div class="seccion-progress-fill"
-                [style.width.%]="getProgress(sec.id).bestScore"
-                [class.low]="getProgress(sec.id).bestScore > 0 && getProgress(sec.id).bestScore < 60"
-                [class.good]="getProgress(sec.id).bestScore >= 60">
+          <div class="lesson-node" (click)="goToSeccion(sec.id)"
+            [class.completed]="getProgress(sec.id).completed"
+            [class.attempted]="getProgress(sec.id).attempts > 0 && !getProgress(sec.id).completed"
+            [class.current]="isCurrentLesson(i)">
+
+            <!-- Circle with SVG ring -->
+            <div class="lesson-circle-wrap">
+              <svg viewBox="0 0 52 52" class="lesson-ring">
+                <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4"/>
+                <circle cx="26" cy="26" r="22" fill="none"
+                  [attr.stroke]="getProgress(sec.id).completed ? '#58cc02' : getProgress(sec.id).attempts > 0 ? '#ff9600' : 'transparent'"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  [attr.stroke-dasharray]="138.23"
+                  [attr.stroke-dashoffset]="138.23 - (138.23 * getProgress(sec.id).bestScore / 100)"
+                  transform="rotate(-90 26 26)"/>
+              </svg>
+              <div class="lesson-circle-inner"
+                [class.done]="getProgress(sec.id).completed"
+                [class.in-progress]="getProgress(sec.id).attempts > 0 && !getProgress(sec.id).completed"
+                [class.is-current]="isCurrentLesson(i)">
+                <span *ngIf="getProgress(sec.id).completed">⭐</span>
+                <span *ngIf="!getProgress(sec.id).completed && getProgress(sec.id).attempts > 0">🔄</span>
+                <span *ngIf="getProgress(sec.id).attempts === 0 && isCurrentLesson(i)">🔥</span>
+                <span *ngIf="getProgress(sec.id).attempts === 0 && !isCurrentLesson(i)">{{ i + 1 }}</span>
               </div>
             </div>
-            <div class="seccion-meta">
-              <span *ngIf="getProgress(sec.id).attempts > 0">
-                Mejor: {{ getProgress(sec.id).correctAnswers }}/{{ getProgress(sec.id).totalQuestions }}
-                ({{ getProgress(sec.id).bestScore }}%)
-              </span>
-              <span *ngIf="getProgress(sec.id).attempts === 0" class="hint">
-                Completa el test de la lección
-              </span>
-              <span *ngIf="getProgress(sec.id).lastAttemptDate" class="date">
-                {{ formatDate(getProgress(sec.id).lastAttemptDate!) }}
-              </span>
-            </div>
-          </div>
 
-          <button class="btn-go" (click)="goToSeccion(sec.id)">
-            Ir a la lección
-          </button>
+            <!-- Info -->
+            <div class="lesson-info">
+              <h3>{{ sec.title }}</h3>
+              <div class="lesson-meta">
+                <span *ngIf="getProgress(sec.id).attempts > 0" class="score-tag"
+                  [class.pass]="getProgress(sec.id).completed"
+                  [class.fail]="!getProgress(sec.id).completed">
+                  {{ getProgress(sec.id).bestScore }}%
+                </span>
+                <span *ngIf="getProgress(sec.id).attempts === 0" class="hint-tag">
+                  {{ sec.test.preguntas.length }} preguntas
+                </span>
+                <span *ngIf="getProgress(sec.id).lastAttemptDate" class="date-tag">
+                  {{ formatDate(getProgress(sec.id).lastAttemptDate!) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="lesson-arrow">→</div>
+          </div>
         </div>
       </div>
 
@@ -85,7 +115,7 @@ import { PaesContentService } from './services/paes-content.service';
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
-    .cap-page { max-width: 860px; margin: 0 auto; padding: 1.5rem 1.5rem 4rem; }
+    .cap-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 4rem; }
 
     /* BREADCRUMB */
     .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -94,47 +124,66 @@ import { PaesContentService } from './services/paes-content.service';
     .sep { color: rgba(0,0,0,0.2); }
     .current { color: var(--text-primary); font-weight: 600; }
 
-    /* HEADER CARD */
-    .cap-header-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .cap-header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-    .cap-header-text h1 { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 700; margin: 0 0 0.3rem; color: var(--text-primary); }
-    .cap-rule { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
-    .cap-rule strong { color: var(--text-primary); }
-    .btn-read { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.7rem 1.4rem; border-radius: 10px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 3px 0 #6b46b8; transition: all 0.2s; white-space: nowrap; }
-    .btn-read:hover { transform: translateY(2px); box-shadow: 0 1px 0 #6b46b8; }
+    /* HERO */
+    .cap-hero { display: flex; align-items: flex-start; gap: 1.25rem; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 1.75rem; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .cap-hero-badge { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, rgba(133,92,214,0.1), rgba(133,92,214,0.05)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .badge-icon { font-size: 1.8rem; }
+    .cap-hero-text { flex: 1; min-width: 0; }
+    .cap-hero-text h1 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; margin: 0 0 0.5rem; color: var(--text-primary); line-height: 1.2; }
+    .cap-intro-text { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+    .cap-hero-stats { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+    .stat-ring { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+    .ring-svg { width: 100%; height: 100%; }
+    .ring-pct { position: absolute; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; color: var(--text-primary); }
+    .btn-pdf { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.5rem 0.9rem; border-radius: 10px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.78rem; cursor: pointer; box-shadow: 0 3px 0 #6b46b8; transition: all 0.2s; white-space: nowrap; }
+    .btn-pdf:hover { transform: translateY(2px); box-shadow: 0 1px 0 #6b46b8; }
 
-    .cap-intro { display: flex; gap: 1rem; background: rgba(133,92,214,0.04); border-radius: 12px; padding: 1.25rem; }
-    .intro-bar { width: 4px; background: var(--accent-primary); border-radius: 99px; flex-shrink: 0; }
-    .cap-intro h3 { font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin: 0 0 0.4rem; color: var(--text-primary); }
-    .cap-intro p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+    /* RULE */
+    .rule-bar { display: flex; align-items: center; gap: 0.6rem; background: rgba(88,204,2,0.08); border: 1px solid rgba(88,204,2,0.2); border-radius: 12px; padding: 0.75rem 1.15rem; margin-bottom: 2rem; font-size: 0.88rem; color: var(--text-secondary); }
+    .rule-icon { font-size: 1.1rem; }
+    .rule-bar strong { color: var(--text-primary); }
 
-    /* SECCIONES */
-    .secciones-list { display: flex; flex-direction: column; gap: 1rem; }
-    .seccion-card { display: flex; align-items: center; gap: 1rem; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; padding: 1.25rem 1.5rem; transition: all 0.2s; }
-    .seccion-card:hover { border-color: rgba(133,92,214,0.3); box-shadow: 0 4px 12px rgba(133,92,214,0.08); }
-    .seccion-card.completed { border-color: rgba(16,185,129,0.3); }
-    .seccion-card.attempted { border-color: rgba(255,150,0,0.3); }
-    .seccion-icon { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.03); border-radius: 50%; flex-shrink: 0; }
-    .seccion-body { flex: 1; min-width: 0; }
-    .seccion-body h3 { font-family: var(--font-heading); font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-primary); }
-    .seccion-progress-bar { height: 6px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; margin-bottom: 0.35rem; }
-    .seccion-progress-fill { height: 100%; border-radius: 99px; background: rgba(0,0,0,0.1); transition: width 0.5s; }
-    .seccion-progress-fill.low { background: linear-gradient(90deg, #ff9600, #ffc800); }
-    .seccion-progress-fill.good { background: linear-gradient(90deg, #10b981, #34d399); }
-    .seccion-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); }
-    .hint { font-style: italic; opacity: 0.7; }
-    .date { opacity: 0.6; }
+    /* LESSONS PATH */
+    .lessons-path { display: flex; flex-direction: column; align-items: center; }
+    .lesson-row { position: relative; width: 100%; margin-bottom: 0.5rem; }
+    .lesson-connector { position: absolute; left: 50px; top: 76px; width: 3px; height: calc(100% - 20px); background: rgba(0,0,0,0.06); border-radius: 99px; z-index: 0; }
+    .lesson-connector.done { background: linear-gradient(180deg, #58cc02, #78d64b); }
 
-    .btn-go { padding: 0.6rem 1.2rem; border-radius: 10px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 3px 0 #6b46b8; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
-    .btn-go:hover { transform: translateY(2px); box-shadow: 0 1px 0 #6b46b8; }
+    .lesson-node { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 16px; cursor: pointer; transition: all 0.25s; position: relative; z-index: 1; background: #fff; border: 2px solid rgba(0,0,0,0.05); }
+    .lesson-node:hover { border-color: rgba(133,92,214,0.25); box-shadow: 0 4px 16px rgba(133,92,214,0.1); transform: translateX(4px); }
+    .lesson-node.completed { border-color: rgba(88,204,2,0.2); }
+    .lesson-node.completed:hover { border-color: rgba(88,204,2,0.4); box-shadow: 0 4px 16px rgba(88,204,2,0.1); }
+    .lesson-node.current { border-color: rgba(133,92,214,0.3); box-shadow: 0 0 0 4px rgba(133,92,214,0.08); }
+
+    /* CIRCLE WITH RING */
+    .lesson-circle-wrap { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+    .lesson-ring { position: absolute; inset: 0; }
+    .lesson-circle-inner { position: absolute; inset: 6px; border-radius: 50%; background: #e8e8e8; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: #aaa; font-family: var(--font-heading); transition: all 0.3s; }
+    .lesson-circle-inner.done { background: linear-gradient(135deg, #58cc02, #78d64b); color: #fff; }
+    .lesson-circle-inner.in-progress { background: linear-gradient(135deg, #ff9600, #ffc800); color: #fff; }
+    .lesson-circle-inner.is-current { background: linear-gradient(135deg, #855cd6, #a78bfa); color: #fff; animation: currentGlow 2s ease-in-out infinite; }
+
+    .lesson-info { flex: 1; min-width: 0; }
+    .lesson-info h3 { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; margin: 0 0 0.35rem; color: var(--text-primary); line-height: 1.3; }
+    .lesson-meta { display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; }
+    .score-tag { padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 700; }
+    .score-tag.pass { background: rgba(88,204,2,0.12); color: #3d8c00; }
+    .score-tag.fail { background: rgba(255,150,0,0.12); color: #cc7a00; }
+    .hint-tag { color: var(--text-secondary); }
+    .date-tag { color: var(--text-secondary); opacity: 0.6; }
+
+    .lesson-arrow { font-size: 1.1rem; color: var(--text-secondary); opacity: 0.4; transition: all 0.2s; flex-shrink: 0; }
+    .lesson-node:hover .lesson-arrow { opacity: 1; color: var(--accent-primary); transform: translateX(4px); }
 
     .btn-back-bottom { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 2rem; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; padding: 0; }
     .btn-back-bottom:hover { color: var(--accent-primary); }
 
+    @keyframes currentGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 0 0 8px rgba(133,92,214,0); } }
+
     @media (max-width: 640px) {
-      .seccion-card { flex-direction: column; text-align: center; }
-      .seccion-meta { flex-direction: column; align-items: center; gap: 0.2rem; }
-      .cap-header-top { flex-direction: column; }
+      .cap-hero { flex-direction: column; }
+      .cap-hero-stats { flex-direction: row; width: 100%; justify-content: center; }
+      .lesson-node { padding: 0.85rem 1rem; }
     }
   `]
 })
@@ -148,6 +197,10 @@ export class CapituloDetailComponent {
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
   capitulo = computed(() => this.paes.getCapituloById(this.capituloId()));
+  capPct = computed(() => {
+    const p = this.paes.getCapituloProgress(this.capituloId());
+    return p.percentage;
+  });
 
   constructor() {
     const snap = this.route.snapshot;
@@ -160,6 +213,16 @@ export class CapituloDetailComponent {
       completed: false, bestScore: 0, totalQuestions: 0,
       correctAnswers: 0, lastAttemptDate: null, attempts: 0
     };
+  }
+
+  isCurrentLesson(index: number): boolean {
+    const cap = this.capitulo();
+    if (!cap) return false;
+    for (let i = 0; i < cap.secciones.length; i++) {
+      const p = this.getProgress(cap.secciones[i].id);
+      if (!p.completed) return i === index;
+    }
+    return false;
   }
 
   goToSeccion(seccionId: string) {
