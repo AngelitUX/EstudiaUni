@@ -1,0 +1,48 @@
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleAIFileManager } = require('@google/generative-ai/server');
+const fs = require('fs');
+const path = require('path');
+
+const apiKey = 'AIzaSyCy4dAomJ1iol8iqtz0usySE_UhY-LM1lA';
+const genAI = new GoogleGenerativeAI(apiKey);
+const fileManager = new GoogleAIFileManager(apiKey);
+
+async function main() {
+    console.log('Uploading Solutions PDF to Gemini...');
+    const uploadResult = await fileManager.uploadFile(
+        'src/pruebasDemre/M2-2024-SOLUCION.pdf',
+        {
+            mimeType: 'application/pdf',
+            displayName: 'M2-2024 Solutions',
+        }
+    );
+    console.log(`Uploaded file as: ${uploadResult.file.uri}`);
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const prompt = `
+    Eres un experto leyendo pautas de corrección. Extrae ÚNICAMENTE las alternativas correctas (A, B, C, D o E) de las 55 preguntas de esta prueba (claves/respuestas).
+    Devuelve estrictamente un JSON array de strings con las 55 letras en orden (de la pregunta 1 a la 55).
+    Ejemplo: ["A", "C", "D", "B", "A", ...]
+    No agregues ningún texto, solo el JSON array.
+    `;
+
+    console.log('Generating JSON content...');
+    const result = await model.generateContent([
+        {
+            fileData: {
+                mimeType: uploadResult.file.mimeType,
+                fileUri: uploadResult.file.uri
+            }
+        },
+        { text: prompt }
+    ]);
+
+    const jsonString = result.response.text();
+    const cleanJson = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    
+    fs.writeFileSync('src/pruebasDemre/test-answers.json', cleanJson);
+    console.log('Respuestas guardadas en test-answers.json');
+}
+
+main().catch(console.error);

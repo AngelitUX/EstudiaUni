@@ -1,0 +1,1442 @@
+[
+  {
+    "id": "f-2026-q1",
+    "ensayoId": "f-2026",
+    "order": 1,
+    "subject": "Física",
+    "text": "Pregunta 1",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 1.",
+    "stem": "Pregunta 1"
+  },
+  {
+    "id": "f-2026-q2",
+    "ensayoId": "f-2026",
+    "order": 2,
+    "subject": "Física",
+    "text": "Pregunta 2",
+    "imageUrl": "assets/images/F-2026-IMAGENES/2.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 2.",
+    "stem": "Pregunta 2"
+  },
+  {
+    "id": "f-2026-q3",
+    "ensayoId": "f-2026",
+    "order": 3,
+    "subject": "Física",
+    "text": "Pregunta 3",
+    "imageUrl": "assets/images/F-2026-IMAGENES/3.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 3.",
+    "stem": "Pregunta 3"
+  },
+  {
+    "id": "f-2026-q4",
+    "ensayoId": "f-2026",
+    "order": 4,
+    "subject": "Física",
+    "text": "Pregunta 4",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 4.",
+    "stem": "Pregunta 4"
+  },
+  {
+    "id": "f-2026-q5",
+    "ensayoId": "f-2026",
+    "order": 5,
+    "subject": "Física",
+    "text": "Pregunta 5",
+    "imageUrl": "assets/images/F-2026-IMAGENES/5.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 5.",
+    "stem": "Pregunta 5"
+  },
+  {
+    "id": "f-2026-q6",
+    "ensayoId": "f-2026",
+    "order": 6,
+    "subject": "Física",
+    "text": "Pregunta 6",
+    "imageUrl": "assets/images/F-2026-IMAGENES/6.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 6.",
+    "stem": "Pregunta 6"
+  },
+  {
+    "id": "f-2026-q7",
+    "ensayoId": "f-2026",
+    "order": 7,
+    "subject": "Física",
+    "text": "Pregunta 7",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 7.",
+    "stem": "Pregunta 7"
+  },
+  {
+    "id": "f-2026-q8",
+    "ensayoId": "f-2026",
+    "order": 8,
+    "subject": "Física",
+    "text": "Pregunta 8",
+    "imageUrl": "assets/images/F-2026-IMAGENES/8.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 8.",
+    "stem": "Pregunta 8"
+  },
+  {
+    "id": "f-2026-q9",
+    "ensayoId": "f-2026",
+    "order": 9,
+    "subject": "Física",
+    "text": "Pregunta 9",
+    "imageUrl": "assets/images/F-2026-IMAGENES/9.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 9.",
+    "stem": "Pregunta 9"
+  },
+  {
+    "id": "f-2026-q10",
+    "ensayoId": "f-2026",
+    "order": 10,
+    "subject": "Física",
+    "text": "Pregunta 10",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 10.",
+    "stem": "Pregunta 10"
+  },
+  {
+    "id": "f-2026-q11",
+    "ensayoId": "f-2026",
+    "order": 11,
+    "subject": "Física",
+    "text": "Pregunta 11",
+    "imageUrl": "assets/images/F-2026-IMAGENES/11.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 11.",
+    "stem": "Pregunta 11"
+  },
+  {
+    "id": "f-2026-q12",
+    "ensayoId": "f-2026",
+    "order": 12,
+    "subject": "Física",
+    "text": "Pregunta 12",
+    "imageUrl": "assets/images/F-2026-IMAGENES/12.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 12.",
+    "stem": "Pregunta 12"
+  },
+  {
+    "id": "f-2026-q13",
+    "ensayoId": "f-2026",
+    "order": 13,
+    "subject": "Física",
+    "text": "Pregunta 13",
+    "imageUrl": "assets/images/F-2026-IMAGENES/13.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 13.",
+    "stem": "Pregunta 13"
+  },
+  {
+    "id": "f-2026-q14",
+    "ensayoId": "f-2026",
+    "order": 14,
+    "subject": "Física",
+    "text": "Pregunta 14",
+    "imageUrl": "assets/images/F-2026-IMAGENES/14.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 14.",
+    "stem": "Pregunta 14"
+  },
+  {
+    "id": "f-2026-q15",
+    "ensayoId": "f-2026",
+    "order": 15,
+    "subject": "Física",
+    "text": "Pregunta 15",
+    "imageUrl": "assets/images/F-2026-IMAGENES/15.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 15.",
+    "stem": "Pregunta 15"
+  },
+  {
+    "id": "f-2026-q16",
+    "ensayoId": "f-2026",
+    "order": 16,
+    "subject": "Física",
+    "text": "Pregunta 16",
+    "imageUrl": "assets/images/F-2026-IMAGENES/16.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 16.",
+    "stem": "Pregunta 16"
+  },
+  {
+    "id": "f-2026-q17",
+    "ensayoId": "f-2026",
+    "order": 17,
+    "subject": "Física",
+    "text": "Pregunta 17",
+    "imageUrl": "assets/images/F-2026-IMAGENES/17.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 17.",
+    "stem": "Pregunta 17"
+  },
+  {
+    "id": "f-2026-q18",
+    "ensayoId": "f-2026",
+    "order": 18,
+    "subject": "Física",
+    "text": "Pregunta 18",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 18.",
+    "stem": "Pregunta 18"
+  },
+  {
+    "id": "f-2026-q19",
+    "ensayoId": "f-2026",
+    "order": 19,
+    "subject": "Física",
+    "text": "Pregunta 19",
+    "imageUrl": "assets/images/F-2026-IMAGENES/19.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 19.",
+    "stem": "Pregunta 19"
+  },
+  {
+    "id": "f-2026-q20",
+    "ensayoId": "f-2026",
+    "order": 20,
+    "subject": "Física",
+    "text": "Pregunta 20",
+    "imageUrl": "assets/images/F-2026-IMAGENES/20.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 20.",
+    "stem": "Pregunta 20"
+  },
+  {
+    "id": "f-2026-q21",
+    "ensayoId": "f-2026",
+    "order": 21,
+    "subject": "Física",
+    "text": "Pregunta 21",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 21.",
+    "stem": "Pregunta 21"
+  },
+  {
+    "id": "f-2026-q22",
+    "ensayoId": "f-2026",
+    "order": 22,
+    "subject": "Física",
+    "text": "Pregunta 22",
+    "imageUrl": "assets/images/F-2026-IMAGENES/22.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 22.",
+    "stem": "Pregunta 22"
+  },
+  {
+    "id": "f-2026-q23",
+    "ensayoId": "f-2026",
+    "order": 23,
+    "subject": "Física",
+    "text": "Pregunta 23",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 23.",
+    "stem": "Pregunta 23"
+  },
+  {
+    "id": "f-2026-q24",
+    "ensayoId": "f-2026",
+    "order": 24,
+    "subject": "Física",
+    "text": "Pregunta 24",
+    "imageUrl": "assets/images/F-2026-IMAGENES/24.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 24.",
+    "stem": "Pregunta 24"
+  },
+  {
+    "id": "f-2026-q25",
+    "ensayoId": "f-2026",
+    "order": 25,
+    "subject": "Física",
+    "text": "Pregunta 25",
+    "imageUrl": "assets/images/F-2026-IMAGENES/25.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 25.",
+    "stem": "Pregunta 25"
+  },
+  {
+    "id": "f-2026-q26",
+    "ensayoId": "f-2026",
+    "order": 26,
+    "subject": "Física",
+    "text": "Pregunta 26",
+    "imageUrl": "assets/images/F-2026-IMAGENES/26.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 26.",
+    "stem": "Pregunta 26"
+  },
+  {
+    "id": "f-2026-q27",
+    "ensayoId": "f-2026",
+    "order": 27,
+    "subject": "Física",
+    "text": "Pregunta 27",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 27.",
+    "stem": "Pregunta 27"
+  },
+  {
+    "id": "f-2026-q28",
+    "ensayoId": "f-2026",
+    "order": 28,
+    "subject": "Física",
+    "text": "Pregunta 28",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 28.",
+    "stem": "Pregunta 28"
+  },
+  {
+    "id": "f-2026-q29",
+    "ensayoId": "f-2026",
+    "order": 29,
+    "subject": "Física",
+    "text": "Pregunta 29",
+    "imageUrl": "assets/images/F-2026-IMAGENES/29.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 29.",
+    "stem": "Pregunta 29"
+  },
+  {
+    "id": "f-2026-q30",
+    "ensayoId": "f-2026",
+    "order": 30,
+    "subject": "Física",
+    "text": "Pregunta 30",
+    "imageUrl": "assets/images/F-2026-IMAGENES/30.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 30.",
+    "stem": "Pregunta 30"
+  },
+  {
+    "id": "f-2026-q31",
+    "ensayoId": "f-2026",
+    "order": 31,
+    "subject": "Física",
+    "text": "Pregunta 31",
+    "imageUrl": "assets/images/F-2026-IMAGENES/31.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 31.",
+    "stem": "Pregunta 31"
+  },
+  {
+    "id": "f-2026-q32",
+    "ensayoId": "f-2026",
+    "order": 32,
+    "subject": "Física",
+    "text": "Pregunta 32",
+    "imageUrl": "assets/images/F-2026-IMAGENES/32.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 32.",
+    "stem": "Pregunta 32"
+  },
+  {
+    "id": "f-2026-q33",
+    "ensayoId": "f-2026",
+    "order": 33,
+    "subject": "Física",
+    "text": "Pregunta 33",
+    "imageUrl": "assets/images/F-2026-IMAGENES/33.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 33.",
+    "stem": "Pregunta 33"
+  },
+  {
+    "id": "f-2026-q34",
+    "ensayoId": "f-2026",
+    "order": 34,
+    "subject": "Física",
+    "text": "Pregunta 34",
+    "imageUrl": "assets/images/F-2026-IMAGENES/34.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 34.",
+    "stem": "Pregunta 34"
+  },
+  {
+    "id": "f-2026-q35",
+    "ensayoId": "f-2026",
+    "order": 35,
+    "subject": "Física",
+    "text": "Pregunta 35",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 35.",
+    "stem": "Pregunta 35"
+  },
+  {
+    "id": "f-2026-q36",
+    "ensayoId": "f-2026",
+    "order": 36,
+    "subject": "Física",
+    "text": "Pregunta 36",
+    "imageUrl": "assets/images/F-2026-IMAGENES/36.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 36.",
+    "stem": "Pregunta 36"
+  },
+  {
+    "id": "f-2026-q37",
+    "ensayoId": "f-2026",
+    "order": 37,
+    "subject": "Física",
+    "text": "Pregunta 37",
+    "imageUrl": "assets/images/F-2026-IMAGENES/37.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 37.",
+    "stem": "Pregunta 37"
+  },
+  {
+    "id": "f-2026-q38",
+    "ensayoId": "f-2026",
+    "order": 38,
+    "subject": "Física",
+    "text": "Pregunta 38",
+    "imageUrl": "assets/images/F-2026-IMAGENES/38.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 38.",
+    "stem": "Pregunta 38"
+  },
+  {
+    "id": "f-2026-q39",
+    "ensayoId": "f-2026",
+    "order": 39,
+    "subject": "Física",
+    "text": "Pregunta 39",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 39.",
+    "stem": "Pregunta 39"
+  },
+  {
+    "id": "f-2026-q40",
+    "ensayoId": "f-2026",
+    "order": 40,
+    "subject": "Física",
+    "text": "Pregunta 40",
+    "imageUrl": "assets/images/F-2026-IMAGENES/40.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 40.",
+    "stem": "Pregunta 40"
+  },
+  {
+    "id": "f-2026-q41",
+    "ensayoId": "f-2026",
+    "order": 41,
+    "subject": "Física",
+    "text": "Pregunta 41",
+    "imageUrl": "assets/images/F-2026-IMAGENES/41.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 41.",
+    "stem": "Pregunta 41"
+  },
+  {
+    "id": "f-2026-q42",
+    "ensayoId": "f-2026",
+    "order": 42,
+    "subject": "Física",
+    "text": "Pregunta 42",
+    "imageUrl": "assets/images/F-2026-IMAGENES/42.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 42.",
+    "stem": "Pregunta 42"
+  },
+  {
+    "id": "f-2026-q43",
+    "ensayoId": "f-2026",
+    "order": 43,
+    "subject": "Física",
+    "text": "Pregunta 43",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 43.",
+    "stem": "Pregunta 43"
+  },
+  {
+    "id": "f-2026-q44",
+    "ensayoId": "f-2026",
+    "order": 44,
+    "subject": "Física",
+    "text": "Pregunta 44",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 44.",
+    "stem": "Pregunta 44"
+  },
+  {
+    "id": "f-2026-q45",
+    "ensayoId": "f-2026",
+    "order": 45,
+    "subject": "Física",
+    "text": "Pregunta 45",
+    "imageUrl": "assets/images/F-2026-IMAGENES/45.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 45.",
+    "stem": "Pregunta 45"
+  },
+  {
+    "id": "f-2026-q46",
+    "ensayoId": "f-2026",
+    "order": 46,
+    "subject": "Física",
+    "text": "Pregunta 46",
+    "imageUrl": "assets/images/F-2026-IMAGENES/46.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 46.",
+    "stem": "Pregunta 46"
+  },
+  {
+    "id": "f-2026-q47",
+    "ensayoId": "f-2026",
+    "order": 47,
+    "subject": "Física",
+    "text": "Pregunta 47",
+    "imageUrl": "assets/images/F-2026-IMAGENES/47.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "E",
+    "explanation": "Solución de la pregunta 47.",
+    "stem": "Pregunta 47"
+  },
+  {
+    "id": "f-2026-q48",
+    "ensayoId": "f-2026",
+    "order": 48,
+    "subject": "Física",
+    "text": "Pregunta 48",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 48.",
+    "stem": "Pregunta 48"
+  },
+  {
+    "id": "f-2026-q49",
+    "ensayoId": "f-2026",
+    "order": 49,
+    "subject": "Física",
+    "text": "Pregunta 49",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 49.",
+    "stem": "Pregunta 49"
+  },
+  {
+    "id": "f-2026-q50",
+    "ensayoId": "f-2026",
+    "order": 50,
+    "subject": "Física",
+    "text": "Pregunta 50",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 50.",
+    "stem": "Pregunta 50"
+  },
+  {
+    "id": "f-2026-q51",
+    "ensayoId": "f-2026",
+    "order": 51,
+    "subject": "Física",
+    "text": "Pregunta 51",
+    "imageUrl": "assets/images/F-2026-IMAGENES/51.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 51.",
+    "stem": "Pregunta 51"
+  },
+  {
+    "id": "f-2026-q52",
+    "ensayoId": "f-2026",
+    "order": 52,
+    "subject": "Física",
+    "text": "Pregunta 52",
+    "imageUrl": "assets/images/F-2026-IMAGENES/52.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 52.",
+    "stem": "Pregunta 52"
+  },
+  {
+    "id": "f-2026-q53",
+    "ensayoId": "f-2026",
+    "order": 53,
+    "subject": "Física",
+    "text": "Pregunta 53",
+    "imageUrl": "assets/images/F-2026-IMAGENES/53.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 53.",
+    "stem": "Pregunta 53"
+  },
+  {
+    "id": "f-2026-q54",
+    "ensayoId": "f-2026",
+    "order": 54,
+    "subject": "Física",
+    "text": "Pregunta 54",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 54.",
+    "stem": "Pregunta 54"
+  },
+  {
+    "id": "f-2026-q55",
+    "ensayoId": "f-2026",
+    "order": 55,
+    "subject": "Física",
+    "text": "Pregunta 55",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 55.",
+    "stem": "Pregunta 55"
+  },
+  {
+    "id": "f-2026-q56",
+    "ensayoId": "f-2026",
+    "order": 56,
+    "subject": "Física",
+    "text": "Pregunta 56",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 56.",
+    "stem": "Pregunta 56"
+  },
+  {
+    "id": "f-2026-q57",
+    "ensayoId": "f-2026",
+    "order": 57,
+    "subject": "Física",
+    "text": "Pregunta 57",
+    "imageUrl": "assets/images/F-2026-IMAGENES/57.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 57.",
+    "stem": "Pregunta 57"
+  },
+  {
+    "id": "f-2026-q58",
+    "ensayoId": "f-2026",
+    "order": 58,
+    "subject": "Física",
+    "text": "Pregunta 58",
+    "imageUrl": "assets/images/F-2026-IMAGENES/58.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 58.",
+    "stem": "Pregunta 58"
+  },
+  {
+    "id": "f-2026-q59",
+    "ensayoId": "f-2026",
+    "order": 59,
+    "subject": "Física",
+    "text": "Pregunta 59",
+    "imageUrl": "assets/images/F-2026-IMAGENES/59.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 59.",
+    "stem": "Pregunta 59"
+  },
+  {
+    "id": "f-2026-q60",
+    "ensayoId": "f-2026",
+    "order": 60,
+    "subject": "Física",
+    "text": "Pregunta 60",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 60.",
+    "stem": "Pregunta 60"
+  },
+  {
+    "id": "f-2026-q61",
+    "ensayoId": "f-2026",
+    "order": 61,
+    "subject": "Física",
+    "text": "Pregunta 61",
+    "imageUrl": "assets/images/F-2026-IMAGENES/61.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 61.",
+    "stem": "Pregunta 61"
+  },
+  {
+    "id": "f-2026-q62",
+    "ensayoId": "f-2026",
+    "order": 62,
+    "subject": "Física",
+    "text": "Pregunta 62",
+    "imageUrl": "assets/images/F-2026-IMAGENES/62.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 62.",
+    "stem": "Pregunta 62"
+  },
+  {
+    "id": "f-2026-q63",
+    "ensayoId": "f-2026",
+    "order": 63,
+    "subject": "Física",
+    "text": "Pregunta 63",
+    "imageUrl": "assets/images/F-2026-IMAGENES/63.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 63.",
+    "stem": "Pregunta 63"
+  },
+  {
+    "id": "f-2026-q64",
+    "ensayoId": "f-2026",
+    "order": 64,
+    "subject": "Física",
+    "text": "Pregunta 64",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 64.",
+    "stem": "Pregunta 64"
+  },
+  {
+    "id": "f-2026-q65",
+    "ensayoId": "f-2026",
+    "order": 65,
+    "subject": "Física",
+    "text": "Pregunta 65",
+    "imageUrl": "assets/images/F-2026-IMAGENES/65.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 65.",
+    "stem": "Pregunta 65"
+  },
+  {
+    "id": "f-2026-q66",
+    "ensayoId": "f-2026",
+    "order": 66,
+    "subject": "Física",
+    "text": "Pregunta 66",
+    "imageUrl": "assets/images/F-2026-IMAGENES/66.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 66.",
+    "stem": "Pregunta 66"
+  },
+  {
+    "id": "f-2026-q67",
+    "ensayoId": "f-2026",
+    "order": 67,
+    "subject": "Física",
+    "text": "Pregunta 67",
+    "imageUrl": "assets/images/F-2026-IMAGENES/67.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 67.",
+    "stem": "Pregunta 67"
+  },
+  {
+    "id": "f-2026-q68",
+    "ensayoId": "f-2026",
+    "order": 68,
+    "subject": "Física",
+    "text": "Pregunta 68",
+    "imageUrl": "assets/images/F-2026-IMAGENES/68.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 68.",
+    "stem": "Pregunta 68"
+  },
+  {
+    "id": "f-2026-q69",
+    "ensayoId": "f-2026",
+    "order": 69,
+    "subject": "Física",
+    "text": "Pregunta 69",
+    "imageUrl": "assets/images/F-2026-IMAGENES/69.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 69.",
+    "stem": "Pregunta 69"
+  },
+  {
+    "id": "f-2026-q70",
+    "ensayoId": "f-2026",
+    "order": 70,
+    "subject": "Física",
+    "text": "Pregunta 70",
+    "imageUrl": "assets/images/F-2026-IMAGENES/70.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 70.",
+    "stem": "Pregunta 70"
+  },
+  {
+    "id": "f-2026-q71",
+    "ensayoId": "f-2026",
+    "order": 71,
+    "subject": "Física",
+    "text": "Pregunta 71",
+    "imageUrl": "assets/images/F-2026-IMAGENES/71.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 71.",
+    "stem": "Pregunta 71"
+  },
+  {
+    "id": "f-2026-q72",
+    "ensayoId": "f-2026",
+    "order": 72,
+    "subject": "Física",
+    "text": "Pregunta 72",
+    "imageUrl": "assets/images/F-2026-IMAGENES/72.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 72.",
+    "stem": "Pregunta 72"
+  },
+  {
+    "id": "f-2026-q73",
+    "ensayoId": "f-2026",
+    "order": 73,
+    "subject": "Física",
+    "text": "Pregunta 73",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 73.",
+    "stem": "Pregunta 73"
+  },
+  {
+    "id": "f-2026-q74",
+    "ensayoId": "f-2026",
+    "order": 74,
+    "subject": "Física",
+    "text": "Pregunta 74",
+    "imageUrl": "assets/images/F-2026-IMAGENES/74.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 74.",
+    "stem": "Pregunta 74"
+  },
+  {
+    "id": "f-2026-q75",
+    "ensayoId": "f-2026",
+    "order": 75,
+    "subject": "Física",
+    "text": "Pregunta 75",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 75.",
+    "stem": "Pregunta 75"
+  },
+  {
+    "id": "f-2026-q76",
+    "ensayoId": "f-2026",
+    "order": 76,
+    "subject": "Física",
+    "text": "Pregunta 76",
+    "imageUrl": "assets/images/F-2026-IMAGENES/76.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 76.",
+    "stem": "Pregunta 76"
+  },
+  {
+    "id": "f-2026-q77",
+    "ensayoId": "f-2026",
+    "order": 77,
+    "subject": "Física",
+    "text": "Pregunta 77",
+    "imageUrl": "assets/images/F-2026-IMAGENES/77.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 77.",
+    "stem": "Pregunta 77"
+  },
+  {
+    "id": "f-2026-q78",
+    "ensayoId": "f-2026",
+    "order": 78,
+    "subject": "Física",
+    "text": "Pregunta 78",
+    "imageUrl": "assets/images/F-2026-IMAGENES/78.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 78.",
+    "stem": "Pregunta 78"
+  },
+  {
+    "id": "f-2026-q79",
+    "ensayoId": "f-2026",
+    "order": 79,
+    "subject": "Física",
+    "text": "Pregunta 79",
+    "imageUrl": null,
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 79.",
+    "stem": "Pregunta 79"
+  },
+  {
+    "id": "f-2026-q80",
+    "ensayoId": "f-2026",
+    "order": 80,
+    "subject": "Física",
+    "text": "Pregunta 80",
+    "imageUrl": "assets/images/F-2026-IMAGENES/80.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 80.",
+    "stem": "Pregunta 80"
+  }
+]

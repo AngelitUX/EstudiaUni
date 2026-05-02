@@ -1,0 +1,1172 @@
+[
+  {
+    "id": "h-invierno-2024-q1",
+    "ensayoId": "h-invierno-2024",
+    "order": 1,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 1",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/1.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 1.",
+    "stem": "Pregunta 1"
+  },
+  {
+    "id": "h-invierno-2024-q2",
+    "ensayoId": "h-invierno-2024",
+    "order": 2,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 2",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/2.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 2.",
+    "stem": "Pregunta 2"
+  },
+  {
+    "id": "h-invierno-2024-q3",
+    "ensayoId": "h-invierno-2024",
+    "order": 3,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 3",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/3.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 3.",
+    "stem": "Pregunta 3"
+  },
+  {
+    "id": "h-invierno-2024-q4",
+    "ensayoId": "h-invierno-2024",
+    "order": 4,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 4",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/4.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 4.",
+    "stem": "Pregunta 4"
+  },
+  {
+    "id": "h-invierno-2024-q5",
+    "ensayoId": "h-invierno-2024",
+    "order": 5,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 5",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/5.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 5.",
+    "stem": "Pregunta 5"
+  },
+  {
+    "id": "h-invierno-2024-q6",
+    "ensayoId": "h-invierno-2024",
+    "order": 6,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 6",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/6.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 6.",
+    "stem": "Pregunta 6"
+  },
+  {
+    "id": "h-invierno-2024-q7",
+    "ensayoId": "h-invierno-2024",
+    "order": 7,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 7",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/7.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 7.",
+    "stem": "Pregunta 7"
+  },
+  {
+    "id": "h-invierno-2024-q8",
+    "ensayoId": "h-invierno-2024",
+    "order": 8,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 8",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/8.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 8.",
+    "stem": "Pregunta 8"
+  },
+  {
+    "id": "h-invierno-2024-q9",
+    "ensayoId": "h-invierno-2024",
+    "order": 9,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 9",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/9.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 9.",
+    "stem": "Pregunta 9"
+  },
+  {
+    "id": "h-invierno-2024-q10",
+    "ensayoId": "h-invierno-2024",
+    "order": 10,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 10",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/10.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 10.",
+    "stem": "Pregunta 10"
+  },
+  {
+    "id": "h-invierno-2024-q11",
+    "ensayoId": "h-invierno-2024",
+    "order": 11,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 11",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/11.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 11.",
+    "stem": "Pregunta 11"
+  },
+  {
+    "id": "h-invierno-2024-q12",
+    "ensayoId": "h-invierno-2024",
+    "order": 12,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 12",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/12.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 12.",
+    "stem": "Pregunta 12"
+  },
+  {
+    "id": "h-invierno-2024-q13",
+    "ensayoId": "h-invierno-2024",
+    "order": 13,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 13",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/13.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 13.",
+    "stem": "Pregunta 13"
+  },
+  {
+    "id": "h-invierno-2024-q14",
+    "ensayoId": "h-invierno-2024",
+    "order": 14,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 14",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/14.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 14.",
+    "stem": "Pregunta 14"
+  },
+  {
+    "id": "h-invierno-2024-q15",
+    "ensayoId": "h-invierno-2024",
+    "order": 15,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 15",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/15.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 15.",
+    "stem": "Pregunta 15"
+  },
+  {
+    "id": "h-invierno-2024-q16",
+    "ensayoId": "h-invierno-2024",
+    "order": 16,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 16",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/16.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 16.",
+    "stem": "Pregunta 16"
+  },
+  {
+    "id": "h-invierno-2024-q17",
+    "ensayoId": "h-invierno-2024",
+    "order": 17,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 17",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/17.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 17.",
+    "stem": "Pregunta 17"
+  },
+  {
+    "id": "h-invierno-2024-q18",
+    "ensayoId": "h-invierno-2024",
+    "order": 18,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 18",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/18.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 18.",
+    "stem": "Pregunta 18"
+  },
+  {
+    "id": "h-invierno-2024-q19",
+    "ensayoId": "h-invierno-2024",
+    "order": 19,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 19",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/19.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 19.",
+    "stem": "Pregunta 19"
+  },
+  {
+    "id": "h-invierno-2024-q20",
+    "ensayoId": "h-invierno-2024",
+    "order": 20,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 20",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/20.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 20.",
+    "stem": "Pregunta 20"
+  },
+  {
+    "id": "h-invierno-2024-q21",
+    "ensayoId": "h-invierno-2024",
+    "order": 21,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 21",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/21.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 21.",
+    "stem": "Pregunta 21"
+  },
+  {
+    "id": "h-invierno-2024-q22",
+    "ensayoId": "h-invierno-2024",
+    "order": 22,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 22",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/22.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "E",
+    "explanation": "Solución de la pregunta 22.",
+    "stem": "Pregunta 22"
+  },
+  {
+    "id": "h-invierno-2024-q23",
+    "ensayoId": "h-invierno-2024",
+    "order": 23,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 23",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/23.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 23.",
+    "stem": "Pregunta 23"
+  },
+  {
+    "id": "h-invierno-2024-q24",
+    "ensayoId": "h-invierno-2024",
+    "order": 24,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 24",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/24.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 24.",
+    "stem": "Pregunta 24"
+  },
+  {
+    "id": "h-invierno-2024-q25",
+    "ensayoId": "h-invierno-2024",
+    "order": 25,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 25",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/25.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 25.",
+    "stem": "Pregunta 25"
+  },
+  {
+    "id": "h-invierno-2024-q26",
+    "ensayoId": "h-invierno-2024",
+    "order": 26,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 26",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/26.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 26.",
+    "stem": "Pregunta 26"
+  },
+  {
+    "id": "h-invierno-2024-q27",
+    "ensayoId": "h-invierno-2024",
+    "order": 27,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 27",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/27.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 27.",
+    "stem": "Pregunta 27"
+  },
+  {
+    "id": "h-invierno-2024-q28",
+    "ensayoId": "h-invierno-2024",
+    "order": 28,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 28",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/28.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 28.",
+    "stem": "Pregunta 28"
+  },
+  {
+    "id": "h-invierno-2024-q29",
+    "ensayoId": "h-invierno-2024",
+    "order": 29,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 29",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/29.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 29.",
+    "stem": "Pregunta 29"
+  },
+  {
+    "id": "h-invierno-2024-q30",
+    "ensayoId": "h-invierno-2024",
+    "order": 30,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 30",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/30.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 30.",
+    "stem": "Pregunta 30"
+  },
+  {
+    "id": "h-invierno-2024-q31",
+    "ensayoId": "h-invierno-2024",
+    "order": 31,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 31",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/31.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 31.",
+    "stem": "Pregunta 31"
+  },
+  {
+    "id": "h-invierno-2024-q32",
+    "ensayoId": "h-invierno-2024",
+    "order": 32,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 32",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/32.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 32.",
+    "stem": "Pregunta 32"
+  },
+  {
+    "id": "h-invierno-2024-q33",
+    "ensayoId": "h-invierno-2024",
+    "order": 33,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 33",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/33.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 33.",
+    "stem": "Pregunta 33"
+  },
+  {
+    "id": "h-invierno-2024-q34",
+    "ensayoId": "h-invierno-2024",
+    "order": 34,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 34",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/34.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 34.",
+    "stem": "Pregunta 34"
+  },
+  {
+    "id": "h-invierno-2024-q35",
+    "ensayoId": "h-invierno-2024",
+    "order": 35,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 35",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/35.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 35.",
+    "stem": "Pregunta 35"
+  },
+  {
+    "id": "h-invierno-2024-q36",
+    "ensayoId": "h-invierno-2024",
+    "order": 36,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 36",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/36.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 36.",
+    "stem": "Pregunta 36"
+  },
+  {
+    "id": "h-invierno-2024-q37",
+    "ensayoId": "h-invierno-2024",
+    "order": 37,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 37",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/37.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 37.",
+    "stem": "Pregunta 37"
+  },
+  {
+    "id": "h-invierno-2024-q38",
+    "ensayoId": "h-invierno-2024",
+    "order": 38,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 38",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/38.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 38.",
+    "stem": "Pregunta 38"
+  },
+  {
+    "id": "h-invierno-2024-q39",
+    "ensayoId": "h-invierno-2024",
+    "order": 39,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 39",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/39.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 39.",
+    "stem": "Pregunta 39"
+  },
+  {
+    "id": "h-invierno-2024-q40",
+    "ensayoId": "h-invierno-2024",
+    "order": 40,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 40",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/40.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 40.",
+    "stem": "Pregunta 40"
+  },
+  {
+    "id": "h-invierno-2024-q41",
+    "ensayoId": "h-invierno-2024",
+    "order": 41,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 41",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/41.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 41.",
+    "stem": "Pregunta 41"
+  },
+  {
+    "id": "h-invierno-2024-q42",
+    "ensayoId": "h-invierno-2024",
+    "order": 42,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 42",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/42.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 42.",
+    "stem": "Pregunta 42"
+  },
+  {
+    "id": "h-invierno-2024-q43",
+    "ensayoId": "h-invierno-2024",
+    "order": 43,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 43",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/43.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 43.",
+    "stem": "Pregunta 43"
+  },
+  {
+    "id": "h-invierno-2024-q44",
+    "ensayoId": "h-invierno-2024",
+    "order": 44,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 44",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/44.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "E",
+    "explanation": "Solución de la pregunta 44.",
+    "stem": "Pregunta 44"
+  },
+  {
+    "id": "h-invierno-2024-q45",
+    "ensayoId": "h-invierno-2024",
+    "order": 45,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 45",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/45.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 45.",
+    "stem": "Pregunta 45"
+  },
+  {
+    "id": "h-invierno-2024-q46",
+    "ensayoId": "h-invierno-2024",
+    "order": 46,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 46",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/46.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 46.",
+    "stem": "Pregunta 46"
+  },
+  {
+    "id": "h-invierno-2024-q47",
+    "ensayoId": "h-invierno-2024",
+    "order": 47,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 47",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/47.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 47.",
+    "stem": "Pregunta 47"
+  },
+  {
+    "id": "h-invierno-2024-q48",
+    "ensayoId": "h-invierno-2024",
+    "order": 48,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 48",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/48.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 48.",
+    "stem": "Pregunta 48"
+  },
+  {
+    "id": "h-invierno-2024-q49",
+    "ensayoId": "h-invierno-2024",
+    "order": 49,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 49",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/49.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 49.",
+    "stem": "Pregunta 49"
+  },
+  {
+    "id": "h-invierno-2024-q50",
+    "ensayoId": "h-invierno-2024",
+    "order": 50,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 50",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/50.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 50.",
+    "stem": "Pregunta 50"
+  },
+  {
+    "id": "h-invierno-2024-q51",
+    "ensayoId": "h-invierno-2024",
+    "order": 51,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 51",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/51.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 51.",
+    "stem": "Pregunta 51"
+  },
+  {
+    "id": "h-invierno-2024-q52",
+    "ensayoId": "h-invierno-2024",
+    "order": 52,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 52",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/52.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 52.",
+    "stem": "Pregunta 52"
+  },
+  {
+    "id": "h-invierno-2024-q53",
+    "ensayoId": "h-invierno-2024",
+    "order": 53,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 53",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/53.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 53.",
+    "stem": "Pregunta 53"
+  },
+  {
+    "id": "h-invierno-2024-q54",
+    "ensayoId": "h-invierno-2024",
+    "order": 54,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 54",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/54.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 54.",
+    "stem": "Pregunta 54"
+  },
+  {
+    "id": "h-invierno-2024-q55",
+    "ensayoId": "h-invierno-2024",
+    "order": 55,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 55",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/55.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 55.",
+    "stem": "Pregunta 55"
+  },
+  {
+    "id": "h-invierno-2024-q56",
+    "ensayoId": "h-invierno-2024",
+    "order": 56,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 56",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/56.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 56.",
+    "stem": "Pregunta 56"
+  },
+  {
+    "id": "h-invierno-2024-q57",
+    "ensayoId": "h-invierno-2024",
+    "order": 57,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 57",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/57.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "B",
+    "explanation": "Solución de la pregunta 57.",
+    "stem": "Pregunta 57"
+  },
+  {
+    "id": "h-invierno-2024-q58",
+    "ensayoId": "h-invierno-2024",
+    "order": 58,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 58",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/58.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 58.",
+    "stem": "Pregunta 58"
+  },
+  {
+    "id": "h-invierno-2024-q59",
+    "ensayoId": "h-invierno-2024",
+    "order": 59,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 59",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/59.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 59.",
+    "stem": "Pregunta 59"
+  },
+  {
+    "id": "h-invierno-2024-q60",
+    "ensayoId": "h-invierno-2024",
+    "order": 60,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 60",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/60.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 60.",
+    "stem": "Pregunta 60"
+  },
+  {
+    "id": "h-invierno-2024-q61",
+    "ensayoId": "h-invierno-2024",
+    "order": 61,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 61",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/61.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 61.",
+    "stem": "Pregunta 61"
+  },
+  {
+    "id": "h-invierno-2024-q62",
+    "ensayoId": "h-invierno-2024",
+    "order": 62,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 62",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/62.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "C",
+    "explanation": "Solución de la pregunta 62.",
+    "stem": "Pregunta 62"
+  },
+  {
+    "id": "h-invierno-2024-q63",
+    "ensayoId": "h-invierno-2024",
+    "order": 63,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 63",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/63.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "A",
+    "explanation": "Solución de la pregunta 63.",
+    "stem": "Pregunta 63"
+  },
+  {
+    "id": "h-invierno-2024-q64",
+    "ensayoId": "h-invierno-2024",
+    "order": 64,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 64",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/64.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "E",
+    "explanation": "Solución de la pregunta 64.",
+    "stem": "Pregunta 64"
+  },
+  {
+    "id": "h-invierno-2024-q65",
+    "ensayoId": "h-invierno-2024",
+    "order": 65,
+    "subject": "Historia y Ciencias Sociales",
+    "text": "Pregunta 65",
+    "imageUrl": "assets/images/H-INVIERNO-2024-IMAGENES/65.png",
+    "options": {
+      "A": "",
+      "B": "",
+      "C": "",
+      "D": "",
+      "E": ""
+    },
+    "correctAnswer": "D",
+    "explanation": "Solución de la pregunta 65.",
+    "stem": "Pregunta 65"
+  }
+]

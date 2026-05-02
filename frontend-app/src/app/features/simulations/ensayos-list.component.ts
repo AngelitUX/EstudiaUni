@@ -20,6 +20,13 @@ interface SubPrueba {
   id: string;
   nombre: string;
   descripcion: string;
+  ensayos?: EnsayoOption[];
+}
+
+interface EnsayoOption {
+  id: string;
+  nombre: string;
+  descripcion: string;
 }
 
 type ExamMode = 'real' | 'asistido';
@@ -150,6 +157,21 @@ type ExamMode = 'real' | 'asistido';
                     [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id">
                     <span class="subprueba-name">{{ sub.nombre }}</span>
                     <span class="subprueba-desc">{{ sub.descripcion }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="subPruebaSeleccionada?.ensayos?.length" class="subpruebas-section" style="margin-top: 1.5rem;">
+                <p class="subpruebas-title">Selecciona el ensayo:</p>
+                <div class="subpruebas-grid">
+                  <button
+                    *ngFor="let ensayo of subPruebaSeleccionada?.ensayos"
+                    type="button"
+                    class="subprueba-card"
+                    (click)="seleccionarEnsayo(ensayo)"
+                    [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id">
+                    <span class="subprueba-name">{{ ensayo.nombre }}</span>
+                    <span class="subprueba-desc">{{ ensayo.descripcion }}</span>
                   </button>
                 </div>
               </div>
@@ -692,6 +714,11 @@ export class EnsayosListComponent implements OnInit {
           id: 'm1-2026',
           nombre: 'PAES Oficial 2026',
           descripcion: 'Prueba oficial rendida a fines del 2025.'
+        },
+        {
+          id: 'm1-invierno-2026',
+          nombre: 'PAES Invierno 2026',
+          descripcion: 'Prueba de invierno rendida a mediados del 2026.'
         }
       ]
     },
@@ -701,7 +728,39 @@ export class EnsayosListComponent implements OnInit {
       icono: '📊',
       descripcion: 'Matemática 2',
       tiempo: 140,
-      preguntas: 55
+      preguntas: 55,
+      subpruebas: [
+        {
+          id: 'm2-2024',
+          nombre: 'PAES Oficial 2024',
+          descripcion: 'Prueba oficial de Matemática 2 rendida a fines del 2023.'
+        },
+        {
+          id: 'm2-invierno-2024',
+          nombre: 'PAES Invierno 2024',
+          descripcion: 'Prueba de invierno de Matemática 2 rendida a mediados del 2024.'
+        },
+        {
+          id: 'm2-invierno-2025',
+          nombre: 'PAES Invierno 2025',
+          descripcion: 'Prueba de invierno de Matemática 2 para el proceso de admisión 2025.'
+        },
+        {
+          id: 'm2-invierno-2026',
+          nombre: 'PAES Invierno 2026',
+          descripcion: 'Prueba de invierno de Matemática 2 para el proceso de admisión 2026.'
+        },
+        {
+          id: 'm2-2025',
+          nombre: 'PAES Oficial 2025',
+          descripcion: 'Prueba oficial de Matemática 2 rendida a fines del 2024.'
+        },
+        {
+          id: 'm2-2026',
+          nombre: 'PAES Oficial 2026',
+          descripcion: 'Prueba oficial de Matemática 2 rendida a fines del 2025.'
+        }
+      ]
     },
     {
       id: 'competencia-lectora',
@@ -720,19 +779,90 @@ export class EnsayosListComponent implements OnInit {
       preguntas: 80,
       subpruebas: [
         {
-          id: 'ciencias-biologia',
+          id: 'biologia',
           nombre: 'Biología',
-          descripcion: 'Ecosistemas, genética y evolución'
+          descripcion: 'Ecosistemas, genética y evolución',
+          ensayos: [
+            {
+              id: 'b-2024',
+              nombre: 'PAES Oficial 2024',
+              descripcion: 'Prueba oficial de Biología rendida a fines del 2023.'
+            },
+            {
+              id: 'b-invierno-2024',
+              nombre: 'PAES Invierno 2024',
+              descripcion: 'Prueba de invierno de Biología rendida a mediados del 2024.'
+            },
+            {
+              id: 'b-2025',
+              nombre: 'PAES Oficial 2025',
+              descripcion: 'Prueba oficial de Biología rendida a fines del 2024.'
+            },
+            {
+              id: 'b-invierno-2025',
+              nombre: 'PAES Invierno 2025',
+              descripcion: 'Prueba de invierno de Biología para el proceso de admisión 2025.'
+            },
+            {
+              id: 'b-2026',
+              nombre: 'PAES Oficial 2026',
+              descripcion: 'Prueba oficial de Biología rendida a fines del 2025.'
+            },
+            {
+              id: 'b-invierno-2026',
+              nombre: 'PAES Invierno 2026',
+              descripcion: 'Prueba de invierno de Biología para el proceso de admisión 2026.'
+            }
+          ]
         },
         {
-          id: 'ciencias-quimica',
+          id: 'quimica',
           nombre: 'Química',
-          descripcion: 'Materia, reacciones y estequiometría'
+          descripcion: 'Materia, reacciones y estequiometría',
+          ensayos: [
+            {
+              id: 'ciencias-quimica',
+              nombre: 'PAES Oficial 2024',
+              descripcion: 'Próximamente disponible...'
+            }
+          ]
         },
         {
-          id: 'ciencias-fisica',
+          id: 'fisica',
           nombre: 'Física',
-          descripcion: 'Movimiento, energía y fuerzas'
+          descripcion: 'Movimiento, energía y fuerzas',
+          ensayos: [
+            {
+              id: 'f-2024',
+              nombre: 'PAES Oficial 2024',
+              descripcion: 'Prueba oficial de Física rendida a fines del 2023.'
+            },
+            {
+              id: 'f-invierno-2024',
+              nombre: 'PAES Invierno 2024',
+              descripcion: 'Prueba de invierno de Física rendida a mediados del 2024.'
+            },
+            {
+              id: 'f-invierno-2025',
+              nombre: 'PAES Invierno 2025',
+              descripcion: 'Prueba de invierno de Física rendida a mediados del 2025.'
+            },
+            {
+              id: 'f-2025',
+              nombre: 'PAES Oficial 2025',
+              descripcion: 'Prueba oficial de Física rendida a fines del 2024.'
+            },
+            {
+              id: 'f-2026',
+              nombre: 'PAES Oficial 2026',
+              descripcion: 'Prueba oficial de Física rendida a fines del 2025.'
+            },
+            {
+              id: 'f-invierno-2026',
+              nombre: 'PAES Invierno 2026',
+              descripcion: 'Prueba de invierno de Física rendida a mediados del 2026.'
+            }
+          ]
         },
         {
           id: 'ciencias-tp',
@@ -747,12 +877,45 @@ export class EnsayosListComponent implements OnInit {
       icono: '🏛️',
       descripcion: 'Historia y Ciencias Sociales',
       tiempo: 120,
-      preguntas: 65
+      preguntas: 65,
+      subpruebas: [
+        {
+          id: 'h-2024',
+          nombre: 'PAES Oficial 2024',
+          descripcion: 'Prueba oficial de Historia rendida a fines del 2023.'
+        },
+        {
+          id: 'h-invierno-2024',
+          nombre: 'PAES Invierno 2024',
+          descripcion: 'Prueba de invierno de Historia rendida a mediados del 2024.'
+        },
+        {
+          id: 'h-invierno-2025',
+          nombre: 'PAES Invierno 2025',
+          descripcion: 'Prueba de invierno de Historia rendida a mediados del 2025.'
+        },
+        {
+          id: 'h-invierno-2026',
+          nombre: 'PAES Invierno 2026',
+          descripcion: 'Prueba de invierno de Historia rendida a mediados del 2026.'
+        },
+        {
+          id: 'h-2025',
+          nombre: 'PAES Oficial 2025',
+          descripcion: 'Prueba oficial de Historia rendida a fines del 2024.'
+        },
+        {
+          id: 'h-2026',
+          nombre: 'PAES Oficial 2026',
+          descripcion: 'Prueba oficial de Historia rendida a fines del 2025.'
+        }
+      ]
     }
   ];
 
   pruebaSeleccionada: Prueba | null = null;
   subPruebaSeleccionada: SubPrueba | null = null;
+  ensayoSeleccionado: EnsayoOption | null = null;
 
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -801,21 +964,28 @@ export class EnsayosListComponent implements OnInit {
   seleccionarPrueba(prueba: Prueba) {
     this.pruebaSeleccionada = prueba;
     this.subPruebaSeleccionada = prueba.subpruebas?.[0] ?? null;
+    this.ensayoSeleccionado = this.subPruebaSeleccionada?.ensayos?.[0] ?? null;
   }
 
   seleccionarSubprueba(subprueba: SubPrueba) {
     this.subPruebaSeleccionada = subprueba;
+    this.ensayoSeleccionado = subprueba.ensayos?.[0] ?? null;
+  }
+
+  seleccionarEnsayo(ensayo: EnsayoOption) {
+    this.ensayoSeleccionado = ensayo;
   }
 
   cerrarSeleccion() {
     this.pruebaSeleccionada = null;
     this.subPruebaSeleccionada = null;
+    this.ensayoSeleccionado = null;
   }
 
   iniciarPrueba(mode: ExamMode) {
     if (this.pruebaSeleccionada) {
       // Aquí se navegará al componente de ejecución de la prueba
-      const ensayoId = this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
+      const ensayoId = this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
       this.router.navigate(['/ensayo', ensayoId, 'run'], {
         queryParams: {
           mode,
@@ -831,6 +1001,9 @@ export class EnsayosListComponent implements OnInit {
       return '';
     }
     if (this.subPruebaSeleccionada) {
+      if (this.ensayoSeleccionado) {
+        return `${this.pruebaSeleccionada.nombre} - ${this.subPruebaSeleccionada.nombre} (${this.ensayoSeleccionado.nombre})`;
+      }
       return `${this.pruebaSeleccionada.nombre} - ${this.subPruebaSeleccionada.nombre}`;
     }
     return this.pruebaSeleccionada.nombre;
