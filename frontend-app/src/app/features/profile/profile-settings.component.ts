@@ -105,7 +105,6 @@ import { AdminService } from '../admin/services/admin.service';
             </div>
           </div>
         </div>
-        </div>
 
         <div class="emoji-modal" *ngIf="showEmojiPicker">
           <div class="emoji-backdrop" (click)="showEmojiPicker = false"></div>
