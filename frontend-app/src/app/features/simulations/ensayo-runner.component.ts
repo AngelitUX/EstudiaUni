@@ -319,7 +319,7 @@ interface AiMessage {
       background: #ffffff;
       color: #111827;
       --text-secondary: #4b5563;
-      --glass-border: #e5e7eb;
+      --glass-border: #cbd5e1;
     }
     
     .exam-container { min-height: 100vh; display: flex; flex-direction: column; color: #111827; }
@@ -331,7 +331,7 @@ interface AiMessage {
       justify-content: space-between;
       padding: 1rem 2rem;
       background: #ffffff;
-      border-bottom: 1px solid var(--glass-border);
+      border-bottom: 2px solid var(--glass-border);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -340,7 +340,7 @@ interface AiMessage {
     .header-left { display: flex; align-items: center; gap: 1rem; }
     .btn-icon {
       background: #f3f4f6;
-      border: 1px solid #e5e7eb;
+      border: 2px solid #cbd5e1;
       color: #374151;
       width: 36px;
       height: 36px;
@@ -397,7 +397,7 @@ interface AiMessage {
       font-weight: 600;
       padding: 0.5rem 1rem;
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      border: 2px solid #cbd5e1;
       border-radius: 8px;
       color: #1e293b;
     }
@@ -424,7 +424,7 @@ interface AiMessage {
     /* ===== QUESTION NAV ===== */
     .question-nav {
       background: #ffffff;
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
       border-radius: 16px;
       padding: 1.5rem;
       height: fit-content;
@@ -475,8 +475,8 @@ interface AiMessage {
       flex-direction: column;
       gap: 0.5rem;
       padding: 1rem 0;
-      border-top: 1px solid var(--glass-border);
-      border-bottom: 1px solid var(--glass-border);
+      border-top: 2px solid var(--glass-border);
+      border-bottom: 2px solid var(--glass-border);
       margin-bottom: 1rem;
     }
     .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #475569; }
@@ -502,7 +502,7 @@ interface AiMessage {
       padding: 0;
       border-radius: 16px;
       background: #ffffff;
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
       height: calc(100vh - 130px);
       max-height: 750px;
       position: sticky;
@@ -518,7 +518,7 @@ interface AiMessage {
       justify-content: space-between;
       padding: 1rem 1.25rem;
       background: #f8fafc;
-      border-bottom: 1px solid var(--glass-border);
+      border-bottom: 2px solid var(--glass-border);
       flex-shrink: 0;
     }
     .ai-header-left { display: flex; align-items: center; gap: 0.75rem; }
@@ -630,7 +630,7 @@ interface AiMessage {
       display: flex;
       gap: 0.4rem;
       padding: 0.6rem 1rem;
-      border-top: 1px solid var(--glass-border);
+      border-top: 2px solid var(--glass-border);
       flex-wrap: wrap;
       flex-shrink: 0;
     }
@@ -657,7 +657,7 @@ interface AiMessage {
       gap: 0.5rem;
       align-items: flex-end;
       padding: 0.75rem 1rem;
-      border-top: 1px solid var(--glass-border);
+      border-top: 2px solid var(--glass-border);
       background: #f8fafc;
       flex-shrink: 0;
     }
@@ -706,7 +706,7 @@ interface AiMessage {
       padding: 2.5rem;
       border-radius: 20px;
       background: #ffffff;
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
     .question-header {
@@ -756,7 +756,7 @@ interface AiMessage {
       gap: 2rem;
       margin-top: 2rem;
       padding-top: 1.5rem;
-      border-top: 1px dashed #e2e8f0;
+      border-top: 2px dashed #cbd5e1;
     }
     .option-btn {
       display: flex;
@@ -836,7 +836,7 @@ interface AiMessage {
     .warning-text { color: #ea580c !important; font-weight: 500; }
     .modal-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
 
-    .glass-card { background: #ffffff; border: 1px solid var(--glass-border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+    .glass-card { background: #ffffff; border: 2px solid var(--glass-border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 900px) {

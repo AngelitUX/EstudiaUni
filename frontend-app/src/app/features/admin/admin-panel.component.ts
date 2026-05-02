@@ -200,7 +200,9 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
 
     .sidebar-header {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
     .logo-mark {
@@ -213,24 +215,36 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       box-shadow: 0 4px 20px rgba(133,92,214,0.3);
     }
 
-    .sidebar-header h2 { font-size: 1.15rem; font-weight: 700; margin: 0; color: #fff; }
+    .sidebar-header h2 { 
+      font-size: 1.7rem; 
+      font-weight: 900; 
+      margin: 0; 
+      color: #1e1b4b; 
+      letter-spacing: -0.05em;
+      -webkit-text-stroke: 0.5px rgba(167, 139, 250, 0.8);
+      text-shadow: 
+        0 0 2px #fff,
+        0 0 8px #8b5cf6,
+        0 0 15px #8b5cf6,
+        0 0 30px #7c3aed;
+    }
     .badge { display: inline-block; font-size: 0.65rem; background: rgba(133,92,214,0.15); color: #a78bfa; padding: 0.2rem 0.6rem; border-radius: 99px; margin-top: 0.35rem; font-weight: 600; letter-spacing: 0.03em; }
 
     .sidebar-nav { display: flex; flex-direction: column; gap: 0.35rem; }
 
     .nav-item {
-      display: flex; align-items: center; gap: 0.65rem;
-      padding: 0.7rem 0.85rem;
-      border-radius: 10px;
-      color: #a1a1aa;
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 12px;
+      color: #ffffff;
       text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 1.05rem;
       font-weight: 500;
       transition: all 0.2s;
       cursor: pointer;
     }
-    .nav-item:hover { background: rgba(255,255,255,0.04); color: #e4e4e7; }
-    .nav-item.active { background: rgba(133,92,214,0.12); color: #a78bfa; }
+    .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
+    .nav-item.active { background: rgba(133,92,214,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); }
     .nav-icon { font-size: 1.1rem; }
     .nav-count { margin-left: auto; font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 600; }
 
@@ -255,15 +269,25 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     .filter-chip:hover { background: rgba(255,255,255,0.04); color: #e4e4e7; }
     .filter-chip.active { background: rgba(133,92,214,0.1); border-color: rgba(133,92,214,0.2); color: #a78bfa; }
 
-    .sidebar-footer { margin-top: auto; padding-top: 1rem; }
+    .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: none; display: flex; justify-content: center; }
     .btn-back {
-      width: 100%; padding: 0.65rem; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: transparent; color: #a1a1aa;
-      font-size: 0.82rem; font-weight: 500;
+      width: fit-content;
+      min-width: 180px;
+      padding: 0.65rem 1.25rem;
+      border-radius: 14px;
+      border: 2px solid rgba(133,92,214,0.4);
+      background: transparent; color: #a78bfa;
+      font-size: 1.05rem; font-weight: 500;
       cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem;
+      margin: 0 auto;
     }
-    .btn-back:hover { border-color: rgba(133,92,214,0.3); color: #a78bfa; }
+    .btn-back:hover { 
+      border-color: var(--accent-primary); 
+      background: rgba(133,92,214,0.1);
+      color: #fff; 
+    }
 
     /* ─── MAIN CONTENT ─── */
     .main-content { padding: 2rem; overflow-y: auto; }

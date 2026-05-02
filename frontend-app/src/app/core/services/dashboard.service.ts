@@ -279,7 +279,9 @@ export class DashboardService {
       return;
     }
 
-    const yesterday = this.getDateString(new Date(Date.now() - 86400000));
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = this.getDateString(yesterdayDate);
     if (lastDate === yesterday) {
       // Studied yesterday, increment streak
       this._streakDays.update(s => s + 1);
@@ -300,7 +302,9 @@ export class DashboardService {
     }
 
     const today = this.getDateString(new Date());
-    const yesterday = this.getDateString(new Date(Date.now() - 86400000));
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = this.getDateString(yesterdayDate);
 
     if (lastDate !== today && lastDate !== yesterday) {
       // More than 1 day without studying, reset
@@ -340,7 +344,10 @@ export class DashboardService {
   }
 
   private getDateString(date: Date): string {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   // ─── Persistence ───

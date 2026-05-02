@@ -82,6 +82,7 @@ type ExamMode = 'real' | 'asistido';
             </div>
             
             <div class="header-actions">
+              <span class="plan-badge" [class.pro]="isProPlan">{{ isProPlan ? 'PRO' : 'BASICO' }}</span>
               <div class="profile-menu-wrap">
                 <button class="profile-trigger" (click)="showProfileModal = true">
                   <span class="profile-avatar-wrap">
@@ -188,7 +189,7 @@ type ExamMode = 'real' | 'asistido';
     :host {
       display: block;
       min-height: 100vh;
-      background: #f8f9fa;
+      background: var(--bg-color);
       color: var(--text-primary);
     }
     .ensayos-container { display: flex; min-height: 100vh; }
@@ -198,7 +199,7 @@ type ExamMode = 'real' | 'asistido';
     .sidebar { 
       width: 260px; 
       background: rgba(13, 15, 23, 0.95); 
-      border-right: 1px solid var(--glass-border); 
+      border-right: 1px solid rgba(255,255,255,0.1); 
       display: flex; 
       flex-direction: column; 
       position: fixed; 
@@ -208,13 +209,20 @@ type ExamMode = 'real' | 'asistido';
       z-index: 100; 
     }
     .sidebar-header { 
-      padding: 1.5rem; 
-      border-bottom: 1px solid var(--glass-border); 
+      padding: 2.5rem 1.5rem 2rem; 
+      border-bottom: 1px solid rgba(255,255,255,0.15); 
+      text-align: center;
     }
     .sidebar-logo { 
       font-family: var(--font-heading); 
-      font-size: 1.25rem; 
-      font-weight: 800; 
+      font-size: 2.2rem; 
+      font-weight: 900; 
+      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em; 
+      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      position: relative;
     }
     .sidebar-nav { 
       flex: 1; 
@@ -226,45 +234,64 @@ type ExamMode = 'real' | 'asistido';
     .nav-item { 
       display: flex; 
       align-items: center; 
-      gap: 0.75rem; 
-      padding: 0.85rem 1rem; 
-      border-radius: 10px; 
-      color: var(--text-secondary); 
+      gap: 0.85rem; 
+      padding: 0.9rem 1.1rem; 
+      border-radius: 12px; 
+      color: #ffffff; 
       text-decoration: none; 
       transition: all 0.2s; 
       cursor: pointer; 
+      font-size: 1.05rem;
+      font-weight: 500;
     }
     .nav-item:hover { 
-      background: rgba(255, 255, 255, 0.05); 
+      background: rgba(255, 255, 255, 0.12); 
       color: #fff; 
+      transform: translateX(4px);
     }
     .nav-item.active { 
-      background: rgba(99, 102, 241, 0.15); 
-      color: var(--accent-primary); 
-      font-weight: 600; 
+      background: rgba(99, 102, 241, 0.25); 
+      color: #ffffff; 
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .nav-icon { 
-      font-size: 1.2rem; 
-      width: 24px; 
-      text-align: center; 
+      font-size: 1.35rem; 
+      width: 32px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .sidebar-footer {
-      padding: 1rem 0.75rem;
-      border-top: 1px solid var(--glass-border);
+      padding: 1.25rem 1rem;
+      border-top: none;
+      display: flex;
+      justify-content: center;
     }
     .logout-btn {
-      color: #ef4444;
+      width: fit-content;
+      min-width: 180px;
+      justify-content: center; 
+      padding: 0.65rem 1rem;
+      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
+      background: transparent !important; 
+      color: rgba(252, 165, 165, 0.6) !important; 
+      margin: 0 auto;
+      border-radius: 14px;
+      font-weight: 500;
     }
-    .logout-btn:hover {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ff6b6b;
+    .logout-btn:hover { 
+      background: rgba(239, 68, 68, 0.1) !important; 
+      border-color: #ef4444 !important; 
+      color: #ef4444 !important; 
+      transform: none !important; 
     }
 
     /* MAIN CONTENT */
     .main-content { 
       flex: 1; 
       margin-left: 260px; 
-      padding: 2rem; 
+      padding: 2.5rem; 
     }
 
     /* HEADER */
@@ -288,12 +315,14 @@ type ExamMode = 'real' | 'asistido';
       gap: 1rem;
     }
     .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid rgba(0,0,0,0.08); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
+    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
     .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
     .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
     .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; }
-    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 0.08rem 0.28rem; font-size: 0.72rem; line-height: 1; }
+    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
+    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; }
+    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
+    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
     .header-back {
       margin-bottom: 0;
     }
@@ -312,13 +341,15 @@ type ExamMode = 'real' | 'asistido';
     }
     .title {
       font-family: var(--font-heading);
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       font-weight: 800;
       margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
     }
     .subtitle {
       color: var(--text-secondary);
-      font-size: 1.1rem;
+      font-size: 1.15rem;
+      font-weight: 500;
     }
 
     /* PRUEBAS GRID */
@@ -338,9 +369,9 @@ type ExamMode = 'real' | 'asistido';
     .prueba-card {
       text-align: left;
       background: #ffffff;
-      border: 2px solid rgba(0,0,0,0.06);
-      border-radius: 16px;
-      padding: 2rem;
+      border: 2px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 2.5rem;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
@@ -349,6 +380,7 @@ type ExamMode = 'real' | 'asistido';
       position: relative;
       overflow: hidden;
       color: inherit;
+      box-shadow: var(--shadow);
     }
     .prueba-card::before {
       content: '';
@@ -359,9 +391,9 @@ type ExamMode = 'real' | 'asistido';
       transition: opacity 0.3s ease;
     }
     .prueba-card:hover {
-      border-color: rgba(133,92,214,0.3);
-      box-shadow: 0 12px 40px rgba(133,92,214,0.1);
-      transform: translateY(-4px);
+      border-color: rgba(133,92,214,0.4);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-6px);
     }
     .prueba-card:hover::before {
       opacity: 1;
@@ -380,15 +412,17 @@ type ExamMode = 'real' | 'asistido';
       flex: 1;
     }
     .card-title {
-      font-size: 1.3rem;
-      font-weight: 700;
+      font-size: 1.4rem;
+      font-weight: 800;
       margin-bottom: 0.5rem;
       color: var(--text-primary);
+      letter-spacing: -0.01em;
     }
     .card-desc {
-      font-size: 0.9rem;
+      font-size: 1rem;
       color: var(--text-secondary);
-      line-height: 1.5;
+      line-height: 1.6;
+      font-weight: 500;
     }
 
     .card-meta {
@@ -397,15 +431,16 @@ type ExamMode = 'real' | 'asistido';
       flex-wrap: wrap;
     }
     .meta-badge {
-      background: rgba(0, 0, 0, 0.04);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
+      background: var(--bg-secondary);
+      padding: 0.6rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
       color: var(--text-secondary);
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      gap: 0.5rem;
+      border: 1px solid var(--glass-border);
+      font-weight: 700;
     }
     .meta-icon {
       font-size: 1rem;
@@ -603,8 +638,8 @@ type ExamMode = 'real' | 'asistido';
     }
     .glass-card {
       background: #ffffff;
-      border: 2px solid rgba(0,0,0,0.06);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      border: 2px solid var(--glass-border);
+      box-shadow: var(--shadow-lg);
     }
 
     /* RESPONSIVE */
@@ -728,6 +763,11 @@ export class EnsayosListComponent implements OnInit {
 
   get profileInitial(): string {
     return this.userProfile?.displayName?.charAt(0)?.toUpperCase() || 'U';
+  }
+  
+  get isProPlan(): boolean {
+    const plan = this.userProfile?.plan || this.userProfile?.subscription?.tier;
+    return plan === 'premium' || plan === 'pro';
   }
 
   onProfileModalClose() {

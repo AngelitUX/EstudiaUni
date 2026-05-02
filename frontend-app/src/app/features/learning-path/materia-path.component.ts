@@ -130,21 +130,48 @@ type PathItem =
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
+    :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .lp-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: #fff; }
+    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
+    .sidebar-logo { 
+      font-family: var(--font-heading); 
+      font-size: 2.2rem; 
+      font-weight: 900; 
+      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em; 
+      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      position: relative;
+    }
     .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 0.95rem; }
-    .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .nav-item.active { background: rgba(99,102,241,0.15); color: var(--accent-primary); font-weight: 600; }
-    .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
-    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
-    .logout-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 1.05rem; font-weight: 500; }
+    .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
+    .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-footer { padding: 1.25rem 1rem; border-top: none; display: flex; justify-content: center; }
+    .logout-btn { 
+      width: fit-content;
+      min-width: 180px;
+      justify-content: center; 
+      padding: 0.65rem 1rem;
+      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
+      background: transparent !important; 
+      color: rgba(252, 165, 165, 0.6) !important; 
+      margin: 0 auto;
+      border-radius: 14px;
+      font-weight: 500;
+    }
+    .logout-btn:hover { 
+      background: rgba(239, 68, 68, 0.1) !important; 
+      border-color: #ef4444 !important; 
+      color: #ef4444 !important; 
+      transform: none !important; 
+    }
 
     /* MOBILE */
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
@@ -161,15 +188,15 @@ type PathItem =
     /* HEADER */
     .path-header { padding: 1.5rem 1.5rem 0.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
     .btn-back { background: transparent; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.2s; }
-    .btn-back:hover { background: rgba(0,0,0,0.05); color: var(--text-primary); }
-    .header-info h2 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .btn-back:hover { background: var(--bg-secondary); color: var(--accent-primary); transform: translateX(-4px); }
+    .header-info h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
 
     /* PATH CONTAINER */
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
 
     /* CHAPTER DIVIDER */
     .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 1.5rem 0 7.5rem; position: relative; z-index: 15; padding: 0 1rem; }
-    .div-line { flex: 1; height: 2px; background: rgba(0,0,0,0.08); }
+    .div-line { flex: 1; height: 4px; background: var(--glass-border); border-radius: 99px; }
     .div-content { padding: 0 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
     .div-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; }
     
@@ -183,7 +210,7 @@ type PathItem =
     .node-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; transition: transform 0.3s ease; }
 
     /* NODE FLOATING TITLE (TOP) */
-    .node-title-top { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-family: var(--font-heading); font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; pointer-events: none; transition: all 0.2s; text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.8); }
+    .node-title-top { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; pointer-events: none; transition: all 0.2s; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
     .text-completed { color: #3d8c00; }
     .text-active { color: var(--accent-primary); top: -36px; }
 

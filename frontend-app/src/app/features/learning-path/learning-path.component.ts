@@ -153,15 +153,42 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: #fff; }
+    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
+    .sidebar-logo { 
+      font-family: var(--font-heading); 
+      font-size: 2.2rem; 
+      font-weight: 900; 
+      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em; 
+      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      position: relative;
+    }
     .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 0.95rem; }
-    .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .nav-item.active { background: rgba(99,102,241,0.15); color: var(--accent-primary); font-weight: 600; }
-    .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
-    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
-    .logout-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 1.05rem; font-weight: 500; }
+    .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
+    .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-footer { padding: 1.25rem 1rem; border-top: none; display: flex; justify-content: center; }
+    .logout-btn { 
+      width: fit-content;
+      min-width: 180px;
+      justify-content: center; 
+      padding: 0.65rem 1rem;
+      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
+      background: transparent !important; 
+      color: rgba(252, 165, 165, 0.6) !important; 
+      margin: 0 auto;
+      border-radius: 14px;
+      font-weight: 500;
+    }
+    .logout-btn:hover { 
+      background: rgba(239, 68, 68, 0.1) !important; 
+      border-color: #ef4444 !important; 
+      color: #ef4444 !important; 
+      transform: none !important; 
+    }
 
     /* MOBILE */
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }

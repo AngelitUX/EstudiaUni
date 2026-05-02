@@ -45,7 +45,9 @@ import { Router, RouterModule } from '@angular/router';
       <!-- HERO SECTION -->
       <section class="hero-section">
         <div class="hero-content">
-          <div class="hero-badge">🚀 La forma inteligente de preparar la PAES</div>
+          <div class="hero-badge-container">
+            <div class="hero-badge">🚀 La forma inteligente de prepararse para la PAES</div>
+          </div>
           
           <h1 class="hero-title">
             Prepárate para la <span class="text-gradient">PAES</span><br>con Inteligencia Artificial
@@ -124,7 +126,15 @@ import { Router, RouterModule } from '@angular/router';
             <div class="logo-item">UAI</div>
             <div class="logo-item">UDP</div>
             <div class="logo-item">UDD</div>
-            <!-- Duplicados para loop infinito -->
+            <!-- Triplicados para asegurar loop infinito sin saltos -->
+            <div class="logo-item">Universidad de Chile</div>
+            <div class="logo-item">PUC</div>
+            <div class="logo-item">USACH</div>
+            <div class="logo-item">Universidad de Concepción</div>
+            <div class="logo-item">UTFSM</div>
+            <div class="logo-item">UAI</div>
+            <div class="logo-item">UDP</div>
+            <div class="logo-item">UDD</div>
             <div class="logo-item">Universidad de Chile</div>
             <div class="logo-item">PUC</div>
             <div class="logo-item">USACH</div>
@@ -339,7 +349,9 @@ import { Router, RouterModule } from '@angular/router';
       <footer class="footer">
         <div class="footer-content">
           <div class="footer-brand">
-            <span class="text-gradient">EstudiaUni</span>.cl
+            <div class="nav-logo" style="margin-bottom: 0.5rem;">
+              <span class="text-gradient">EstudiaUni</span>.cl
+            </div>
             <p>La plataforma inteligente para tu PAES</p>
           </div>
           <div class="footer-links">
@@ -355,10 +367,15 @@ import { Router, RouterModule } from '@angular/router';
   styles: [`
     /* ===== VARIABLES & BASE ===== */
     .home-container { min-height: 100vh; }
-    .section-fade {
+    .section-fade, .bento-card, .video-card, .testimonial-card, .pricing-card {
       opacity: 0;
-      transform: translateY(24px);
+      transform: translateY(40px) scale(0.98);
+      transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform, opacity;
+    }
+    .is-visible {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
     }
     .w-full { width: 100%; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -370,14 +387,15 @@ import { Router, RouterModule } from '@angular/router';
       left: 0;
       right: 0;
       z-index: 1000;
-      padding: 1rem 2rem;
+      padding: 1.25rem 2rem;
       transition: all 0.3s ease;
-      background: var(--bg-color);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
     }
     .navbar.scrolled {
       background: rgba(255, 255, 255, 0.98);
       border-bottom: 2px solid var(--glass-border);
-      padding: 0.75rem 2rem;
+      padding: 0.85rem 2rem;
       box-shadow: var(--shadow);
     }
     .nav-container {
@@ -386,22 +404,28 @@ import { Router, RouterModule } from '@angular/router';
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: relative;
     }
     .nav-logo {
       font-family: var(--font-heading);
-      font-size: 1.5rem;
+      font-size: 2.3rem;
       font-weight: 800;
       cursor: pointer;
+      color: var(--text-primary);
     }
     .nav-links {
       display: flex;
       gap: 2.5rem;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
     .nav-links a {
       color: var(--text-secondary);
       font-weight: 600;
       cursor: pointer;
       transition: color 0.2s;
+      font-size: 1.1rem;
     }
     .nav-links a:hover { color: var(--accent-primary); }
     .nav-actions {
@@ -412,7 +436,7 @@ import { Router, RouterModule } from '@angular/router';
       background: transparent;
       color: var(--text-primary);
       border: 2px solid var(--glass-border);
-      padding: 0.6rem 1.2rem;
+      padding: 0.6rem 1.4rem;
       cursor: pointer;
       font-weight: 600;
       transition: all 0.2s;
@@ -465,6 +489,10 @@ import { Router, RouterModule } from '@angular/router';
       padding: 8rem 2rem 4rem;
       text-align: center;
     }
+    .hero-badge-container {
+      opacity: 0;
+      transform: translateY(-14px);
+    }
     .hero-badge {
       display: inline-block;
       padding: 0.5rem 1.25rem;
@@ -472,11 +500,15 @@ import { Router, RouterModule } from '@angular/router';
       border: none;
       border-radius: 999px;
       color: var(--text-primary);
-      font-size: 0.9rem;
+      font-size: 1.05rem;
       font-weight: 700;
       margin-bottom: 2rem;
-      opacity: 0;
-      transform: translateY(-14px);
+      animation: float-badge 3.5s ease-in-out infinite;
+      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+    }
+    @keyframes float-badge {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
     .hero-title {
       font-family: var(--font-heading);
@@ -572,7 +604,7 @@ import { Router, RouterModule } from '@angular/router';
       opacity: 0;
       transform: translateY(18px);
     }
-    .home-container.animations-ready .hero-badge { animation: fadeInDown 0.8s ease both; }
+    .home-container.animations-ready .hero-badge-container { animation: fadeInDown 0.8s ease both; }
     .home-container.animations-ready .hero-title { animation: fadeInUp 0.95s ease 0.08s both; }
     .home-container.animations-ready .hero-subtitle { animation: fadeInUp 0.95s ease 0.22s both; }
     .home-container.animations-ready .hero-actions { animation: fadeInUp 0.95s ease 0.36s both; }
@@ -659,8 +691,9 @@ import { Router, RouterModule } from '@angular/router';
 
     /* ===== LOGOS CAROUSEL ===== */
     .logos-section {
-      padding: 3rem 0;
+      padding: 4rem 0;
       overflow: hidden;
+      background: var(--bg-color);
       border-top: 2px solid var(--glass-border);
       border-bottom: 2px solid var(--glass-border);
     }
@@ -671,6 +704,10 @@ import { Router, RouterModule } from '@angular/router';
       text-transform: uppercase;
       letter-spacing: 2px;
       margin-bottom: 1.5rem;
+    }
+    .footer-brand .nav-logo {
+      font-size: 2.1rem;
+      margin-bottom: 0.5rem;
     }
     .logos-carousel {
       position: relative;
@@ -695,7 +732,7 @@ import { Router, RouterModule } from '@angular/router';
     .logo-item:hover { opacity: 1; }
     @keyframes scroll-logos {
       0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      100% { transform: translateX(calc(-100% / 3 * 1)); }
     }
     @keyframes fadeInDown {
       from { opacity: 0; transform: translateY(-14px); }
@@ -1115,6 +1152,9 @@ import { Router, RouterModule } from '@angular/router';
       .testimonials-grid { grid-template-columns: 1fr; max-width: 500px; }
       .testimonial-card.featured { transform: none; }
     }
+    @media (max-width: 1200px) {
+      .nav-links { position: static; transform: none; gap: 1.5rem; }
+    }
     @media (max-width: 768px) {
       .nav-links, .nav-actions { display: none; }
       .mobile-menu-btn { display: flex; }
@@ -1154,6 +1194,26 @@ export class HomeComponent implements AfterViewInit {
     requestAnimationFrame(() => {
       this.animationsReady = true;
     });
+
+    // Scroll Reveal Animation Logic
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          // Una vez visible, dejamos de observar para mejorar rendimiento
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Seleccionamos todos los elementos que queremos animar al hacer scroll
+    const animatedElements = document.querySelectorAll('.section-fade, .bento-card, .video-card, .testimonial-card, .pricing-card');
+    animatedElements.forEach(el => observer.observe(el));
   }
 
   @HostListener('window:scroll')
