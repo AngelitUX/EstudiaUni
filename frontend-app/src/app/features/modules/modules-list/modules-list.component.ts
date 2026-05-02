@@ -10,8 +10,8 @@ import { ModulesService } from '../services/modules.service';
   template: `
     <div class="modules-container animate-fade-in">
       <div style="margin-bottom: 1rem;">
-        <button class="btn btn-ghost" routerLink="/dashboard" style="padding: 0; display: inline-flex; align-items: center; gap: 0.5rem;">
-          ← Volver al Inicio
+        <button class="btn-back" routerLink="/dashboard">
+          ← Volver
         </button>
       </div>
       <h2>Mi Ruta de Aprendizaje</h2>
@@ -91,6 +91,23 @@ import { ModulesService } from '../services/modules.service';
       color: #9ca3af;
     }
     .module-section { margin-bottom: 4rem; }
+    .btn-back {
+      background: none;
+      border: none;
+      color: var(--accent-primary);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0;
+    }
+    .btn-back:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
     .module-header { 
       display: flex; 
       align-items: center; 

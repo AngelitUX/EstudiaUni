@@ -16,7 +16,11 @@ import {
   DocumentData
 } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
-import { from, map, Observable, of } from 'rxjs';
+import { from, map, Observable, of, catchError } from 'rxjs';
+import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
+import m1InviernoQuestionsData from '../../../assets/m1-invierno-preguntas-db.json';
+import m1Invierno2025QuestionsData from '../../../assets/m1-invierno-2025-preguntas-db.json';
+import m12026QuestionsData from '../../../assets/m1-2026-preguntas-db.json';
 
 /**
  * ESTRUCTURA DE FIRESTORE PARA ESTUDIAUNI
@@ -247,10 +251,13 @@ export class FirestoreService {
     return from(getDocs(q)).pipe(
       map(snapshot => {
         if (snapshot.empty) {
-          // Si no hay ensayos en Firestore, devolver mock data
           return this.getMockEnsayos(subjectFilter);
         }
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Ensayo));
+      }),
+      catchError(err => {
+        console.warn('[Firestore] getEnsayos falló (posible índice en construcción), usando mock data:', err?.message);
+        return of(this.getMockEnsayos(subjectFilter));
       })
     );
   }
@@ -268,7 +275,9 @@ export class FirestoreService {
   /** Obtener preguntas de un ensayo */
   getPreguntas(ensayoId: string): Observable<Pregunta[]> {
     const preguntasRef = collection(this.firestore, 'preguntas');
-    const q = query(preguntasRef, where('ensayoId', '==', ensayoId), orderBy('order'));
+    // Nota: orderBy('order') requiere un índice compuesto con ensayoId.
+    // Mientras el índice se construye, usamos sólo el filtro where para evitar el error.
+    const q = query(preguntasRef, where('ensayoId', '==', ensayoId));
     
     return from(getDocs(q)).pipe(
       map(snapshot => {
@@ -277,6 +286,10 @@ export class FirestoreService {
           return this.getMockPreguntas(ensayoId);
         }
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Pregunta));
+      }),
+      catchError(err => {
+        console.warn('[Firestore] getPreguntas falló (posible índice en construcción), usando mock data:', err?.message);
+        return of(this.getMockPreguntas(ensayoId));
       })
     );
   }
@@ -386,10 +399,11 @@ export class FirestoreService {
       { id: 'mat1-f115', title: 'Ensayo M1 - Forma 115', subject: 'matematica1', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
       { id: 'mat1-f116', title: 'Ensayo M1 - Forma 116', subject: 'matematica1', questionCount: 65, timeMinutes: 140, difficulty: 'dificil', isActive: true },
       { id: 'mat1-f117', title: 'Ensayo M1 - Forma 117', subject: 'matematica1', questionCount: 65, timeMinutes: 140, difficulty: 'facil', isActive: true },
-      { id: 'leng-f201', title: 'Ensayo CL - Forma 201', subject: 'lenguaje', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
-      { id: 'leng-f202', title: 'Ensayo CL - Forma 202', subject: 'lenguaje', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
-      { id: 'ciencias-f301', title: 'Ensayo Ciencias - Forma 301', subject: 'ciencias', questionCount: 80, timeMinutes: 150, difficulty: 'medio', isActive: true },
-      { id: 'historia-f401', title: 'Ensayo Historia - Forma 401', subject: 'historia', questionCount: 65, timeMinutes: 140, difficulty: 'medio', isActive: true },
+      { id: 'mat2-f201', title: 'Ensayo M2 - Forma 201', subject: 'matematica2', questionCount: 55, timeMinutes: 140, difficulty: 'medio', isActive: true },
+      { id: 'leng-f301', title: 'Ensayo CL - Forma 301', subject: 'lenguaje', questionCount: 65, timeMinutes: 150, difficulty: 'medio', isActive: true },
+      { id: 'leng-f302', title: 'Ensayo CL - Forma 302', subject: 'lenguaje', questionCount: 65, timeMinutes: 150, difficulty: 'medio', isActive: true },
+      { id: 'ciencias-f401', title: 'Ensayo Ciencias - Forma 401', subject: 'ciencias', questionCount: 80, timeMinutes: 160, difficulty: 'medio', isActive: true },
+      { id: 'historia-f501', title: 'Ensayo Historia - Forma 501', subject: 'historia', questionCount: 65, timeMinutes: 120, difficulty: 'medio', isActive: true },
     ];
     
     if (subjectFilter && subjectFilter !== 'todos') {
@@ -399,11 +413,25 @@ export class FirestoreService {
   }
 
   private getMockPreguntas(ensayoId: string): Pregunta[] {
-    // Generar 65 preguntas mock
+    if (ensayoId === 'm1') {
+      return m1QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm1-invierno') {
+      return m1InviernoQuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm1-invierno-2025') {
+      return m1Invierno2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm1-2026') {
+      return m12026QuestionsData as unknown as Pregunta[];
+    }
+    
+    const total = this.getMockQuestionCount(ensayoId);
+    // Generar preguntas mock
     const preguntas: Pregunta[] = [];
     const topics = ['Álgebra', 'Geometría', 'Probabilidad', 'Funciones', 'Trigonometría'];
     
-    for (let i = 1; i <= 65; i++) {
+    for (let i = 1; i <= total; i++) {
       preguntas.push({
         id: `${ensayoId}-q${i}`,
         ensayoId,
@@ -424,5 +452,15 @@ export class FirestoreService {
     }
     
     return preguntas;
+  }
+
+  private getMockQuestionCount(ensayoId: string): number {
+    const normalized = ensayoId.toLowerCase();
+    if (normalized.includes('ciencias')) return 80;
+    if (normalized.includes('historia')) return 65;
+    if (normalized.includes('competencia') || normalized.includes('lectora') || normalized.includes('leng')) return 65;
+    if (normalized.includes('m2') || normalized.includes('mat2')) return 55;
+    if (normalized.includes('m1') || normalized.includes('mat1')) return 65;
+    return 65;
   }
 }

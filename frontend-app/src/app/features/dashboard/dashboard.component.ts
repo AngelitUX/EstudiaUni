@@ -19,10 +19,26 @@ import { Router, RouterModule } from '@angular/router';
           <span class="sidebar-logo"><span class="text-gradient">EstudiaUni</span></span>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item active" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-          <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/settings"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+          <a class="nav-item active" routerLink="/dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Inicio</span>
+          </a>
+          <a class="nav-item" routerLink="/ruta">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-text">Ruta de Aprendizaje</span>
+          </a>
+          <a class="nav-item" routerLink="/modules">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-text">Práctica por Tema</span>
+          </a>
+          <a class="nav-item" routerLink="/ensayos">
+            <span class="nav-icon">📚</span>
+            <span class="nav-text">Ensayos PAES</span>
+          </a>
+          <a class="nav-item" routerLink="/settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Configuración</span>
+          </a>
         </nav>
         <div class="sidebar-footer">
           <button class="nav-item logout-btn" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></button>
@@ -37,11 +53,30 @@ import { Router, RouterModule } from '@angular/router';
       <div class="mobile-overlay" [class.open]="mobileMenuOpen" (click)="mobileMenuOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileMenuOpen = false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/settings" (click)="mobileMenuOpen = false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
-            <a class="nav-item" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+            <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🏠</span>
+              <span class="nav-text">Inicio</span>
+            </a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🗺️</span>
+              <span class="nav-text">Ruta de Aprendizaje</span>
+            </a>
+            <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🎯</span>
+              <span class="nav-text">Práctica por Tema</span>
+            </a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">📚</span>
+              <span class="nav-text">Ensayos PAES</span>
+            </a>
+            <a class="nav-item" routerLink="/settings" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-text">Configuración</span>
+            </a>
+            <a class="nav-item" (click)="logout()">
+              <span class="nav-icon">🚪</span>
+              <span class="nav-text">Cerrar Sesión</span>
+            </a>
           </nav>
         </div>
       </div>
@@ -165,7 +200,7 @@ import { Router, RouterModule } from '@angular/router';
               <div class="rec-nav" *ngIf="dashSvc.recommendations().length > 1">
                 <button *ngFor="let r of dashSvc.recommendations(); let i = index" class="rec-dot" [class.active]="i === activeRecIdx" (click)="activeRecIdx = i"></button>
               </div>
-              <button class="btn btn-primary btn-large" [routerLink]="dashSvc.recommendations()[activeRecIdx]?.routerLink ?? '/ruta'">
+              <button class="btn btn-primary btn-large" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
                 🚀 Comenzar
               </button>
             </div>
@@ -379,6 +414,6 @@ export class DashboardComponent implements OnInit {
 
   async logout() {
     await firstValueFrom(this.authService.logout());
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 }

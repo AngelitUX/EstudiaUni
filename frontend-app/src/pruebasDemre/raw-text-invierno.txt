@@ -1,0 +1,96 @@
+P
+RUEBA DE
+ COMPETENCIA
+ 
+MATEMÁTICA 1
+FORMA
+111
+Pruebas de Acceso a la 
+Educación Superior (PAES invierno)
+ Significado de los puntajes
+ Claves
+ Tabla de transformación de puntaje
+/demre.uchile/demre_uchile/DEMREuchile/demre.uchile
+
+----------------Page (0) Break----------------
+2
+SIGNIFICADO DE LOS PUNTAJES
+Puntaje (P): se obtiene de la suma de todas las respuestas correctas consideradas para 
+el cálculo del puntaje.
+Puntaje PAES: A partir del Proceso de Admisión 2023, el puntaje de todos los instrumentos 
+de acceso es calculado aplicando una transformación a los puntajes P que va desde los 
+100 a los 1000 puntos.
+La Prueba de Competencia Matemática 1 (M1) tiene 65 preguntas, y solo 60 de ellas se 
+utilizan para calcular el puntaje.
+Junto  al  clavijero  encontrarás  un  ejemplo  para  el  cálculo  de  tu  Puntaje  y  su 
+correspondiente Puntaje PAES, el que se obtiene de la Tabla de Transformación de 
+Puntaje que se incluye en este documento.
+
+----------------Page (1) Break----------------
+3
+CLAVES
+NºClaveNºClaveNºClave
+1C23A45C
+2B24D46A
+3C25C47B
+4B26A48A
+5*A27B49C
+6C28D50B
+7B29B51A
+8B30D52D
+9C31C53C
+10A32B54A
+11B33B55C
+12B34A56B
+13C35C57C
+14C36C58B
+15B37*B59A
+16D38D60C
+17A39D61A
+18A40A62D
+19*D41A63D
+20*C42C64B
+21B43D65C
+22D44*C
+En el clavijero, las 5 preguntas que están marcadas con (*) corresponden a preguntas 
+que no se consideran para el cálculo del Puntaje.
+----------------Page (2) Break----------------
+4
+Ejemplo de cálculo de puntaje
+Primero: contabiliza tus respuestas correctas (Puntaje P) excluyendo las 5 preguntas 
+marcadas en el clavijero con (*).
+Segundo: busca en la tabla de transformación el Puntaje PAES correspondiente a la 
+cantidad de respuestas correctas obtenidas (Puntaje P).
+Por ejemplo, si obtuviste 50 respuestas correctas entonces tu Puntaje P es 50. Luego, 
+según la tabla de transformación tu Puntaje PAES es 802.
+
+----------------Page (3) Break----------------
+5
+TABLA DE TRANSFORMACIÓN DE PUNTAJE
+DE LA PAES DE COMPETENCIA MATEMÁTICA 1
+PPAESPPAESPPAES
+01002148942700
+11742249743711
+22002350444723
+32232451245738
+42442552146753
+52652653247767
+62842754648778
+73012856149790
+83172957350802
+93313058351817
+103473159152834
+113633259753851
+123793360454869
+133923461255886
+144033562356905
+154133663757926
+164243765158949
+174363866559974
+1845039676601000
+1946540684
+2047841692
+----------------Page (4) Break----------------
+/demre.uchile/demre_uchile/DEMREuchile/demre.uchile
+
+----------------Page (5) Break----------------
