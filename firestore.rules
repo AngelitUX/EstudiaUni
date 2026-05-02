@@ -64,6 +64,27 @@ service cloud.firestore {
       }
     }
 
+    // ============ LEARNING PATH (NUEVO) ============
+    match /lp_materias/{materiaId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    match /lp_capitulos/{capituloId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      
+      match /secciones/{seccionId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+    
+    match /lp_tests/{testId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     // ============ ADMINS ============
     match /admins/{adminId} {
       allow read: if isAuthenticated();

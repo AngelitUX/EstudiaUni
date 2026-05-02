@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Pregunta } from '../../core/services/firestore.service';
 import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.service';
 import { ToastService } from '../../core/services/toast.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 interface Question {
   id: string;
@@ -854,6 +855,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private firestoreService = inject(FirestoreService);
   private aiAssistService = inject(AiAssistService);
   private toast = inject(ToastService);
+  private dashboardService = inject(DashboardService);
 
   @ViewChild('chatScrollContainer') private chatContainer!: ElementRef;
 
@@ -1102,6 +1104,23 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     if (this.timerInterval) clearInterval(this.timerInterval);
     
     const timeSpent = Math.max(this.initialTimeSeconds - this.timeRemaining, 0);
+    
+    // Calculate score for dashboard logging
+    const correctAnswers = this.questions.filter(q => 
+      this.answers[q.id] === q.correctAnswer
+    ).length;
+    
+    // Log to dashboard service
+    try {
+      this.dashboardService.logEnsayoCompleted({
+        ensayoId: this.examId,
+        ensayoTitle: this.examTitle,
+        subject: 'matematica1',
+        correctAnswers,
+        totalQuestions: this.totalQuestions,
+        score: Math.round((correctAnswers / Math.max(this.totalQuestions, 1)) * 1000),
+      });
+    } catch { /* ignore */ }
     
     // Finalizar intento en Firestore
     if (this.intentoId) {

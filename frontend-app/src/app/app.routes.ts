@@ -11,6 +11,7 @@ import { EnsayoRunnerComponent } from './features/simulations/ensayo-runner.comp
 import { EnsayoReviewComponent } from './features/simulations/ensayo-review.component';
 import { authGuard } from './core/guards/auth.guard';
 import { emailVerifiedGuard } from './core/guards/email-verified.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -39,6 +40,48 @@ export const routes: Routes = [
   { path: 'ensayos', component: EnsayosListComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'ensayo/:id/run', component: EnsayoRunnerComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'ensayo/:id/review', component: EnsayoReviewComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  // Ruta de Aprendizaje (Duolingo-style)
+  {
+    path: 'ruta',
+    loadComponent: () => import('./features/learning-path/learning-path.component').then(m => m.LearningPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/:materiaId',
+    loadComponent: () => import('./features/learning-path/materia-path.component').then(m => m.MateriaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/:materiaId/:capituloId',
+    loadComponent: () => import('./features/learning-path/capitulo-detail.component').then(m => m.CapituloDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/:materiaId/:capituloId/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-detail.component').then(m => m.SeccionDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'test/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-test.component').then(m => m.SeccionTestComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'test/:seccionId/review',
+    loadComponent: () => import('./features/learning-path/seccion-test-review.component').then(m => m.SeccionTestReviewComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  // ─── Admin Panel ───
+  {
+    path: 'admin',
+    loadComponent: () => import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
+    path: 'admin/pregunta/:id',
+    loadComponent: () => import('./features/admin/question-editor.component').then(m => m.QuestionEditorComponent),
+    canActivate: [authGuard, adminGuard]
+  },
   { path: '**', redirectTo: '' }
 ];
 

@@ -40,6 +40,14 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">🏠</span>
             <span class="nav-text">Inicio</span>
           </a>
+          <a class="nav-item" routerLink="/ruta">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-text">Ruta de Aprendizaje</span>
+          </a>
+          <a class="nav-item" routerLink="/tests">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Mis Ensayos</span>
+          </a>
           <a class="nav-item" routerLink="/modules">
             <span class="nav-icon">🎯</span>
             <span class="nav-text">Práctica por Tema</span>

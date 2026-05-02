@@ -169,6 +169,7 @@ import { ModulesService } from '../services/modules.service';
       color: #9ca3af;
       font-size: 0.9rem;
     }
+
     .status-icon { font-size: 1.2rem; }
     .progress-bar-container { 
       width: 100%; 

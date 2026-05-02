@@ -53,6 +53,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/katex/dist/katex.min.css",
               "src/styles.css"
             ],
             "scripts": []

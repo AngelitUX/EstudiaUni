@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { updateProfile } from 'firebase/auth';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { AdminService } from '../admin/services/admin.service';
 
 @Component({
   selector: 'app-profile-settings',
@@ -39,6 +41,9 @@ import { ToastService } from '../../core/services/toast.service';
                 {{ profileForm.displayName || 'Tu perfil' }}
                 <span>{{ profileForm.profileEmoji || '✨' }}</span>
               </h2>
+              <a *ngIf="adminService.isAdmin()" routerLink="/admin" class="admin-badge">
+                🛡️ Panel de Admin
+              </a>
               <p class="profile-subtitle">Personaliza tu identidad y tu imagen.</p>
             </div>
 
@@ -100,6 +105,7 @@ import { ToastService } from '../../core/services/toast.service';
             </div>
           </div>
         </div>
+        </div>
 
         <div class="emoji-modal" *ngIf="showEmojiPicker">
           <div class="emoji-backdrop" (click)="showEmojiPicker = false"></div>
@@ -159,19 +165,47 @@ import { ToastService } from '../../core/services/toast.service';
             <h3>Preferencias</h3>
             <p>Configura tu ritmo ideal de estudio.</p>
           </div>
-          <label>
-            Horario preferido
-            <select [(ngModel)]="settingsForm.preferredStudyTime">
-              <option value="manana">Mañana</option>
-              <option value="tarde">Tarde</option>
-              <option value="noche">Noche</option>
-            </select>
-          </label>
+          <div class="grid">
+            <label>
+              Horario preferido
+              <select [(ngModel)]="settingsForm.preferredStudyTime">
+                <option value="manana">Mañana (7:00 - 11:00)</option>
+                <option value="tarde">Tarde (14:00 - 18:00)</option>
+                <option value="noche">Noche (20:00 - 23:00)</option>
+              </select>
+            </label>
+            
+            <label>
+              Tema visual
+              <select [(ngModel)]="settingsForm.theme">
+                <option value="dark">Oscuro</option>
+                <option value="light">Claro</option>
+                <option value="auto">Automático</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        
+        <div class="section-block">
+          <div class="section-header">
+            <h3>Notificaciones</h3>
+            <p>Avisos y recordatorios de estudio.</p>
+          </div>
+          <div class="grid">
+            <label class="switch">
+              <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" (change)="onNotificationsToggle()" />
+              <span>Recordatorios activos</span>
+            </label>
 
-          <label class="switch">
-            <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" />
-            <span>Recordatorios activos</span>
-          </label>
+            <label>
+              Intensidad
+              <select [(ngModel)]="settingsForm.notificationIntensity" [disabled]="!settingsForm.notificationsEnabled">
+                <option value="baja">Baja (cada 4 horas)</option>
+                <option value="normal">Normal (cada 2 horas)</option>
+                <option value="alta">Alta (cada 45 minutos)</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         <div class="action-bar">
@@ -239,6 +273,20 @@ import { ToastService } from '../../core/services/toast.service';
       font-size: 1.15rem;
     }
 
+    h3 {
+      margin: 1.2rem 0 0.6rem;
+      font-size: 0.95rem;
+      color: #d1d5db;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.9rem;
+    }
+
+    h3:first-child {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
+    }
+
     .muted {
       margin: 0 0 0.9rem;
       color: #9ca3af;
@@ -254,6 +302,23 @@ import { ToastService } from '../../core/services/toast.service';
     }
     .profile-title span {
       font-size: 1.2rem;
+    }
+    .admin-badge {
+      display: inline-block;
+      margin-top: 0.5rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .admin-badge:hover {
+      background: rgba(239, 68, 68, 0.25);
+      transform: translateY(-2px);
     }
 
     .card {
@@ -617,11 +682,13 @@ import { ToastService } from '../../core/services/toast.service';
     }
   `],
 })
-export class ProfileSettingsComponent implements OnInit {
+export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
+  public readonly adminService = inject(AdminService);
 
   isSettingsMode = false;
   loading = true;
@@ -646,6 +713,8 @@ export class ProfileSettingsComponent implements OnInit {
     studyGoalMinutesPerDay: 45,
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
+    theme: 'dark' as 'dark' | 'light' | 'auto',
+    notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
   };
 
   showEmojiPicker = false;
@@ -672,6 +741,8 @@ export class ProfileSettingsComponent implements OnInit {
           this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
+          this.settingsForm.theme = profile.theme || 'dark';
+          this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
         }
         this.loading = false;
       },
@@ -779,6 +850,8 @@ export class ProfileSettingsComponent implements OnInit {
         studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
+        theme: this.settingsForm.theme,
+        notificationIntensity: this.settingsForm.notificationIntensity,
       });
       this.toast.success('Configuración guardada.');
     } catch {
@@ -786,5 +859,23 @@ export class ProfileSettingsComponent implements OnInit {
     } finally {
       this.saving = false;
     }
+  }
+
+  onNotificationsToggle(): void {
+    if (this.settingsForm.notificationsEnabled) {
+      this.notificationService.startReminders({
+        preferredStudyTime: this.settingsForm.preferredStudyTime,
+        notificationIntensity: this.settingsForm.notificationIntensity,
+        notificationsEnabled: true,
+      });
+      this.toast.success('Recordatorios activados');
+    } else {
+      this.notificationService.stopReminders();
+      this.toast.info('Recordatorios desactivados');
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.notificationService.stopReminders();
   }
 }
