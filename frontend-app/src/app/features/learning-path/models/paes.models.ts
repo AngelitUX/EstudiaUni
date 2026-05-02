@@ -25,8 +25,11 @@ export interface Seccion {
   materiaId: string;
   title: string;
   introduccion: string;
+  guia_titulo?: string;
+  guia_contenido?: string;
   datos_claves: string[];
   order: number;
+  isBoss?: boolean;
   test: TestPaes;
 }
 
