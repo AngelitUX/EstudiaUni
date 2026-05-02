@@ -11,7 +11,6 @@ import { PaesContentService } from './services/paes-content.service';
     <div class="test-page" *ngIf="test() as t">
       <!-- TOP BAR -->
       <div class="top-bar">
-        <button class="btn-close" (click)="confirmExit()">✕</button>
         <div class="top-progress">
           <div class="top-progress-fill" [style.width.%]="progressPct()"></div>
         </div>
@@ -197,7 +196,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   currentIndex = signal(0);
   showFeedback = signal(false);
-  contextCollapsed = true;
+  contextCollapsed = false;
 
   currentQuestion = computed(() => {
     const t = this.test();

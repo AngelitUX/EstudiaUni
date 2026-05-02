@@ -13,9 +13,7 @@ import { PaesContentService } from './services/paes-content.service';
       <nav class="breadcrumb">
         <a routerLink="/dashboard">🏠</a>
         <span class="sep">›</span>
-        <a routerLink="/ruta">{{ materia()?.title }}</a>
-        <span class="sep">›</span>
-        <a [routerLink]="['/ruta', materiaId(), capituloId()]">Capítulo {{ capOrder() }}</a>
+        <a [routerLink]="['/ruta', materiaId()]">{{ materia()?.title }}</a>
         <span class="sep">›</span>
         <span class="current">Sección {{ sec.order }}</span>
       </nav>
@@ -24,16 +22,11 @@ import { PaesContentService } from './services/paes-content.service';
       <div class="stepper">
         <div class="step" [class.active]="true" [class.done]="true">
           <span class="step-num">1</span>
-          <span class="step-label">Lee</span>
-        </div>
-        <div class="step-line done"></div>
-        <div class="step" [class.active]="true" [class.done]="true">
-          <span class="step-num">2</span>
-          <span class="step-label">Aprende</span>
+          <span class="step-label">Repaso</span>
         </div>
         <div class="step-line"></div>
         <div class="step">
-          <span class="step-num">3</span>
+          <span class="step-num">2</span>
           <span class="step-label">¡Test!</span>
         </div>
       </div>
@@ -88,7 +81,7 @@ import { PaesContentService } from './services/paes-content.service';
       </div>
 
       <!-- BACK -->
-      <button class="btn-back-text" [routerLink]="['/ruta', materiaId(), capituloId()]">← Volver al capítulo</button>
+      <button class="btn-back-text" [routerLink]="['/ruta', materiaId()]">← Volver a la ruta</button>
     </div>
   `,
   styles: [`
