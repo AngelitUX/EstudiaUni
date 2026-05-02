@@ -21,6 +21,31 @@ import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
 import m1InviernoQuestionsData from '../../../assets/m1-invierno-preguntas-db.json';
 import m1Invierno2025QuestionsData from '../../../assets/m1-invierno-2025-preguntas-db.json';
 import m12026QuestionsData from '../../../assets/m1-2026-preguntas-db.json';
+import m1Invierno2026QuestionsData from '../../../assets/m1-invierno-2026-preguntas-db.json';
+import m22024QuestionsData from '../../../assets/m2-2024-preguntas-db.json';
+import m22025QuestionsData from '../../../assets/m2-2025-preguntas-db.json';
+import m22026QuestionsData from '../../../assets/m2-2026-preguntas-db.json';
+import m2Invierno2024QuestionsData from '../../../assets/m2-invierno-2024-preguntas-db.json';
+import m2Invierno2025QuestionsData from '../../../assets/m2-invierno-2025-preguntas-db.json';
+import m2Invierno2026QuestionsData from '../../../assets/m2-invierno-2026-preguntas-db.json';
+import h2024QuestionsData from '../../../assets/h-2024-preguntas-db.json';
+import h2025QuestionsData from '../../../assets/h-2025-preguntas-db.json';
+import h2026QuestionsData from '../../../assets/h-2026-preguntas-db.json';
+import hInvierno2024QuestionsData from '../../../assets/h-invierno-2024-preguntas-db.json';
+import hInvierno2025QuestionsData from '../../../assets/h-invierno-2025-preguntas-db.json';
+import hInvierno2026QuestionsData from '../../../assets/h-invierno-2026-preguntas-db.json';
+import b2024QuestionsData from '../../../assets/b-2024-preguntas-db.json';
+import bInvierno2024QuestionsData from '../../../assets/b-invierno-2024-preguntas-db.json';
+import b2025QuestionsData from '../../../assets/b-2025-preguntas-db.json';
+import bInvierno2025QuestionsData from '../../../assets/b-invierno-2025-preguntas-db.json';
+import b2026QuestionsData from '../../../assets/b-2026-preguntas-db.json';
+import bInvierno2026QuestionsData from '../../../assets/b-invierno-2026-preguntas-db.json';
+import f2024QuestionsData from '../../../assets/f-2024-preguntas-db.json';
+import f2025QuestionsData from '../../../assets/f-2025-preguntas-db.json';
+import f2026QuestionsData from '../../../assets/f-2026-preguntas-db.json';
+import fInvierno2026QuestionsData from '../../../assets/f-invierno-2026-preguntas-db.json';
+import fInvierno2024QuestionsData from '../../../assets/f-invierno-2024-preguntas-db.json';
+import fInvierno2025QuestionsData from '../../../assets/f-invierno-2025-preguntas-db.json';
 
 /**
  * ESTRUCTURA DE FIRESTORE PARA ESTUDIAUNI
@@ -424,6 +449,81 @@ export class FirestoreService {
     }
     if (ensayoId === 'm1-2026') {
       return m12026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm1-invierno-2026') {
+      return m1Invierno2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm2-2024') {
+      return m22024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm2-2025') {
+      return m22025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm2-2026') {
+      return m22026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm2-invierno-2024') {
+      return m2Invierno2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm2-invierno-2025') {
+      return m2Invierno2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'm2-invierno-2026') {
+      return m2Invierno2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'h-2024') {
+      return h2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'h-2025') {
+      return h2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'h-2026') {
+      return h2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'h-invierno-2024') {
+      return hInvierno2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'h-invierno-2025') {
+      return hInvierno2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'h-invierno-2026') {
+      return hInvierno2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'b-2024') {
+      return b2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'b-invierno-2024') {
+      return bInvierno2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'b-2025') {
+      return b2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'b-invierno-2025') {
+      return bInvierno2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'b-2026') {
+      return b2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'b-invierno-2026') {
+      return bInvierno2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'f-2024') {
+      return f2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'f-2025') {
+      return f2025QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'f-2026') {
+      return f2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'f-invierno-2026') {
+      return fInvierno2026QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'f-invierno-2024') {
+      return fInvierno2024QuestionsData as unknown as Pregunta[];
+    }
+    if (ensayoId === 'f-invierno-2025') {
+      return fInvierno2025QuestionsData as unknown as Pregunta[];
     }
     
     const total = this.getMockQuestionCount(ensayoId);

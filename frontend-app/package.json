@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "cropper": "node src/pruebasDemre/pdf-cropper-tool/server.js"
   },
   "private": true,
   "dependencies": {
