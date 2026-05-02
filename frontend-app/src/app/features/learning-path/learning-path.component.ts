@@ -4,11 +4,12 @@ import { Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Materia } from './models/paes.models';
+import { SettingsModalComponent } from '../profile/settings-modal.component';
 
 @Component({
   selector: 'app-learning-path',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SettingsModalComponent],
   template: `
     <div class="lp-layout">
       <!-- SIDEBAR -->
@@ -20,7 +21,7 @@ import { Materia } from './models/paes.models';
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/settings"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+          <a class="nav-item" (click)="showSettingsModal = true"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
         </nav>
         <div class="sidebar-footer">
           <button class="nav-item logout-btn" (click)="logout()">
@@ -41,7 +42,7 @@ import { Materia } from './models/paes.models';
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/settings" (click)="mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
             <a class="nav-item" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
           </nav>
         </div>
@@ -143,6 +144,7 @@ import { Materia } from './models/paes.models';
         </ng-container>
       </main>
     </div>
+    <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
@@ -258,6 +260,7 @@ export class LearningPathComponent {
   private router = inject(Router);
 
   mobileOpen = false;
+  showSettingsModal = false;
 
   materiaDataConfig: Record<string, { desc: string, topics: string[], img: string }> = {
     'comp-lectora': {

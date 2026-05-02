@@ -18,6 +18,10 @@ export class AuthService {
     map(user => !!user)
   );
 
+  get currentUser(): User | null {
+    return this.auth.currentUser;
+  }
+
   async getToken(): Promise<string | null> {
     const user = this.auth.currentUser;
     if (user) {

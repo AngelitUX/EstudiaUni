@@ -199,9 +199,9 @@ import { AdminService } from '../admin/services/admin.service';
             <label>
               Intensidad
               <select [(ngModel)]="settingsForm.notificationIntensity" [disabled]="!settingsForm.notificationsEnabled">
-                <option value="baja">Baja (cada 4 horas)</option>
-                <option value="normal">Normal (cada 2 horas)</option>
-                <option value="alta">Alta (cada 45 minutos)</option>
+                <option value="baja">Baja (cada hora y media)</option>
+                <option value="normal">Normal (cada hora)</option>
+                <option value="alta">Alta (cada 30 minutos)</option>
               </select>
             </label>
           </div>
