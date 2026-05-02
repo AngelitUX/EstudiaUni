@@ -47,10 +47,30 @@ export class PaesContentService {
       const capitulosSnap = await getDocs(collection(this.firestore, 'lp_capitulos'));
       const capitulos: Capitulo[] = [];
 
-      // 3. Cargar todos los tests
+      // 3. Cargar el pool de preguntas completo
+      const poolSnap = await getDocs(collection(this.firestore, 'pool_preguntas'));
+      const poolMap = new Map<string, any>();
+      poolSnap.docs.forEach(doc => poolMap.set(doc.id, { id: doc.id, ...doc.data() }));
+
+      // 4. Cargar todos los tests (como referencias)
       const testsSnap = await getDocs(collection(this.firestore, 'lp_tests'));
       const testsMap = new Map<string, TestPaes>();
-      testsSnap.docs.forEach(doc => testsMap.set(doc.id, doc.data() as TestPaes));
+      testsSnap.docs.forEach(doc => {
+        const data = doc.data() as any;
+        // Hidratar preguntas si viene como referencias (preguntaIds)
+        let preguntas = data.preguntas || [];
+        if (data.preguntaIds && Array.isArray(data.preguntaIds)) {
+          preguntas = data.preguntaIds
+            .map((pid: string) => poolMap.get(pid))
+            .filter((p: any) => !!p);
+        }
+        
+        testsMap.set(doc.id, {
+          ...data,
+          id: doc.id,
+          preguntas
+        } as TestPaes);
+      });
 
       for (const capDoc of capitulosSnap.docs) {
         const capData = capDoc.data() as Omit<Capitulo, 'secciones'>;
@@ -59,7 +79,7 @@ export class PaesContentService {
         const seccionesSnap = await getDocs(collection(this.firestore, `lp_capitulos/${capDoc.id}/secciones`));
         const secciones: Seccion[] = seccionesSnap.docs.map(secDoc => {
           const secData = secDoc.data() as any;
-          // Vincular el test
+          // Vincular el test hidratado
           const test = testsMap.get(secData.testId);
           return {
             ...secData,

@@ -11,6 +11,7 @@ import { EnsayoRunnerComponent } from './features/simulations/ensayo-runner.comp
 import { EnsayoReviewComponent } from './features/simulations/ensayo-review.component';
 import { authGuard } from './core/guards/auth.guard';
 import { emailVerifiedGuard } from './core/guards/email-verified.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -69,6 +70,17 @@ export const routes: Routes = [
     path: 'test/:seccionId/review',
     loadComponent: () => import('./features/learning-path/seccion-test-review.component').then(m => m.SeccionTestReviewComponent),
     canActivate: [authGuard, emailVerifiedGuard]
+  },
+  // ─── Admin Panel ───
+  {
+    path: 'admin',
+    loadComponent: () => import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
+    path: 'admin/pregunta/:id',
+    loadComponent: () => import('./features/admin/question-editor.component').then(m => m.QuestionEditorComponent),
+    canActivate: [authGuard, adminGuard]
   },
   { path: '**', redirectTo: '' }
 ];

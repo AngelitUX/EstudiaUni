@@ -1,7 +1,9 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
+import { KatexService } from '../../core/services/katex.service';
 
 @Component({
   selector: 'app-seccion-test',
@@ -35,10 +37,22 @@ import { PaesContentService } from './services/paes-content.service';
         </div>
 
         <div class="question-card" *ngIf="currentQuestion() as q">
+          <!-- Preámbulo texto (Historia/Ciencias) -->
+          <div class="q-preambulo" *ngIf="q.preambulo_texto">
+            <span class="preambulo-icon">💬</span>
+            <p>{{ q.preambulo_texto }}</p>
+          </div>
+
+          <!-- Preámbulo imagen (Ciencias/Matemáticas) -->
+          <div class="q-image-wrap" *ngIf="q.preambulo_imagen_url">
+            <img [src]="q.preambulo_imagen_url" alt="Imagen de apoyo" class="q-image" />
+          </div>
+
           <p class="q-text">{{ q.enunciado }}</p>
 
-          <div class="q-image-wrap" *ngIf="q.imagen_url">
-            <img [src]="q.imagen_url" alt="Imagen de la pregunta" class="q-image" />
+          <!-- Fórmula LaTeX (Matemáticas) -->
+          <div class="q-formula" *ngIf="q.formula_latex"
+            [innerHTML]="renderLatex(q.formula_latex)">
           </div>
 
           <div class="options-grid">
@@ -50,7 +64,9 @@ import { PaesContentService } from './services/paes-content.service';
               [disabled]="showFeedback()"
               (click)="selectAnswer(q.id, key)">
               <span class="opt-letter" [class.sel]="answers().get(q.id) === key">{{ key }}</span>
-              <span class="opt-text">{{ q.alternativas[key] }}</span>
+              <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'">{{ q.alternativas[key] }}</span>
+              <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
+                alt="Opción {{ key }}" class="opt-img" />
             </button>
           </div>
 
@@ -128,6 +144,18 @@ import { PaesContentService } from './services/paes-content.service';
     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
     .q-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
 
+    /* PREAMBULO */
+    .q-preambulo { display: flex; gap: 0.6rem; padding: 0.85rem 1rem; margin: 0 0 1.25rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 3px solid rgba(133,92,214,0.4); }
+    .q-preambulo p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0; font-style: italic; }
+    .preambulo-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* FORMULA */
+    .q-formula { margin: 0 0 1.25rem; padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid rgba(22,163,74,0.15); border-radius: 10px; text-align: center; }
+    .q-formula code { font-family: 'Courier New', monospace; font-size: 1rem; color: #166534; font-weight: 600; }
+
+    /* IMAGE OPTIONS */
+    .opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
+
     /* OPTIONS */
     .options-grid { display: flex; flex-direction: column; gap: 0.6rem; }
     .option-btn { display: flex; align-items: center; gap: 0.85rem; padding: 0.95rem 1.15rem; border: 2px solid rgba(0,0,0,0.08); border-radius: 14px; background: #fff; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
@@ -184,6 +212,8 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private katex = inject(KatexService);
+  private sanitizer = inject(DomSanitizer);
 
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
@@ -279,5 +309,10 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  renderLatex(latex: string | null): SafeHtml {
+    if (!latex) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(this.katex.render(latex));
   }
 }
