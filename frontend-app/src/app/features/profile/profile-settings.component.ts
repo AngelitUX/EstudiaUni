@@ -219,8 +219,8 @@ import { AdminService } from '../admin/services/admin.service';
     :host {
       display: block;
       min-height: 100vh;
-      background: #000;
-      color: #fff;
+      background: var(--bg-color);
+      color: var(--text-primary);
     }
 
     .page {
@@ -230,18 +230,20 @@ import { AdminService } from '../admin/services/admin.service';
     }
 
     .glass {
-      background: rgba(13, 15, 23, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #ffffff;
+      border: 2px solid var(--glass-border);
       border-radius: 14px;
+      box-shadow: var(--shadow-sm);
     }
 
     .topbar {
-      padding: 0.9rem 1rem;
-      margin-bottom: 1rem;
+      padding: 0.9rem 1.25rem;
+      margin-bottom: 1.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.7rem;
+      border: 2px solid var(--glass-border);
     }
 
     .btn-back {
@@ -265,6 +267,7 @@ import { AdminService } from '../admin/services/admin.service';
     h1 {
       margin: 0;
       font-size: 1.2rem;
+      font-weight: 800;
     }
 
     h2 {
@@ -275,8 +278,9 @@ import { AdminService } from '../admin/services/admin.service';
     h3 {
       margin: 1.2rem 0 0.6rem;
       font-size: 0.95rem;
-      color: #d1d5db;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      font-weight: 700;
+      border-top: 2px solid var(--glass-border);
       padding-top: 0.9rem;
     }
 
@@ -288,8 +292,9 @@ import { AdminService } from '../admin/services/admin.service';
 
     .muted {
       margin: 0 0 0.9rem;
-      color: #9ca3af;
+      color: var(--text-muted);
       font-size: 0.92rem;
+      font-weight: 500;
     }
     .profile-title {
       display: flex;
@@ -298,6 +303,7 @@ import { AdminService } from '../admin/services/admin.service';
       margin: 0;
       font-size: 1.5rem;
       line-height: 1.15;
+      font-weight: 800;
     }
     .profile-title span {
       font-size: 1.2rem;
@@ -337,8 +343,8 @@ import { AdminService } from '../admin/services/admin.service';
       gap: 1rem;
       padding: 1rem;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--bg-color);
+      border: 2px solid var(--glass-border);
     }
     .profile-summary {
       display: flex;
@@ -347,9 +353,10 @@ import { AdminService } from '../admin/services/admin.service';
     }
     .profile-subtitle {
       margin: 0;
-      color: #9ca3af;
+      color: var(--text-secondary);
       font-size: 0.9rem;
       line-height: 1.5;
+      font-weight: 500;
     }
 
     .profile-head {
@@ -386,8 +393,8 @@ import { AdminService } from '../admin/services/admin.service';
       position: absolute;
       right: -4px;
       bottom: -4px;
-      background: rgba(0, 0, 0, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #111827;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
       border-radius: 999px;
       padding: 0.2rem 0.45rem;
       font-size: 0.95rem;
@@ -403,8 +410,8 @@ import { AdminService } from '../admin/services/admin.service';
       gap: 0.4rem;
       padding: 0.85rem;
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px dashed rgba(133, 92, 214, 0.45);
+      background: var(--bg-secondary);
+      border: 2px dashed var(--accent-primary);
       cursor: pointer;
       position: relative;
       overflow: hidden;
@@ -416,12 +423,13 @@ import { AdminService } from '../admin/services/admin.service';
       cursor: pointer;
     }
     .upload-title {
-      font-weight: 600;
-      color: #e9d5ff;
+      font-weight: 700;
+      color: var(--accent-primary);
     }
     .upload-text {
       font-size: 0.8rem;
-      color: #9ca3af;
+      color: var(--text-muted);
+      font-weight: 500;
     }
     .upload-btn {
       display: inline-flex;
@@ -429,11 +437,12 @@ import { AdminService } from '../admin/services/admin.service';
       justify-content: center;
       padding: 0.45rem 0.7rem;
       border-radius: 8px;
-      background: rgba(133, 92, 214, 0.2);
-      color: #e9d5ff;
-      font-weight: 600;
+      background: rgba(133, 92, 214, 0.1);
+      color: var(--accent-primary);
+      font-weight: 700;
       font-size: 0.85rem;
       width: fit-content;
+      border: 1.5px solid var(--accent-primary);
     }
 
     .profile-main {
@@ -442,8 +451,8 @@ import { AdminService } from '../admin/services/admin.service';
       gap: 1.2rem;
     }
     .section-block {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: var(--bg-color);
+      border: 2px solid var(--glass-border);
       border-radius: 16px;
       padding: 1rem;
       display: flex;
@@ -458,12 +467,14 @@ import { AdminService } from '../admin/services/admin.service';
     .section-header h3 {
       margin: 0;
       font-size: 1.05rem;
-      color: #e5e7eb;
+      color: var(--text-primary);
+      font-weight: 700;
     }
     .section-header p {
       margin: 0;
-      color: #9ca3af;
+      color: var(--text-secondary);
       font-size: 0.9rem;
+      font-weight: 500;
     }
 
     .emoji-inline {
@@ -479,8 +490,8 @@ import { AdminService } from '../admin/services/admin.service';
       display: grid;
       place-items: center;
       font-size: 1.6rem;
-      background: rgba(133, 92, 214, 0.2);
-      border: 1px solid rgba(133, 92, 214, 0.35);
+      background: var(--bg-secondary);
+      border: 2px solid var(--glass-border);
     }
     .emoji-info {
       display: flex;
@@ -489,26 +500,27 @@ import { AdminService } from '../admin/services/admin.service';
     }
     .emoji-label {
       font-size: 0.8rem;
-      color: #9ca3af;
+      color: var(--text-muted);
+      font-weight: 600;
     }
     .emoji-value {
-      font-weight: 600;
-      color: #e9d5ff;
+      font-weight: 800;
+      color: var(--accent-primary);
       font-size: 1rem;
     }
     .btn-emoji {
-      border: 1px solid rgba(133, 92, 214, 0.5);
-      background: rgba(133, 92, 214, 0.18);
-      color: #e9d5ff;
+      border: 2px solid var(--accent-primary);
+      background: rgba(133, 92, 214, 0.05);
+      color: var(--accent-primary);
       border-radius: 10px;
       padding: 0.5rem 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
     }
     .btn-emoji:hover {
       border-color: #855cd6;
-      background: rgba(133, 92, 214, 0.28);
+      background: rgba(133, 92, 214, 0.12);
     }
 
     .grid {
@@ -521,7 +533,8 @@ import { AdminService } from '../admin/services/admin.service';
       display: block;
       margin-bottom: 0.7rem;
       font-size: 0.9rem;
-      color: #d1d5db;
+      color: var(--text-primary);
+      font-weight: 700;
     }
     label small {
       color: #9ca3af;
@@ -535,9 +548,9 @@ import { AdminService } from '../admin/services/admin.service';
       width: 100%;
       margin-top: 0.25rem;
       border-radius: 9px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(0, 0, 0, 0.3);
-      color: #fff;
+      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      color: var(--text-primary);
       padding: 0.58rem 0.65rem;
       font: inherit;
     }
@@ -545,7 +558,7 @@ import { AdminService } from '../admin/services/admin.service';
     textarea:focus,
     select:focus {
       outline: none;
-      border-color: rgba(133, 92, 214, 0.7);
+      border-color: var(--accent-primary);
       box-shadow: 0 0 0 2px rgba(133, 92, 214, 0.2);
     }
     .emoji-picker {
@@ -556,19 +569,21 @@ import { AdminService } from '../admin/services/admin.service';
       padding-right: 0.25rem;
     }
     .emoji-option {
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(0, 0, 0, 0.3);
-      color: #fff;
+      border: 2px solid var(--glass-border);
+      background: var(--bg-color);
+      color: var(--text-primary);
       border-radius: 8px;
       padding: 0.35rem 0.48rem;
       cursor: pointer;
       line-height: 1;
-      font-size: 1rem;
+      font-size: 1.2rem;
       transition: all 0.2s;
+      display: grid;
+      place-items: center;
     }
     .emoji-option.active {
-      border-color: rgba(133, 92, 214, 0.8);
-      background: rgba(133, 92, 214, 0.22);
+      border-color: var(--accent-primary);
+      background: rgba(133, 92, 214, 0.1);
     }
     .emoji-selected {
       margin-top: 0.35rem;
@@ -582,8 +597,8 @@ import { AdminService } from '../admin/services/admin.service';
       color: #9ca3af;
     }
     .counter {
-      color: #e9d5ff;
-      font-weight: 600;
+      color: var(--accent-primary);
+      font-weight: 700;
     }
 
     .switch {
@@ -624,7 +639,8 @@ import { AdminService } from '../admin/services/admin.service';
     .emoji-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
     }
     .emoji-panel {
       position: relative;
@@ -632,7 +648,9 @@ import { AdminService } from '../admin/services/admin.service';
       width: min(560px, 90vw);
       padding: 1rem 1.25rem 1.25rem;
       border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      box-shadow: var(--shadow-lg);
     }
     .emoji-panel-header {
       display: flex;
@@ -642,12 +660,14 @@ import { AdminService } from '../admin/services/admin.service';
     }
     .emoji-panel-header h4 {
       margin: 0;
-      font-size: 1rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-primary);
     }
     .emoji-close {
       border: none;
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
       width: 30px;
       height: 30px;
       border-radius: 8px;

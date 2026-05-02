@@ -183,7 +183,7 @@ interface ReviewQuestion {
       align-items: center;
       padding: 2rem;
       background: rgba(13, 15, 23, 0.95);
-      border-bottom: 1px solid var(--glass-border);
+      border-bottom: 2px solid var(--glass-border);
     }
     .header-left { display: flex; align-items: center; gap: 1.5rem; }
     .btn-back {
@@ -241,7 +241,7 @@ interface ReviewQuestion {
       align-items: center;
       padding: 1.5rem;
       background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
       border-radius: 12px;
     }
     .summary-card.correct { border-color: rgba(16, 185, 129, 0.3); }
@@ -259,7 +259,7 @@ interface ReviewQuestion {
     .tab {
       padding: 0.75rem 1.25rem;
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
       border-radius: 10px;
       color: var(--text-secondary);
       font-size: 0.9rem;
@@ -275,7 +275,7 @@ interface ReviewQuestion {
       padding: 2rem;
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
+      border: 2px solid var(--glass-border);
     }
     .review-question-card.correct { border-left: 4px solid #10b981; }
     .review-question-card.incorrect { border-left: 4px solid #ef4444; }
@@ -336,7 +336,7 @@ interface ReviewQuestion {
       margin-top: 1.5rem;
       padding: 1.5rem;
       background: rgba(99, 102, 241, 0.05);
-      border: 1px solid rgba(99, 102, 241, 0.2);
+      border: 2px solid rgba(99, 102, 241, 0.3);
       border-radius: 12px;
     }
     .ai-header {
@@ -345,7 +345,7 @@ interface ReviewQuestion {
       gap: 0.75rem;
       margin-bottom: 1.25rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+      border-bottom: 2px solid rgba(99, 102, 241, 0.3);
     }
     .ai-icon { font-size: 1.5rem; }
     .ai-title { font-weight: 600; color: var(--accent-primary); font-size: 1rem; }
@@ -373,14 +373,14 @@ interface ReviewQuestion {
     .explanation-section.tip h4 { color: #f97316; }
 
     /* ===== ACTIONS ===== */
-    .review-actions { display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--glass-border); }
+    .review-actions { display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--glass-border); }
     .btn { padding: 0.85rem 1.75rem; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.2s; border: none; }
     .btn-primary { background: var(--gradient-brand); color: #fff; }
     .btn-primary:hover { opacity: 0.9; }
     .btn-outline { background: transparent; border: 2px solid var(--glass-border); color: #fff; }
     .btn-outline:hover { border-color: var(--accent-primary); }
 
-    .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+    .glass-card { background: rgba(255, 255, 255, 0.03); border: 2px solid var(--glass-border); backdrop-filter: blur(10px); }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
