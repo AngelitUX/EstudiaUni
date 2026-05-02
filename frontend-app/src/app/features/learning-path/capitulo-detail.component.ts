@@ -8,182 +8,93 @@ import { PaesContentService } from './services/paes-content.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="cap-page" *ngIf="capitulo() as cap">
-      <!-- BREADCRUMB -->
-      <nav class="breadcrumb">
-        <a routerLink="/dashboard">🏠</a>
-        <span class="sep">›</span>
-        <a routerLink="/ruta">{{ materia()?.title }}</a>
-        <span class="sep">›</span>
-        <span class="current">{{ cap.title }}</span>
+    <div class="guidebook-page" *ngIf="capitulo() as cap">
+      
+      <!-- BREADCRUMB & HEADER -->
+      <nav class="guide-nav">
+        <button class="btn-back" (click)="goBack()">← Volver a la ruta</button>
       </nav>
 
-      <!-- HERO CARD -->
-      <div class="cap-hero">
-        <div class="cap-hero-badge">
-          <span class="badge-icon">📘</span>
-        </div>
-        <div class="cap-hero-text">
-          <h1>{{ cap.title }}</h1>
-          <p class="cap-intro-text">{{ cap.introduccion }}</p>
-        </div>
-        <div class="cap-hero-stats">
-          <div class="stat-ring">
-            <svg viewBox="0 0 40 40" class="ring-svg">
-              <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4"/>
-              <circle cx="20" cy="20" r="16" fill="none"
-                [attr.stroke]="capPct() >= 100 ? '#58cc02' : '#855cd6'"
-                stroke-width="4"
-                stroke-linecap="round"
-                [attr.stroke-dasharray]="100.53"
-                [attr.stroke-dashoffset]="100.53 - (100.53 * capPct() / 100)"
-                transform="rotate(-90 20 20)"/>
-            </svg>
-            <span class="ring-pct">{{ capPct() }}%</span>
+      <header class="guide-hero">
+        <div class="hero-icon">📖</div>
+        <h1>Guía de Estudio: {{ cap.title }}</h1>
+        <p class="hero-intro">{{ cap.introduccion }}</p>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="guide-content">
+        
+        <!-- Iterate through sections to show theory -->
+        <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
+          <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
+          <div class="sec-intro">
+            <p>{{ sec.introduccion }}</p>
           </div>
-          <button *ngIf="cap.pdfUrl" class="btn-pdf" (click)="openPdf(cap.pdfUrl!)">📖 Leer material</button>
-        </div>
-      </div>
 
-      <!-- RULE -->
-      <div class="rule-bar">
-        <span class="rule-icon">🎯</span>
-        <span>Apruebas cada lección con <strong>60%</strong> o más</span>
-      </div>
-
-      <!-- LECCIONES PATH -->
-      <div class="lessons-path">
-        <div *ngFor="let sec of cap.secciones; let i = index; let last = last" class="lesson-row">
-          <!-- Vertical connector -->
-          <div class="lesson-connector" *ngIf="!last"
-            [class.done]="getProgress(sec.id).completed"></div>
-
-          <div class="lesson-node" (click)="goToSeccion(sec.id)"
-            [class.completed]="getProgress(sec.id).completed"
-            [class.attempted]="getProgress(sec.id).attempts > 0 && !getProgress(sec.id).completed"
-            [class.current]="isCurrentLesson(i)">
-
-            <!-- Circle with SVG ring -->
-            <div class="lesson-circle-wrap">
-              <svg viewBox="0 0 52 52" class="lesson-ring">
-                <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4"/>
-                <circle cx="26" cy="26" r="22" fill="none"
-                  [attr.stroke]="getProgress(sec.id).completed ? '#58cc02' : getProgress(sec.id).attempts > 0 ? '#ff9600' : 'transparent'"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                  [attr.stroke-dasharray]="138.23"
-                  [attr.stroke-dashoffset]="138.23 - (138.23 * getProgress(sec.id).bestScore / 100)"
-                  transform="rotate(-90 26 26)"/>
-              </svg>
-              <div class="lesson-circle-inner"
-                [class.done]="getProgress(sec.id).completed"
-                [class.in-progress]="getProgress(sec.id).attempts > 0 && !getProgress(sec.id).completed"
-                [class.is-current]="isCurrentLesson(i)">
-                <span *ngIf="getProgress(sec.id).completed">⭐</span>
-                <span *ngIf="!getProgress(sec.id).completed && getProgress(sec.id).attempts > 0">🔄</span>
-                <span *ngIf="getProgress(sec.id).attempts === 0 && isCurrentLesson(i)">🔥</span>
-                <span *ngIf="getProgress(sec.id).attempts === 0 && !isCurrentLesson(i)">{{ i + 1 }}</span>
-              </div>
-            </div>
-
-            <!-- Info -->
-            <div class="lesson-info">
-              <h3>{{ sec.title }}</h3>
-              <div class="lesson-meta">
-                <span *ngIf="getProgress(sec.id).attempts > 0" class="score-tag"
-                  [class.pass]="getProgress(sec.id).completed"
-                  [class.fail]="!getProgress(sec.id).completed">
-                  {{ getProgress(sec.id).bestScore }}%
-                </span>
-                <span *ngIf="getProgress(sec.id).attempts === 0" class="hint-tag">
-                  {{ sec.test.preguntas.length }} preguntas
-                </span>
-                <span *ngIf="getProgress(sec.id).lastAttemptDate" class="date-tag">
-                  {{ formatDate(getProgress(sec.id).lastAttemptDate!) }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Arrow -->
-            <div class="lesson-arrow">→</div>
+          <!-- Tips & Examples -->
+          <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
+            <h3>💡 Conceptos Clave & Ejemplos</h3>
+            <ul class="tips-list">
+              <li *ngFor="let dato of sec.datos_claves">
+                <span [innerHTML]="highlightBold(dato)"></span>
+              </li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      <button class="btn-back-bottom" routerLink="/ruta">← Volver a la ruta</button>
+        <!-- CTA TO PRACTICE -->
+        <div class="cta-bottom">
+          <p>¿Terminaste de repasar la teoría?</p>
+          <button class="btn-primary-lg" (click)="goBack()">¡Empezar a Practicar!</button>
+        </div>
+
+      </main>
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
-    .cap-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 4rem; }
+    :host { display: block; min-height: 100vh; background: #ffffff; }
+    .guidebook-page { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
 
-    /* BREADCRUMB */
-    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
-    .breadcrumb a:hover { color: var(--accent-primary); }
-    .sep { color: rgba(0,0,0,0.2); }
-    .current { color: var(--text-primary); font-weight: 600; }
+    /* NAV */
+    .guide-nav { margin-bottom: 2rem; }
+    .btn-back { background: transparent; border: none; font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; transition: all 0.2s; }
+    .btn-back:hover { color: var(--accent-primary); transform: translateX(-4px); }
 
     /* HERO */
-    .cap-hero { display: flex; align-items: flex-start; gap: 1.25rem; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 1.75rem; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-    .cap-hero-badge { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, rgba(133,92,214,0.1), rgba(133,92,214,0.05)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .badge-icon { font-size: 1.8rem; }
-    .cap-hero-text { flex: 1; min-width: 0; }
-    .cap-hero-text h1 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; margin: 0 0 0.5rem; color: var(--text-primary); line-height: 1.2; }
-    .cap-intro-text { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.6; }
-    .cap-hero-stats { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; flex-shrink: 0; }
-    .stat-ring { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
-    .ring-svg { width: 100%; height: 100%; }
-    .ring-pct { position: absolute; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; color: var(--text-primary); }
-    .btn-pdf { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.5rem 0.9rem; border-radius: 10px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.78rem; cursor: pointer; box-shadow: 0 3px 0 #6b46b8; transition: all 0.2s; white-space: nowrap; }
-    .btn-pdf:hover { transform: translateY(2px); box-shadow: 0 1px 0 #6b46b8; }
+    .guide-hero { text-align: center; padding: 3rem 1rem; background: linear-gradient(135deg, rgba(133,92,214,0.05), rgba(133,92,214,0.15)); border-radius: 24px; margin-bottom: 3rem; border: 2px solid rgba(133,92,214,0.1); }
+    .hero-icon { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1; filter: drop-shadow(0 4px 12px rgba(133,92,214,0.2)); }
+    .guide-hero h1 { font-family: var(--font-heading); font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1rem; }
+    .hero-intro { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
-    /* RULE */
-    .rule-bar { display: flex; align-items: center; gap: 0.6rem; background: rgba(88,204,2,0.08); border: 1px solid rgba(88,204,2,0.2); border-radius: 12px; padding: 0.75rem 1.15rem; margin-bottom: 2rem; font-size: 0.88rem; color: var(--text-secondary); }
-    .rule-icon { font-size: 1.1rem; }
-    .rule-bar strong { color: var(--text-primary); }
+    /* CONTENT */
+    .theory-section { margin-bottom: 4rem; position: relative; padding-left: 2rem; }
+    .theory-section::before { content: ''; position: absolute; left: 0; top: 0; bottom: -2rem; width: 4px; background: rgba(0,0,0,0.05); border-radius: 4px; }
+    .theory-section:last-child::before { display: none; }
 
-    /* LESSONS PATH */
-    .lessons-path { display: flex; flex-direction: column; align-items: center; }
-    .lesson-row { position: relative; width: 100%; margin-bottom: 0.5rem; }
-    .lesson-connector { position: absolute; left: 50px; top: 76px; width: 3px; height: calc(100% - 20px); background: rgba(0,0,0,0.06); border-radius: 99px; z-index: 0; }
-    .lesson-connector.done { background: linear-gradient(180deg, #58cc02, #78d64b); }
+    .sec-title { display: flex; align-items: center; gap: 1rem; font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1.5rem; }
+    .sec-num { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--accent-primary); color: #fff; border-radius: 50%; font-size: 1rem; font-weight: 800; box-shadow: 0 4px 12px rgba(133,92,214,0.3); }
+    
+    .sec-intro p { font-size: 1.05rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 1.5rem; }
 
-    .lesson-node { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 16px; cursor: pointer; transition: all 0.25s; position: relative; z-index: 1; background: #fff; border: 2px solid rgba(0,0,0,0.05); }
-    .lesson-node:hover { border-color: rgba(133,92,214,0.25); box-shadow: 0 4px 16px rgba(133,92,214,0.1); transform: translateX(4px); }
-    .lesson-node.completed { border-color: rgba(88,204,2,0.2); }
-    .lesson-node.completed:hover { border-color: rgba(88,204,2,0.4); box-shadow: 0 4px 16px rgba(88,204,2,0.1); }
-    .lesson-node.current { border-color: rgba(133,92,214,0.3); box-shadow: 0 0 0 4px rgba(133,92,214,0.08); }
+    /* TIPS BOX */
+    .tips-box { background: rgba(255, 200, 0, 0.1); border: 2px solid rgba(255, 200, 0, 0.3); border-radius: 16px; padding: 1.5rem; margin-top: 2rem; }
+    .tips-box h3 { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; color: #b8860b; margin: 0 0 1rem; }
+    .tips-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+    .tips-list li { position: relative; padding-left: 1.5rem; font-size: 1rem; color: var(--text-primary); line-height: 1.5; }
+    .tips-list li::before { content: '•'; position: absolute; left: 0; top: 0; color: #ffc800; font-size: 1.5rem; line-height: 1; font-weight: bold; }
 
-    /* CIRCLE WITH RING */
-    .lesson-circle-wrap { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
-    .lesson-ring { position: absolute; inset: 0; }
-    .lesson-circle-inner { position: absolute; inset: 6px; border-radius: 50%; background: #e8e8e8; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: #aaa; font-family: var(--font-heading); transition: all 0.3s; }
-    .lesson-circle-inner.done { background: linear-gradient(135deg, #58cc02, #78d64b); color: #fff; }
-    .lesson-circle-inner.in-progress { background: linear-gradient(135deg, #ff9600, #ffc800); color: #fff; }
-    .lesson-circle-inner.is-current { background: linear-gradient(135deg, #855cd6, #a78bfa); color: #fff; animation: currentGlow 2s ease-in-out infinite; }
+    /* CTA */
+    .cta-bottom { text-align: center; margin-top: 5rem; padding-top: 3rem; border-top: 2px dashed rgba(0,0,0,0.1); }
+    .cta-bottom p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1.5rem; font-weight: 600; }
+    .btn-primary-lg { background: #58cc02; color: #fff; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; padding: 1rem 2rem; border-radius: 16px; border: none; box-shadow: 0 6px 0 #46a302; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-lg:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #46a302; }
+    .btn-primary-lg:active { transform: translateY(4px); box-shadow: 0 2px 0 #46a302; }
 
-    .lesson-info { flex: 1; min-width: 0; }
-    .lesson-info h3 { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; margin: 0 0 0.35rem; color: var(--text-primary); line-height: 1.3; }
-    .lesson-meta { display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; }
-    .score-tag { padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 700; }
-    .score-tag.pass { background: rgba(88,204,2,0.12); color: #3d8c00; }
-    .score-tag.fail { background: rgba(255,150,0,0.12); color: #cc7a00; }
-    .hint-tag { color: var(--text-secondary); }
-    .date-tag { color: var(--text-secondary); opacity: 0.6; }
-
-    .lesson-arrow { font-size: 1.1rem; color: var(--text-secondary); opacity: 0.4; transition: all 0.2s; flex-shrink: 0; }
-    .lesson-node:hover .lesson-arrow { opacity: 1; color: var(--accent-primary); transform: translateX(4px); }
-
-    .btn-back-bottom { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 2rem; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; padding: 0; }
-    .btn-back-bottom:hover { color: var(--accent-primary); }
-
-    @keyframes currentGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 0 0 8px rgba(133,92,214,0); } }
-
-    @media (max-width: 640px) {
-      .cap-hero { flex-direction: column; }
-      .cap-hero-stats { flex-direction: row; width: 100%; justify-content: center; }
-      .lesson-node { padding: 0.85rem 1rem; }
+    @media (max-width: 768px) {
+      .guide-hero { padding: 2rem 1rem; }
+      .guide-hero h1 { font-size: 1.75rem; }
+      .theory-section { padding-left: 0; }
+      .theory-section::before { display: none; }
     }
   `]
 })
@@ -192,47 +103,22 @@ export class CapituloDetailComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  private materiaId = signal('');
-  private capituloId = signal('');
+  materiaId = signal('');
+  capituloId = signal('');
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
-  capitulo = computed(() => this.paes.getCapituloById(this.capituloId()));
-  capPct = computed(() => {
-    const p = this.paes.getCapituloProgress(this.capituloId());
-    return p.percentage;
-  });
+  capitulo = computed(() => this.paes.getCapitulosByMateria(this.materiaId()).find(c => c.id === this.capituloId()));
 
   constructor() {
-    const snap = this.route.snapshot;
-    this.materiaId.set(snap.paramMap.get('materiaId') || '');
-    this.capituloId.set(snap.paramMap.get('capituloId') || '');
+    this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
+    this.capituloId.set(this.route.snapshot.paramMap.get('capituloId') || '');
   }
 
-  getProgress(seccionId: string) {
-    return this.paes.getSeccionProgress(seccionId) || {
-      completed: false, bestScore: 0, totalQuestions: 0,
-      correctAnswers: 0, lastAttemptDate: null, attempts: 0
-    };
+  goBack() {
+    this.router.navigate(['/ruta', this.materiaId()]);
   }
 
-  isCurrentLesson(index: number): boolean {
-    const cap = this.capitulo();
-    if (!cap) return false;
-    for (let i = 0; i < cap.secciones.length; i++) {
-      const p = this.getProgress(cap.secciones[i].id);
-      if (!p.completed) return i === index;
-    }
-    return false;
-  }
-
-  goToSeccion(seccionId: string) {
-    this.router.navigate(['/ruta', this.materiaId(), this.capituloId(), seccionId]);
-  }
-
-  openPdf(url: string) { window.open(url, '_blank'); }
-
-  formatDate(dateStr: string): string {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  highlightBold(text: string): string {
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   }
 }

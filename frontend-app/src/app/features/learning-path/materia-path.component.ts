@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
 
 type PathItem = 
-  | { type: 'chapter', title: string, subtitle: string }
+  | { type: 'chapter', capituloId: string, title: string, subtitle: string }
   | { type: 'node', id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
 
 @Component({
@@ -36,6 +36,9 @@ type PathItem =
             <div class="div-line"></div>
             <div class="div-content">
               <span class="div-title">{{ item.title }}</span>
+              <button class="btn-guide" (click)="goToGuide(item.capituloId)">
+                <span class="guide-icon">📖</span> Guía
+              </button>
             </div>
             <div class="div-line"></div>
           </div>
@@ -73,10 +76,8 @@ type PathItem =
                 </div>
               </button>
 
-              <!-- Node Floating Title -->
-              <div class="node-title-float" 
-                [class.pos-left]="getOffset(item.nodeIndex) > 0"
-                [class.pos-right]="getOffset(item.nodeIndex) <= 0"
+              <!-- Node Floating Title (Top) -->
+              <div class="node-title-top" 
                 [class.text-completed]="item.status === 'completed'"
                 [class.text-active]="item.status === 'active'">
                 {{ item.title }}
@@ -106,24 +107,27 @@ type PathItem =
     .path-center-line { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 24px; background: rgba(0,0,0,0.03); z-index: 0; border-radius: 12px; }
 
     /* CHAPTER DIVIDER */
-    .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 4.5rem 0 3.5rem; position: relative; z-index: 1; padding: 0 1rem; }
+    .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 5rem 0 5rem; position: relative; z-index: 1; padding: 0 1rem; }
     .div-line { flex: 1; height: 2px; background: rgba(0,0,0,0.08); }
-    .div-content { padding: 0 1.25rem; text-align: center; }
+    .div-content { padding: 0 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
     .div-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; }
+    
+    .btn-guide { background: var(--accent-primary); border: 2px solid transparent; box-shadow: 0 4px 12px rgba(133,92,214,0.3); padding: 0.6rem 1.4rem; border-radius: 99px; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: #fff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+    .btn-guide:hover { background: #714cc2; transform: translateY(-3px); box-shadow: 0 6px 16px rgba(133,92,214,0.4); }
+    .btn-guide:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(133,92,214,0.3); }
+    .guide-icon { font-size: 1.1rem; }
 
     /* NODE ROW */
-    .node-row { width: 100%; display: flex; justify-content: center; margin-bottom: 2.5rem; position: relative; z-index: 2; }
+    .node-row { width: 100%; display: flex; justify-content: center; margin-bottom: 5.5rem; position: relative; z-index: 2; }
     .node-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; transition: transform 0.3s ease; }
 
-    /* NODE FLOATING TITLE */
-    .node-title-float { position: absolute; top: 50%; transform: translateY(-50%); background: #fff; padding: 0.5rem 0.9rem; border-radius: 12px; font-family: var(--font-heading); font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap; border: 2px solid rgba(0,0,0,0.06); box-shadow: 0 4px 12px rgba(0,0,0,0.04); pointer-events: none; transition: all 0.2s; }
-    .pos-right { left: calc(100% + 20px); }
-    .pos-left { right: calc(100% + 20px); }
-    .text-completed { color: #3d8c00; border-color: rgba(88,204,2,0.2); }
-    .text-active { color: var(--accent-primary); border-color: rgba(133,92,214,0.25); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
+    /* NODE FLOATING TITLE (TOP) */
+    .node-title-top { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-family: var(--font-heading); font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; pointer-events: none; transition: all 0.2s; text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.8); }
+    .text-completed { color: #3d8c00; }
+    .text-active { color: var(--accent-primary); top: -36px; }
 
     /* ACTIVE TOOLTIP */
-    .active-tooltip { position: absolute; top: -55px; background: #111827; color: #fff; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; letter-spacing: 0.05em; animation: bounce 2s infinite; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 10; }
+    .active-tooltip { position: absolute; top: -82px; background: #111827; color: #fff; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; letter-spacing: 0.05em; animation: bounce 2s infinite; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 10; }
     .tooltip-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #111827; }
 
     @keyframes bounce {
@@ -198,6 +202,7 @@ export class MateriaPathComponent {
       // 1. Add Chapter Divider
       items.push({
         type: 'chapter',
+        capituloId: cap.id,
         title: cap.title,
         subtitle: `Capítulo ${capIndex + 1}`
       });
@@ -235,5 +240,9 @@ export class MateriaPathComponent {
   handleNodeClick(item: any) {
     if (item.status === 'locked') return;
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
+  }
+
+  goToGuide(capId: string) {
+    this.router.navigate(['/ruta', this.materiaId(), capId]);
   }
 }

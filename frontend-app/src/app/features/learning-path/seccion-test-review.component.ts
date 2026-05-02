@@ -123,7 +123,7 @@ import { PaesContentService } from './services/paes-content.service';
 
     <div class="review-page empty" *ngIf="!result()">
       <p>No hay resultados para mostrar.</p>
-      <button class="btn-outline-bottom" routerLink="/ruta">Volver a la ruta</button>
+      <button class="btn-outline-bottom" (click)="goBack()">Volver a la ruta</button>
     </div>
   `,
   styles: [`
@@ -271,7 +271,7 @@ export class SeccionTestReviewComponent {
   goBack() {
     const sec = this.seccion();
     if (sec) {
-      this.router.navigate(['/ruta', sec.materiaId, sec.capituloId]);
+      this.router.navigate(['/ruta', sec.materiaId]);
     } else {
       this.router.navigate(['/ruta']);
     }
