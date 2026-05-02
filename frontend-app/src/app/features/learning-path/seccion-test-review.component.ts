@@ -129,7 +129,7 @@ import { KatexService } from '../../core/services/katex.service';
       <!-- BOTTOM -->
       <div class="bottom-actions">
         <button class="btn-outline-bottom" (click)="goBack()">← Volver al capítulo</button>
-        <button class="btn-solid-bottom" (click)="retryTest()">↩ Intentar de nuevo</button>
+        <button class="btn-solid-bottom" (click)="retryTest()" *ngIf="r.score < 100">↩ Intentar de nuevo</button>
       </div>
     </div>
 

@@ -19,17 +19,6 @@ import { KatexService } from '../../core/services/katex.service';
         <div class="top-timer" [class.urgent]="timer() >= 300">{{ formatTime(timer()) }}</div>
       </div>
 
-      <!-- CONTEXTO (collapsible) -->
-      <div class="context-section" *ngIf="t.contexto_base" [class.collapsed]="contextCollapsed">
-        <button class="context-toggle" (click)="contextCollapsed = !contextCollapsed">
-          <span>📄 Texto de referencia</span>
-          <span class="toggle-arrow">{{ contextCollapsed ? '▼' : '▲' }}</span>
-        </button>
-        <div class="context-body" *ngIf="!contextCollapsed">
-          <p>{{ t.contexto_base }}</p>
-        </div>
-      </div>
-
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
         <div class="question-counter">
