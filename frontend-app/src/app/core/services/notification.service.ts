@@ -120,7 +120,7 @@ export class NotificationService {
     const [startHour, endHour] = timeWindows[config.preferredStudyTime];
 
     // Revisar si estamos dentro de la ventana del horario preferido
-    if (hour >= startHour && hour <= endHour) {
+    if (hour >= startHour && hour < endHour) {
       shouldNotify = true;
     }
 
@@ -130,9 +130,9 @@ export class NotificationService {
 
     // Calcular frecuencia según intensidad
     const frequencyMinutes: Record<NotificationConfig['notificationIntensity'], number> = {
-      baja: 240, // Cada 4 horas
-      normal: 120, // Cada 2 horas
-      alta: 45, // Cada 45 minutos
+      baja: 90, // Cada hora y media
+      normal: 60, // Cada hora
+      alta: 30, // Cada 30 minutos
     };
 
     const frequency = frequencyMinutes[config.notificationIntensity];

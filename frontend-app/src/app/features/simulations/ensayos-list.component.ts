@@ -2,13 +2,16 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SettingsModalComponent } from '../profile/settings-modal.component';
+import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { FirestoreService } from '../../core/services/firestore.service';
 
 interface Prueba {
   id: string;
   nombre: string;
   icono: string;
   descripcion: string;
-  tiempo: number; // en minutos
+  tiempo: number;
   preguntas: number;
   subpruebas?: SubPrueba[];
 }
@@ -24,7 +27,7 @@ type ExamMode = 'real' | 'asistido';
 @Component({
   selector: 'app-ensayos-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
   template: `
     <div class="ensayos-container">
       <!-- SIDEBAR -->
@@ -49,7 +52,7 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayo PAES</span>
           </a>
-          <a class="nav-item" routerLink="/settings">
+          <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
           </a>
@@ -67,12 +70,28 @@ type ExamMode = 'real' | 'asistido';
       <main class="main-content">
         <!-- HEADER -->
         <header class="header">
-          <div class="header-back">
-            <button class="btn-back" routerLink="/dashboard">← Volver</button>
-          </div>
-          <div class="header-content">
-            <h1 class="title">Ensayos PAES</h1>
-            <p class="subtitle">Realiza ensayos completos y simulacros bajo condiciones reales</p>
+          <div class="header-main-row">
+            <div class="header-left">
+              <div class="header-back">
+                <button class="btn-back" routerLink="/dashboard">← Volver</button>
+              </div>
+              <div class="header-content">
+                <h1 class="title">Ensayos PAES</h1>
+                <p class="subtitle">Realiza ensayos completos y simulacros bajo condiciones reales</p>
+              </div>
+            </div>
+            
+            <div class="header-actions">
+              <div class="profile-menu-wrap">
+                <button class="profile-trigger" (click)="showProfileModal = true">
+                  <span class="profile-avatar-wrap">
+                    <img *ngIf="userProfile?.photoURL; else avatarFallback" [src]="userProfile?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial }}</span></ng-template>
+                    <span class="profile-emoji-badge">{{ userProfile?.profileEmoji || '✨' }}</span>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -162,6 +181,8 @@ type ExamMode = 'real' | 'asistido';
         </div>
       </main>
     </div>
+    <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
+    <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
   `,
   styles: [`
     :host {
@@ -250,8 +271,31 @@ type ExamMode = 'real' | 'asistido';
     .header {
       margin-bottom: 3rem;
     }
+    .header-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .profile-menu-wrap { position: relative; }
+    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid rgba(0,0,0,0.08); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
+    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
+    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
+    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; }
+    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 0.08rem 0.28rem; font-size: 0.72rem; line-height: 1; }
     .header-back {
-      margin-bottom: 1rem;
+      margin-bottom: 0;
     }
     .btn-back {
       background: none;
@@ -585,9 +629,6 @@ type ExamMode = 'real' | 'asistido';
   `]
 })
 export class EnsayosListComponent implements OnInit {
-  private router = inject(Router);
-  private authService = inject(AuthService);
-
   pruebas: Prueba[] = [
     {
       id: 'm1',
@@ -678,8 +719,43 @@ export class EnsayosListComponent implements OnInit {
   pruebaSeleccionada: Prueba | null = null;
   subPruebaSeleccionada: SubPrueba | null = null;
 
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private firestoreService = inject(FirestoreService);
+  showSettingsModal = false;
+  showProfileModal = false;
+  userProfile: any = null;
+
+  get profileInitial(): string {
+    return this.userProfile?.displayName?.charAt(0)?.toUpperCase() || 'U';
+  }
+
+  onProfileModalClose() {
+    this.showProfileModal = false;
+    this.loadUserProfile();
+  }
+
+  private loadUserProfile() {
+    this.firestoreService.getUserProfile().subscribe({
+      next: (profile) => {
+        if (profile) {
+          this.userProfile = profile;
+        }
+      }
+    });
+  }
+
   ngOnInit() {
-    // Cargar datos iniciales si es necesario
+    // Pre-cargar datos desde Auth para evitar parpadeo
+    const currentUser = this.authService.currentUser;
+    if (currentUser) {
+      this.userProfile = {
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL
+      };
+    }
+
+    this.loadUserProfile();
   }
 
   seleccionarPrueba(prueba: Prueba) {

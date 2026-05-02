@@ -6,11 +6,14 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaesContentService } from '../learning-path/services/paes-content.service';
 import { Router, RouterModule } from '@angular/router';
+import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { SettingsModalComponent } from '../profile/settings-modal.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ProfileModalComponent, SettingsModalComponent],
   template: `
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
@@ -32,7 +35,7 @@ import { Router, RouterModule } from '@angular/router';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
           </a>
-          <a class="nav-item" routerLink="/settings">
+          <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
           </a>
@@ -63,7 +66,7 @@ import { Router, RouterModule } from '@angular/router';
               <span class="nav-icon">📚</span>
               <span class="nav-text">Ensayos PAES</span>
             </a>
-            <a class="nav-item" routerLink="/settings" (click)="mobileMenuOpen = false">
+            <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
               <span class="nav-icon">⚙️</span>
               <span class="nav-text">Configuración</span>
             </a>
@@ -87,7 +90,7 @@ import { Router, RouterModule } from '@angular/router';
           <div class="welcome-actions">
             <span class="plan-badge" [class.pro]="isProPlan">{{ isProPlan ? 'PRO' : 'BASICO' }}</span>
             <div class="profile-menu-wrap">
-              <button class="profile-trigger" routerLink="/profile">
+              <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
                   <img *ngIf="userProfile?.photoURL; else avatarFallback" [src]="userProfile?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial }}</span></ng-template>
@@ -223,6 +226,10 @@ import { Router, RouterModule } from '@angular/router';
         </section>
       </main>
     </div>
+
+    <!-- MODALS -->
+    <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+    <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsModalClose()"></app-settings-modal>
   `,
   styles: [`
     .dashboard-layout { display: flex; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
@@ -257,7 +264,7 @@ import { Router, RouterModule } from '@angular/router';
     .welcome-date { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.45rem; }
     .welcome-actions { display: flex; align-items: center; gap: 0.75rem; }
     .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; gap: 0.6rem; border: 2px solid rgba(0,0,0,0.08); background: #ffffff; color: var(--text-primary); border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid rgba(0,0,0,0.08); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
     .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
     .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
     .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
@@ -364,10 +371,13 @@ export class DashboardComponent implements OnInit {
   dashSvc = inject(DashboardService);
   paesContent = inject(PaesContentService);
   router = inject(Router);
+  notificationService = inject(NotificationService);
 
   userProfile: any = null;
   mobileMenuOpen = false;
   activeRecIdx = 0;
+  showProfileModal = false;
+  showSettingsModal = false;
 
   userName = 'Estudiante';
 
@@ -394,9 +404,41 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     // Guardar perfil del usuario al cargar (crea si no existe)
-    this.firestoreService.saveUserProfile({}).catch(() => {});
+    this.firestoreService.saveUserProfile({}).catch(() => { });
+
+    // Pre-cargar datos desde Auth para evitar parpadeo
+    const currentUser = this.authService.currentUser;
+    if (currentUser) {
+      this.userName = currentUser.displayName?.split(' ')[0] || 'Estudiante';
+      this.userProfile = {
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL
+      };
+    }
 
     // Cargar datos del usuario desde Firestore
+    this.firestoreService.getUserProfile().subscribe({
+      next: (profile) => {
+        if (profile) {
+          this.userProfile = profile;
+          this.userName = profile.displayName?.split(' ')[0] || 'Estudiante';
+
+          // Iniciar recordatorios si están habilitados
+          if (profile.notificationsEnabled) {
+            this.notificationService.startReminders({
+              preferredStudyTime: profile.preferredStudyTime || 'tarde',
+              notificationIntensity: profile.notificationIntensity || 'normal',
+              notificationsEnabled: true,
+            });
+          }
+        }
+      }
+    });
+  }
+
+  onProfileModalClose() {
+    this.showProfileModal = false;
+    // Refresh profile data
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
@@ -405,6 +447,10 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+  }
+
+  onSettingsModalClose() {
+    this.showSettingsModal = false;
   }
 
   async logout() {
