@@ -76,66 +76,68 @@ import { Materia } from './models/paes.models';
           <!-- MATERIAS GRID -->
           <div class="materias-grid">
             <div *ngFor="let m of paes.materias()"
-              class="materia-card"
+              class="materia-card horizontal-card"
               [class.has-progress]="getMateriaProgress(m.id).percentage > 0"
               [class.completed]="getMateriaProgress(m.id).percentage === 100"
               (click)="goToMateria(m)">
 
-              <!-- Card shine effect -->
-              <div class="card-shine"></div>
-
-              <!-- Top row: icon + status badge -->
-              <div class="card-top">
-                <div class="materia-icon-box">{{ m.icon }}</div>
-                <div class="status-badge"
-                  *ngIf="getMateriaProgress(m.id).percentage > 0"
-                  [class.badge-complete]="getMateriaProgress(m.id).percentage === 100">
-                  {{ getMateriaProgress(m.id).percentage === 100 ? '✓ Completa' : getMateriaProgress(m.id).percentage + '% en curso' }}
-                </div>
-                <div class="status-badge badge-new" *ngIf="getMateriaProgress(m.id).percentage === 0">Nuevo</div>
+              <!-- Izquierda: Imagen grande -->
+              <div class="card-image-col">
+                <img [src]="getMateriaInfo(m.id).img" [alt]="m.title" class="materia-main-img" />
               </div>
 
-              <!-- Title -->
-              <h2>{{ m.title }}</h2>
-              <p class="card-subtitle">{{ getCapCount(m.id) }} capítulos · {{ getSectionCount(m.id) }} lecciones</p>
-
-              <!-- Progress ring + bar -->
-              <div class="card-progress-area">
-                <div class="progress-ring-wrap">
-                  <svg viewBox="0 0 48 48" class="prog-svg">
-                    <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>
-                    <circle cx="24" cy="24" r="20" fill="none"
-                      [attr.stroke]="getMateriaProgress(m.id).percentage === 100 ? '#58cc02' : '#855cd6'"
-                      stroke-width="5"
-                      stroke-linecap="round"
-                      stroke-dasharray="125.66"
-                      [attr.stroke-dashoffset]="125.66 - (125.66 * getMateriaProgress(m.id).percentage / 100)"
-                      transform="rotate(-90 24 24)"/>
-                  </svg>
-                  <span class="ring-pct">{{ getMateriaProgress(m.id).percentage }}%</span>
+              <!-- Derecha: Contenido -->
+              <div class="card-content-col">
+                <!-- Título y Estado -->
+                <div class="card-header-row">
+                  <h2>{{ m.title }}</h2>
+                  <div class="status-badges">
+                    <div class="status-badge"
+                      *ngIf="getMateriaProgress(m.id).percentage > 0"
+                      [class.badge-complete]="getMateriaProgress(m.id).percentage === 100">
+                      {{ getMateriaProgress(m.id).percentage === 100 ? '✓ Completa' : getMateriaProgress(m.id).percentage + '% en curso' }}
+                    </div>
+                    <div class="status-badge badge-new" *ngIf="getMateriaProgress(m.id).percentage === 0">Nuevo</div>
+                  </div>
                 </div>
-                <div class="progress-detail">
-                  <div class="prog-bar-track">
-                    <div class="prog-bar-fill"
-                      [class.fill-green]="getMateriaProgress(m.id).percentage === 100"
-                      [style.width.%]="getMateriaProgress(m.id).percentage">
+
+                <!-- Descripción y Tópicos -->
+                <p class="materia-desc">{{ getMateriaInfo(m.id).desc }}</p>
+                <div class="materia-topics">
+                  <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m.id).topics">{{ topic }}</span>
+                </div>
+
+                <!-- Footer de la tarjeta: Progreso + Botón -->
+                <div class="card-footer-row">
+                  <div class="progress-info-wrap">
+                    <div class="stats-text">
+                      <span class="stat-item"><strong>{{ getCapCount(m.id) }}</strong> Capítulos</span>
+                      <span class="stat-sep">·</span>
+                      <span class="stat-item"><strong>{{ getSectionCount(m.id) }}</strong> Lecciones</span>
+                    </div>
+                    <div class="prog-bar-container">
+                      <div class="prog-bar-track">
+                        <div class="prog-bar-fill"
+                          [class.fill-green]="getMateriaProgress(m.id).percentage === 100"
+                          [style.width.%]="getMateriaProgress(m.id).percentage">
+                        </div>
+                      </div>
+                      <span class="prog-text-small">{{ getMateriaProgress(m.id).completed }}/{{ getMateriaProgress(m.id).total }}</span>
                     </div>
                   </div>
-                  <span class="prog-count">{{ getMateriaProgress(m.id).completed }}/{{ getMateriaProgress(m.id).total }} lecciones</span>
+
+                  <!-- Botón -->
+                  <div class="cta-wrap">
+                    <button class="btn-main-action"
+                      [class.btn-start]="getMateriaProgress(m.id).percentage === 0"
+                      [class.btn-continue]="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100"
+                      [class.btn-review]="getMateriaProgress(m.id).percentage === 100">
+                      {{ getMateriaProgress(m.id).percentage === 0 ? 'EMPEZAR' : getMateriaProgress(m.id).percentage === 100 ? 'REPASAR' : 'CONTINUAR' }}
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <!-- CTA Button -->
-              <button class="card-cta"
-                [class.cta-start]="getMateriaProgress(m.id).percentage === 0"
-                [class.cta-continue]="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100"
-                [class.cta-review]="getMateriaProgress(m.id).percentage === 100">
-                <span *ngIf="getMateriaProgress(m.id).percentage === 0">Empezar →</span>
-                <span *ngIf="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100">Continuar →</span>
-                <span *ngIf="getMateriaProgress(m.id).percentage === 100">Repasar →</span>
-              </button>
             </div>
-
           </div>
 
         </ng-container>
@@ -143,7 +145,7 @@ import { Materia } from './models/paes.models';
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
+    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
     .lp-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
@@ -180,49 +182,55 @@ import { Materia } from './models/paes.models';
     .ov-label { font-size: 0.68rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
 
     /* MATERIAS GRID */
-    .materias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+    .materias-grid { display: flex; flex-direction: column; gap: 1.5rem; }
 
-    /* MATERIA CARD */
-    .materia-card { position: relative; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 22px; padding: 1.75rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; display: flex; flex-direction: column; gap: 1rem; }
-    .materia-card:hover { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(133,92,214,0.14); border-color: rgba(133,92,214,0.3); }
-    .materia-card.has-progress { border-color: rgba(133,92,214,0.15); }
-    .materia-card.completed { border-color: rgba(88,204,2,0.25); }
-    .materia-card.completed:hover { box-shadow: 0 20px 48px rgba(88,204,2,0.12); border-color: rgba(88,204,2,0.4); }
+    /* HORIZONTAL CARD */
+    .horizontal-card { display: flex; flex-direction: row; gap: 2rem; padding: 2rem; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); align-items: stretch; }
+    .horizontal-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(133,92,214,0.1); border-color: rgba(133,92,214,0.25); }
 
-    /* Shine effect */
-    .card-shine { position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); pointer-events: none; transition: left 0.6s ease; }
-    .materia-card:hover .card-shine { left: 150%; }
+    /* IMAGE COLUMN */
+    .card-image-col { flex: 0 0 280px; display: flex; align-items: center; justify-content: center; }
+    .materia-main-img { width: 100%; height: auto; max-height: 220px; object-fit: contain; border-radius: 12px; transition: transform 0.4s ease; }
+    .horizontal-card:hover .materia-main-img { transform: scale(1.05); }
 
-    /* CARD TOP */
-    .card-top { display: flex; align-items: center; justify-content: space-between; }
-    .materia-icon-box { width: 52px; height: 52px; border-radius: 16px; background: linear-gradient(135deg, rgba(133,92,214,0.1), rgba(133,92,214,0.05)); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; }
-    .status-badge { font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 99px; background: rgba(133,92,214,0.1); color: var(--accent-primary); }
+    /* CONTENT COLUMN */
+    .card-content-col { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .card-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; gap: 1rem; }
+    .card-header-row h2 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2; }
+    .status-badges { display: flex; gap: 0.5rem; }
+    
+    .status-badge { font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 99px; background: rgba(133,92,214,0.1); color: var(--accent-primary); white-space: nowrap; height: fit-content; }
     .status-badge.badge-complete { background: rgba(88,204,2,0.1); color: #3d8c00; }
     .status-badge.badge-new { background: rgba(0,0,0,0.05); color: var(--text-secondary); }
 
-    /* CARD CONTENT */
-    .materia-card h2 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2; }
-    .card-subtitle { font-size: 0.82rem; color: var(--text-secondary); margin: 0; }
+    /* DESC & TOPICS */
+    .materia-desc { font-size: 1rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 1rem; max-width: 600px; }
+    .materia-topics { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+    .topic-tag { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); background: #f1f5f9; padding: 0.3rem 0.75rem; border-radius: 6px; }
 
-    /* PROGRESS AREA */
-    .card-progress-area { display: flex; align-items: center; gap: 1rem; }
-    .progress-ring-wrap { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
-    .prog-svg { width: 100%; height: 100%; }
-    .ring-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; color: var(--text-primary); }
-    .progress-detail { flex: 1; }
-    .prog-bar-track { height: 7px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; margin-bottom: 0.4rem; }
+    /* FOOTER ROW */
+    .card-footer-row { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; }
+    
+    /* STATS & PROG */
+    .progress-info-wrap { flex: 1; min-width: 200px; }
+    .stats-text { display: flex; gap: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .stats-text strong { color: var(--text-primary); font-family: var(--font-heading); }
+    .stat-sep { opacity: 0.5; }
+    
+    .prog-bar-container { display: flex; align-items: center; gap: 0.75rem; }
+    .prog-bar-track { flex: 1; height: 8px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
     .prog-bar-fill { height: 100%; background: linear-gradient(90deg, #855cd6, #a78bfa); border-radius: 99px; transition: width 0.6s ease; }
     .prog-bar-fill.fill-green { background: linear-gradient(90deg, #58cc02, #78d64b); }
-    .prog-count { font-size: 0.78rem; color: var(--text-secondary); }
+    .prog-text-small { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
 
-    /* CTA */
-    .card-cta { width: 100%; padding: 0.8rem; border-radius: 14px; border: none; font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; margin-top: 0.25rem; }
-    .cta-start { background: var(--accent-primary); color: #fff; box-shadow: 0 4px 0 #6b46b8; }
-    .cta-start:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
-    .cta-continue { background: linear-gradient(135deg, #855cd6, #a78bfa); color: #fff; box-shadow: 0 4px 0 #6b46b8; }
-    .cta-continue:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
-    .cta-review { background: rgba(88,204,2,0.1); color: #3d8c00; border: 2px solid rgba(88,204,2,0.25); }
-    .cta-review:hover { background: rgba(88,204,2,0.18); }
+    /* BUTTON */
+    .btn-main-action { padding: 0.85rem 2.5rem; border-radius: 14px; border: none; font-family: var(--font-heading); font-weight: 800; font-size: 1.05rem; letter-spacing: 0.03em; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-transform: uppercase; }
+    .btn-start { background: #ff9600; color: #fff; box-shadow: 0 4px 0 #cc7800; }
+    .btn-start:hover { transform: translateY(2px); box-shadow: 0 2px 0 #cc7800; }
+    .btn-continue { background: var(--accent-primary); color: #fff; box-shadow: 0 4px 0 #6b46b8; }
+    .btn-continue:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+    .btn-review { background: #fff; color: #3d8c00; border: 2px solid rgba(88,204,2,0.3); padding: 0.7rem 2.5rem; }
+    .btn-review:hover { background: rgba(88,204,2,0.05); border-color: #58cc02; }
 
     /* LOADING */
     .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: var(--text-secondary); font-weight: 500; }
@@ -233,8 +241,14 @@ import { Materia } from './models/paes.models';
       .sidebar { display: none; }
       .mobile-header { display: flex; }
       .main-content { margin-left: 0; padding: 80px 1rem 4rem; max-width: 100%; }
-      .materias-grid { grid-template-columns: 1fr; }
       .page-header { flex-direction: column; }
+      
+      .horizontal-card { flex-direction: column; gap: 1.5rem; padding: 1.5rem; }
+      .card-image-col { flex: 0 0 auto; }
+      .materia-main-img { max-height: 180px; }
+      .card-footer-row { flex-direction: column; align-items: stretch; gap: 1.5rem; }
+      .cta-wrap { width: 100%; }
+      .btn-main-action { width: 100%; }
     }
   `]
 })
@@ -244,6 +258,37 @@ export class LearningPathComponent {
   private router = inject(Router);
 
   mobileOpen = false;
+
+  materiaDataConfig: Record<string, { desc: string, topics: string[], img: string }> = {
+    'comp-lectora': {
+      desc: 'Mejora tu comprensión lectora, análisis de textos literarios y no literarios, y desarrolla un pensamiento crítico fundamental para la prueba.',
+      topics: ['Textos Literarios', 'Textos No Literarios', 'Vocabulario'],
+      img: 'assets/images/comp-lectora.png'
+    },
+    'mat1': {
+      desc: 'Domina los conceptos fundamentales de números, álgebra, geometría y probabilidad para asegurar un alto puntaje en la prueba M1.',
+      topics: ['Números', 'Álgebra', 'Geometría', 'Probabilidad'],
+      img: 'assets/images/mat1.png'
+    },
+    'historia': {
+      desc: 'Comprende los procesos históricos de Chile y el mundo, y analiza geografía y formación ciudadana de manera crítica.',
+      topics: ['Historia de Chile', 'Historia Universal', 'Formación Ciudadana'],
+      img: 'assets/images/historia.png'
+    },
+    'ciencias': {
+      desc: 'Prepárate integralmente en los ejes de Biología, Física y Química, comprendiendo los fenómenos naturales y sus leyes.',
+      topics: ['Biología', 'Física', 'Química'],
+      img: 'assets/images/ciencias.png'
+    }
+  };
+
+  getMateriaInfo(id: string) {
+    return this.materiaDataConfig[id] || {
+      desc: 'Prepárate para la prueba con material actualizado y ejercicios prácticos.',
+      topics: ['General', 'Ejercicios'],
+      img: 'assets/images/comp-lectora.png'
+    };
+  }
 
   totalCompleted = computed(() => {
     let total = 0;

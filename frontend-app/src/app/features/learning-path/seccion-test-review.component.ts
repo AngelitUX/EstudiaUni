@@ -139,7 +139,7 @@ import { KatexService } from '../../core/services/katex.service';
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
+    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
     .review-page { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem 5rem; position: relative; }
     .review-page.empty { text-align: center; padding-top: 6rem; color: var(--text-secondary); }
 

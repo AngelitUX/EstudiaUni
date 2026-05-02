@@ -103,7 +103,7 @@ import { KatexService } from '../../core/services/katex.service';
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
+    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
     .test-page { min-height: 100vh; display: flex; flex-direction: column; }
 
     /* TOP BAR */

@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { AuthService } from '../../core/services/auth.service';
 
 type PathItem = 
   | { type: 'chapter', capituloId: string, title: string, subtitle: string }
@@ -12,7 +13,46 @@ type PathItem =
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="materia-page" *ngIf="materia() as m">
+    <div class="lp-layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-logo"><span class="text-gradient">EstudiaUni</span></span>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/settings"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="nav-item logout-btn" (click)="logout()">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Cerrar Sesión</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MOBILE HEADER -->
+      <div class="mobile-header">
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
+        <span class="text-gradient">EstudiaUni</span>
+      </div>
+      <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
+        <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <nav class="sidebar-nav">
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/settings" (click)="mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+            <a class="nav-item" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- MAIN -->
+      <main class="main-content">
+        <div class="materia-page" *ngIf="materia() as m">
       
       <!-- HEADER -->
       <header class="path-header">
@@ -26,9 +66,6 @@ type PathItem =
 
       <!-- DUOLINGO PATH -->
       <div class="duo-path-container">
-        <!-- Central Line -->
-        <div class="path-center-line"></div>
-
         <ng-container *ngFor="let item of pathItems()">
           
           <!-- CHAPTER DIVIDER -->
@@ -89,13 +126,40 @@ type PathItem =
       </div>
 
     </div>
+      </main>
+    </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: #ffffff; }
+    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
+    .lp-layout { display: flex; min-height: 100vh; }
+    .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* SIDEBAR */
+    .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: #fff; }
+    .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 0.95rem; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .nav-item.active { background: rgba(99,102,241,0.15); color: var(--accent-primary); font-weight: 600; }
+    .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    /* MOBILE */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
+    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
+    .mobile-overlay.open { display: block; }
+    .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
+
+    /* MAIN */
+    .main-content { flex: 1; margin-left: 260px; max-width: calc(100% - 260px); }
+
     .materia-page { max-width: 600px; margin: 0 auto; padding-bottom: 6rem; position: relative; }
 
     /* HEADER */
-    .path-header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 2px solid rgba(0,0,0,0.06); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .path-header { padding: 1.5rem 1.5rem 0.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
     .btn-back { background: transparent; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.2s; }
     .btn-back:hover { background: rgba(0,0,0,0.05); color: var(--text-primary); }
     .header-info h2 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; }
@@ -103,11 +167,8 @@ type PathItem =
     /* PATH CONTAINER */
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
 
-    /* CENTRAL FAINT LINE */
-    .path-center-line { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 24px; background: rgba(0,0,0,0.03); z-index: 0; border-radius: 12px; }
-
     /* CHAPTER DIVIDER */
-    .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 5rem 0 5rem; position: relative; z-index: 1; padding: 0 1rem; }
+    .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 1.5rem 0 7.5rem; position: relative; z-index: 15; padding: 0 1rem; }
     .div-line { flex: 1; height: 2px; background: rgba(0,0,0,0.08); }
     .div-content { padding: 0 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
     .div-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -165,8 +226,14 @@ type PathItem =
       100% { box-shadow: 0 8px 0 #a559d6, 0 0 0 0 rgba(206,130,255,0); }
     }
 
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .mobile-header { display: flex; }
+      .main-content { margin-left: 0; max-width: 100%; }
+      .materia-page { padding-top: 60px; }
+    }
+
     @media (max-width: 600px) {
-      .path-center-line { width: 16px; }
       .node-inner { width: 64px; height: 64px; }
       .node-active .node-inner { width: 68px; height: 68px; }
       .node-icon { width: 28px; height: 28px; }
@@ -177,6 +244,9 @@ export class MateriaPathComponent {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private auth = inject(AuthService);
+
+  mobileOpen = false;
 
   materiaId = signal('');
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
@@ -244,5 +314,10 @@ export class MateriaPathComponent {
 
   goToGuide(capId: string) {
     this.router.navigate(['/ruta', this.materiaId(), capId]);
+  }
+
+  async logout() {
+    await this.auth.logout();
+    this.router.navigate(['/']);
   }
 }

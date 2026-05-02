@@ -85,7 +85,7 @@ import { PaesContentService } from './services/paes-content.service';
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color, #fdf9f1); }
+    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
     .sec-page { max-width: 680px; margin: 0 auto; padding: 1.5rem 1.5rem 5rem; }
 
     .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
