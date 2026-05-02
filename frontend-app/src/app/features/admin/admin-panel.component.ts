@@ -177,7 +177,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     }
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: #0f0f14; color: #e4e4e7; }
+    :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
 
     .admin-layout {
       display: grid;
@@ -272,13 +272,13 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       display: flex; justify-content: space-between; align-items: flex-start;
       margin-bottom: 1.5rem;
     }
-    .content-header h1 { font-size: 1.65rem; font-weight: 800; margin: 0; color: #fff; }
-    .subtitle { font-size: 0.88rem; color: #71717a; margin: 0.35rem 0 0; }
+    .content-header h1 { font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--text-primary); }
+    .subtitle { font-size: 0.88rem; color: var(--text-secondary); margin: 0.35rem 0 0; }
     .header-actions { display: flex; gap: 0.65rem; }
     .btn-refresh {
       padding: 0.6rem 1.1rem; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04); color: #a1a1aa;
+      border: 2px solid rgba(0,0,0,0.06);
+      background: #ffffff; color: var(--text-secondary);
       font-size: 0.82rem; font-weight: 600; cursor: pointer;
       transition: all 0.2s;
     }
@@ -303,16 +303,16 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     .stat-card {
       display: flex; flex-direction: column; align-items: center;
       padding: 0.75rem 1rem; min-width: 100px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
       border-radius: 12px; cursor: pointer;
       transition: all 0.2s;
     }
     .stat-card:hover { border-color: rgba(133,92,214,0.2); background: rgba(133,92,214,0.05); }
     .stat-card.active { border-color: rgba(133,92,214,0.4); background: rgba(133,92,214,0.1); }
     .stat-icon { font-size: 1.25rem; }
-    .stat-count { font-size: 1.4rem; font-weight: 800; color: #fff; margin-top: 0.25rem; }
-    .stat-label { font-size: 0.65rem; color: #71717a; text-align: center; margin-top: 0.15rem; }
+    .stat-count { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-top: 0.25rem; }
+    .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-align: center; margin-top: 0.15rem; }
 
     /* ─── LOADING ─── */
     .loading-state {
@@ -332,20 +332,20 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     /* ─── EMPTY STATE ─── */
     .empty-state {
       text-align: center; padding: 4rem 2rem;
-      background: rgba(255,255,255,0.02);
-      border: 2px dashed rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.02);
+      border: 2px dashed rgba(0,0,0,0.08);
       border-radius: 20px;
     }
-    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .empty-state h3 { font-size: 1.2rem; margin: 0 0 0.5rem; color: #e4e4e7; }
-    .empty-state p { font-size: 0.88rem; color: #71717a; margin: 0 0 1.5rem; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.8; }
+    .empty-state h3 { font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--text-primary); }
+    .empty-state p { font-size: 0.88rem; color: var(--text-secondary); margin: 0 0 1.5rem; }
 
     /* ─── QUESTION CARDS ─── */
     .question-list { display: flex; flex-direction: column; gap: 0.85rem; }
 
     .question-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
       border-radius: 16px;
       overflow: hidden;
       transition: all 0.25s;
@@ -356,7 +356,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     .card-header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 0.85rem 1.15rem;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 2px solid rgba(0,0,0,0.06);
     }
     .card-badges { display: flex; gap: 0.4rem; flex-wrap: wrap; }
     .badge-materia {
@@ -379,12 +379,12 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     .card-actions { display: flex; gap: 0.35rem; }
     .btn-icon {
       width: 34px; height: 34px;
-      border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; border: 2px solid rgba(0,0,0,0.06);
       background: transparent; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; transition: all 0.2s;
     }
-    .btn-icon:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+    .btn-icon:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
     .btn-icon.btn-danger:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
 
     .card-body { padding: 1rem 1.15rem; }
@@ -395,26 +395,26 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       border-left: 2px solid rgba(133,92,214,0.3);
     }
     .enunciado {
-      font-size: 0.92rem; font-weight: 600; color: #e4e4e7;
+      font-size: 0.92rem; font-weight: 600; color: var(--text-primary);
       margin: 0 0 0.85rem; line-height: 1.5;
     }
 
     .alternativas-preview { display: flex; flex-wrap: wrap; gap: 0.4rem; }
     .alt-chip {
       font-size: 0.75rem; padding: 0.3rem 0.6rem;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 6px; color: #a1a1aa;
+      background: rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 6px; color: var(--text-secondary);
       transition: all 0.2s;
     }
-    .alt-chip.correct { background: rgba(88,204,2,0.1); border-color: rgba(88,204,2,0.25); color: #86efac; }
-    .alt-chip strong { color: #e4e4e7; margin-right: 0.25rem; }
+    .alt-chip.correct { background: rgba(88,204,2,0.1); border-color: rgba(88,204,2,0.25); color: #3d8c00; }
+    .alt-chip strong { color: var(--text-primary); margin-right: 0.25rem; }
 
     .card-footer {
       display: flex; justify-content: space-between; align-items: center;
       padding: 0.65rem 1.15rem;
-      border-top: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.72rem; color: #71717a;
+      border-top: 2px solid rgba(0,0,0,0.06);
+      font-size: 0.72rem; color: var(--text-secondary);
     }
 
     /* ─── DELETE MODAL ─── */
@@ -427,8 +427,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       animation: fadeIn 0.2s ease-out;
     }
     .modal-card {
-      background: #1e1e2a;
-      border: 1px solid rgba(255,255,255,0.08);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
       border-radius: 20px;
       padding: 2rem;
       max-width: 420px;
@@ -437,18 +437,18 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       animation: slideUp 0.3s ease-out;
     }
     .modal-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-    .modal-card h3 { font-size: 1.15rem; margin: 0 0 0.75rem; color: #fff; }
-    .modal-text { font-size: 0.85rem; color: #a1a1aa; margin: 0 0 0.5rem; line-height: 1.5; }
+    .modal-card h3 { font-size: 1.15rem; margin: 0 0 0.75rem; color: var(--text-primary); }
+    .modal-text { font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 0.5rem; line-height: 1.5; }
     .modal-warning { font-size: 0.78rem; color: #ef4444; margin: 0 0 1.5rem; font-weight: 500; }
     .modal-actions { display: flex; gap: 0.65rem; justify-content: center; }
     .btn-cancel {
       padding: 0.65rem 1.25rem; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: transparent; color: #a1a1aa;
+      border: 2px solid rgba(0,0,0,0.06);
+      background: transparent; color: var(--text-secondary);
       font-weight: 600; cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-cancel:hover { border-color: rgba(255,255,255,0.2); color: #e4e4e7; }
+    .btn-cancel:hover { border-color: rgba(0,0,0,0.15); color: var(--text-primary); }
     .btn-delete {
       padding: 0.65rem 1.25rem; border-radius: 10px;
       border: none;

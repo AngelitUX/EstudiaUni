@@ -44,14 +44,7 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">🗺️</span>
             <span class="nav-text">Ruta de Aprendizaje</span>
           </a>
-          <a class="nav-item" routerLink="/tests">
-            <span class="nav-icon">📝</span>
-            <span class="nav-text">Mis Ensayos</span>
-          </a>
-          <a class="nav-item" routerLink="/modules">
-            <span class="nav-icon">🎯</span>
-            <span class="nav-text">Práctica por Tema</span>
-          </a>
+
           <a class="nav-item active" routerLink="/ensayos">
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayo PAES</span>
@@ -174,9 +167,8 @@ type ExamMode = 'real' | 'asistido';
     :host {
       display: block;
       min-height: 100vh;
-      background: #000000;
-      color: #f8fafc;
-      --text-secondary: #c4b5fd;
+      background: #f8f9fa;
+      color: var(--text-primary);
     }
     .ensayos-container { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -264,14 +256,14 @@ type ExamMode = 'real' | 'asistido';
     .btn-back {
       background: none;
       border: none;
-      color: var(--accent-primary);
+      color: var(--text-secondary);
       font-size: 0.95rem;
       cursor: pointer;
       transition: all 0.2s;
       font-weight: 600;
     }
     .btn-back:hover {
-      color: #fff;
+      color: var(--accent-primary);
       transform: translateX(-4px);
     }
     .title {
@@ -301,12 +293,12 @@ type ExamMode = 'real' | 'asistido';
     /* PRUEBA CARD */
     .prueba-card {
       text-align: left;
-      background: rgba(255, 255, 255, 0.03);
-      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
       border-radius: 16px;
       padding: 2rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
@@ -323,8 +315,8 @@ type ExamMode = 'real' | 'asistido';
       transition: opacity 0.3s ease;
     }
     .prueba-card:hover {
-      border-color: var(--accent-primary);
-      box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+      border-color: rgba(133,92,214,0.3);
+      box-shadow: 0 12px 40px rgba(133,92,214,0.1);
       transform: translateY(-4px);
     }
     .prueba-card:hover::before {
@@ -332,8 +324,8 @@ type ExamMode = 'real' | 'asistido';
     }
     .prueba-card-selected {
       border-color: var(--accent-primary);
-      background: rgba(99, 102, 241, 0.1);
-      box-shadow: 0 12px 40px rgba(99, 102, 241, 0.25);
+      background: rgba(133, 92, 214, 0.05);
+      box-shadow: 0 12px 40px rgba(133, 92, 214, 0.15);
     }
 
     .card-icon {
@@ -347,7 +339,7 @@ type ExamMode = 'real' | 'asistido';
       font-size: 1.3rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      color: #fff;
+      color: var(--text-primary);
     }
     .card-desc {
       font-size: 0.9rem;
@@ -361,7 +353,7 @@ type ExamMode = 'real' | 'asistido';
       flex-wrap: wrap;
     }
     .meta-badge {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.04);
       padding: 0.5rem 1rem;
       border-radius: 8px;
       font-size: 0.85rem;
@@ -369,6 +361,7 @@ type ExamMode = 'real' | 'asistido';
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
     .meta-icon {
       font-size: 1rem;
@@ -392,8 +385,8 @@ type ExamMode = 'real' | 'asistido';
       to { opacity: 1; }
     }
     .modal-content {
-      background: rgba(13, 15, 23, 0.98);
-      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
       border-radius: 20px;
       padding: 2.5rem;
       max-width: 560px;
@@ -415,7 +408,7 @@ type ExamMode = 'real' | 'asistido';
       position: absolute;
       top: 1.25rem;
       right: 1.25rem;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.05);
       border: none;
       width: 32px;
       height: 32px;
@@ -429,8 +422,8 @@ type ExamMode = 'real' | 'asistido';
       justify-content: center;
     }
     .modal-close:hover {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--text-primary);
     }
     .modal-icon {
       font-size: 3.5rem;
@@ -440,9 +433,10 @@ type ExamMode = 'real' | 'asistido';
       font-size: 1.7rem;
       font-weight: 800;
       text-align: center;
+      color: var(--text-primary);
     }
     .modal-message {
-      background: rgba(99, 102, 241, 0.1);
+      background: rgba(133, 92, 214, 0.1);
       border-left: 4px solid var(--accent-primary);
       padding: 1rem 1.25rem;
       border-radius: 10px;
@@ -451,7 +445,7 @@ type ExamMode = 'real' | 'asistido';
       font-size: 1rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
-      color: #fff;
+      color: var(--text-primary);
     }
     .message-subtext {
       font-size: 0.95rem;
@@ -466,7 +460,7 @@ type ExamMode = 'real' | 'asistido';
     .subpruebas-title {
       font-size: 0.95rem;
       font-weight: 600;
-      color: #fff;
+      color: var(--text-primary);
     }
     .subpruebas-grid {
       display: grid;
@@ -477,8 +471,8 @@ type ExamMode = 'real' | 'asistido';
       text-align: left;
       border-radius: 12px;
       padding: 0.85rem 1rem;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.06);
       color: inherit;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -487,25 +481,25 @@ type ExamMode = 'real' | 'asistido';
       gap: 0.35rem;
     }
     .subprueba-card:hover {
-      border-color: var(--accent-primary);
-      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(133, 92, 214, 0.3);
+      background: rgba(133, 92, 214, 0.05);
     }
     .subprueba-card-selected {
       border-color: var(--accent-primary);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
-      background: rgba(99, 102, 241, 0.18);
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.15);
+      background: rgba(133, 92, 214, 0.1);
     }
     .subprueba-name {
       font-weight: 700;
-      color: #fff;
+      color: var(--text-primary);
     }
     .subprueba-desc {
       font-size: 0.85rem;
       color: var(--text-secondary);
     }
     .prueba-detalles {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.06);
       border-radius: 12px;
       padding: 1.25rem;
       display: grid;
@@ -546,28 +540,27 @@ type ExamMode = 'real' | 'asistido';
       flex: 1;
     }
     .btn-primary {
-      background: var(--gradient-brand);
+      background: var(--accent-primary);
       color: #fff;
+      box-shadow: 0 4px 0 #6b46b8;
     }
     .btn-primary:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #6b46b8;
     }
     .btn-outline {
-      background: transparent;
-      border: 2px solid var(--glass-border);
-      color: var(--text-secondary);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
+      color: var(--text-primary);
     }
     .btn-outline:hover {
-      border-color: var(--accent-primary);
-      color: #fff;
-      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(0,0,0,0.15);
+      background: rgba(0, 0, 0, 0.02);
     }
     .glass-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(10px);
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.06);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
 
     /* RESPONSIVE */

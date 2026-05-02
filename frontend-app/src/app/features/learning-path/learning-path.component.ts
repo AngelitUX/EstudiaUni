@@ -42,6 +42,7 @@ import { Materia } from './models/paes.models';
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
             <a class="nav-item" routerLink="/settings" (click)="mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+            <a class="nav-item" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
           </nav>
         </div>
       </div>
@@ -147,24 +148,23 @@ import { Materia } from './models/paes.models';
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
-    .sidebar { width: 260px; background: #ffffff; border-right: 2px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.06); }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 800; }
-    .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 0.95rem; background: transparent; border: none; width: 100%; text-align: left; }
-    .nav-item:hover { background: rgba(133,92,214,0.06); color: var(--text-primary); }
-    .nav-item.active { background: rgba(133,92,214,0.1); color: var(--accent-primary); font-weight: 600; }
+    .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: #fff; }
+    .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 0.95rem; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .nav-item.active { background: rgba(99,102,241,0.15); color: var(--accent-primary); font-weight: 600; }
     .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
-    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(0,0,0,0.06); }
-    .logout-btn { color: var(--text-secondary); }
-    .logout-btn:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
 
     /* MOBILE */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; }
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
+    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
     .mobile-overlay.open { display: block; }
-    .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #fff; padding: 2rem 1rem; }
+    .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN */
     .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); }
