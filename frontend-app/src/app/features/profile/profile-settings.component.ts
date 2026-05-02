@@ -7,6 +7,7 @@ import { updateProfile } from 'firebase/auth';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AdminService } from '../admin/services/admin.service';
 
 @Component({
   selector: 'app-profile-settings',
@@ -38,6 +39,9 @@ import { NotificationService } from '../../core/services/notification.service';
               {{ profileForm.displayName || 'Tu perfil' }}
               <span>{{ profileForm.profileEmoji || '✨' }}</span>
             </h2>
+            <a *ngIf="adminService.isAdmin()" routerLink="/admin" class="admin-badge">
+              🛡️ Panel de Admin
+            </a>
           </div>
         </div>
 
@@ -224,6 +228,23 @@ import { NotificationService } from '../../core/services/notification.service';
     .profile-title span {
       font-size: 1.2rem;
     }
+    .admin-badge {
+      display: inline-block;
+      margin-top: 0.5rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .admin-badge:hover {
+      background: rgba(239, 68, 68, 0.25);
+      transform: translateY(-2px);
+    }
 
     .card {
       padding: 1.1rem;
@@ -372,6 +393,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  public readonly adminService = inject(AdminService);
 
   isSettingsMode = false;
   loading = true;

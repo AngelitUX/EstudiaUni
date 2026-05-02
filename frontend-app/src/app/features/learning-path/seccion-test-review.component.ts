@@ -1,7 +1,9 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
+import { KatexService } from '../../core/services/katex.service';
 
 @Component({
   selector: 'app-seccion-test-review',
@@ -87,8 +89,16 @@ import { PaesContentService } from './services/paes-content.service';
 
         <p class="rq-enunciado"><span class="rq-num">{{ i + 1 }}</span> {{ p.enunciado }}</p>
 
-        <div class="rq-image-container" *ngIf="p.imagen_url">
-          <img [src]="p.imagen_url" alt="Imagen de la pregunta" class="rq-image" />
+        <div class="rq-preambulo" *ngIf="p.preambulo_texto">
+          <span>💬</span> {{ p.preambulo_texto }}
+        </div>
+
+        <div class="rq-image-container" *ngIf="p.preambulo_imagen_url">
+          <img [src]="p.preambulo_imagen_url" alt="Imagen de apoyo" class="rq-image" />
+        </div>
+
+        <div class="rq-formula" *ngIf="p.formula_latex"
+          [innerHTML]="renderLatex(p.formula_latex)">
         </div>
 
         <div class="rq-options">
@@ -99,7 +109,9 @@ import { PaesContentService } from './services/paes-content.service';
             <span class="rq-letter"
               [class.letter-green]="key === p.respuesta_correcta"
               [class.letter-red]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">{{ key }}</span>
-            <span class="rq-text">{{ p.alternativas[key] }}</span>
+            <span class="rq-text" *ngIf="p.tipo_alternativas !== 'imagen'">{{ p.alternativas[key] }}</span>
+            <img *ngIf="p.tipo_alternativas === 'imagen'" [src]="p.alternativas[key]"
+              alt="Opción {{ key }}" class="rq-opt-img" />
             <span class="rq-tag correct-tag" *ngIf="key === p.respuesta_correcta">✓ Correcta</span>
             <span class="rq-tag wrong-tag" *ngIf="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">✗ Tu respuesta</span>
           </div>
@@ -117,7 +129,7 @@ import { PaesContentService } from './services/paes-content.service';
       <!-- BOTTOM -->
       <div class="bottom-actions">
         <button class="btn-outline-bottom" (click)="goBack()">← Volver al capítulo</button>
-        <button class="btn-solid-bottom" (click)="retryTest()">↩ Intentar de nuevo</button>
+        <button class="btn-solid-bottom" (click)="retryTest()" *ngIf="r.score < 100">↩ Intentar de nuevo</button>
       </div>
     </div>
 
@@ -192,6 +204,11 @@ import { PaesContentService } from './services/paes-content.service';
     .rq-image-container { margin: 0 1.25rem 1rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
     .rq-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
 
+    .rq-preambulo { font-size: 0.82rem; color: var(--text-secondary); font-style: italic; padding: 0.65rem 1.25rem; line-height: 1.5; border-left: 3px solid rgba(133,92,214,0.3); margin: 0 1.25rem 0.75rem; background: rgba(133,92,214,0.03); border-radius: 0 8px 8px 0; }
+    .rq-formula { margin: 0 1.25rem 0.75rem; padding: 0.6rem 0.85rem; background: #f0fdf4; border: 1px solid rgba(22,163,74,0.15); border-radius: 8px; text-align: center; }
+    .rq-formula code { font-family: 'Courier New', monospace; font-size: 0.9rem; color: #166534; font-weight: 600; }
+    .rq-opt-img { max-width: 120px; max-height: 60px; object-fit: contain; border-radius: 4px; }
+
     .rq-options { display: flex; flex-direction: column; gap: 0.4rem; padding: 0 1.25rem 1rem; }
     .rq-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.9rem; border: 2px solid rgba(0,0,0,0.04); border-radius: 12px; font-size: 0.88rem; transition: all 0.15s; }
     .rq-option.correct-answer { border-color: rgba(88,204,2,0.4); background: rgba(88,204,2,0.06); }
@@ -237,6 +254,8 @@ export class SeccionTestReviewComponent {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private katexSvc = inject(KatexService);
+  private sanitizer = inject(DomSanitizer);
 
   optKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
   seccionId = signal('');
@@ -279,5 +298,10 @@ export class SeccionTestReviewComponent {
 
   retryTest() {
     this.router.navigate(['/test', this.seccionId()]);
+  }
+
+  renderLatex(latex: string | null): SafeHtml {
+    if (!latex) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(this.katexSvc.render(latex));
   }
 }
