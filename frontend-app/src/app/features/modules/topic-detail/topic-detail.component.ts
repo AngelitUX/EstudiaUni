@@ -14,7 +14,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   template: `
     <div class="topic-detail-container animate-fade-in" *ngIf="topic">
       <header class="topic-header">
-        <button class="btn btn-outline mb-4" (click)="goBack()">← Volver a Módulos</button>
+        <button class="btn-back mb-4" (click)="goBack()">← Volver</button>
         <h2>{{ topic.title }}</h2>
         <div class="badges">
           <span class="badge">Nivel {{ topic.difficultyLevel }}</span>
@@ -86,6 +86,23 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       font-size: 0.9rem;
     }
     .status-badge { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .btn-back {
+      background: none;
+      border: none;
+      color: var(--accent-primary);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0;
+    }
+    .btn-back:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
     
     .btn {
       padding: 0.7rem 1.2rem;

@@ -28,7 +28,7 @@ import { Router, RouterModule } from '@angular/router';
             <span class="nav-icon">🎯</span>
             <span class="nav-text">Práctica por Tema</span>
           </a>
-          <a class="nav-item" routerLink="/modules">
+          <a class="nav-item" routerLink="/ensayos">
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
           </a>
@@ -64,7 +64,7 @@ import { Router, RouterModule } from '@angular/router';
               <span class="nav-icon">🎯</span>
               <span class="nav-text">Práctica por Tema</span>
             </a>
-            <a class="nav-item" routerLink="/modules" (click)="mobileMenuOpen = false">
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
               <span class="nav-icon">📚</span>
               <span class="nav-text">Ensayos PAES</span>
             </a>
@@ -756,6 +756,6 @@ export class DashboardComponent implements OnInit {
 
   async logout() {
     await firstValueFrom(this.authService.logout());
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 }

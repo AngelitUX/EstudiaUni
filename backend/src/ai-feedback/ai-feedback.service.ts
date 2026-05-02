@@ -13,7 +13,12 @@ import {
   SYNTHESIS_SYSTEM_PROMPT,
   buildSynthesisPrompt,
 } from './prompts/analysis.prompt';
+import {
+  ASSIST_SYSTEM_PROMPT,
+  buildAssistUserPrompt,
+} from './prompts/assist.prompt';
 import OpenAI from 'openai';
+import { ChatRequestDto } from './dto/chat-message.dto';
 
 @Injectable()
 export class AiFeedbackService {
@@ -182,6 +187,86 @@ export class AiFeedbackService {
       this.logger.error(`Synthesis failed: ${error.message}`);
       // Fallback to original content
       return { markdown: topicData.content?.keyConceptsMarkdown || topicData.content?.summary || '' };
+    }
+  }
+
+  /**
+   * Provide assisted hint for an in-progress question.
+   */
+  async assistQuestion(input: {
+    question: string;
+    options: Array<{ id: string; text: string }>;
+    userAnswer?: string | null;
+    subject?: string;
+  }) {
+    if (!this.openai) {
+      return {
+        reply:
+          'La asistencia IA no está disponible en este momento. Intenta razonar la pregunta paso a paso y descarta opciones.',
+      };
+    }
+
+    try {
+      const reply = await this.callOpenAIText(
+        ASSIST_SYSTEM_PROMPT,
+        buildAssistUserPrompt(input),
+      );
+      return { reply };
+    } catch (error) {
+      this.logger.error(`Assist failed: ${error.message}`);
+      throw new InternalServerErrorException('AI assist failed');
+    }
+  }
+
+  /**
+   * Multi-turn chat with context (question + history).
+   * Accepts full conversation history and returns AI reply.
+   */
+  async chatWithContext(input: ChatRequestDto): Promise<{ reply: string }> {
+    if (!this.openai) {
+      return {
+        reply:
+          '⚠️ La asistencia IA no está disponible en este momento. Intenta razonar la pregunta paso a paso y descarta las opciones que claramente son incorrectas.',
+      };
+    }
+
+    const optionsText = input.options
+      .map((opt) => `${opt.id}. ${opt.text}`)
+      .join('\n');
+
+    const systemPrompt = `${ASSIST_SYSTEM_PROMPT}
+
+Contexto de la pregunta actual:
+Materia: ${input.subject || 'PAES'}
+Pregunta: ${input.question}
+Opciones:
+${optionsText}
+Respuesta actual del estudiante: ${input.userAnswer || 'Sin responder'}
+
+IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles la alternativa correcta.`;
+
+    // Build messages array from history
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...input.history.map((msg) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      })),
+    ];
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages,
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      const reply = response.choices[0]?.message?.content || 'No pude generar una respuesta. Intenta de nuevo.';
+      return { reply };
+    } catch (error) {
+      this.logger.error(`Chat failed: ${error.message}`);
+      throw new InternalServerErrorException('AI chat failed');
     }
   }
 

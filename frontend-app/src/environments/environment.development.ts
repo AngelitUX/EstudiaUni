@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000',
+  geminiApiKey: 'AIzaSyCy4dAomJ1iol8iqtz0usySE_UhY-LM1lA',
   firebase: {
     apiKey: "AIzaSyB3eISSPYcdGYf4l3LvZyADV6dL9l1OW5g",
     authDomain: "estudiauni.firebaseapp.com",

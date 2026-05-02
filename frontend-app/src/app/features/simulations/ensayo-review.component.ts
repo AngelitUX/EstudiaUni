@@ -23,13 +23,13 @@ interface ReviewQuestion {
   template: `
     <div class="review-container">
       <!-- HEADER -->
-      <header class="review-header">
-        <div class="header-left">
-          <button class="btn-icon" routerLink="/ensayos">←</button>
-          <div class="header-info">
-            <h1>Revisión: {{ examTitle }}</h1>
-            <p class="header-subtitle">Revisa tus respuestas y aprende de los errores</p>
-          </div>
+        <header class="review-header">
+          <div class="header-left">
+            <button class="btn-back" routerLink="/ensayos">← Volver</button>
+            <div class="header-info">
+              <h1>Revisión: {{ examTitle }}</h1>
+              <p class="header-subtitle">Revisa tus respuestas y aprende de los errores</p>
+            </div>
         </div>
         
         <div class="header-score">
@@ -186,17 +186,23 @@ interface ReviewQuestion {
       border-bottom: 1px solid var(--glass-border);
     }
     .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .btn-icon {
-      background: rgba(255, 255, 255, 0.1);
+    .btn-back {
+      background: none;
       border: none;
-      color: #fff;
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+      color: var(--accent-primary);
+      font-size: 0.95rem;
       cursor: pointer;
-      font-size: 1.2rem;
+      transition: all 0.2s;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0;
     }
-    .btn-icon:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn-back:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
     .header-info h1 {
       font-family: var(--font-heading);
       font-size: 1.5rem;

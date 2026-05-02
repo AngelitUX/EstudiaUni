@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
-  // Ya no necesitamos backend separado - todo usa Firestore
+  apiUrl: '',
+  geminiApiKey: 'AIzaSyCy4dAomJ1iol8iqtz0usySE_UhY-LM1lA',
   firebase: {
     apiKey: "AIzaSyB3eISSPYcdGYf4l3LvZyADV6dL9l1OW5g",
     authDomain: "estudiauni.firebaseapp.com",
@@ -11,3 +12,4 @@ export const environment = {
     measurementId: "G-LWHGWMQV8F"
   }
 };
+

@@ -10,8 +10,8 @@ import { ModulesService } from '../services/modules.service';
   template: `
     <div class="modules-container animate-fade-in">
       <div style="margin-bottom: 1rem;">
-        <button class="btn btn-ghost" routerLink="/dashboard" style="padding: 0; display: inline-flex; align-items: center; gap: 0.5rem;">
-          ← Volver al Inicio
+        <button class="btn-back" routerLink="/dashboard">
+          ← Volver
         </button>
       </div>
       <h2>Mi Ruta de Aprendizaje</h2>
@@ -91,7 +91,23 @@ import { ModulesService } from '../services/modules.service';
       color: #9ca3af;
     }
     .module-section { margin-bottom: 4rem; }
-<<<<<<< HEAD
+    .btn-back {
+      background: none;
+      border: none;
+      color: var(--accent-primary);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0;
+    }
+    .btn-back:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
     .module-header { 
       display: flex; 
       align-items: center; 
@@ -153,16 +169,6 @@ import { ModulesService } from '../services/modules.service';
       color: #9ca3af;
       font-size: 0.9rem;
     }
-=======
-    .module-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;}
-    .badge { background: rgba(99,102,241,0.2); color: #a855f7; padding: 0.2rem 0.8rem; border-radius: 99px; font-size: 0.8rem; font-weight: bold;}
-    .topics-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-    .topic-card { padding: 1.5rem; position: relative; overflow: hidden; }
-    .topic-card.locked { opacity: 0.75; filter: grayscale(0.5); }
-    .topic-card.completed { border-color: rgba(39, 201, 63, 0.4); }
-    .topic-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem; }
-    .topic-header h4 { font-size: 1.2rem; margin: 0; }
->>>>>>> master
     .status-icon { font-size: 1.2rem; }
     .progress-bar-container { 
       width: 100%; 

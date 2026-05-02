@@ -13,6 +13,8 @@ import {
   CurrentUser,
   CurrentUserData,
 } from '../common/decorators/current-user.decorator';
+import { AssistQuestionDto } from './dto/assist-question.dto';
+import { ChatRequestDto } from './dto/chat-message.dto';
 
 @Controller('ai')
 @UseGuards(FirebaseAuthGuard)
@@ -35,6 +37,18 @@ export class AiFeedbackController {
     @Body('complexity') complexity: 'simple' | 'detailed' = 'simple',
   ) {
     return this.aiFeedbackService.synthesizeTopic(topicId, complexity);
+  }
+
+  @Post('assist-question')
+  @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 per minute
+  async assistQuestion(@Body() body: AssistQuestionDto) {
+    return this.aiFeedbackService.assistQuestion(body);
+  }
+
+  @Post('chat')
+  @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 messages per minute
+  async chat(@Body() body: ChatRequestDto) {
+    return this.aiFeedbackService.chatWithContext(body);
   }
 
   @Get('analysis/:analysisId')
