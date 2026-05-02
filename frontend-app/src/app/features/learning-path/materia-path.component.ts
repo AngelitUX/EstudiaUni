@@ -109,8 +109,8 @@ type PathItem =
     /* CHAPTER DIVIDER */
     .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 5rem 0 5rem; position: relative; z-index: 1; padding: 0 1rem; }
     .div-line { flex: 1; height: 2px; background: rgba(0,0,0,0.08); }
-    .div-content { padding: 0 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
-    .div-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; }
+    .div-content { padding: 0 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+    .div-title { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; }
     
     .btn-guide { background: var(--accent-primary); border: 2px solid transparent; box-shadow: 0 4px 12px rgba(133,92,214,0.3); padding: 0.6rem 1.4rem; border-radius: 99px; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: #fff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
     .btn-guide:hover { background: #714cc2; transform: translateY(-3px); box-shadow: 0 6px 16px rgba(133,92,214,0.4); }

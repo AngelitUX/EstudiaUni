@@ -165,7 +165,7 @@ import { Router, RouterModule } from '@angular/router';
               <div class="rec-nav" *ngIf="dashSvc.recommendations().length > 1">
                 <button *ngFor="let r of dashSvc.recommendations(); let i = index" class="rec-dot" [class.active]="i === activeRecIdx" (click)="activeRecIdx = i"></button>
               </div>
-              <button class="btn btn-primary btn-large" [routerLink]="dashSvc.recommendations()[activeRecIdx]?.routerLink ?? '/ruta'">
+              <button class="btn btn-primary btn-large" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink">
                 🚀 Comenzar
               </button>
             </div>

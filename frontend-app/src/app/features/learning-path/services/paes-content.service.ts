@@ -63,6 +63,9 @@ export class PaesContentService {
           const test = testsMap.get(secData.testId);
           return {
             ...secData,
+            id: secDoc.id,
+            capituloId: capDoc.id,
+            materiaId: capData.materiaId,
             test
           } as Seccion;
         });
