@@ -127,15 +127,15 @@ import { KatexService } from '../../core/services/katex.service';
     .question-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
     .question-counter { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
 
-    .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 2rem; max-width: 600px; width: 100%; animation: slideUp 0.35s ease-out; }
-    .q-text { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.5rem; }
+    .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 2rem; max-width: 850px; width: 100%; animation: slideUp 0.35s ease-out; }
+    .q-text { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.5rem; }
 
     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
     .q-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
 
     /* PREAMBULO */
-    .q-preambulo { display: flex; gap: 0.6rem; padding: 0.85rem 1rem; margin: 0 0 1.25rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 3px solid rgba(133,92,214,0.4); }
-    .q-preambulo p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0; font-style: italic; }
+    .q-preambulo { display: flex; gap: 0.8rem; padding: 1.25rem; margin: 0 0 1.5rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 4px solid rgba(133,92,214,0.4); }
+    .q-preambulo p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7; margin: 0; font-style: italic; }
     .preambulo-icon { font-size: 1.1rem; flex-shrink: 0; }
 
     /* FORMULA */
@@ -146,17 +146,17 @@ import { KatexService } from '../../core/services/katex.service';
     .opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
 
     /* OPTIONS */
-    .options-grid { display: flex; flex-direction: column; gap: 0.6rem; }
-    .option-btn { display: flex; align-items: center; gap: 0.85rem; padding: 0.95rem 1.15rem; border: 2px solid rgba(0,0,0,0.08); border-radius: 14px; background: #fff; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.8rem; }
+    .option-btn { display: flex; align-items: center; gap: 1rem; padding: 1.15rem 1.25rem; border: 2px solid rgba(0,0,0,0.08); border-radius: 14px; background: #fff; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
     .option-btn:hover:not(:disabled):not(.selected) { border-color: rgba(133,92,214,0.3); background: rgba(133,92,214,0.03); transform: translateX(4px); }
     .option-btn.selected { border-color: var(--accent-primary); background: rgba(133,92,214,0.06); box-shadow: 0 0 0 3px rgba(133,92,214,0.12); }
     .option-btn.correct { border-color: #58cc02; background: rgba(88,204,2,0.08); box-shadow: 0 0 0 3px rgba(88,204,2,0.15); }
     .option-btn.wrong { border-color: #ef4444; background: rgba(239,68,68,0.06); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
-    .opt-letter { width: 32px; height: 32px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 0.85rem; color: var(--text-secondary); flex-shrink: 0; transition: all 0.2s; }
+    .opt-letter { width: 36px; height: 36px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 0.95rem; color: var(--text-secondary); flex-shrink: 0; transition: all 0.2s; }
     .opt-letter.sel { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
     .option-btn.correct .opt-letter { background: #58cc02; border-color: #58cc02; color: #fff; }
     .option-btn.wrong .opt-letter { background: #ef4444; border-color: #ef4444; color: #fff; }
-    .opt-text { font-size: 0.92rem; color: var(--text-primary); line-height: 1.4; }
+    .opt-text { font-size: 1.05rem; color: var(--text-primary); line-height: 1.5; }
 
     /* FEEDBACK */
     .feedback-bar { display: flex; align-items: flex-start; gap: 0.85rem; padding: 1.15rem; border-radius: 14px; margin-top: 1.25rem; animation: slideUp 0.3s ease-out; }
