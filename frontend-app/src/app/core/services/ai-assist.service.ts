@@ -13,6 +13,8 @@ export interface ChatRequest {
   options: Array<{ id: string; text: string }>;
   userAnswer?: string | null;
   subject?: string;
+  examTitle?: string;
+  imageUrl?: string | null;
   history: ChatMessage[];
 }
 
@@ -71,17 +73,21 @@ export class AiAssistService {
 
     const contextPrompt = `${TUTOR_SYSTEM_PROMPT}
 
-Pregunta actual del ensayo:
+Ensayo actual: ${payload.examTitle || 'Prueba PAES'}
+Materia/ID: ${payload.subject || 'Desconocida'}
+
+Pregunta del ensayo (Podría ser una imagen que te adjunto):
 ${payload.question}
 
-Opciones:
+Opciones disponibles:
 ${optionsText}
 
 Respuesta actual del estudiante: ${payload.userAnswer || 'Sin responder aún'}
-Materia: ${payload.subject || 'PAES'}`;
+
+INSTRUCCIÓN VISION:
+Si te envío una imagen, léela con atención. Es la captura oficial de la pregunta. Si el texto de la 'Pregunta' arriba es genérico (como "Pregunta 5"), confía plenamente en lo que ves en la imagen para guiar al alumno.`;
 
     try {
-      // Intentamos con gemini-2.5-flash que es la última versión disponible
       const model = this.genAI.getGenerativeModel({
         model: 'gemini-2.5-flash',
         systemInstruction: contextPrompt,
@@ -90,30 +96,46 @@ Materia: ${payload.subject || 'PAES'}`;
           { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
         ],
         generationConfig: {
-          maxOutputTokens: 250,
+          maxOutputTokens: 1000,
           temperature: 0.7,
         }
       });
 
       // Build history for Gemini
-      // Gemini requires history to start with 'user' role
       let geminiHistory = payload.history.slice(0, -1).map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
       }));
 
-      // Remove any leading 'model' messages (e.g. the initial welcome message)
+      // Gemini history MUST start with 'user' role
       while (geminiHistory.length > 0 && geminiHistory[0].role === 'model') {
         geminiHistory.shift();
       }
 
       const chat = model.startChat({ history: geminiHistory });
 
-      // Last message is the user's current input
+      // Build parts for the current message
       const lastMsg = payload.history[payload.history.length - 1];
       const userText = lastMsg?.role === 'user' ? lastMsg.content : 'Necesito una pista.';
+      
+      const messageParts: any[] = [{ text: userText }];
 
-      const result = await chat.sendMessage(userText);
+      // ADD VISION SUPPORT
+      if (payload.imageUrl) {
+        try {
+          const base64Data = await this.urlToBase64(payload.imageUrl);
+          messageParts.push({
+            inline_data: {
+              mime_type: 'image/png', // Assuming PNG/JPG
+              data: base64Data
+            }
+          });
+        } catch (imgError) {
+          console.error('[AiAssistService] Error loading image for vision:', imgError);
+        }
+      }
+
+      const result = await chat.sendMessage(messageParts);
       const reply = result.response.text();
       return { reply: reply || 'No pude generar una respuesta. Intenta de nuevo.' };
 
@@ -122,16 +144,7 @@ Materia: ${payload.subject || 'PAES'}`;
       
       // Manejo de errores específicos
       const msg = error?.message || '';
-      if (msg.includes('API_KEY')) {
-        return { reply: '🔑 API key inválida. Verifica que esté correcta en environment.ts.' };
-      }
-      if (msg.includes('429') || msg.includes('Quota')) {
-        return { reply: '⚠️ Has superado la cuota de la API (Limit 0 o Too Many Requests). Verifica tu cuenta de Google.' };
-      }
-      if (msg.includes('404')) {
-        return { reply: '⚠️ El modelo seleccionado no está disponible en tu API key. Podría requerir gemini-2.0-flash o pro.' };
-      }
-      return { reply: 'No pude conectarme al tutor en este momento. Intenta de nuevo en unos segundos.' };
+      return { reply: `⚠️ Error de Google API: ${msg}` };
     }
   }
 
@@ -145,5 +158,21 @@ Materia: ${payload.subject || 'PAES'}`;
       ...payload,
       history: [{ role: 'user', content: 'Necesito una pista para esta pregunta.' }]
     })));
+  }
+
+  private async urlToBase64(url: string): Promise<string> {
+    // Convert relative URL to absolute if needed (Gemini needs full data)
+    const absoluteUrl = url.startsWith('http') ? url : window.location.origin + (url.startsWith('/') ? '' : '/') + url;
+    const response = await fetch(absoluteUrl);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 }

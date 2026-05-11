@@ -1,6 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { PaesContentService } from '../../features/learning-path/services/paes-content.service';
 import { FirestoreService } from './firestore.service';
+import { Auth } from '@angular/fire/auth';
+import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } from '@angular/fire/firestore';
 
 // ─── Interfaces ───
 
@@ -52,6 +54,8 @@ const STORAGE_KEY_PAES_RECORDS = 'estudiauni_paes_records';
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private paesContent = inject(PaesContentService);
+  private firestoreService = inject(FirestoreService);
+  private auth = inject(Auth);
 
   // ─── Signals ───
   private _activities = signal<ActivityEntry[]>([]);
@@ -193,6 +197,28 @@ export class DashboardService {
   constructor() {
     this.loadFromStorage();
     this.recalculateStreak();
+    this.syncWithFirebase();
+  }
+
+  /** Sincronizar datos iniciales desde Firebase */
+  private async syncWithFirebase() {
+    const user = this.auth.currentUser;
+    if (!user) return;
+
+    try {
+      // 1. Cargar actividades recientes desde Firestore
+      // Nota: Aquí se asume que las actividades se guardan en la subcolección 'actividad' del usuario
+      // o se integran desde la colección global 'intentos'
+      const history = await this.firestoreService.getUserActivities(user.uid);
+      if (history && history.length > 0) {
+        this._activities.set(history as any);
+      }
+
+      // 2. Cargar records PAES
+      // TODO: Implementar en firestoreService si es necesario
+    } catch (error) {
+      console.warn('[DashboardService] Error sincronizando con Firebase:', error);
+    }
   }
 
   // ─── Public Methods ───
@@ -223,6 +249,14 @@ export class DashboardService {
     this._activities.set([entry, ...current].slice(0, 50)); // Keep last 50
     this.updateStreak();
     this.saveToStorage();
+
+    // Persistir en Firebase
+    const user = this.auth.currentUser;
+    if (user) {
+      this.firestoreService.saveActivity(user.uid, entry).catch(err => 
+        console.error('[DashboardService] Error guardando actividad en Firebase:', err)
+      );
+    }
   }
 
   /** Log a completed PAES ensayo */
@@ -266,6 +300,14 @@ export class DashboardService {
 
     this.updateStreak();
     this.saveToStorage();
+
+    // Persistir en Firebase
+    const user = this.auth.currentUser;
+    if (user) {
+      this.firestoreService.saveActivity(user.uid, entry).catch(err => 
+        console.error('[DashboardService] Error guardando record en Firebase:', err)
+      );
+    }
   }
 
   // ─── Streak Logic ───
