@@ -9,16 +9,20 @@ import { DashboardService } from '../../core/services/dashboard.service';
 
 interface Question {
   id: string;
+  order: number;
   stem: string;
+  subject?: string;
   options: { id: string; text: string }[];
   correctAnswer?: string;
   imageUrl?: string | null;
+  readingText?: string[] | null;
 }
 
 type ExamMode = 'real' | 'asistido';
 
 interface SavedProgress {
   examId: string;
+  examName: string;
   mode: ExamMode;
   timeRemaining: number;
   initialTimeSeconds: number;
@@ -48,12 +52,7 @@ interface AiMessage {
         </div>
         
         <div class="header-center">
-          <div class="progress-info">
-            <div class="progress-bar-container">
-              <div class="progress-bar" [style.width.%]="(currentIndex + 1) / totalQuestions * 100"></div>
-            </div>
-            <span class="progress-text">Pregunta {{ currentIndex + 1 }} de {{ totalQuestions }}</span>
-          </div>
+          <!-- Removed sequential progress indicator to avoid confusion with official numbering -->
         </div>
         
         <div class="header-right">
@@ -81,9 +80,15 @@ interface AiMessage {
       </header>
 
       <!-- MAIN EXAM AREA -->
-      <div class="exam-body" [class.assisted-layout]="isAssisted">
+      <div class="exam-body" 
+           [class.assisted-layout]="isAssisted && !isAiCollapsed"
+           [class.nav-collapsed]="isNavCollapsed"
+           [class.ai-collapsed]="isAiCollapsed">
+           
+
+
         <!-- QUESTION NAVIGATOR (Left Column) -->
-        <aside class="question-nav">
+        <aside class="question-nav" *ngIf="!isNavCollapsed">
           <h4 class="nav-title">Navegador</h4>
           <div class="question-grid">
             <button 
@@ -93,7 +98,7 @@ interface AiMessage {
               [class.current]="currentIndex === i"
               [class.flagged]="flagged[q.id]"
               (click)="goToQuestion(i)">
-              {{ i + 1 }}
+              {{ q.order }}
             </button>
           </div>
           
@@ -124,62 +129,155 @@ interface AiMessage {
           </div>
         </aside>
 
-        <!-- QUESTION AREA (Center Column) -->
-        <main class="question-area">
-          <div class="question-card glass-card" *ngIf="currentQuestion">
-            <div class="question-header">
-              <span class="question-number">Pregunta {{ currentIndex + 1 }}</span>
-              <button 
-                class="flag-btn" 
-                [class.flagged]="flagged[currentQuestion.id]"
-                (click)="toggleFlag()">
-                {{ flagged[currentQuestion.id] ? '🚩 Marcada' : '🏳️ Marcar' }}
-              </button>
-            </div>
+        <main class="question-area" 
+              [class.with-reading-text]="currentQuestion?.readingText"
+              [class.focus-reading]="focusedPanel === 'reading'"
+              [class.focus-question]="focusedPanel === 'question'">
+          
+          <!-- Reading Text Section (Left side when split) -->
+          <div class="reading-text-container glass-card" *ngIf="currentQuestion?.readingText as readingText">
 
-            <div class="question-stem">
-              <p *ngIf="!currentQuestion.imageUrl">{{ currentQuestion.stem }}</p>
-              <img *ngIf="currentQuestion.imageUrl" [src]="currentQuestion.imageUrl" alt="Imagen de la pregunta" class="question-image" />
+            <div class="reading-text-header">
+              <div class="header-left">
+                <span class="reading-icon">📖</span>
+                <h4>Texto de lectura</h4>
+              </div>
+              <div class="header-actions">
+                <button class="focus-btn" 
+                        (click)="toggleFocus('reading')" 
+                        [title]="focusedPanel === 'reading' ? 'Ver ambos' : 'Expandir texto'">
+                  {{ focusedPanel === 'reading' ? '🔲' : '🔳' }}
+                </button>
+              </div>
             </div>
-
-            <div class="options-list bubble-sheet">
-              <button 
-                *ngFor="let opt of currentQuestion.options"
-                class="option-btn bubble-btn"
-                [class.selected]="answers[currentQuestion.id] === opt.id"
-                (click)="selectOption(opt.id)">
-                {{ opt.id }}
-              </button>
-            </div>
+              <div class="reading-images">
+                <img *ngFor="let imgUrl of readingText" 
+                     [src]="imgUrl" 
+                     class="reading-image" 
+                     alt="Texto de lectura" />
+              </div>
           </div>
 
-          <!-- NAVIGATION -->
-          <div class="question-navigation">
-            <button 
-              class="btn btn-outline"
-              [disabled]="currentIndex === 0"
-              (click)="prevQuestion()">
-              ← Anterior
-            </button>
-            
-            <button 
-              *ngIf="currentIndex < totalQuestions - 1"
-              class="btn btn-primary"
-              (click)="nextQuestion()">
-              Siguiente Pregunta →
-            </button>
+          <!-- Question Content -->
+          <div class="question-content-container">
+            <div class="question-card glass-card" *ngIf="currentQuestion">
+              <div class="question-header">
+                <div class="header-left">
+                  <!-- Question number removed as it is in the image -->
+                  <button 
+                    class="flag-btn" 
+                    [class.flagged]="flagged[currentQuestion.id]"
+                    (click)="toggleFlag()">
+                    {{ flagged[currentQuestion.id] ? '🚩' : '🏳️' }}
+                  </button>
+                </div>
+                <div class="header-actions" *ngIf="isLanguageModule">
+                  <button class="focus-btn" 
+                          (click)="toggleFocus('question')" 
+                          [title]="focusedPanel === 'question' ? 'Ver ambos' : 'Expandir pregunta'">
+                    {{ focusedPanel === 'question' ? '🔲' : '🔳' }}
+                  </button>
+                  <!-- AI quick toggle only when collapsed in language module -->
+                  <button 
+                    *ngIf="isAssisted && isAiCollapsed"
+                    class="btn-ai-float"
+                    (click)="toggleAi()"
+                    title="Abrir Tutor IA">
+                    🤖 Tutor
+                  </button>
+                  <button
+                    *ngIf="isAssisted && !isAiCollapsed"
+                    class="btn-ai-float active"
+                    (click)="toggleAi()"
+                    title="Cerrar Tutor IA">
+                    🤖 Cerrar
+                  </button>
+                </div>
+              </div>
 
-            <button 
-              *ngIf="currentIndex === totalQuestions - 1"
-              class="btn btn-success"
-              (click)="finishExam()">
-              ✓ Finalizar Ensayo
-            </button>
+              <div class="question-stem">
+                <div class="question-image-container">
+                  <img *ngIf="currentQuestion.imageUrl" 
+                       [src]="ensureLeadingSlash(currentQuestion.imageUrl)" 
+                       (error)="handleImageError($event)"
+                       alt="Imagen de la pregunta" 
+                       class="question-image" />
+                </div>
+              </div>
+
+              <!-- OPTIONS & NAVIGATION (Single Row for Non-Language) -->
+              <div class="options-nav-row" *ngIf="!isLanguageModule">
+                <button 
+                  class="btn-nav-inline"
+                  [disabled]="currentIndex === 0"
+                  (click)="prevQuestion()">
+                  ← Anterior
+                </button>
+
+                <div class="options-list bubble-sheet-inline">
+                  <button 
+                    *ngFor="let opt of currentQuestion.options"
+                    class="option-btn bubble-btn"
+                    [class.selected]="answers[currentQuestion.id] === opt.id"
+                    (click)="selectOption(opt.id)">
+                    {{ opt.id }}
+                  </button>
+                </div>
+
+                <button 
+                  *ngIf="currentIndex < totalQuestions - 1"
+                  class="btn-nav-inline primary"
+                  (click)="nextQuestion()">
+                  Siguiente Pregunta →
+                </button>
+
+                <button 
+                  *ngIf="currentIndex === totalQuestions - 1"
+                  class="btn-nav-inline success"
+                  (click)="finishExam()">
+                  ✓ Finalizar Ensayo
+                </button>
+              </div>
+
+              <!-- OPTIONS & NAVIGATION for Language (same inline row as other modules) -->
+              <div class="options-nav-row" *ngIf="isLanguageModule">
+                <button 
+                  class="btn-nav-inline"
+                  [disabled]="currentIndex === 0"
+                  (click)="prevQuestion()">
+                  ←
+                </button>
+
+                <div class="options-list bubble-sheet-inline">
+                  <button 
+                    *ngFor="let opt of currentQuestion.options"
+                    class="option-btn bubble-btn"
+                    [class.selected]="answers[currentQuestion.id] === opt.id"
+                    (click)="selectOption(opt.id)">
+                    {{ opt.id }}
+                  </button>
+                </div>
+
+                <button 
+                  *ngIf="currentIndex < totalQuestions - 1"
+                  class="btn-nav-inline primary"
+                  (click)="nextQuestion()">
+                  Siguiente →
+                </button>
+
+                <button 
+                  *ngIf="currentIndex === totalQuestions - 1"
+                  class="btn-nav-inline success"
+                  (click)="finishExam()">
+                  ✓ Finalizar
+                </button>
+              </div>
+            </div>
           </div>
         </main>
 
         <!-- AI CHAT PANEL (Right Column) -->
-        <aside class="ai-panel glass-card" *ngIf="isAssisted">
+        <aside class="ai-panel glass-card" *ngIf="isAssisted && !isAiCollapsed">
           <div class="ai-header">
             <div class="ai-header-left">
               <div class="ai-avatar">🤖</div>
@@ -198,7 +296,7 @@ interface AiMessage {
               [class.user]="msg.role === 'user'"
               [class.assistant]="msg.role === 'assistant'">
               <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🤖 Tutor' }}</div>
-              <div class="bubble-content">{{ msg.content }}</div>
+              <div class="bubble-content" [innerHTML]="formatAiMessage(msg.content)"></div>
               <div class="bubble-time" *ngIf="msg.timestamp">
                 {{ msg.timestamp | date:'HH:mm' }}
               </div>
@@ -253,7 +351,6 @@ interface AiMessage {
           <h3>Ensayo en pausa</h3>
           <p>El tiempo está detenido. Puedes reanudar cuando quieras.</p>
           <div class="modal-actions">
-            <button class="btn btn-outline" (click)="exitExam()">Salir</button>
             <button class="btn btn-primary" (click)="resumeExam()">Reanudar</button>
           </div>
         </div>
@@ -305,7 +402,11 @@ interface AiMessage {
           </p>
           <div class="modal-actions">
             <button class="btn btn-outline" (click)="showFinishModal = false">Revisar</button>
-            <button class="btn btn-success" (click)="submitExam()">Finalizar</button>
+            <button 
+              class="btn btn-success" 
+              (click)="submitExam()">
+              Finalizar
+            </button>
           </div>
         </div>
       </div>
@@ -411,15 +512,182 @@ interface AiMessage {
       flex: 1;
       display: grid;
       grid-template-columns: 280px 1fr;
-      gap: 2rem;
-      padding: 2rem;
-      max-width: 1400px;
-      margin: 0 auto;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 100%;
+      margin: 0;
       width: 100%;
+      height: calc(100vh - 80px);
+      overflow: hidden;
+      position: relative;
+      transition: grid-template-columns 0.3s ease;
     }
     .exam-body.assisted-layout {
       grid-template-columns: 280px 1fr 320px;
     }
+    .exam-body.nav-collapsed {
+      grid-template-columns: 0px 1fr;
+    }
+    .exam-body.nav-collapsed.assisted-layout {
+      grid-template-columns: 0px 1fr 320px;
+    }
+    .exam-body.ai-collapsed {
+      grid-template-columns: 280px 1fr 0px;
+    }
+    .exam-body.nav-collapsed.ai-collapsed {
+      grid-template-columns: 0px 1fr 0px;
+    }
+
+    /* ===== TOGGLE BUTTONS ===== */
+    .toggle-side-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 48px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .toggle-side-btn:hover { background: #f8fafc; color: #3b82f6; }
+    
+    .toggle-nav-btn { left: 0; border-left: none; border-radius: 0 8px 8px 0; }
+    .toggle-ai-btn { right: 0; border-right: none; border-radius: 8px 0 0 8px; }
+
+    .nav-collapsed .toggle-nav-btn { left: 0; }
+    .ai-collapsed .toggle-ai-btn { right: 0; }
+
+    .question-area {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .question-area.with-reading-text {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .question-area.with-reading-text.focus-reading {
+      grid-template-columns: 1fr 0px;
+      gap: 0;
+    }
+    .question-area.with-reading-text.focus-reading .question-content-container {
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      padding: 0;
+    }
+
+    .question-area.with-reading-text.focus-question {
+      grid-template-columns: 0px 1fr;
+      gap: 0;
+    }
+    .question-area.with-reading-text.focus-question .reading-text-container {
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .reading-text-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+    }
+
+    .reading-text-header {
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .reading-text-header h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1e293b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .reading-images {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      background: #f1f5f9;
+    }
+
+    .reading-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0;
+    }
+
+
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .focus-btn {
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .focus-btn:hover { background: #bfdbfe; border-color: #93c5fd; }
+
+
+
+    .question-content-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+      overflow-y: auto;
+      padding: 0 0.5rem;
+    }
+
+    .question-content-container::-webkit-scrollbar { width: 6px; }
+    .question-content-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
     /* ===== QUESTION NAV ===== */
     .question-nav {
@@ -427,9 +695,8 @@ interface AiMessage {
       border: 2px solid var(--glass-border);
       border-radius: 16px;
       padding: 1.5rem;
-      height: fit-content;
-      position: sticky;
-      top: 100px;
+      height: calc(100% - 20px);
+      overflow-y: auto;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     .nav-title {
@@ -506,7 +773,7 @@ interface AiMessage {
       height: calc(100vh - 130px);
       max-height: 750px;
       position: sticky;
-      top: 100px;
+      top: 80px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -703,17 +970,17 @@ interface AiMessage {
       flex-shrink: 0;
     }
     .question-card {
-      padding: 2.5rem;
+      padding: 1.5rem;
       border-radius: 20px;
       background: #ffffff;
       border: 2px solid var(--glass-border);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     .question-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
     .question-number {
       font-size: 0.9rem;
@@ -722,6 +989,23 @@ interface AiMessage {
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+    .btn-ai-float {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-ai-float:hover { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .btn-ai-float.active { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
     .flag-btn {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
@@ -738,25 +1022,41 @@ interface AiMessage {
       font-size: 1.15rem;
       line-height: 1.7;
       color: #111827;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
+    }
+    .question-image-container {
+      width: 100%;
+      background: #f8fafc;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
     }
     .question-image {
-      max-width: 100%;
+      width: 100%;
       height: auto;
-      margin-top: 1rem;
-      border: none;
-      background: transparent;
-      padding: 0;
+      max-width: 100%;
+      margin-top: 0.5rem;
+      border-radius: 8px;
       mix-blend-mode: multiply;
     }
     .options-list { display: flex; flex-direction: column; gap: 1rem; }
     .options-list.bubble-sheet {
       flex-direction: row;
       justify-content: center;
-      gap: 2rem;
+      gap: 1rem;
       margin-top: 2rem;
       padding-top: 1.5rem;
       border-top: 2px dashed #cbd5e1;
+      flex-wrap: wrap;
+    }
+    .options-list.bubble-sheet-lang {
+      flex-direction: row;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed #e2e8f0;
+      flex-wrap: wrap;
     }
     .option-btn {
       display: flex;
@@ -774,14 +1074,15 @@ interface AiMessage {
     }
     .option-btn.bubble-btn {
       padding: 0;
-      width: 56px;
-      height: 56px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.3rem;
+      font-size: 1rem;
       color: #64748b;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      flex-shrink: 0;
     }
     .option-btn:hover { border-color: #cbd5e1; background: #f1f5f9; transform: translateX(4px); }
     .option-btn.bubble-btn:hover { transform: translateY(-4px) scale(1.05); border-color: #3b82f6; color: #3b82f6; }
@@ -798,22 +1099,40 @@ interface AiMessage {
       transform: translateY(-2px);
     }
 
-    /* ===== NAVIGATION ===== */
-    .question-navigation {
+    .options-nav-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 1rem;
+      margin-top: 1rem;
+      padding-top: 0.875rem;
+      border-top: 1.5px dashed #e2e8f0;
+      gap: 0.5rem;
     }
-    .btn { padding: 0.85rem 1.75rem; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.2s; border: none; }
-    .btn-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-    .btn-outline { background: #ffffff; border: 2px solid #cbd5e1; color: #475569; }
-    .btn-outline:hover { border-color: #3b82f6; color: #3b82f6; }
-    .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-    .btn-ghost { background: transparent; color: #64748b; border: none; }
-    .btn-ghost:hover { color: #1e293b; background: #f1f5f9; border-radius: 8px; }
+    .bubble-sheet-inline {
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 0.5rem;
+      justify-content: center;
+      flex: 1;
+      min-width: 0;
+    }
+    .btn-nav-inline {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      color: #475569;
+      white-space: nowrap;
+      min-width: 100px;
+    }
+    .btn-nav-inline.primary { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+    .btn-nav-inline.success { background: #10b981; border-color: #10b981; color: #fff; }
+    .btn-nav-inline:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+    .btn-nav-inline:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ===== MODALS ===== */
     .modal-overlay {
@@ -868,12 +1187,14 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   flagged: { [key: string]: boolean } = {};
   loading = true;
   mode: ExamMode = 'real';
+  isLanguageModule = false;
 
   showExitModal = false;
   showRealExitModal = false;
   showPauseModal = false;
   showResumeModal = false;
   showFinishModal = false;
+  resumeDirectly = false; // true when navigating via 'Continuar' widget
 
   // Timer
   timeRemaining = 140 * 60; // 2h 20m in seconds
@@ -890,6 +1211,15 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   chatInputText = '';
   private shouldScrollChat = false;
   private assistQuestionId: string | null = null;
+  
+  // UI State
+  isNavCollapsed = false;
+  isAiCollapsed = false;
+  focusedPanel: 'both' | 'reading' | 'question' = 'both';
+
+  toggleFocus(panel: 'reading' | 'question') {
+    this.focusedPanel = this.focusedPanel === panel ? 'both' : panel;
+  }
 
   // Preguntas cargadas desde Firestore
   questions: Question[] = [];
@@ -929,35 +1259,99 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     this.intentoId = this.route.snapshot.queryParamMap.get('intento') || '';
     const modeParam = this.route.snapshot.queryParamMap.get('mode');
     this.mode = modeParam === 'asistido' ? 'asistido' : 'real';
+    // 'resume=true' means user clicked 'Continuar' from the widget → skip resume modal
+    this.resumeDirectly = this.route.snapshot.queryParamMap.get('resume') === 'true';
     const durationParam = Number(this.route.snapshot.queryParamMap.get('duration'));
     if (Number.isFinite(durationParam) && durationParam > 0) {
       this.timeRemaining = durationParam * 60;
       this.initialTimeSeconds = this.timeRemaining;
     }
-    this.loadQuestions();
+    const nameParam = this.route.snapshot.queryParamMap.get('name');
+    this.loadQuestions(nameParam);
   }
 
   ngOnDestroy() {
     if (this.timerInterval) clearInterval(this.timerInterval);
   }
 
-  loadQuestions() {
+  loadQuestions(customName: string | null = null) {
     this.loading = true;
     this.firestoreService.getPreguntas(this.examId).subscribe(preguntas => {
       this.questions = preguntas.map(p => this.mapPreguntaToQuestion(p));
       this.totalQuestions = this.questions.length;
+      
+      // Dynamic title based on ID or custom name
+      this.setDynamicTitle(customName);
+
       this.loading = false;
       this.updateAssistContext();
       this.initializeExamFlow();
     });
   }
 
+  private setDynamicTitle(customName: string | null = null) {
+    const id = this.examId.toLowerCase();
+    this.isLanguageModule = id.startsWith('l-');
+    
+    // Auto-collapse AI panel in Language module: layout is already 3 columns
+    if (this.isLanguageModule) {
+      this.isAiCollapsed = true;
+    }
+
+    if (customName) {
+      this.examTitle = customName;
+      return;
+    }
+
+    if (id.includes('l-2025')) this.examTitle = 'Competencia Lectora 2025';
+    else if (id.includes('l-2026')) this.examTitle = 'Competencia Lectora 2026';
+    else if (id.includes('l-invierno-2024')) this.examTitle = 'Competencia Lectora Invierno 2024';
+    else if (id.includes('l-invierno-2025')) this.examTitle = 'Competencia Lectora Invierno 2025';
+    else if (id.includes('l-invierno-2026')) this.examTitle = 'Competencia Lectora Invierno 2026';
+    else if (id.includes('m1')) this.examTitle = 'Competencia Matemática 1';
+    else if (id.includes('m2')) this.examTitle = 'Competencia Matemática 2';
+    else if (id.includes('ciencias')) this.examTitle = 'Ciencias';
+    else if (id.includes('historia')) this.examTitle = 'Historia y Cs. Sociales';
+    else this.examTitle = 'Ensayo Oficial';
+  }
+
   private initializeExamFlow() {
+    if (this.intentoId) {
+      this.loading = true;
+      this.firestoreService.getIntento(this.intentoId).subscribe({
+        next: (intento: any) => {
+          if (intento && intento.status === 'in_progress') {
+            // Sincronizar respuestas desde Firestore
+            intento.answers.forEach((a: any) => {
+              this.answers[a.preguntaId] = a.selectedAnswer;
+            });
+            console.log('[Runner] Sincronizado con Firestore:', intento.answers.length, 'respuestas');
+          }
+          this.loading = false;
+          this.finishInitialize();
+        },
+        error: () => {
+          this.loading = false;
+          this.finishInitialize();
+        }
+      });
+    } else {
+      this.finishInitialize();
+    }
+  }
+
+  private finishInitialize() {
     if (this.isAssisted) {
       this.savedProgress = this.getSavedProgress();
       if (this.savedProgress) {
-        this.showResumeModal = true;
-        return;
+        if (this.resumeDirectly) {
+          // Coming from 'Continuar' widget → auto-resume without modal
+          this.applySavedProgress(this.savedProgress);
+          this.savedProgress = null;
+        } else {
+          this.showResumeModal = true;
+          return;
+        }
       }
     }
     this.initialTimeSeconds = this.timeRemaining;
@@ -967,15 +1361,18 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private mapPreguntaToQuestion(pregunta: Pregunta): Question {
     return {
       id: pregunta.id || '',
+      order: pregunta.order,
       stem: pregunta.text,
       options: [
         { id: 'A', text: pregunta.options.A },
         { id: 'B', text: pregunta.options.B },
         { id: 'C', text: pregunta.options.C },
-        { id: 'D', text: pregunta.options.D }
+        { id: 'D', text: pregunta.options.D },
+        ...(pregunta.options.E !== undefined ? [{ id: 'E', text: pregunta.options.E }] : [])
       ],
       correctAnswer: pregunta.correctAnswer,
-      imageUrl: (pregunta as any).imageUrl ? ((pregunta as any).imageUrl.startsWith('/') ? (pregunta as any).imageUrl : '/' + (pregunta as any).imageUrl) : null
+      imageUrl: pregunta.imageUrl ? (pregunta.imageUrl.startsWith('/') ? pregunta.imageUrl : '/' + pregunta.imageUrl) : null,
+      readingText: (pregunta as any).readingText ? (pregunta as any).readingText.map((t: string) => t.startsWith('/') ? t : '/' + t) : null
     };
   }
 
@@ -997,6 +1394,16 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     this.timerInterval = null;
     this.isPaused = true;
   }
+
+  toggleNav() {
+    this.isNavCollapsed = !this.isNavCollapsed;
+  }
+
+  toggleAi() {
+    this.isAiCollapsed = !this.isAiCollapsed;
+  }
+
+
 
   selectOption(optionId: string) {
     if (this.currentQuestion) {
@@ -1054,7 +1461,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   confirmExit() {
     if (this.isAssisted) {
-      this.pauseTimer();
+      // Do NOT pause the timer — let it keep running until user actually exits
       this.showExitModal = true;
       return;
     }
@@ -1063,9 +1470,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   cancelExit() {
     this.showExitModal = false;
-    if (this.isAssisted) {
-      this.startTimer();
-    }
+    // Timer was never paused when opening exit modal, so nothing to restart
   }
 
   exitExam() {
@@ -1112,20 +1517,23 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     
     // Log to dashboard service
     try {
+      const firstQuestion = this.questions[0];
       this.dashboardService.logEnsayoCompleted({
         ensayoId: this.examId,
         ensayoTitle: this.examTitle,
-        subject: 'matematica1',
+        subject: firstQuestion?.subject || 'general',
         correctAnswers,
         totalQuestions: this.totalQuestions,
-        score: Math.round((correctAnswers / Math.max(this.totalQuestions, 1)) * 1000),
+        score: Math.round(100 + (correctAnswers / Math.max(this.totalQuestions, 1)) * 900),
       });
-    } catch { /* ignore */ }
+    } catch (err) { 
+      console.warn('[EnsayoRunner] Error logging to dashboard:', err);
+    }
     
     // Finalizar intento en Firestore
     if (this.intentoId) {
       try {
-        await this.firestoreService.finishIntento(this.intentoId, timeSpent);
+        await this.firestoreService.finishIntento(this.intentoId, timeSpent, this.totalQuestions);
       } catch (e) {
         // Continuar aunque falle
       }
@@ -1216,6 +1624,8 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         options: this.currentQuestion.options,
         userAnswer: this.answers[this.currentQuestion.id] || null,
         subject: this.examId,
+        examTitle: this.examTitle,
+        imageUrl: this.currentQuestion.imageUrl,
         history: historyForApi,
       });
       this.aiMessages.push({ role: 'assistant', content: response.reply, timestamp: new Date() });
@@ -1235,6 +1645,34 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   /** Legacy method kept for compatibility */
   async requestAssist() {
     await this.sendQuickMessage('Necesito una pista para resolverla.');
+  }
+
+  handleImageError(event: any) {
+    console.warn('[Runner] Error al cargar imagen:', event.target.src);
+    event.target.style.display = 'none';
+  }
+
+  ensureLeadingSlash(url: string | null | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('assets/') || url.startsWith('images/')) {
+      return '/' + url;
+    }
+    return url;
+  }
+
+  formatAiMessage(text: string): string {
+    if (!text) return '';
+    
+    // Convertir Markdown simple a HTML
+    let formatted = text
+      // Negritas: **texto** -> <b>texto</b>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Listas: * elemento -> • elemento
+      .replace(/^\* (.*$)/gim, '• $1')
+      // Saltos de línea: \n -> <br>
+      .replace(/\n/g, '<br>');
+      
+    return formatted;
   }
 
   startNewAttempt() {
@@ -1266,6 +1704,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       const stored = localStorage.getItem(this.storageKey);
       if (!stored) return null;
       const parsed = JSON.parse(stored) as SavedProgress;
+      // Only restore if it's for THIS exam and in assisted mode
       if (!parsed || parsed.examId !== this.examId || parsed.mode !== 'asistido') return null;
       return parsed;
     } catch {
@@ -1277,6 +1716,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     if (!this.isAssisted) return;
     const progress: SavedProgress = {
       examId: this.examId,
+      examName: this.examTitle,
       mode: 'asistido',
       timeRemaining: this.timeRemaining,
       initialTimeSeconds: this.initialTimeSeconds,
@@ -1301,7 +1741,8 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     this.flagged = { ...progress.flagged };
   }
 
+  // Single global key: only ONE assisted exam can be in-progress at a time
   private get storageKey(): string {
-    return `ensayo_assistido_${this.examId}`;
+    return 'estudiauni_active_asistido';
   }
 }

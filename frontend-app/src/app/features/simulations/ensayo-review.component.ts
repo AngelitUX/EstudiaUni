@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { FirestoreService, Intento, Pregunta } from '../../core/services/firestore.service';
+import { from, map, forkJoin, of } from 'rxjs';
 
 interface ReviewQuestion {
   id: number;
@@ -14,6 +16,7 @@ interface ReviewQuestion {
     correctSolution: string;
     tip: string;
   };
+  imageUrl?: string;
 }
 
 @Component({
@@ -22,6 +25,12 @@ interface ReviewQuestion {
   imports: [CommonModule, RouterModule],
   template: `
     <div class="review-container">
+      <!-- LOADING OVERLAY -->
+      <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Calculando resultados...</p>
+      </div>
+
       <!-- HEADER -->
         <header class="review-header">
           <div class="header-left">
@@ -33,12 +42,19 @@ interface ReviewQuestion {
         </div>
         
         <div class="header-score">
-          <div class="score-circle" [class.good]="scorePercentage >= 70" [class.warning]="scorePercentage >= 50 && scorePercentage < 70" [class.bad]="scorePercentage < 50">
-            <span class="score-value">{{ scorePercentage }}%</span>
-          </div>
           <div class="score-details">
-            <span class="score-points">{{ score }} pts</span>
+            <div class="score-points-row">
+              <span class="score-points">{{ score }} <small>/ 1000</small> pts</span>
+              <div class="info-icon-container">
+                <span class="info-icon-sm">i</span>
+                <div class="info-tooltip">
+                  Puntaje estimado de forma lineal. El puntaje oficial puede variar según la curva de transformación del DEMRE.
+                </div>
+              </div>
+            </div>
             <span class="score-breakdown">{{ correctCount }}/{{ totalQuestions }} correctas</span>
+            <span class="mastery-msg">Lograste un <strong>{{ scorePercentage }}% de dominio</strong> en esta prueba</span>
+            <span class="points-per-q-msg">Cada respuesta correcta suma aproximadamente <strong>{{ pointsPerQuestion }}</strong> puntos.</span>
           </div>
         </div>
       </header>
@@ -84,6 +100,12 @@ interface ReviewQuestion {
             (click)="activeFilter = 'correct'">
             ✅ Correctas ({{ correctCount }})
           </button>
+          <button 
+            class="tab"
+            [class.active]="activeFilter === 'omitted'"
+            (click)="activeFilter = 'omitted'">
+            ⏭️ Omitidas ({{ omittedCount }})
+          </button>
         </div>
 
         <!-- QUESTIONS LIST -->
@@ -103,7 +125,10 @@ interface ReviewQuestion {
             </div>
 
             <div class="question-stem">
-              {{ question.stem }}
+              <div *ngIf="question.imageUrl" class="question-image-container">
+                <img [src]="question.imageUrl" alt="Pregunta" class="question-image">
+              </div>
+              <p *ngIf="!question.imageUrl">{{ question.stem }}</p>
             </div>
 
             <div class="options-list">
@@ -111,230 +136,222 @@ interface ReviewQuestion {
                 *ngFor="let opt of question.options"
                 class="option-review"
                 [class.user-selected]="question.userAnswer === opt.id"
-                [class.correct-answer]="question.correctAnswer === opt.id"
+                [class.correct-answer]="question.isCorrect && question.correctAnswer === opt.id"
                 [class.wrong-answer]="question.userAnswer === opt.id && question.correctAnswer !== opt.id">
                 
                 <span class="option-id">{{ opt.id }}</span>
                 <span class="option-text">{{ opt.text }}</span>
                 
-                <span class="option-indicator" *ngIf="question.correctAnswer === opt.id">✓ Correcta</span>
+                <span class="option-indicator" *ngIf="question.isCorrect && question.correctAnswer === opt.id">✓ Correcta</span>
                 <span class="option-indicator wrong" *ngIf="question.userAnswer === opt.id && question.correctAnswer !== opt.id">✗ Tu respuesta</span>
               </div>
             </div>
 
-            <!-- AI EXPLANATION -->
-            <div class="ai-explanation" *ngIf="!question.isCorrect">
-              <div class="ai-header">
-                <span class="ai-icon">🤖</span>
-                <span class="ai-title">Explicación del Tutor IA</span>
-              </div>
-              
-              <div class="explanation-content">
-                <!-- Why Wrong -->
-                <div class="explanation-section" *ngIf="question.explanation.whyWrong">
-                  <h4>❌ Por qué tu respuesta es incorrecta</h4>
-                  <p>{{ question.explanation.whyWrong }}</p>
-                </div>
-
-                <!-- Correct Solution -->
-                <div class="explanation-section">
-                  <h4>📝 Desarrollo correcto paso a paso</h4>
-                  <div class="solution-box">
-                    <p>{{ question.explanation.correctSolution }}</p>
-                  </div>
-                </div>
-
-                <!-- PAES Tip -->
-                <div class="explanation-section tip">
-                  <h4>💡 Tip para la PAES</h4>
-                  <p>{{ question.explanation.tip }}</p>
-                </div>
-              </div>
-            </div>
+            <!-- AI EXPLANATION REMOVED AS REQUESTED -->
           </div>
         </div>
 
         <!-- ACTIONS -->
         <div class="review-actions">
-          <button class="btn btn-outline" routerLink="/ensayos">
-            ← Volver a Ensayos
-          </button>
-          <button class="btn btn-primary" routerLink="/ensayos">
-            Practicar Más
+          <button class="btn btn-primary btn-finalizar" routerLink="/ensayos">
+            Finalizar
           </button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    /* Contenedor principal con fondo completo */
     :host {
       display: block;
       min-height: 100vh;
-      background: #000000;
+      background: #f8fafc;
+      color: #1e293b;
     }
     
-    .review-container { min-height: 100vh; color: #ffffff; }
+    .review-container { min-height: 100vh; }
     
     /* ===== HEADER ===== */
     .review-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 2rem;
-      background: rgba(13, 15, 23, 0.95);
-      border-bottom: 2px solid var(--glass-border);
+      padding: 1.5rem 2rem;
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .header-left { display: flex; align-items: center; gap: 1.5rem; }
     .btn-back {
-      background: none;
-      border: none;
-      color: var(--accent-primary);
-      font-size: 0.95rem;
+      background: #f1f5f9;
+      border: 2px solid #e2e8f0;
+      color: #475569;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s;
       font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0;
     }
-    .btn-back:hover {
-      color: #fff;
-      transform: translateX(-4px);
-    }
+    .btn-back:hover { background: #e2e8f0; color: #1e293b; }
     .header-info h1 {
-      font-family: var(--font-heading);
       font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
     }
-    .header-subtitle { color: var(--text-secondary); font-size: 0.9rem; }
-    .header-score { display: flex; align-items: center; gap: 1rem; }
-    .score-circle {
-      width: 70px;
-      height: 70px;
+    .header-subtitle { color: #64748b; font-size: 0.95rem; margin-top: 0.25rem; }
+    
+    .score-details { display: flex; flex-direction: column; gap: 0.25rem; }
+    .score-points-row { display: flex; align-items: center; gap: 0.5rem; }
+    .score-points { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
+    .info-icon-container { position: relative; display: flex; align-items: center; }
+    .info-icon-sm {
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
+      background: #e2e8f0;
+      color: #64748b;
+      font-size: 0.7rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--font-heading);
-      font-weight: 800;
-      font-size: 1.25rem;
-      border: 3px solid;
+      cursor: help;
+      font-style: italic;
     }
-    .score-circle.good { border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
-    .score-circle.warning { border-color: #f97316; color: #f97316; background: rgba(249, 115, 22, 0.1); }
-    .score-circle.bad { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-    .score-details { display: flex; flex-direction: column; }
-    .score-points { font-size: 1.25rem; font-weight: 700; color: #fff; }
-    .score-breakdown { font-size: 0.85rem; color: var(--text-secondary); }
+    .info-tooltip {
+      position: absolute;
+      bottom: 50%;
+      right: 130%;
+      transform: translateY(50%);
+      width: 240px;
+      padding: 0.75rem;
+      background: #1e293b;
+      color: #fff;
+      font-size: 0.75rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.2s;
+      z-index: 200;
+      line-height: 1.4;
+      pointer-events: none;
+    }
+    .info-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      margin-top: -6px;
+      border: 6px solid transparent;
+      border-left-color: #1e293b;
+    }
+    .info-icon-container:hover .info-tooltip { visibility: visible; opacity: 1; transform: translateY(50%) translateX(-5px); }
+
+    .score-breakdown { color: #64748b; font-size: 0.9rem; font-weight: 600; }
+    .mastery-msg { font-size: 0.8rem; color: #475569; margin-top: 0.25rem; }
+    .mastery-msg strong { color: #855cd6; }
+    .points-per-q-msg { font-size: 0.75rem; color: #64748b; margin-top: 0.1rem; }
+    .points-per-q-msg strong { color: #10b981; }
+
+    .score-points small { font-size: 0.9rem; color: #94a3b8; font-weight: 600; }
 
     /* ===== BODY ===== */
-    .review-body { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    .review-body { max-width: 1000px; margin: 0 auto; padding: 2rem; }
 
     /* ===== SUMMARY CARDS ===== */
-    .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
     .summary-card {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 2px solid var(--glass-border);
+      padding: 1.25rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    .summary-card.correct { border-color: rgba(16, 185, 129, 0.3); }
-    .summary-card.incorrect { border-color: rgba(239, 68, 68, 0.3); }
-    .summary-card.omitted { border-color: rgba(156, 163, 175, 0.3); }
-    .summary-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .summary-value { font-size: 2rem; font-weight: 800; font-family: var(--font-heading); }
-    .summary-card.correct .summary-value { color: #10b981; }
-    .summary-card.incorrect .summary-value { color: #ef4444; }
-    .summary-card.omitted .summary-value { color: #9ca3af; }
-    .summary-label { color: var(--text-secondary); font-size: 0.85rem; }
+    .summary-card.correct { border-top: 4px solid #10b981; }
+    .summary-card.incorrect { border-top: 4px solid #ef4444; }
+    .summary-card.omitted { border-top: 4px solid #94a3b8; }
+    .summary-icon { font-size: 1.25rem; margin-bottom: 0.25rem; }
+    .summary-value { font-size: 1.75rem; font-weight: 800; color: #0f172a; }
+    .summary-label { color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
 
-    /* ===== FILTER TABS ===== */
-    .filter-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    /* ===== TABS ===== */
+    .filter-tabs { display: flex; gap: 0.75rem; margin-bottom: 2rem; }
     .tab {
-      padding: 0.75rem 1.25rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 2px solid var(--glass-border);
-      border-radius: 10px;
-      color: var(--text-secondary);
+      padding: 0.6rem 1.2rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      color: #64748b;
       font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .tab:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
-    .tab.active { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
+    .tab.active { background: #3b82f6; border-color: #3b82f6; color: #ffffff; }
+    .tab:hover:not(.active) { background: #f8fafc; border-color: #cbd5e1; }
 
-    /* ===== QUESTION CARDS ===== */
-    .questions-list { display: flex; flex-direction: column; gap: 2rem; }
+    /* ===== QUESTIONS ===== */
+    .questions-list { display: flex; flex-direction: column; gap: 1.5rem; }
     .review-question-card {
-      padding: 2rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 2px solid var(--glass-border);
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .review-question-card.correct { border-left: 4px solid #10b981; }
-    .review-question-card.incorrect { border-left: 4px solid #ef4444; }
-    .review-question-card.omitted { border-left: 4px solid #9ca3af; }
     .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .question-badge {
-      padding: 0.4rem 0.8rem;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
     }
-    .question-badge.correct { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .question-badge.incorrect { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-    .question-badge.omitted { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
-    .question-number { color: var(--text-secondary); font-size: 0.9rem; }
-    .question-stem { font-size: 1.15rem; line-height: 1.7; color: #fff; margin-bottom: 1.5rem; }
-
+    .question-badge.correct { background: #ecfdf5; color: #059669; }
+    .question-badge.incorrect { background: #fef2f2; color: #dc2626; }
+    .question-badge.omitted { background: #f1f5f9; color: #475569; }
+    
+    .question-stem { font-size: 1.1rem; color: #1e293b; margin-bottom: 1.5rem; line-height: 1.6; }
+    
     /* ===== OPTIONS ===== */
-    .options-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .options-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
     .option-review {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: rgba(255, 255, 255, 0.02);
-      border: 2px solid var(--glass-border);
+      padding: 1rem;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
       border-radius: 10px;
-      transition: all 0.2s;
+      font-size: 0.95rem;
     }
-    .option-review.correct-answer {
-      background: rgba(16, 185, 129, 0.1);
-      border-color: #10b981;
-    }
-    .option-review.wrong-answer {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: #ef4444;
-    }
+    .option-review.correct-answer { border-color: #10b981; background: #f0fdf4; }
+    .option-review.wrong-answer { border-color: #ef4444; background: #fef2f2; }
     .option-id {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      font-weight: 700;
-      font-size: 0.9rem;
+      background: #e2e8f0;
+      border-radius: 6px;
+      font-weight: 800;
       flex-shrink: 0;
     }
     .option-review.correct-answer .option-id { background: #10b981; color: #fff; }
     .option-review.wrong-answer .option-id { background: #ef4444; color: #fff; }
-    .option-text { flex: 1; color: #e2e8f0; }
-    .option-indicator { font-size: 0.8rem; font-weight: 600; color: #10b981; }
-    .option-indicator.wrong { color: #ef4444; }
 
     /* ===== AI EXPLANATION ===== */
     .ai-explanation {
       margin-top: 1.5rem;
-      padding: 1.5rem;
       background: rgba(99, 102, 241, 0.05);
       border: 2px solid rgba(99, 102, 241, 0.3);
       border-radius: 12px;
@@ -373,14 +390,49 @@ interface ReviewQuestion {
     .explanation-section.tip h4 { color: #f97316; }
 
     /* ===== ACTIONS ===== */
-    .review-actions { display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--glass-border); }
-    .btn { padding: 0.85rem 1.75rem; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.2s; border: none; }
-    .btn-primary { background: var(--gradient-brand); color: #fff; }
-    .btn-primary:hover { opacity: 0.9; }
-    .btn-outline { background: transparent; border: 2px solid var(--glass-border); color: #fff; }
-    .btn-outline:hover { border-color: var(--accent-primary); }
+    .review-actions { display: flex; justify-content: center; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--glass-border); }
+    .btn { padding: 1rem 3rem; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-primary { background: #855cd6; color: #fff; box-shadow: 0 4px 15px rgba(133, 92, 214, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); background: #7349c2; box-shadow: 0 8px 25px rgba(133, 92, 214, 0.4); }
+    .btn-finalizar { text-transform: uppercase; letter-spacing: 1px; min-width: 250px; }
 
     .glass-card { background: rgba(255, 255, 255, 0.03); border: 2px solid var(--glass-border); backdrop-filter: blur(10px); }
+
+    /* LOADING */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .question-image-container {
+      margin: 1rem 0;
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    .question-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
@@ -395,72 +447,16 @@ interface ReviewQuestion {
 export class EnsayoReviewComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private firestoreService = inject(FirestoreService);
 
   examId = '';
-  examTitle = 'Ensayo M1 - Forma 116';
-  score = 785;
-  totalQuestions = 65;
+  examTitle = 'Cargando...';
+  score = 0;
+  totalQuestions = 0;
   activeFilter = 'all';
+  loading = true;
 
-  // Mock questions with review data
-  questions: ReviewQuestion[] = [
-    {
-      id: 1,
-      stem: 'En un triángulo rectángulo, si uno de los catetos mide 3 cm y la hipotenusa mide 5 cm, ¿cuánto mide el otro cateto?',
-      options: [
-        { id: 'A', text: '2 cm' },
-        { id: 'B', text: '4 cm' },
-        { id: 'C', text: '6 cm' },
-        { id: 'D', text: '8 cm' },
-        { id: 'E', text: 'Ninguna de las anteriores' }
-      ],
-      userAnswer: 'A',
-      correctAnswer: 'B',
-      isCorrect: false,
-      explanation: {
-        whyWrong: 'Elegiste 2 cm, pero esto no cumple con el Teorema de Pitágoras. Si el cateto fuera 2, tendríamos 3² + 2² = 9 + 4 = 13 ≠ 25 = 5².',
-        correctSolution: 'Aplicamos el Teorema de Pitágoras: a² + b² = c²\n\nDonde c = 5 (hipotenusa) y a = 3 (cateto conocido):\n3² + b² = 5²\n9 + b² = 25\nb² = 16\nb = 4 cm',
-        tip: 'Memoriza las ternas pitagóricas más comunes: (3,4,5), (5,12,13), (8,15,17). Te ahorrarán tiempo en la PAES.'
-      }
-    },
-    {
-      id: 2,
-      stem: 'Si f(x) = 2x + 3, ¿cuál es el valor de f(5)?',
-      options: [
-        { id: 'A', text: '10' },
-        { id: 'B', text: '13' },
-        { id: 'C', text: '15' },
-        { id: 'D', text: '8' },
-        { id: 'E', text: '11' }
-      ],
-      userAnswer: 'B',
-      correctAnswer: 'B',
-      isCorrect: true,
-      explanation: {
-        correctSolution: 'f(5) = 2(5) + 3 = 10 + 3 = 13',
-        tip: 'Siempre reemplaza el valor directamente y sigue el orden de operaciones.'
-      }
-    },
-    {
-      id: 3,
-      stem: '¿Cuál es el resultado de simplificar la expresión (x² - 4) / (x - 2)?',
-      options: [
-        { id: 'A', text: 'x - 2' },
-        { id: 'B', text: 'x + 2' },
-        { id: 'C', text: 'x² - 2' },
-        { id: 'D', text: '2x' },
-        { id: 'E', text: 'No se puede simplificar' }
-      ],
-      userAnswer: null,
-      correctAnswer: 'B',
-      isCorrect: false,
-      explanation: {
-        whyWrong: 'Omitiste esta pregunta. Recuerda que en la PAES no hay descuento por respuestas incorrectas, así que siempre conviene responder.',
-        correctSolution: 'Factorizamos el numerador usando diferencia de cuadrados:\n\nx² - 4 = (x + 2)(x - 2)\n\nEntonces:\n(x² - 4) / (x - 2) = (x + 2)(x - 2) / (x - 2) = x + 2',
-        tip: 'La diferencia de cuadrados a² - b² = (a+b)(a-b) es una de las fórmulas más útiles. ¡Memorízala!'
-      }
-    }
-  ];
+  questions: ReviewQuestion[] = [];
 
   get correctCount(): number {
     return this.questions.filter(q => q.isCorrect).length;
@@ -475,7 +471,13 @@ export class EnsayoReviewComponent implements OnInit {
   }
 
   get scorePercentage(): number {
+    if (this.totalQuestions === 0) return 0;
     return Math.round((this.correctCount / this.totalQuestions) * 100);
+  }
+
+  get pointsPerQuestion(): number {
+    if (this.totalQuestions === 0) return 0;
+    return parseFloat((900 / this.totalQuestions).toFixed(1));
   }
 
   get filteredQuestions(): ReviewQuestion[] {
@@ -483,7 +485,9 @@ export class EnsayoReviewComponent implements OnInit {
       case 'correct':
         return this.questions.filter(q => q.isCorrect);
       case 'incorrect':
-        return this.questions.filter(q => !q.isCorrect);
+        return this.questions.filter(q => !q.isCorrect && q.userAnswer !== null);
+      case 'omitted':
+        return this.questions.filter(q => !q.userAnswer);
       default:
         return this.questions;
     }
@@ -491,5 +495,68 @@ export class EnsayoReviewComponent implements OnInit {
 
   ngOnInit() {
     this.examId = this.route.snapshot.paramMap.get('id') || '';
+    const intentoId = this.route.snapshot.queryParamMap.get('intento');
+
+    if (intentoId) {
+      this.loadIntentoData(intentoId);
+    } else {
+      this.loading = false;
+    }
+  }
+
+  private loadIntentoData(intentoId: string) {
+    this.loading = true;
+    
+    forkJoin({
+      intento: this.firestoreService.getIntento(intentoId),
+      preguntas: this.firestoreService.getPreguntas(this.examId),
+      ensayo: this.firestoreService.getEnsayo(this.examId)
+    }).subscribe({
+      next: (data: any) => {
+        if (data.intento && data.preguntas) {
+          this.score = data.intento.score || 0;
+          this.examTitle = data.ensayo?.title || this.getGenericTitle(this.examId);
+          this.totalQuestions = data.preguntas.length;
+          
+          this.questions = data.preguntas.map((p: any) => {
+            const userAnsObj = data.intento?.answers.find((a: any) => a.preguntaId === p.id);
+            return {
+              id: p.order,
+              stem: p.text,
+              imageUrl: p.imageUrl ? (p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl) : undefined,
+              options: [
+                { id: 'A', text: p.options.A },
+                { id: 'B', text: p.options.B },
+                { id: 'C', text: p.options.C },
+                { id: 'D', text: p.options.D },
+                ...(p.options.E !== undefined ? [{ id: 'E', text: p.options.E }] : [])
+              ],
+              userAnswer: userAnsObj?.selectedAnswer || null,
+              correctAnswer: p.correctAnswer,
+              isCorrect: userAnsObj?.isCorrect || false,
+              explanation: {
+                whyWrong: userAnsObj && !userAnsObj.isCorrect ? (p as any).whyWrong || 'La respuesta elegida no cumple con las condiciones del problema.' : undefined,
+                correctSolution: p.explanation || 'Consultar material de estudio para el desarrollo detallado.',
+                tip: (p as any).tip || 'Lee siempre bien el enunciado y las unidades antes de responder.'
+              }
+            };
+          });
+        }
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  private getGenericTitle(id: string): string {
+    const lower = id.toLowerCase();
+    if (lower.includes('l-')) return 'Competencia Lectora';
+    if (lower.includes('m1')) return 'Matemática 1';
+    if (lower.includes('m2')) return 'Matemática 2';
+    if (lower.includes('ciencias')) return 'Ciencias';
+    if (lower.includes('historia')) return 'Historia';
+    return 'Ensayo PAES';
   }
 }

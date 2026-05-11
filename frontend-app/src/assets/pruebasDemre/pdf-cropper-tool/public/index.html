@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EstudiaUni - PDF Cropper</title>
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- Cropper.js for UI -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            padding: 10px 15px;
+            background: #16213e;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .workspace {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .pdf-container {
+            flex: 1;
+            overflow: auto;
+            background: #0f3460;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        canvas {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #d03050;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #0f3460;
+        }
+
+        /* Floating Preview Panel */
+        .preview-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: rgba(22, 33, 62, 0.95);
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .preview-panel h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #4ade80;
+        }
+
+        #preview {
+            border: 2px dashed #0f3460;
+            border-radius: 8px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 5px;
+        }
+
+        #preview img {
+            max-width: 100%;
+            max-height: 200px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            z-index: 2000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="toolbar">
+        <h2 style="margin: 0; font-size: 1.2em;">Recortes DEMRE</h2>
+        <button id="prev-page">← Ant</button>
+        <span id="page-num">Pág: 1 / ?</span>
+        <button id="next-page">Sig →</button>
+        <button id="init-crop" style="background: #4caf50;">Activar Selección</button>
+        <button id="zoom-in" style="background: #3b82f6; padding: 8px 10px;" title="Acercar">➕</button>
+        <button id="zoom-out" style="background: #3b82f6; padding: 8px 10px;" title="Alejar">➖</button>
+
+        <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+            <label>Directorio:</label>
+            <input type="text" id="dir-name" value="M1-INVIERNO-2024-IMAGENES" style="width: 180px;">
+            <label>Pregunta N°:</label>
+            <input type="number" id="q-num" value="1" min="1" max="100" style="width: 50px; font-weight: bold;">
+            <!-- Hidden save button since auto-save is enabled -->
+            <button id="save-btn" style="display: none;">Guardar</button>
+        </div>
+    </div>
+
+    <div
+        style="background: #0f3460; padding: 10px 15px; margin-bottom: 10px; border-radius: 8px; font-size: 0.9em; display: flex; justify-content: space-between; border: 1px solid #16213e; align-items: center;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <strong>📄 Prueba a Recortar:</strong>
+            <select id="pdf-selector"
+                style="padding: 5px; border-radius: 5px; border: none; font-weight: bold; background: #4ade80; color: #0f3460; cursor: pointer;">
+                <option value="">Cargando PDFs...</option>
+            </select>
+        </div>
+        <span><strong>💾 Guardando en:</strong> <span
+                style="color: #93c5fd; font-family: monospace;">src/assets/images/<span
+                    id="save-path-display">M1-INVIERNO-2024-IMAGENES</span></span></span>
+    </div>
+
+    <div class="workspace">
+        <div class="pdf-container">
+            <canvas id="pdf-render"></canvas>
+        </div>
+    </div>
+
+    <div class="preview-panel">
+        <h4>Último Recorte (Auto-Guardado):</h4>
+        <div id="preview">
+            <span style="color: #666; font-size: 0.8em;">Selecciona un área...</span>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">¡Pregunta guardada con éxito!</div>
+
+    <script>
+        let url = '';
+        const pdfSelector = document.getElementById('pdf-selector');
+        const dirInput = document.getElementById('dir-name');
+        const pathDisplay = document.getElementById('save-path-display');
+        const qNumInput = document.getElementById('q-num');
+
+        // Fetch PDFs automatically
+        fetch('/api/pdfs')
+            .then(res => res.json())
+            .then(pdfs => {
+                pdfSelector.innerHTML = '';
+                if (pdfs.length === 0) {
+                    pdfSelector.innerHTML = '<option value="">No se encontraron PDFs</option>';
+                    return;
+                }
+
+                pdfs.forEach(pdf => {
+                    const option = document.createElement('option');
+                    option.value = pdf.file;
+                    option.textContent = pdf.name;
+                    option.setAttribute('data-dir', pdf.dirName);
+                    option.setAttribute('data-json', pdf.jsonName);
+                    pdfSelector.appendChild(option);
+                });
+
+                // Trigger change to load the first PDF
+                pdfSelector.dispatchEvent(new Event('change'));
+            });
+
+        pdfSelector.addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            if (!selectedOption || !selectedOption.value) return;
+
+            url = '/pdf/' + selectedOption.value;
+            dirInput.value = selectedOption.getAttribute('data-dir');
+            pathDisplay.textContent = dirInput.value;
+            qNumInput.value = 1; // Reset question number
+            if (cropper) { cropper.destroy(); cropper = null; }
+
+            // Reload PDF
+            pageNum = 1;
+            loadPDF();
+        });
+
+        // Configurar PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let pdfDoc = null,
+            pageNum = 1,
+            pageIsRendering = false,
+            pageNumIsPending = null;
+
+        let scale = 5.0; // MUY GRANDE por defecto para asegurar recortes de alta calidad
+        const canvas = document.getElementById('pdf-render'),
+            ctx = canvas.getContext('2d');
+
+        let cropper = null;
+
+        // Render the page
+        const renderPage = num => {
+            pageIsRendering = true;
+
+            // Get page
+            pdfDoc.getPage(num).then(page => {
+                const viewport = page.getViewport({ scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderCtx = {
+                    canvasContext: ctx,
+                    viewport
+                };
+
+                page.render(renderCtx).promise.then(() => {
+                    pageIsRendering = false;
+
+                    if (pageNumIsPending !== null) {
+                        renderPage(pageNumIsPending);
+                        pageNumIsPending = null;
+                    }
+
+                    // Re-init cropper if active
+                    if (cropper) {
+                        cropper.destroy();
+                        initCropper();
+                    }
+                });
+
+                document.getElementById('page-num').textContent = `Página: ${num} / ${pdfDoc.numPages}`;
+            });
+        };
+
+        // Check for pending pages
+        const queueRenderPage = num => {
+            if (pageIsRendering) {
+                pageNumIsPending = num;
+            } else {
+                renderPage(num);
+            }
+        };
+
+        // Show Prev Page
+        const showPrevPage = () => {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        };
+
+        // Show Next Page
+        const showNextPage = () => {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        };
+
+        // Get Document
+        function loadPDF() {
+            if (!url) return;
+            pageIsRendering = true;
+            pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                document.getElementById('page-num').textContent = `Página: ${pageNum} / ${pdfDoc.numPages}`;
+                renderPage(pageNum);
+            }).catch(err => {
+                console.error('Error loading PDF:', err);
+                alert('No se pudo cargar el PDF. Verifica que el archivo exista en public/pdf/');
+            });
+        }
+        // No llamamos loadPDF() aquí porque lo llamará el fetch al terminar
+
+        // Button Events
+        document.getElementById('prev-page').addEventListener('click', showPrevPage);
+        document.getElementById('next-page').addEventListener('click', showNextPage);
+
+        // Auto-save toggle
+        let autoSaveEnabled = true; // Enabled by default now for maximum speed!
+
+        // Cropper Initialization
+        function initCropper() {
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(canvas, {
+                zoomable: true,
+                scalable: true,
+                background: false,
+                autoCrop: false,
+                wheelZoomRatio: 0.1, // Smooth scrolling zoom
+                cropend() {
+                    updatePreview();
+                    if (autoSaveEnabled) {
+                        // Guardar automáticamente
+                        saveCurrentCrop();
+                    }
+                }
+            });
+        }
+
+        document.getElementById('init-crop').addEventListener('click', () => {
+            initCropper();
+        });
+
+        // Zoom Controls (Re-render PDF at higher/lower scale for sharpness)
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            scale += 0.5;
+            if (cropper) { cropper.destroy(); cropper = null; }
+            queueRenderPage(pageNum);
+        });
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            if (scale > 1.0) {
+                scale -= 0.5;
+                if (cropper) { cropper.destroy(); cropper = null; }
+                queueRenderPage(pageNum);
+            }
+        });
+
+        function updatePreview() {
+            if (!cropper) return;
+            const croppedCanvas = cropper.getCroppedCanvas();
+            if (!croppedCanvas) return;
+
+            const previewDiv = document.getElementById('preview');
+            previewDiv.innerHTML = '';
+
+            const img = document.createElement('img');
+            img.src = croppedCanvas.toDataURL('image/png');
+            previewDiv.appendChild(img);
+        }
+
+        // Función central de guardado
+        function saveCurrentCrop() {
+            if (!cropper) return;
+
+            const croppedCanvas = cropper.getCroppedCanvas({
+                fillColor: '#fff',
+            });
+            if (!croppedCanvas) return;
+
+            const qNumInput = document.getElementById('q-num');
+            const dirNameInput = document.getElementById('dir-name');
+            const qNum = qNumInput.value;
+            const dirName = dirNameInput.value.trim() || 'M1-INVIERNO-2024-IMAGENES';
+            const base64Data = croppedCanvas.toDataURL('image/png');
+
+            const pdfSelector = document.getElementById('pdf-selector');
+            const selectedOption = pdfSelector.options[pdfSelector.selectedIndex];
+            const jsonName = selectedOption.getAttribute('data-json');
+
+            // Feedback visual de que está guardando
+            document.body.style.opacity = '0.7';
+
+            fetch('/api/save-crop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    questionNumber: qNum,
+                    directoryName: dirName,
+                    jsonName: jsonName,
+                    imageBase64: base64Data
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    document.body.style.opacity = '1';
+                    if (data.success) {
+                        // Auto-incrementar para la siguiente
+                        qNumInput.value = parseInt(qNum) + 1;
+
+                        // Limpiar el recorte para no guardar doble accidentalmente
+                        cropper.clear();
+                        document.getElementById('preview').innerHTML = '<span style="color: #666;">Selecciona la siguiente pregunta...</span>';
+                    } else {
+                        alert('Error guardando: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    document.body.style.opacity = '1';
+                    alert('Error de conexión con el servidor local.');
+                    console.error(err);
+                });
+        }
+
+        // Save Function manual (por si acaso)
+        document.getElementById('save-btn').addEventListener('click', () => {
+            saveCurrentCrop();
+        });
+
+    </script>
+</body>
+
+</html>

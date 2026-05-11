@@ -79,12 +79,41 @@ type ExamMode = 'real' | 'asistido';
         <header class="header">
           <div class="header-main-row">
             <div class="header-left">
-              <div class="header-back">
-                <button class="btn-back" routerLink="/dashboard">← Volver</button>
-              </div>
               <div class="header-content">
-                <h1 class="title">Ensayos PAES</h1>
+                <div class="title-row">
+                  <h1 class="title">Ensayos PAES</h1>
+                  <div class="status-pill">
+                    <span class="status-dot"></span>
+                    Temarios 2026 Actualizados
+                  </div>
+                </div>
                 <p class="subtitle">Realiza ensayos completos y simulacros bajo condiciones reales</p>
+                
+                <!-- COUNTDOWN WIDGET -->
+                <div class="countdown-row">
+                  <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
+                  <div class="countdown-timer">
+                    <div class="time-unit"><span>{{ countdown.days }}</span><label>d</label></div>
+                    <div class="time-unit"><span>{{ countdown.hours }}</span><label>h</label></div>
+                    <div class="time-unit"><span>{{ countdown.minutes }}</span><label>m</label></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACTIVE EXAM WIDGET -->
+            <div class="header-center" *ngIf="activeProgress">
+              <div class="active-exam-widget glass-card">
+                <div class="widget-info">
+                  <span class="widget-label">PENDIENTE</span>
+                  <h4 class="widget-title">{{ activeProgress.examName.startsWith('Ensayo') ? activeProgress.examName : 'Ensayo ' + activeProgress.examName }}</h4>
+                </div>
+                <button class="btn-resume" (click)="resumeActiveIntento()">
+                  Continuar →
+                </button>
+                <button class="btn-widget-discard" (click)="discardActiveProgress()" title="Eliminar progreso guardado">
+                  ×
+                </button>
               </div>
             </div>
             
@@ -117,16 +146,6 @@ type ExamMode = 'real' | 'asistido';
                 <h3 class="card-title">{{ prueba.nombre }}</h3>
                 <p class="card-desc">{{ prueba.descripcion }}</p>
               </div>
-              <div class="card-meta">
-                <span class="meta-badge">
-                  <span class="meta-icon">📝</span>
-                  {{ prueba.preguntas }} pregs
-                </span>
-                <span class="meta-badge">
-                  <span class="meta-icon">⏱️</span>
-                  {{ prueba.tiempo }} min
-                </span>
-              </div>
             </button>
           </div>
 
@@ -146,8 +165,11 @@ type ExamMode = 'real' | 'asistido';
                 </p>
               </div>
 
-              <div *ngIf="pruebaSeleccionada.subpruebas?.length" class="subpruebas-section">
-                <p class="subpruebas-title">Selecciona tu área:</p>
+              <!-- FIRST LEVEL SELECTION (Areas for Sciences, Essays for others) -->
+              <div *ngIf="pruebaSeleccionada.subpruebas?.length && pruebaSeleccionada.id !== 'lenguaje'" class="subpruebas-section">
+                <p class="subpruebas-title">
+                  {{ pruebaSeleccionada.id === 'ciencias' ? 'Selecciona tu área:' : 'Selecciona el ensayo:' }}
+                </p>
                 <div class="subpruebas-grid">
                   <button
                     *ngFor="let sub of pruebaSeleccionada.subpruebas"
@@ -176,27 +198,62 @@ type ExamMode = 'real' | 'asistido';
                 </div>
               </div>
 
-              <div class="prueba-detalles">
+              <div class="prueba-detalles" *ngIf="canStart">
                 <div class="detalle-item">
-                  <span class="detalle-label">Prueba:</span>
+                  <span class="detalle-label">Prueba</span>
                   <span class="detalle-valor">{{ getNombreSeleccionado() }}</span>
                 </div>
                 <div class="detalle-item">
-                  <span class="detalle-label">Preguntas:</span>
+                  <span class="detalle-label">Preguntas</span>
                   <span class="detalle-valor">{{ pruebaSeleccionada.preguntas }}</span>
                 </div>
                 <div class="detalle-item">
-                  <span class="detalle-label">Tiempo:</span>
-                  <span class="detalle-valor">{{ pruebaSeleccionada.tiempo }} minutos</span>
+                  <span class="detalle-label">Tiempo</span>
+                  <span class="detalle-valor">{{ pruebaSeleccionada.tiempo }} min</span>
+                </div>
+                <div class="detalle-desc" *ngIf="getSelectedDescription()">
+                  {{ getSelectedDescription() }}
                 </div>
               </div>
 
-              <div class="modal-actions">
-                <button class="btn btn-outline" (click)="iniciarPrueba('real')">
-                  Ensayo real
-                </button>
-                <button class="btn btn-primary" (click)="iniciarPrueba('asistido')">
-                  Ensayo asistido
+              <div class="warning-note" *ngIf="canStart">
+                <span class="warning-icon">⚠️</span>
+                <p class="warning-text">
+                  Si faltan preguntas es porque fueron <strong>retiradas oficialmente</strong> de este ensayo y no se consideran en la evaluación.
+                </p>
+              </div>
+
+              <!-- MODE SELECTION GRID -->
+              <div class="modes-selection" *ngIf="canStart">
+                <p class="modes-title">Elige tu modalidad:</p>
+                <div class="modes-grid">
+                  <div class="mode-card" 
+                       [class.mode-selected]="selectedMode === 'real'"
+                       (click)="selectedMode = 'real'">
+                    <div class="mode-header">
+                      <span class="mode-icon">⏱️</span>
+                      <span class="mode-name">Ensayo Real</span>
+                    </div>
+                    <p class="mode-desc">Simulación exacta. Sin ayudas, cronómetro estricto y resultados finales para medir tu nivel real.</p>
+                  </div>
+
+                  <div class="mode-card" 
+                       [class.mode-selected]="selectedMode === 'asistido'"
+                       (click)="selectedMode = 'asistido'">
+                    <div class="mode-header">
+                      <span class="mode-icon">🤖</span>
+                      <span class="mode-name">Ensayo Asistido</span>
+                    </div>
+                    <p class="mode-desc">Aprende mientras practicas. Acceso al Tutor IA para resolver dudas. Puedes pausar, salir y tu progreso quedará guardado.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions" *ngIf="canStart">
+                <button class="btn btn-primary btn-start" 
+                        (click)="iniciarPrueba(selectedMode!)" 
+                        [disabled]="!selectedMode">
+                  {{ selectedMode ? 'Comenzar Ensayo ' + (selectedMode === 'asistido' ? 'Asistido' : 'Real') : 'Selecciona una modalidad' }}
                 </button>
               </div>
             </div>
@@ -206,6 +263,22 @@ type ExamMode = 'real' | 'asistido';
     </div>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
     <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+
+    <!-- OVERWRITE PROGRESS MODAL -->
+    <div class="modal-overlay" *ngIf="showOverwriteModal" (click)="showOverwriteModal = false">
+      <div class="modal-content glass-card" (click)="$event.stopPropagation()">
+        <div class="modal-icon">⚠️</div>
+        <h2 class="modal-title">¿Deseas empezar de cero?</h2>
+        <div class="modal-message">
+          <p class="message-text">Ya tienes un progreso guardado en <strong>"{{ activeProgress?.examName }}"</strong>.</p>
+          <p class="message-subtext">Si inicias este nuevo ensayo asistido, tu progreso anterior se borrará permanentemente y solo se guardará el nuevo. ¿Deseas continuar?</p>
+        </div>
+        <div class="modal-actions" style="margin-top: 1rem;">
+          <button class="btn btn-outline" (click)="showOverwriteModal = false">Cancelar</button>
+          <button class="btn btn-primary" (click)="confirmOverwrite()">Empezar de cero</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     :host {
@@ -434,16 +507,16 @@ type ExamMode = 'real' | 'asistido';
       flex: 1;
     }
     .card-title {
-      font-size: 1.4rem;
-      font-weight: 800;
+      font-size: 1.75rem;
+      font-weight: 900;
       margin-bottom: 0.5rem;
-      color: var(--text-primary);
-      letter-spacing: -0.01em;
+      color: #0f172a;
+      letter-spacing: -0.02em;
     }
     .card-desc {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
+      font-size: 1.1rem;
+      color: #64748b;
+      line-height: 1.5;
       font-weight: 500;
     }
 
@@ -536,6 +609,75 @@ type ExamMode = 'real' | 'asistido';
       text-align: center;
       color: var(--text-primary);
     }
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+      padding: 0.35rem 0.85rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .countdown-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.25rem;
+      background: #fff;
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      width: fit-content;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+    .countdown-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .countdown-timer {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .time-unit {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+    }
+    .time-unit span {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+      min-width: 20px;
+      text-align: center;
+    }
+    .time-unit label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
     .modal-message {
       background: rgba(133, 92, 214, 0.1);
       border-left: 4px solid var(--accent-primary);
@@ -613,41 +755,213 @@ type ExamMode = 'real' | 'asistido';
       gap: 0.5rem;
     }
     .detalle-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
+      letter-spacing: 1px;
+      font-weight: 700;
     }
     .detalle-valor {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--accent-primary);
     }
-    .modal-actions {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
+    .detalle-desc {
+      grid-column: 1 / -1;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      padding-top: 0.5rem;
+      border-top: 1px dashed rgba(0,0,0,0.1);
     }
-
+    .warning-note {
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .warning-icon { font-size: 1.2rem; }
+    .warning-text {
+      font-size: 0.85rem;
+      color: #92400e;
+      line-height: 1.4;
+    }
     .btn {
       padding: 0.85rem 1.5rem;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      width: 100%;
+    }
+    .btn-start {
+      margin-top: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .modes-selection {
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+    .modes-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+    .modes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .mode-card {
+      padding: 1.25rem;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.02);
+      border: 2px solid transparent;
       cursor: pointer;
       transition: all 0.2s;
-      border: none;
-      flex: 1;
+    }
+    .mode-card:hover {
+      background: rgba(133, 92, 214, 0.05);
+      border-color: rgba(133, 92, 214, 0.2);
+    }
+    .mode-selected {
+      background: #fff !important;
+      border-color: var(--accent-primary) !important;
+      box-shadow: 0 10px 25px rgba(133, 92, 214, 0.15);
+    }
+    .mode-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .mode-icon { font-size: 1.5rem; }
+    .mode-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+    .mode-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
     }
     .btn-primary {
       background: var(--accent-primary);
       color: #fff;
       box-shadow: 0 4px 0 #6b46b8;
     }
-    .btn-primary:hover {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #6b46b8;
+    .btn:disabled, .btn-outline:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    /* ACTIVE EXAM WIDGET */
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 0 2rem;
+    }
+    .active-exam-widget {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.65rem 1.15rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      border: 1px solid rgba(133, 92, 214, 0.15);
+      animation: fadeInWidget 0.5s ease;
+      max-width: 520px;
+      width: 100%;
+    }
+    .widget-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0; /* Crucial for text-overflow: ellipsis in flexbox */
+    }
+    .widget-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+      letter-spacing: 1px;
+    }
+    .widget-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .btn-resume {
+      background: var(--accent-primary);
+      color: #fff;
+      border: none;
+      padding: 0.45rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.2);
+    }
+    .btn-resume:hover {
+      transform: translateX(3px);
+      background: #7349c2;
+    }
+    .btn-widget-discard {
+      background: none;
+      border: 1px solid rgba(0,0,0,0.1);
+      color: #94a3b8;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .btn-widget-discard:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+    @keyframes fadeInWidget {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+      animation: fadeInOverlay 0.3s ease;
+    }
+    @keyframes fadeInOverlay {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     .btn-outline {
       background: #ffffff;
@@ -763,18 +1077,57 @@ export class EnsayosListComponent implements OnInit {
       ]
     },
     {
-      id: 'competencia-lectora',
+      id: 'lenguaje',
       nombre: 'Competencia Lectora',
       icono: '📖',
-      descripcion: 'Comprensión y análisis de textos',
+      descripcion: 'Comprensión de textos y vocabulario',
       tiempo: 150,
-      preguntas: 65
+      preguntas: 65,
+      subpruebas: [
+        {
+          id: 'l-comprension',
+          nombre: 'Comprensión Lectora',
+          descripcion: 'Análisis y síntesis de textos',
+          ensayos: [
+            {
+              id: 'l-2024',
+              nombre: 'PAES Oficial 2024',
+              descripcion: 'Prueba oficial de Lenguaje rendida a fines del 2023.'
+            },
+            {
+              id: 'l-invierno-2024',
+              nombre: 'PAES Invierno 2024',
+              descripcion: 'Prueba de invierno de Lenguaje rendida a mediados del 2024.'
+            },
+            {
+              id: 'l-2025',
+              nombre: 'PAES Oficial 2025',
+              descripcion: 'Prueba oficial de Lenguaje rendida a fines del 2024.'
+            },
+            {
+              id: 'l-invierno-2025',
+              nombre: 'PAES Invierno 2025',
+              descripcion: 'Prueba de invierno de Lenguaje para el proceso de admisión 2025.'
+            },
+            {
+              id: 'l-2026',
+              nombre: 'PAES Oficial 2026',
+              descripcion: 'Prueba oficial de Lenguaje rendida a fines del 2025.'
+            },
+            {
+              id: 'l-invierno-2026',
+              nombre: 'PAES Invierno 2026',
+              descripcion: 'Prueba de invierno de Lenguaje para el proceso de admisión 2026.'
+            }
+          ]
+        }
+      ]
     },
     {
       id: 'ciencias',
       nombre: 'Ciencias',
       icono: '🧬',
-      descripcion: 'Biología, Química y Física',
+      descripcion: 'Biología, Química, Física y Ciencias Técnico-Profesional',
       tiempo: 160,
       preguntas: 80,
       subpruebas: [
@@ -821,12 +1174,38 @@ export class EnsayosListComponent implements OnInit {
           descripcion: 'Materia, reacciones y estequiometría',
           ensayos: [
             {
-              id: 'ciencias-quimica',
+              id: 'q-2024',
               nombre: 'PAES Oficial 2024',
-              descripcion: 'Próximamente disponible...'
+              descripcion: 'Prueba oficial de Química rendida a fines del 2023.'
+            },
+            {
+              id: 'q-invierno-2024',
+              nombre: 'PAES Invierno 2024',
+              descripcion: 'Prueba de invierno de Química rendida a mediados del 2024.'
+            },
+            {
+              id: 'q-2025',
+              nombre: 'PAES Oficial 2025',
+              descripcion: 'Prueba oficial de Química rendida a fines del 2024.'
+            },
+            {
+              id: 'q-invierno-2025',
+              nombre: 'PAES Invierno 2025',
+              descripcion: 'Prueba de invierno de Química rendida a mediados del 2025.'
+            },
+            {
+              id: 'q-2026',
+              nombre: 'PAES Oficial 2026',
+              descripcion: 'Prueba oficial de Química rendida a fines del 2025.'
+            },
+            {
+              id: 'q-invierno-2026',
+              nombre: 'PAES Invierno 2026',
+              descripcion: 'Prueba de invierno de Química rendida a mediados del 2026.'
             }
           ]
         },
+
         {
           id: 'fisica',
           nombre: 'Física',
@@ -865,9 +1244,41 @@ export class EnsayosListComponent implements OnInit {
           ]
         },
         {
-          id: 'ciencias-tp',
+          id: 'tecnico-profesional',
           nombre: 'Ciencias Técnico-Profesional',
-          descripcion: 'Aplicaciones científicas en contextos técnicos'
+          descripcion: 'Aplicaciones científicas en contextos técnicos',
+          ensayos: [
+            {
+              id: 't-2024',
+              nombre: 'PAES Oficial 2024',
+              descripcion: 'Prueba oficial TP rendida a fines del 2023.'
+            },
+            {
+              id: 't-invierno-2024',
+              nombre: 'PAES Invierno 2024',
+              descripcion: 'Prueba de invierno TP rendida a mediados del 2024.'
+            },
+            {
+              id: 't-2025',
+              nombre: 'PAES Oficial 2025',
+              descripcion: 'Prueba oficial TP rendida a fines del 2024.'
+            },
+            {
+              id: 't-invierno-2025',
+              nombre: 'PAES Invierno 2025',
+              descripcion: 'Prueba de invierno TP rendida a mediados del 2025.'
+            },
+            {
+              id: 't-2026',
+              nombre: 'PAES Oficial 2026',
+              descripcion: 'Prueba oficial TP rendida a fines del 2025.'
+            },
+            {
+              id: 't-invierno-2026',
+              nombre: 'PAES Invierno 2026',
+              descripcion: 'Prueba de invierno TP rendida a mediados del 2026.'
+            }
+          ]
         }
       ]
     },
@@ -916,6 +1327,12 @@ export class EnsayosListComponent implements OnInit {
   pruebaSeleccionada: Prueba | null = null;
   subPruebaSeleccionada: SubPrueba | null = null;
   ensayoSeleccionado: EnsayoOption | null = null;
+  // Reads from same localStorage key as the runner - always reliable
+  activeProgress: { examId: string; examName: string } | null = null;
+  showOverwriteModal = false;
+  pendingMode: ExamMode = 'real';
+
+  private readonly STORAGE_KEY = 'estudiauni_active_asistido';
 
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -948,6 +1365,11 @@ export class EnsayosListComponent implements OnInit {
     });
   }
 
+  countdown = { days: 0, hours: 0, minutes: 0 };
+  nextExamLabel = '';
+  selectedMode: ExamMode | null = null;
+  private countdownInterval: any;
+
   ngOnInit() {
     // Pre-cargar datos desde Auth para evitar parpadeo
     const currentUser = this.authService.currentUser;
@@ -959,12 +1381,73 @@ export class EnsayosListComponent implements OnInit {
     }
 
     this.loadUserProfile();
+    this.refreshActiveProgress();
+    this.startCountdown();
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+  }
+
+  private startCountdown() {
+    const targets = [
+      { label: 'PAES Invierno 2026', date: new Date('June 15, 2026 09:00:00') },
+      { label: 'PAES Regular 2026', date: new Date('November 30, 2026 09:00:00') },
+      { label: 'PAES Invierno 2027', date: new Date('June 14, 2027 09:00:00') },
+      { label: 'PAES Regular 2027', date: new Date('November 29, 2027 09:00:00') }
+    ];
+
+    const update = () => {
+      const now = new Date().getTime();
+      const nextTarget = targets.find(t => t.date.getTime() > now);
+
+      if (!nextTarget) {
+        this.nextExamLabel = 'Próxima PAES';
+        this.countdown = { days: 0, hours: 0, minutes: 0 };
+        return;
+      }
+
+      this.nextExamLabel = nextTarget.label;
+      const diff = nextTarget.date.getTime() - now;
+      
+      this.countdown = {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      };
+    };
+    
+    update();
+    this.countdownInterval = setInterval(update, 60000); // Actualizar cada minuto
+  }
+
+  /** Reads localStorage to detect any in-progress assisted exam */
+  private refreshActiveProgress() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (!raw) { this.activeProgress = null; return; }
+      const data = JSON.parse(raw);
+      if (data?.examId && data?.mode === 'asistido') {
+        this.activeProgress = { examId: data.examId, examName: data.examName || data.examId };
+      } else {
+        this.activeProgress = null;
+      }
+    } catch {
+      this.activeProgress = null;
+    }
   }
 
   seleccionarPrueba(prueba: Prueba) {
     this.pruebaSeleccionada = prueba;
-    this.subPruebaSeleccionada = prueba.subpruebas?.[0] ?? null;
-    this.ensayoSeleccionado = this.subPruebaSeleccionada?.ensayos?.[0] ?? null;
+    // For Language, we auto-select the only sub-area to show essays directly
+    if (prueba.id === 'lenguaje') {
+      this.subPruebaSeleccionada = prueba.subpruebas?.[0] ?? null;
+      this.ensayoSeleccionado = this.subPruebaSeleccionada?.ensayos?.[0] ?? null;
+    } else {
+      // For others (Ciencias, M1, M2, Historia), we wait for selection in the first grid
+      this.subPruebaSeleccionada = null;
+      this.ensayoSeleccionado = null;
+    }
   }
 
   seleccionarSubprueba(subprueba: SubPrueba) {
@@ -981,32 +1464,109 @@ export class EnsayosListComponent implements OnInit {
     this.subPruebaSeleccionada = null;
     this.ensayoSeleccionado = null;
   }
+  
+  resumeActiveIntento() {
+    if (this.activeProgress) {
+      // Pass resume=true so the runner skips the pause modal and goes straight in
+      this.router.navigate(['/ensayo', this.activeProgress.examId, 'run'], {
+        queryParams: { mode: 'asistido', resume: 'true' }
+      });
+    }
+  }
+
+  discardActiveProgress() {
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.activeProgress = null;
+  }
 
   iniciarPrueba(mode: ExamMode) {
-    if (this.pruebaSeleccionada) {
-      // Aquí se navegará al componente de ejecución de la prueba
-      const ensayoId = this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
+    if (!this.pruebaSeleccionada) return;
+
+    const ensayoId = this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
+
+    // Only warn if there is ALREADY a DIFFERENT assisted exam in progress
+    if (mode === 'asistido' && this.activeProgress && this.activeProgress.examId !== ensayoId) {
+      this.pendingMode = mode;
+      this.showOverwriteModal = true;
+      return;
+    }
+
+    this.procederInicio(mode);
+  }
+
+  confirmOverwrite() {
+    // Clear localStorage so the previous progress is gone
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.activeProgress = null;
+    this.showOverwriteModal = false;
+    this.procederInicio(this.pendingMode);
+  }
+
+  private async procederInicio(mode: ExamMode) {
+    if (!this.pruebaSeleccionada) return;
+
+    const ensayoId = this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
+    let displaySubject = this.pruebaSeleccionada.nombre;
+    if (displaySubject === 'Competencia Lectora') displaySubject = 'Lenguaje';
+    
+    const subPart = this.subPruebaSeleccionada?.nombre;
+    const ensayoPart = this.ensayoSeleccionado?.nombre.replace('PAES ', '');
+
+    let fullName = displaySubject;
+    if (subPart && subPart !== displaySubject) {
+      fullName += ` ${subPart}`;
+    }
+    if (ensayoPart) {
+      fullName += ` - ${ensayoPart}`;
+    }
+
+    try {
+      // Crear el intento en Firestore antes de navegar
+      const intentoId = await this.firestoreService.startIntento(ensayoId, mode, fullName);
+      
+      this.router.navigate(['/ensayo', ensayoId, 'run'], {
+        queryParams: {
+          mode,
+          intento: intentoId,
+          duration: this.pruebaSeleccionada.tiempo,
+          questions: this.pruebaSeleccionada.preguntas,
+          name: fullName
+        }
+      });
+    } catch (error) {
+      console.error('Error al iniciar ensayo:', error);
+      // Fallback a navegación sin intento si falla Firestore
       this.router.navigate(['/ensayo', ensayoId, 'run'], {
         queryParams: {
           mode,
           duration: this.pruebaSeleccionada.tiempo,
-          questions: this.pruebaSeleccionada.preguntas
+          questions: this.pruebaSeleccionada.preguntas,
+          name: fullName
         }
       });
     }
   }
 
   getNombreSeleccionado(): string {
-    if (!this.pruebaSeleccionada) {
-      return '';
-    }
-    if (this.subPruebaSeleccionada) {
-      if (this.ensayoSeleccionado) {
-        return `${this.pruebaSeleccionada.nombre} - ${this.subPruebaSeleccionada.nombre} (${this.ensayoSeleccionado.nombre})`;
-      }
-      return `${this.pruebaSeleccionada.nombre} - ${this.subPruebaSeleccionada.nombre}`;
-    }
+    if (!this.pruebaSeleccionada) return '';
+    const subName = this.ensayoSeleccionado?.nombre ?? this.subPruebaSeleccionada?.nombre;
+    if (subName) return `${this.pruebaSeleccionada.nombre} - ${subName}`;
     return this.pruebaSeleccionada.nombre;
+  }
+
+  getSelectedDescription(): string {
+    return this.ensayoSeleccionado?.descripcion ?? this.subPruebaSeleccionada?.descripcion ?? '';
+  }
+
+  /** True only when the user has made the required selection to start */
+  get canStart(): boolean {
+    if (!this.pruebaSeleccionada) return false;
+    if (this.pruebaSeleccionada.id === 'lenguaje') return true;
+    if (this.pruebaSeleccionada.id === 'ciencias') {
+      return this.subPruebaSeleccionada !== null && this.ensayoSeleccionado !== null;
+    }
+    // M1, M2, Historia: the subprueba IS the essay
+    return this.subPruebaSeleccionada !== null;
   }
 
   logout() {

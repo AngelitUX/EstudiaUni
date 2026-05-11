@@ -1,0 +1,100 @@
+PRUEBA DE 
+COMPETENCIA 
+LECTORA
+FORMA 103
+Pruebas de Acceso a la Educación Superior
+(PAES Regular)
+/demre.uchile
+/demre_uchile
+/DEMREuchile
+/demre.uchile
+@demre.uchile
+DEMRE U.chile
+DEMRE Uchile
+demre.cl
+Significado de los puntajes
+Claves
+Tabla de transformación de puntaje
+En esta publicación encontrarás el clavijero con las respuestas correctas de todas las preguntas de la PAES Regular aplicada 
+el 3 de diciembre de 2024, no sólo aquellas que corresponden a la Selección de Preguntas que publicamos ese día.
+----------------Page (0) Break----------------
+• 2 •
+ SIGNIFICADO DE LOS PUNTAJES
+Puntaje P: se obtiene de la suma de todas las respuestas correctas consideradas para 
+el cálculo del puntaje.
+Puntaje PAES: A partir del Proceso de Admisión 2023, el puntaje de todos los instrumentos 
+de acceso es calculado aplicando una transformación a los puntajes P que va desde los 
+100 a los 1000 puntos.
+La Prueba de Competencia Lectora tiene 65 preguntas, y solo 60 de ellas se utilizan para 
+calcular el puntaje. Todas las preguntas tienen el mismo peso en el cálculo del puntaje, 
+lo cual significa que contribuyen de manera equitativa al puntaje PAES, independiente de 
+su dificultad.
+Junto al clavijero encontrarás un ejemplo para el cálculo de tu Puntaje P y su 
+correspondiente Puntaje PAES, el que se obtiene de la Tabla de Transformación de 
+Puntaje que se incluye en este documento.
+----------------Page (1) Break----------------
+• 3 •
+NºClaveNºClaveNºClave
+1B23B45B
+2A24D46D
+3*D25B47A
+4B26C48C
+5A27A49A
+6D28*B50B
+7C29D51D
+8*D30C52A
+9D31B53A
+10*C32C54C
+11B33*D55A
+12B34A56C
+13C35B57C
+14B36C58B
+15D37B59D
+16A38C60C
+17D39A61B
+18A40C62A
+19B41C63C
+20B42C64D
+21C43A65D
+22A44B
+ CLAVES
+En el clavijero, las 5 preguntas que están marcadas con (*) corresponden a preguntas 
+que no se consideran para el cálculo del Puntaje P.
+----------------Page (2) Break----------------
+• 4 •
+Ejemplo de cálculo de puntaje
+Primero: contabiliza tus respuestas correctas (Puntaje P) excluyendo las 5 preguntas 
+marcadas en el clavijero con (*).
+Segundo: busca en la tabla de transformación el Puntaje PAES correspondiente a la 
+cantidad de respuestas correctas obtenidas (Puntaje P).
+Por ejemplo, si obtuviste 50 respuestas correctas entonces tu Puntaje P es 50. Luego, 
+según la tabla de transformación tu Puntaje PAES es 808.
+----------------Page (3) Break----------------
+• 5 •
+ TABLA DE TRANSFORMACIÓN DE PUNTAJE 
+DE LA PAES DE COMPETENCIA LECTORA
+PPAESPPAESPPAES
+01002148642703
+11862249443715
+22102350244730
+32322451445746
+42532552846761
+52712654347773
+62882755748785
+73042856949795
+83222957750808
+93393058351823
+103553158952840
+113693259653858
+123803360554876
+133913461755893
+144023563156911
+154153664757931
+164303766058954
+174463867159978
+1846039680601000
+1947140687
+2047941694
+----------------Page (4) Break----------------
+/demre.uchile/demre_uchile/DEMREuchile/demre.uchile@demre.uchileDEMRE U.chileDEMRE Uchiledemre.cl
+----------------Page (5) Break----------------
