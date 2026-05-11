@@ -405,7 +405,7 @@ export class DashboardComponent implements OnInit {
   showProfileModal = false;
   showSettingsModal = false;
 
-  userName = 'Estudiante';
+  userName = '...';
 
   get currentDate(): string {
     const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -429,25 +429,15 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Guardar perfil del usuario al cargar (crea si no existe)
-    this.firestoreService.saveUserProfile({}).catch(() => { });
-
-    // Pre-cargar datos desde Auth para evitar parpadeo
-    const currentUser = this.authService.currentUser;
-    if (currentUser) {
-      this.userName = currentUser.displayName?.split(' ')[0] || 'Estudiante';
-      this.userProfile = {
-        displayName: currentUser.displayName,
-        photoURL: currentUser.photoURL
-      };
-    }
-
-    // Cargar datos del usuario desde Firestore
+    // Escuchar cambios de perfil de forma reactiva y permanente
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
           this.userProfile = profile;
-          this.userName = profile.displayName?.split(' ')[0] || 'Estudiante';
+          this.userName = profile.displayName?.split(' ')[0] || 'Usuario';
+          
+          // Guardar perfil (sync inicial si es necesario)
+          this.firestoreService.saveUserProfile({}).catch(() => {});
 
           // Iniciar recordatorios si están habilitados
           if (profile.notificationsEnabled) {
@@ -457,7 +447,19 @@ export class DashboardComponent implements OnInit {
               notificationsEnabled: true,
             });
           }
+        } else {
+          // Si no hay perfil en Firestore, intentamos sacar el nombre de Auth como último recurso
+          const authUser = this.authService.currentUser;
+          if (authUser) {
+            this.userName = authUser.displayName?.split(' ')[0] || 'Usuario';
+          } else {
+            this.userName = 'Estudiante';
+          }
         }
+      },
+      error: (err) => {
+        console.error('[Dashboard] Error cargando perfil:', err);
+        this.userName = 'Estudiante';
       }
     });
   }

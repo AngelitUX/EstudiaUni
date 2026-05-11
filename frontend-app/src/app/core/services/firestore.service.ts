@@ -14,8 +14,8 @@ import {
   limit,
   Timestamp
 } from '@angular/fire/firestore';
-import { Auth } from '@angular/fire/auth';
-import { from, map, Observable, of, catchError } from 'rxjs';
+import { Auth, authState } from '@angular/fire/auth';
+import { from, map, Observable, of, catchError, switchMap } from 'rxjs';
 
 // @ts-ignore
 import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
@@ -92,10 +92,22 @@ export class FirestoreService {
   constructor() { (window as any).firestoreService = this; }
 
   getUserProfile(uid?: string): Observable<UserProfile | null> {
-    const targetUid = uid || this.auth.currentUser?.uid;
-    if (!targetUid) return of(null);
-    return from(getDoc(doc(this.firestore, 'users', targetUid))).pipe(
-      map(snap => snap.exists() ? snap.data() as UserProfile : null)
+    if (uid) {
+      const docRef = doc(this.firestore, 'users', uid);
+      return from(getDoc(docRef)).pipe(
+        map(snap => snap.exists() ? snap.data() as UserProfile : null)
+      );
+    }
+
+    // Esperamos reactivamente al estado de Auth
+    return authState(this.auth).pipe(
+      switchMap((user: any) => {
+        if (!user) return of(null);
+        const docRef = doc(this.firestore, 'users', user.uid);
+        return from(getDoc(docRef)).pipe(
+          map(snap => snap.exists() ? snap.data() as UserProfile : null)
+        );
+      })
     );
   }
 
@@ -125,7 +137,6 @@ export class FirestoreService {
   }
 
   getEnsayo(ensayoId: string): Observable<Ensayo | null> {
-    // ALIAS: Si piden 'm1', buscamos 'm1-2024'
     const finalId = ensayoId === 'm1' ? 'm1-2024' : ensayoId;
     return from(getDoc(doc(this.firestore, 'ensayos', finalId))).pipe(
       map(snap => snap.exists() ? { id: snap.id, ...snap.data() } as Ensayo : null)
@@ -133,7 +144,6 @@ export class FirestoreService {
   }
 
   getPreguntas(ensayoId: string): Observable<Pregunta[]> {
-    // ALIAS: Si piden 'm1', buscamos preguntas de 'm1-2024'
     const finalId = ensayoId === 'm1' ? 'm1-2024' : ensayoId;
     const q = query(collection(this.firestore, 'preguntas'), where('ensayoId', '==', finalId));
     return from(getDocs(q)).pipe(
@@ -216,7 +226,6 @@ export class FirestoreService {
   }
 
   private getMockPreguntas(id: string): Pregunta[] {
-    // Si piden 'm1', devolvemos los datos de 'm1-2024'
     const targetId = (id === 'm1' || id === 'm1-2024') ? 'm1-2024' : id;
     if (targetId === 'm1-2024') return m1QuestionsData as any || [];
     if (id === 'm1-invierno-2024') return m1InviernoQuestionsData as any || [];
