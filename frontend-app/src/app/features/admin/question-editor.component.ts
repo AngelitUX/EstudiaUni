@@ -341,6 +341,7 @@ export class QuestionEditorComponent implements OnInit {
     'ciencias-biologia': ['Organización, estructura y actividad celular', 'Procesos y funciones biológicas', 'Herencia y evolución', 'Organismo y ambiente'],
     'ciencias-fisica': ['Mecánica', 'Ondas', 'Energía', 'Electricidad y magnetismo'],
     'ciencias-quimica': ['Estructura atómica y enlaces', 'Química orgánica', 'Reacciones químicas y estequiometría'],
+    'ciencias-tp': ['Biología TP', 'Física TP', 'Química TP'],
     'historia': ['Mundo, América y Chile', 'Formación Ciudadana', 'Economía y Sociedad']
   };
 
