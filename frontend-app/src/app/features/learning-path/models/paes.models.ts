@@ -7,6 +7,7 @@ export interface Materia {
   icon: string;
   order: number;
   isActive: boolean;
+  imageUrl?: string;
 }
 
 export interface Capitulo {
@@ -63,6 +64,7 @@ export type MateriaId =
   | 'ciencias-biologia'
   | 'ciencias-fisica'
   | 'ciencias-quimica'
+  | 'ciencias-tp'
   | 'historia';
 
 export interface PoolPregunta {

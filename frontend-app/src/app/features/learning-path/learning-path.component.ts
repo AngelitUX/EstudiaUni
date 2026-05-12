@@ -80,11 +80,12 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
               class="materia-card horizontal-card"
               [class.has-progress]="getMateriaProgress(m.id).percentage > 0"
               [class.completed]="getMateriaProgress(m.id).percentage === 100"
+              [style.background-color]="getMateriaInfo(m).bgColor || '#fff'"
               (click)="goToMateria(m)">
 
               <!-- Izquierda: Imagen grande -->
               <div class="card-image-col">
-                <img [src]="getMateriaInfo(m.id).img" [alt]="m.title" class="materia-main-img" />
+                <img [src]="getMateriaInfo(m).img" [alt]="m.title" class="materia-main-img" />
               </div>
 
               <!-- Derecha: Contenido -->
@@ -103,9 +104,9 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
                 </div>
 
                 <!-- Descripción y Tópicos -->
-                <p class="materia-desc">{{ getMateriaInfo(m.id).desc }}</p>
+                <p class="materia-desc">{{ getMateriaInfo(m).desc }}</p>
                 <div class="materia-topics">
-                  <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m.id).topics">{{ topic }}</span>
+                  <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m).topics">{{ topic }}</span>
                 </div>
 
                 <!-- Footer de la tarjeta: Progreso + Botón -->
@@ -218,8 +219,20 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
     .horizontal-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(133,92,214,0.1); border-color: rgba(133,92,214,0.25); }
 
     /* IMAGE COLUMN */
-    .card-image-col { flex: 0 0 280px; display: flex; align-items: center; justify-content: center; }
-    .materia-main-img { width: 100%; height: auto; max-height: 220px; object-fit: contain; border-radius: 12px; transition: transform 0.4s ease; }
+    .card-image-col { flex: 0 0 360px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16px; }
+    .materia-main-img { 
+      width: 100%; 
+      height: auto;
+      max-height: 280px; 
+      object-fit: contain; 
+      border-radius: 12px; 
+      transition: transform 0.4s ease;
+      /* Efecto de difuminado en los bordes para mezcla suave */
+      mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent),
+                  linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+      mask-composite: intersect;
+      -webkit-mask-composite: source-in;
+    }
     .horizontal-card:hover .materia-main-img { transform: scale(1.05); }
 
     /* CONTENT COLUMN */
@@ -289,11 +302,12 @@ export class LearningPathComponent {
   mobileOpen = false;
   showSettingsModal = false;
 
-  materiaDataConfig: Record<string, { desc: string, topics: string[], img: string }> = {
+  materiaDataConfig: Record<string, { desc: string, topics: string[], img: string, bgColor?: string }> = {
     'comp-lectora': {
       desc: 'Mejora tu comprensión lectora, análisis de textos literarios y no literarios, y desarrolla un pensamiento crítico fundamental para la prueba.',
       topics: ['Textos Literarios', 'Textos No Literarios', 'Vocabulario'],
-      img: 'assets/images/comp-lectora.png'
+      img: 'assets/images/subjects/comp-lectora.png',
+      bgColor: '#F7A08F'
     },
     'mat1': {
       desc: 'Domina los conceptos fundamentales de números, álgebra, geometría y probabilidad para asegurar un alto puntaje en la prueba M1.',
@@ -309,14 +323,40 @@ export class LearningPathComponent {
       desc: 'Prepárate integralmente en los ejes de Biología, Física y Química, comprendiendo los fenómenos naturales y sus leyes.',
       topics: ['Biología', 'Física', 'Química'],
       img: 'assets/images/ciencias.png'
+    },
+    'ciencias-tp': {
+      desc: 'Prepárate para la prueba de Ciencias Técnico Profesional con enfoque en fenómenos aplicados al ámbito laboral.',
+      topics: ['Biología TP', 'Física TP', 'Química TP'],
+      img: 'assets/images/subjects/ciencias-tp.png',
+      bgColor: '#F3D8AB'
+    },
+    'ciencias-biologia': {
+      desc: 'Profundiza en la biología celular, herencia, procesos vitales, evolución e interacción de los organismos con su ambiente.',
+      topics: ['Organización Celular', 'Herencia', 'Ecosistemas'],
+      img: 'assets/images/subjects/biologia.png',
+      bgColor: '#D0D9AC'
+    },
+    'ciencias-fisica': {
+      desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',
+      topics: ['Ondas', 'Mecánica', 'Electricidad'],
+      img: 'assets/images/subjects/fisica.png',
+      bgColor: '#DCCEF9'
+    },
+    'ciencias-quimica': {
+      desc: 'Estudia la estructura de la materia, enlaces, química orgánica y reacciones estequiométricas fundamentales.',
+      topics: ['Estructura Atómica', 'Química Orgánica', 'Estequiometría'],
+      img: 'assets/images/subjects/quimica.png',
+      bgColor: '#B8F4D2'
     }
   };
 
-  getMateriaInfo(id: string) {
-    return this.materiaDataConfig[id] || {
-      desc: 'Prepárate para la prueba con material actualizado y ejercicios prácticos.',
-      topics: ['General', 'Ejercicios'],
-      img: 'assets/images/comp-lectora.png'
+  getMateriaInfo(m: Materia) {
+    const config = this.materiaDataConfig[m.id];
+    return {
+      desc: config?.desc || 'Prepárate para la prueba con material actualizado y ejercicios prácticos.',
+      topics: config?.topics || ['General', 'Ejercicios'],
+      img: m.imageUrl || config?.img || 'assets/images/comp-lectora.png',
+      bgColor: config?.bgColor
     };
   }
 
