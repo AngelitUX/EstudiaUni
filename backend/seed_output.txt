@@ -1,0 +1,20 @@
+🌱 Iniciando seed de Módulos de Ciencias (TP, Biología, Física, Química)...
+
+Error: Could not load the default credentials. Browse to https://cloud.google.com/docs/authentication/getting-started for more information.
+    at GoogleAuth.getApplicationDefaultAsync (C:\EstudiaUni\estudiauni.cl\backend\node_modules\google-auth-library\build\src\auth\googleauth.js:287:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async GoogleAuth._GoogleAuth_determineClient (C:\EstudiaUni\estudiauni.cl\backend\node_modules\google-auth-library\build\src\auth\googleauth.js:834:32)
+    at async GoogleAuth.getClient (C:\EstudiaUni\estudiauni.cl\backend\node_modules\google-auth-library\build\src\auth\googleauth.js:698:20)
+    at async GrpcClient._getCredentials (C:\EstudiaUni\estudiauni.cl\backend\node_modules\google-gax\src\grpc.ts:209:20)
+    at async GrpcClient.createStub (C:\EstudiaUni\estudiauni.cl\backend\node_modules\google-gax\src\grpc.ts:426:19)
+Caused by: Error
+    at _firestore._traceUtil.startActiveSpan (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@google-cloud\firestore\build\src\write-batch.js:438:27)
+    at C:\EstudiaUni\estudiauni.cl\backend\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at NoopContextManager.with (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@opentelemetry\api\src\context\NoopContextManager.ts:20:15)
+    at ContextAPI.with (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@opentelemetry\api\src\api\context.ts:68:42)
+    at NoopTracer.startActiveSpan (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@opentelemetry\api\src\trace\NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@opentelemetry\api\src\trace\ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at WriteBatch.commit (C:\EstudiaUni\estudiauni.cl\backend\node_modules\@google-cloud\firestore\build\src\write-batch.js:436:43)
+    at C:\EstudiaUni\estudiauni.cl\backend\node_modules\@google-cloud\firestore\build\src\reference\document-reference.js:350:31
+    at C:\EstudiaUni\estudiauni.cl\backend\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
