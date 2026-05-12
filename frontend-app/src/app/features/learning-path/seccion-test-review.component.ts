@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
+import { SoundService } from '../../core/services/sound.service';
 
 @Component({
   selector: 'app-seccion-test-review',
@@ -256,6 +257,7 @@ export class SeccionTestReviewComponent {
   private router = inject(Router);
   private katexSvc = inject(KatexService);
   private sanitizer = inject(DomSanitizer);
+  private soundSvc = inject(SoundService);
 
   optKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
   seccionId = signal('');
@@ -288,11 +290,16 @@ export class SeccionTestReviewComponent {
   }
 
   goBack() {
-    const sec = this.seccion();
-    if (sec) {
-      this.router.navigate(['/ruta', sec.materiaId]);
+    const cap = this.paes.getCapituloBySeccionId(this.seccionId());
+    if (cap) {
+      this.router.navigate(['/ruta', cap.materiaId]);
     } else {
-      this.router.navigate(['/ruta']);
+      const sec = this.seccion();
+      if (sec) {
+        this.router.navigate(['/ruta', sec.materiaId]);
+      } else {
+        this.router.navigate(['/ruta']);
+      }
     }
   }
 

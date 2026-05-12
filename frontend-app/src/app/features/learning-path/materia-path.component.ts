@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SettingsModalComponent } from '../profile/settings-modal.component';
+import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { FirestoreService } from '../../core/services/firestore.service';
+import { AdminService } from '../admin/services/admin.service';
 
 type PathItem = 
   | { type: 'chapter', capituloId: string, title: string, subtitle: string }
@@ -11,32 +15,31 @@ type PathItem =
 @Component({
   selector: 'app-materia-path',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
   template: `
     <div class="lp-layout">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-logo"><span class="text-gradient">EstudiaUni</span></span>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/settings"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
         </nav>
         <div class="sidebar-footer">
-          <button class="nav-item logout-btn" (click)="logout()">
-            <span class="nav-icon">🚪</span>
-            <span class="nav-text">Cerrar Sesión</span>
-          </button>
+          <a class="nav-item" (click)="showSettingsModal = true">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Configuración</span>
+          </a>
         </div>
       </aside>
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
         <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <span class="text-gradient">EstudiaUni</span>
+        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -44,90 +47,99 @@ type PathItem =
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/settings" (click)="mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
-            <a class="nav-item" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
           </nav>
+          <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-text">Configuración</span>
+            </a>
+          </div>
         </div>
       </div>
 
       <!-- MAIN -->
-      <main class="main-content">
-        <div class="materia-page" *ngIf="materia() as m">
-      
-      <!-- HEADER -->
-      <header class="path-header">
-        <button class="btn-back" routerLink="/ruta">
-          <span>←</span>
-        </button>
-        <div class="header-info">
-          <h2>{{ m.title }}</h2>
-        </div>
-      </header>
-
-      <!-- DUOLINGO PATH -->
-      <div class="duo-path-container">
-        <ng-container *ngFor="let item of pathItems()">
-          
-          <!-- CHAPTER DIVIDER -->
-          <div *ngIf="item.type === 'chapter'" class="chapter-divider">
-            <div class="div-line"></div>
-            <div class="div-content">
-              <span class="div-title">{{ item.title }}</span>
-              <button class="btn-guide" (click)="goToGuide(item.capituloId)">
-                <span class="guide-icon">📖</span> Guía
-              </button>
+      <main class="main-content" *ngIf="materia() as m">
+        <!-- HEADER -->
+        <header class="path-header">
+          <div class="header-left">
+            <button class="btn-back" routerLink="/ruta">
+              <span>←</span>
+            </button>
+            <div class="header-info">
+              <h2>{{ m.title }}</h2>
             </div>
-            <div class="div-line"></div>
           </div>
 
-          <!-- SECTION NODE -->
-          <div *ngIf="item.type === 'node'" class="node-row">
-            <div class="node-wrapper" [style.transform]="'translateX(' + getOffset(item.nodeIndex) + 'px)'">
-              
-              <!-- Active Tooltip -->
-              <div class="active-tooltip" *ngIf="item.status === 'active'">
-                EMPEZAR
-                <div class="tooltip-arrow"></div>
-              </div>
+          <div class="welcome-actions">
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">
+              {{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}
+            </span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                  <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </header>
 
-              <!-- Node Button -->
-              <button class="duo-node" 
-                [class.node-completed]="item.status === 'completed'"
-                [class.node-active]="item.status === 'active'"
-                [class.node-locked]="item.status === 'locked'"
-                (click)="handleNodeClick(item)">
-                
-                <div class="node-inner">
-                  <!-- Icons based on status -->
-                  <svg *ngIf="item.status === 'completed'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  
-                  <svg *ngIf="item.status === 'active'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-
-                  <svg *ngIf="item.status === 'locked'" class="node-icon icon-lock" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
-                  </svg>
+        <div class="materia-page">
+          <!-- DUOLINGO PATH -->
+          <div class="duo-path-container">
+            <ng-container *ngFor="let item of pathItems()">
+              <!-- CHAPTER DIVIDER -->
+              <div *ngIf="item.type === 'chapter'" class="chapter-divider">
+                <div class="div-line"></div>
+                <div class="div-content">
+                  <span class="div-title">{{ item.title }}</span>
+                  <button class="btn-guide" (click)="goToGuide(item.capituloId)">
+                    <span class="guide-icon">📖</span> Guía
+                  </button>
                 </div>
-              </button>
-
-              <!-- Node Floating Title (Top) -->
-              <div class="node-title-top" 
-                [class.text-completed]="item.status === 'completed'"
-                [class.text-active]="item.status === 'active'">
-                {{ item.title }}
+                <div class="div-line"></div>
               </div>
-            </div>
+
+              <!-- SECTION NODE -->
+              <div *ngIf="item.type === 'node'" class="node-row">
+                <div class="node-wrapper" [style.transform]="'translateX(' + getOffset(item.nodeIndex) + 'px)'">
+                  <div class="active-tooltip" *ngIf="item.status === 'active'">
+                    EMPEZAR
+                    <div class="tooltip-arrow"></div>
+                  </div>
+                  <button class="duo-node" 
+                    [class.node-completed]="item.status === 'completed'"
+                    [class.node-active]="item.status === 'active'"
+                    [class.node-locked]="item.status === 'locked'"
+                    (click)="handleNodeClick(item)">
+                    <div class="node-inner">
+                      <svg *ngIf="item.status === 'completed'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <svg *ngIf="item.status === 'active'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <svg *ngIf="item.status === 'locked'" class="node-icon icon-lock" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                      </svg>
+                    </div>
+                  </button>
+                  <div class="node-title-top" 
+                    [class.text-completed]="item.status === 'completed'"
+                    [class.text-active]="item.status === 'active'">
+                    {{ item.title }}
+                  </div>
+                </div>
+              </div>
+            </ng-container>
           </div>
-
-        </ng-container>
-      </div>
-
-    </div>
+        </div>
       </main>
     </div>
+    <app-profile-modal *ngIf="showProfileModal" (close)="showProfileModal = false"></app-profile-modal>
+    <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
@@ -153,25 +165,7 @@ type PathItem =
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
     .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
-    .sidebar-footer { padding: 1.25rem 1rem; border-top: none; display: flex; justify-content: center; }
-    .logout-btn { 
-      width: fit-content;
-      min-width: 180px;
-      justify-content: center; 
-      padding: 0.65rem 1rem;
-      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
-      background: transparent !important; 
-      color: rgba(252, 165, 165, 0.6) !important; 
-      margin: 0 auto;
-      border-radius: 14px;
-      font-weight: 500;
-    }
-    .logout-btn:hover { 
-      background: rgba(239, 68, 68, 0.1) !important; 
-      border-color: #ef4444 !important; 
-      color: #ef4444 !important; 
-      transform: none !important; 
-    }
+    .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
 
     /* MOBILE */
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
@@ -186,10 +180,25 @@ type PathItem =
     .materia-page { max-width: 600px; margin: 0 auto; padding-bottom: 6rem; position: relative; }
 
     /* HEADER */
-    .path-header { padding: 1.5rem 1.5rem 0.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .path-header { padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
     .btn-back { background: transparent; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.2s; }
     .btn-back:hover { background: var(--bg-secondary); color: var(--accent-primary); transform: translateX(-4px); }
-    .header-info h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
+    .header-info h2 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
+
+    /* MATCH DASHBOARD WELCOME ACTIONS */
+    .welcome-actions { display: flex; align-items: center; gap: 1rem; }
+    .profile-menu-wrap { position: relative; }
+    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; transition: all 0.2s; width: 62px; height: 62px; box-shadow: var(--shadow-sm); }
+    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: var(--shadow); }
+    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
+    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+    .profile-avatar.fallback { display: grid; place-items: center; background: var(--gradient-brand); font-weight: 700; font-size: 0.9rem; color: white; }
+    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; color: white; }
+    
+    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; text-transform: uppercase; }
+    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
 
     /* PATH CONTAINER */
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
@@ -271,9 +280,19 @@ export class MateriaPathComponent {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  public firestoreService = inject(FirestoreService);
+  public adminService = inject(AdminService);
   private auth = inject(AuthService);
 
   mobileOpen = false;
+  showSettingsModal = false;
+  showProfileModal = false;
+
+  profileInitial = computed(() => {
+    const name = this.firestoreService.profileSignal()?.displayName || '';
+    return name.charAt(0).toUpperCase() || 'U';
+  });
+  isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
 
   materiaId = signal('');
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
@@ -343,8 +362,4 @@ export class MateriaPathComponent {
     this.router.navigate(['/ruta', this.materiaId(), capId]);
   }
 
-  async logout() {
-    await this.auth.logout();
-    this.router.navigate(['/']);
-  }
 }

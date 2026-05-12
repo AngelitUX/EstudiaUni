@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal, WritableSignal } from '@angular/core';
 import { 
   Firestore, 
   collection, 
@@ -39,6 +39,11 @@ export interface UserProfile {
   targetUniversity?: string;
   targetExamDate?: string;
   studyGoalMinutesPerDay?: number;
+  selectedSubjects?: string[];
+  dyslexiaFont?: boolean;
+  highContrast?: boolean;
+  fontSize?: 'normal' | 'large' | 'xlarge';
+  linkedinUrl?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
 }
 
@@ -88,6 +93,7 @@ export interface Intento {
 export class FirestoreService {
   public firestore = inject(Firestore);
   private auth = inject(Auth);
+  public profileSignal: WritableSignal<UserProfile | null> = signal(null);
 
   constructor() { (window as any).firestoreService = this; }
 
@@ -102,10 +108,17 @@ export class FirestoreService {
     // Esperamos reactivamente al estado de Auth
     return authState(this.auth).pipe(
       switchMap((user: any) => {
-        if (!user) return of(null);
+        if (!user) {
+          this.profileSignal.set(null);
+          return of(null);
+        }
         const docRef = doc(this.firestore, 'users', user.uid);
         return from(getDoc(docRef)).pipe(
-          map(snap => snap.exists() ? snap.data() as UserProfile : null)
+          map(snap => {
+            const p = snap.exists() ? snap.data() as UserProfile : null;
+            this.profileSignal.set(p);
+            return p;
+          })
         );
       })
     );

@@ -1,10 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
+import { AdminService } from '../admin/services/admin.service';
 
 interface Prueba {
   id: string;
@@ -40,9 +41,9 @@ type ExamMode = 'real' | 'asistido';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-logo">
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;">
             <span class="text-gradient">EstudiaUni</span>
-          </span>
+          </a>
         </div>
         
         <nav class="sidebar-nav">
@@ -59,17 +60,13 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayo PAES</span>
           </a>
+        </nav>
+        
+        <div class="sidebar-footer">
           <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
           </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-          <button class="nav-item logout-btn" (click)="logout()">
-            <span class="nav-icon">🚪</span>
-            <span class="nav-text">Cerrar Sesión</span>
-          </button>
         </div>
       </aside>
 
@@ -118,13 +115,13 @@ type ExamMode = 'real' | 'asistido';
             </div>
             
             <div class="header-actions">
-              <span class="plan-badge" [class.pro]="isProPlan">{{ isProPlan ? 'PRO' : 'BASICO' }}</span>
+              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
               <div class="profile-menu-wrap">
                 <button class="profile-trigger" (click)="showProfileModal = true">
                   <span class="profile-avatar-wrap">
-                    <img *ngIf="userProfile?.photoURL; else avatarFallback" [src]="userProfile?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial }}</span></ng-template>
-                    <span class="profile-emoji-badge">{{ userProfile?.profileEmoji || '✨' }}</span>
+                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                    <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
                   </span>
                 </button>
               </div>
@@ -358,28 +355,8 @@ type ExamMode = 'real' | 'asistido';
       justify-content: center;
     }
     .sidebar-footer {
-      padding: 1.25rem 1rem;
-      border-top: none;
-      display: flex;
-      justify-content: center;
-    }
-    .logout-btn {
-      width: fit-content;
-      min-width: 180px;
-      justify-content: center; 
-      padding: 0.65rem 1rem;
-      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
-      background: transparent !important; 
-      color: rgba(252, 165, 165, 0.6) !important; 
-      margin: 0 auto;
-      border-radius: 14px;
-      font-weight: 500;
-    }
-    .logout-btn:hover { 
-      background: rgba(239, 68, 68, 0.1) !important; 
-      border-color: #ef4444 !important; 
-      color: #ef4444 !important; 
-      transform: none !important; 
+      padding: 1.25rem 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
     }
 
     /* MAIN CONTENT */
@@ -407,7 +384,7 @@ type ExamMode = 'real' | 'asistido';
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
     }
     .profile-menu-wrap { position: relative; }
     .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
@@ -418,6 +395,7 @@ type ExamMode = 'real' | 'asistido';
     .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
     .header-back {
       margin-bottom: 0;
     }
@@ -650,7 +628,7 @@ type ExamMode = 'real' | 'asistido';
       border-radius: 12px;
       width: fit-content;
       box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.03);
+      border: 2px solid rgba(133,92,214,0.3);
     }
     .countdown-label {
       font-size: 0.85rem;
@@ -1336,33 +1314,19 @@ export class EnsayosListComponent implements OnInit {
 
   private router = inject(Router);
   private authService = inject(AuthService);
-  private firestoreService = inject(FirestoreService);
+  public firestoreService = inject(FirestoreService);
+  public adminService = inject(AdminService);
   showSettingsModal = false;
   showProfileModal = false;
-  userProfile: any = null;
+  isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
 
-  get profileInitial(): string {
-    return this.userProfile?.displayName?.charAt(0)?.toUpperCase() || 'U';
-  }
-  
-  get isProPlan(): boolean {
-    const plan = this.userProfile?.plan || this.userProfile?.subscription?.tier;
-    return plan === 'premium' || plan === 'pro';
-  }
+  profileInitial = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.displayName?.charAt(0).toUpperCase() || 'U';
+  });
 
   onProfileModalClose() {
     this.showProfileModal = false;
-    this.loadUserProfile();
-  }
-
-  private loadUserProfile() {
-    this.firestoreService.getUserProfile().subscribe({
-      next: (profile) => {
-        if (profile) {
-          this.userProfile = profile;
-        }
-      }
-    });
   }
 
   countdown = { days: 0, hours: 0, minutes: 0 };
@@ -1371,16 +1335,7 @@ export class EnsayosListComponent implements OnInit {
   private countdownInterval: any;
 
   ngOnInit() {
-    // Pre-cargar datos desde Auth para evitar parpadeo
-    const currentUser = this.authService.currentUser;
-    if (currentUser) {
-      this.userProfile = {
-        displayName: currentUser.displayName,
-        photoURL: currentUser.photoURL
-      };
-    }
-
-    this.loadUserProfile();
+    this.firestoreService.getUserProfile().subscribe();
     this.refreshActiveProgress();
     this.startCountdown();
   }
@@ -1569,9 +1524,4 @@ export class EnsayosListComponent implements OnInit {
     return this.subPruebaSeleccionada !== null;
   }
 
-  logout() {
-    this.authService.logout().subscribe(() => {
-      this.router.navigate(['/']);
-    });
-  }
 }

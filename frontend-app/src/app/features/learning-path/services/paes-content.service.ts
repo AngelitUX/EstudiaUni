@@ -1,12 +1,15 @@
 import { Injectable, signal, computed, inject, Injector } from '@angular/core';
 import { Materia, Capitulo, Seccion, TestPaes, SeccionProgress, TestResult, TestAnswer } from '../models/paes.models';
 import { Firestore, collection, getDocs } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 import { DashboardService } from '../../../core/services/dashboard.service';
 
 @Injectable({ providedIn: 'root' })
 export class PaesContentService {
   private firestore = inject(Firestore);
   private injector = inject(Injector);
+  private auth = inject(Auth);
+  private currentUid: string | null = null;
 
   // Lazy-loaded to avoid circular dependency  
   private _dashboardService: DashboardService | null = null;
@@ -32,8 +35,18 @@ export class PaesContentService {
   readonly lastTestResult = this._lastTestResult.asReadonly();
 
   constructor() {
-    this.loadProgressFromStorage();
     this.loadDataFromFirestore();
+    // Subscribe to auth state changes to load user-specific progress
+    this.auth.onAuthStateChanged((user) => {
+      if (user && user.uid !== this.currentUid) {
+        this.currentUid = user.uid;
+        this._progress.set(new Map());
+        this.loadProgressFromStorage();
+      } else if (!user) {
+        this.currentUid = null;
+        this._progress.set(new Map());
+      }
+    });
   }
 
   private async loadDataFromFirestore() {
@@ -124,6 +137,12 @@ export class PaesContentService {
     return undefined;
   }
 
+  getCapituloBySeccionId(seccionId: string): Capitulo | undefined {
+    return this._capitulos().find(cap => 
+      cap.secciones.some(sec => sec.id === seccionId)
+    );
+  }
+
   getTestBySeccionId(seccionId: string): TestPaes | undefined {
     const seccion = this.getSeccionById(seccionId);
     return seccion?.test;
@@ -196,7 +215,7 @@ export class PaesContentService {
       seccionId,
       capituloId: seccion?.capituloId || '',
       materiaId: seccion?.materiaId || '',
-      completed: score >= 60,
+      completed: (currentProgress?.completed || false) || (score >= 60),
       bestScore: Math.max(currentProgress?.bestScore || 0, score),
       totalQuestions: test.preguntas.length,
       correctAnswers: totalCorrect,
@@ -231,14 +250,16 @@ export class PaesContentService {
   // ─── Persistence (localStorage) ───
 
   private saveProgressToStorage(): void {
+    if (!this.currentUid) return;
     const obj: Record<string, SeccionProgress> = {};
     this._progress().forEach((v, k) => { obj[k] = v; });
-    localStorage.setItem('paes_progress', JSON.stringify(obj));
+    localStorage.setItem(`paes_progress_${this.currentUid}`, JSON.stringify(obj));
   }
 
   private loadProgressFromStorage(): void {
+    if (!this.currentUid) return;
     try {
-      const raw = localStorage.getItem('paes_progress');
+      const raw = localStorage.getItem(`paes_progress_${this.currentUid}`);
       if (raw) {
         const obj = JSON.parse(raw) as Record<string, SeccionProgress>;
         const map = new Map<string, SeccionProgress>();
