@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, computed } from '@angular/core';
+import { Component, inject, OnInit, computed, effect } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { DashboardService } from '../../core/services/dashboard.service';
@@ -8,18 +9,20 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
 import { Router, RouterModule } from '@angular/router';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
+import { HistoryModalComponent } from './history-modal.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { AdminService } from '../admin/services/admin.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ProfileModalComponent, SettingsModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ProfileModalComponent, SettingsModalComponent, HistoryModalComponent],
   template: `
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-logo"><span class="text-gradient">EstudiaUni</span></span>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard">
@@ -35,13 +38,12 @@ import { NotificationService } from '../../core/services/notification.service';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
           </a>
+        </nav>
+        <div class="sidebar-footer">
           <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
           </a>
-        </nav>
-        <div class="sidebar-footer">
-          <button class="nav-item logout-btn" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></button>
         </div>
       </aside>
 
@@ -66,15 +68,13 @@ import { NotificationService } from '../../core/services/notification.service';
               <span class="nav-icon">📚</span>
               <span class="nav-text">Ensayos PAES</span>
             </a>
+          </nav>
+          <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
               <span class="nav-icon">⚙️</span>
               <span class="nav-text">Configuración</span>
             </a>
-            <a class="nav-item" (click)="logout()">
-              <span class="nav-icon">🚪</span>
-              <span class="nav-text">Cerrar Sesión</span>
-            </a>
-          </nav>
+          </div>
         </div>
       </div>
 
@@ -83,18 +83,18 @@ import { NotificationService } from '../../core/services/notification.service';
         <!-- WELCOME -->
         <section class="welcome-section">
           <div class="welcome-text">
-            <h1>¡Hola, <span class="text-gradient">{{ userName }}</span>! 👋</h1>
+            <h1>¡Hola, <span class="text-gradient">{{ userName() }}</span>! 👋</h1>
             <p>Bienvenido de vuelta. Aquí está tu resumen de hoy.</p>
             <div class="welcome-date">{{ currentDate }}</div>
           </div>
           <div class="welcome-actions">
-            <span class="plan-badge" [class.pro]="isProPlan">{{ isProPlan ? 'PRO' : 'BASICO' }}</span>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="userProfile?.photoURL; else avatarFallback" [src]="userProfile?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial }}</span></ng-template>
-                  <span class="profile-emoji-badge">{{ userProfile?.profileEmoji || '✨' }}</span>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                  <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
                 </span>
               </button>
             </div>
@@ -111,7 +111,7 @@ import { NotificationService } from '../../core/services/notification.service';
             </div>
             <div class="metric-body mastery-body">
               <ng-container *ngIf="dashSvc.subjectMasteries().length > 0; else noMastery">
-                <div *ngFor="let m of dashSvc.subjectMasteries()" class="mastery-item">
+                <div *ngFor="let m of dashSvc.subjectMasteries()" class="mastery-item clickable" (click)="router.navigate(['/ruta', m.subjectId])">
                   <div class="mastery-top">
                     <span class="mastery-icon">{{ m.subjectIcon }}</span>
                     <span class="mastery-name">{{ m.subjectName }}</span>
@@ -134,26 +134,31 @@ import { NotificationService } from '../../core/services/notification.service';
           </div>
 
           <!-- PAES RECORD -->
-          <div class="metric-card glass-card">
-            <div class="metric-header">
-              <span class="metric-label">Puntaje Récord Ensayo PAES</span>
-              <span class="metric-icon">🏆</span>
+          <div class="metric-card glass-card record-card">
+            <div class="metric-header record-header">
+              <button class="nav-arrow" (click)="prevRecordSubject()">‹</button>
+              <span class="metric-label">{{ recordSubjects[currentRecordIdx].name }}</span>
+              <button class="nav-arrow" (click)="nextRecordSubject()">›</button>
             </div>
             <div class="metric-body">
-              <ng-container *ngIf="dashSvc.bestPaesRecord() as record; else noRecord">
+              <ng-container *ngIf="displayedRecord; else noRecord">
                 <div class="record-display">
-                  <div class="record-score">{{ record.correctAnswers }}<span class="record-total">/{{ record.totalQuestions }}</span></div>
+                  <div class="record-score">{{ displayedRecord.correctAnswers }}<span class="record-total">/{{ displayedRecord.totalQuestions }}</span></div>
                   <span class="record-label">Respuestas Correctas</span>
-                  <span class="record-ensayo">{{ record.ensayoTitle }}</span>
+                  <span class="record-ensayo">{{ displayedRecord.ensayoTitle }}</span>
+                  <span class="record-materia-badge" *ngIf="currentRecordIdx === 0 && displayedRecord.subject !== 'general'">{{ getSubjectName(displayedRecord.subject) }}</span>
                 </div>
               </ng-container>
               <ng-template #noRecord>
                 <div class="empty-state-small">
                   <span class="empty-icon">📝</span>
-                  <p>Aún no has realizado un ensayo PAES</p>
+                  <p>Sin récord en esta área</p>
                   <a routerLink="/ensayos" class="btn-small-link">Realizar ensayo →</a>
                 </div>
               </ng-template>
+            </div>
+            <div class="rec-nav record-nav-dots" *ngIf="recordSubjects.length > 1">
+              <button *ngFor="let s of recordSubjects; let i = index" class="rec-dot" [class.active]="i === currentRecordIdx" (click)="setRecordSubject(i)"></button>
             </div>
           </div>
 
@@ -177,26 +182,31 @@ import { NotificationService } from '../../core/services/notification.service';
         <!-- ACTIVITY / RECOMMENDATION -->
         <section class="activity-section">
           <!-- AI RECOMMENDATIONS -->
-          <div class="activity-card glass-card">
+          <div class="activity-card glass-card ai-recs-card">
             <div class="activity-header">
               <h3>🤖 Recomendación de la IA</h3>
               <span class="activity-badge">Personalizado</span>
             </div>
-            <div class="activity-body">
-              <div *ngFor="let rec of dashSvc.recommendations(); let i = index" class="recommendation-content" [class.hidden]="i !== activeRecIdx">
-                <div class="recommendation-icon">{{ rec.icon }}</div>
-                <div class="recommendation-text">
-                  <h4>{{ rec.title }}</h4>
-                  <p>{{ rec.description }}</p>
-                  <div class="recommendation-stats">
-                    <span>⏱️ {{ rec.estimatedTime }}</span>
-                    <span>📊 {{ rec.difficulty }}</span>
+            <div class="activity-body ai-body-with-nav">
+              <button class="nav-arrow-side left" (click)="prevRecommendation()" *ngIf="dashSvc.recommendations().length > 1">‹</button>
+              
+              <div class="ai-content-slider">
+                <div *ngFor="let rec of dashSvc.recommendations(); let i = index" class="recommendation-content" [class.hidden]="i !== activeRecIdx">
+                  <div class="recommendation-icon">{{ rec.icon }}</div>
+                  <div class="recommendation-text">
+                    <h4>{{ rec.title }}</h4>
+                    <p>{{ rec.description }}</p>
+                    <div class="recommendation-stats">
+                      <span>⏱️ {{ rec.estimatedTime }}</span>
+                      <span>📊 {{ rec.difficulty }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="rec-nav" *ngIf="dashSvc.recommendations().length > 1">
-                <button *ngFor="let r of dashSvc.recommendations(); let i = index" class="rec-dot" [class.active]="i === activeRecIdx" (click)="activeRecIdx = i"></button>
-              </div>
+
+              <button class="nav-arrow-side right" (click)="nextRecommendation()" *ngIf="dashSvc.recommendations().length > 1">›</button>
+            </div>
+            <div class="ai-footer">
               <button class="btn btn-primary btn-large" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
                 🚀 Comenzar
               </button>
@@ -205,15 +215,26 @@ import { NotificationService } from '../../core/services/notification.service';
 
           <!-- RECENT ACTIVITY -->
           <div class="recent-activity glass-card">
-            <h3>📋 Actividad Reciente</h3>
+            <div class="activity-header">
+              <h3>📋 Actividad Reciente</h3>
+              <button class="btn-ver-todo" (click)="showHistoryModal = true">
+                📋 Ver todo
+              </button>
+            </div>
             <div class="activity-list" *ngIf="dashSvc.activities().length > 0; else noActivity">
-              <div *ngFor="let act of dashSvc.activities().slice(0, 8)" class="activity-item">
+              <div *ngFor="let act of dashSvc.activities().slice(0, 4)" 
+                   class="activity-item"
+                   [class.clickable]="act.type === 'ensayo'"
+                   (click)="onActivityClick(act)">
                 <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : '📝' }}</span>
                 <div class="activity-info">
                   <span class="activity-title">{{ act.title }}</span>
                   <span class="activity-time">{{ dashSvc.getRelativeTime(act.timestamp) }}</span>
                 </div>
-                <span class="activity-score" *ngIf="act.score !== undefined">{{ act.type === 'leccion' ? act.score + '%' : act.totalCorrect + '/' + act.totalQuestions }}</span>
+                <div class="activity-right">
+                  <span class="clickable-badge" *ngIf="act.type === 'ensayo'">Ver →</span>
+                  <span class="activity-score" *ngIf="act.score !== undefined">{{ act.type === 'leccion' ? act.score + '%' : act.totalCorrect + '/' + act.totalQuestions }}</span>
+                </div>
               </div>
             </div>
             <ng-template #noActivity>
@@ -230,6 +251,7 @@ import { NotificationService } from '../../core/services/notification.service';
     <!-- MODALS -->
     <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
     <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsModalClose()"></app-settings-modal>
+    <app-history-modal *ngIf="showHistoryModal" (close)="showHistoryModal = false"></app-history-modal>
   `,
   styles: [`
     .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
@@ -285,8 +307,8 @@ import { NotificationService } from '../../core/services/notification.service';
 
     /* WELCOME */
     .welcome-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-    .welcome-text h1 { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary); letter-spacing: -0.02em; }
-    .welcome-text p { color: var(--text-secondary); font-weight: 500; font-size: 1.1rem; }
+    .welcome-text h1 { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary); letter-spacing: -0.02em; }
+    .welcome-text p { color: var(--text-secondary); font-weight: 500; font-size: 1.15rem; }
     .welcome-date { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500; }
     .welcome-actions { display: flex; align-items: center; gap: 1rem; }
     .profile-menu-wrap { position: relative; }
@@ -298,6 +320,7 @@ import { NotificationService } from '../../core/services/notification.service';
     .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
 
     /* METRICS */
     .metrics-section { display: grid; grid-template-columns: 1.2fr 0.9fr 0.9fr; gap: 1.5rem; margin-bottom: 2rem; }
@@ -326,18 +349,24 @@ import { NotificationService } from '../../core/services/notification.service';
     .mastery-sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
 
     /* RECORD */
-    .record-display { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
-    .record-score { font-size: 3rem; font-weight: 800; font-family: var(--font-heading); background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
-    .record-total { font-size: 1.5rem; opacity: 0.7; color: var(--text-primary); }
+    .record-card { position: relative; padding-bottom: 2rem; }
+    .record-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1rem; }
+    .nav-arrow { background: rgba(133,92,214,0.1); border: none; color: var(--accent-primary); font-size: 1.5rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding-bottom: 2px; }
+    .nav-arrow:hover { background: var(--accent-primary); color: #fff; transform: scale(1.1); }
+    .record-display { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; position: relative; }
+    .record-score { font-size: 3rem; font-weight: 800; font-family: var(--font-heading); background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; display: flex; align-items: baseline; }
+    .record-total { font-size: 1.5rem; opacity: 0.7; -webkit-text-fill-color: var(--text-primary); margin-left: 2px; }
     .record-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-align: center; width: 100%; }
-    .record-ensayo { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .record-ensayo { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; text-align: center; }
+    .record-materia-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--accent-primary); background: rgba(133,92,214,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; margin-top: 0.5rem; border: 1px solid rgba(133,92,214,0.2); }
+    .record-nav-dots { position: absolute; bottom: 0.75rem; left: 0; right: 0; }
 
     /* EMPTY STATES */
     .empty-state-small { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; padding: 1rem; background: rgba(0,0,0,0.02); border-radius: 12px; border: 2.5px dashed rgba(0,0,0,0.18); }
     .empty-state-small .empty-icon { font-size: 2rem; opacity: 0.8; }
     .empty-state-small p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; max-width: 200px; }
-    .btn-small-link { font-size: 0.8rem; color: var(--accent-primary); font-weight: 600; text-decoration: none; margin-top: 0.25rem; transition: opacity 0.2s; }
-    .btn-small-link:hover { opacity: 0.8; }
+    .btn-ver-todo { padding: 0.45rem 0.9rem; border-radius: 10px; background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.8rem; font-weight: 700; border: 1.5px solid rgba(133,92,214,0.15); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
+    .btn-ver-todo:hover { background: var(--accent-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(133,92,214,0.2); }
 
     /* ACTIVITY SECTION */
     .activity-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
@@ -368,13 +397,60 @@ import { NotificationService } from '../../core/services/notification.service';
     .activity-list::-webkit-scrollbar { width: 4px; }
     .activity-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 99px; }
     .activity-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem; background: #ffffff; border: 2px solid var(--glass-border); border-radius: 14px; transition: all 0.2s; }
-    .activity-item:hover { background: var(--bg-secondary); border-color: var(--accent-primary); transform: translateX(4px); }
+    .activity-item:hover { background: var(--bg-secondary); border-color: var(--glass-border); transform: translateX(4px); }
+    .activity-item.clickable { cursor: pointer; border-color: rgba(133,92,214,0.3); }
+    .activity-item.clickable:hover { background: var(--bg-secondary); border-color: var(--accent-primary); transform: translateX(4px); box-shadow: var(--shadow-sm); }
     .activity-item .activity-icon { font-size: 1.25rem; background: var(--bg-secondary); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
     .activity-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .activity-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .activity-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .activity-time { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
-    .activity-score { font-weight: 800; color: var(--accent-primary); font-size: 0.9rem; white-space: nowrap; background: rgba(133,92,214,0.1); padding: 0.25rem 0.75rem; border-radius: 99px; }
-    .activity-empty { padding: 2rem 1rem; }
+    .activity-score { font-weight: 800; color: var(--accent-primary); font-size: 0.9rem; white-space: nowrap; background: rgba(133,92,214,0.25); padding: 0.25rem 0.75rem; border-radius: 99px; }
+    .activity-right { display: flex; align-items: center; gap: 0.75rem; }
+    .clickable-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; background: var(--accent-primary); color: #fff; padding: 0.25rem 0.6rem; border-radius: 8px; opacity: 0.9; box-shadow: 0 2px 8px rgba(133,92,214,0.2); }
+    .header-title-group { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-arrow.small { 
+      width: 28px; 
+      height: 28px; 
+      font-size: 1.2rem; 
+      background: rgba(133,92,214,0.08); 
+      border: 1.5px solid rgba(133,92,214,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--accent-primary);
+      transition: all 0.2s;
+      padding: 0;
+      line-height: 1;
+    }
+    .nav-arrow.small:hover {
+      background: var(--accent-primary);
+      color: #fff;
+      transform: scale(1.1);
+    }
+    .mastery-item { padding: 0.85rem; border-radius: 12px; transition: all 0.2s; }
+    .mastery-item.clickable { cursor: pointer; }
+    .mastery-item.clickable:hover { background: rgba(133, 92, 214, 0.08); transform: translateX(4px); }
+    .mastery-top { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .mastery-icon { font-size: 1.25rem; }
+    .mastery-name { font-weight: 700; flex: 1; font-size: 0.95rem; }
+    .mastery-pct { font-weight: 800; color: var(--accent-primary); }
+    .mastery-bar-bg { height: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 0.35rem; }
+    .mastery-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .mastery-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
+    /* Streak */
+    .streak-card .metric-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    /* AI Recs Side Nav */
+    .ai-recs-card { display: flex; flex-direction: column; }
+    .ai-body-with-nav { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 1.5rem; flex: 1; position: relative; padding: 0 1rem; }
+    .ai-content-slider { flex: 1; min-width: 0; }
+    .nav-arrow-side { background: var(--bg-secondary); border: 2px solid var(--glass-border); color: var(--text-secondary); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; transition: all 0.2s; z-index: 5; flex-shrink: 0; font-size: 1.4rem; padding: 0; line-height: 1; }
+    .nav-arrow-side:hover { background: #ffffff; color: var(--accent-primary); border-color: var(--accent-primary); transform: scale(1.1); }
+    .recommendation-content.hidden { display: none; }
+    .ai-footer { padding: 1rem; display: flex; justify-content: center; border-top: 1px solid var(--glass-border); }
 
     .glass-card { background: #ffffff; border: 1.5px solid var(--glass-border); box-shadow: var(--shadow); }
 
@@ -392,33 +468,51 @@ import { NotificationService } from '../../core/services/notification.service';
   `]
 })
 export class DashboardComponent implements OnInit {
-  authService = inject(AuthService);
-  firestoreService = inject(FirestoreService);
-  dashSvc = inject(DashboardService);
-  paesContent = inject(PaesContentService);
-  router = inject(Router);
-  notificationService = inject(NotificationService);
+  public authService = inject(AuthService);
+  public firestoreService = inject(FirestoreService);
+  public dashSvc = inject(DashboardService);
+  public paesContent = inject(PaesContentService);
+  public router = inject(Router);
+  public notificationService = inject(NotificationService);
+  public adminService = inject(AdminService);
 
-  userProfile: any = null;
   mobileMenuOpen = false;
   activeRecIdx = 0;
   showProfileModal = false;
   showSettingsModal = false;
+  showHistoryModal = false;
+  currentDate = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 
-  userName = '...';
+  isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
 
-  get currentDate(): string {
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date().toLocaleDateString('es-CL', options);
-  }
+  profileInitial = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.displayName?.charAt(0).toUpperCase() || 'U';
+  });
 
-  get profileInitial(): string {
-    return this.userName?.charAt(0)?.toUpperCase() || 'U';
-  }
+  userName = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.displayName?.split(' ')[0] || 'Estudiante';
+  });
+  currentRecordIdx = 0;
+  displayedRecord: any = null;
 
-  get isProPlan(): boolean {
-    const plan = this.userProfile?.plan || this.userProfile?.subscription?.tier;
-    return plan === 'premium' || plan === 'pro';
+  recordSubjects = [
+    { id: 'all', name: 'Último puntaje más alto' },
+    { id: 'comp-lectora', name: 'Competencia Lectora' },
+    { id: 'mat1', name: 'Matemática M1' },
+    { id: 'mat2', name: 'Matemática M2' },
+    { id: 'ciencias-biologia', name: 'Biología' },
+    { id: 'ciencias-fisica', name: 'Física' },
+    { id: 'ciencias-quimica', name: 'Química' },
+    { id: 'ciencias-tp', name: 'Ciencias T.P.' },
+    { id: 'historia', name: 'Historia y Cs. Sociales' }
+  ];
+
+  constructor() {
+    effect(() => {
+      this.updateRecordDisplay();
+    });
   }
 
   getMasteryColor(pct: number): string {
@@ -429,60 +523,88 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Escuchar cambios de perfil de forma reactiva y permanente
+    this.firestoreService.getUserProfile().subscribe();
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
-        if (profile) {
-          this.userProfile = profile;
-          this.userName = profile.displayName?.split(' ')[0] || 'Usuario';
-          
-          // Guardar perfil (sync inicial si es necesario)
-          this.firestoreService.saveUserProfile({}).catch(() => {});
-
-          // Iniciar recordatorios si están habilitados
-          if (profile.notificationsEnabled) {
-            this.notificationService.startReminders({
-              preferredStudyTime: profile.preferredStudyTime || 'tarde',
-              notificationIntensity: profile.notificationIntensity || 'normal',
-              notificationsEnabled: true,
-            });
-          }
-        } else {
-          // Si no hay perfil en Firestore, intentamos sacar el nombre de Auth como último recurso
-          const authUser = this.authService.currentUser;
-          if (authUser) {
-            this.userName = authUser.displayName?.split(' ')[0] || 'Usuario';
-          } else {
-            this.userName = 'Estudiante';
-          }
+        if (profile && profile.notificationsEnabled) {
+          this.notificationService.startReminders({
+            preferredStudyTime: profile.preferredStudyTime || 'tarde',
+            notificationIntensity: profile.notificationIntensity || 'normal',
+            notificationsEnabled: true,
+          });
         }
-      },
-      error: (err) => {
-        console.error('[Dashboard] Error cargando perfil:', err);
-        this.userName = 'Estudiante';
       }
     });
   }
 
   onProfileModalClose() {
     this.showProfileModal = false;
-    // Refresh profile data
-    this.firestoreService.getUserProfile().subscribe({
-      next: (profile) => {
-        if (profile) {
-          this.userProfile = profile;
-          this.userName = profile.displayName?.split(' ')[0] || 'Estudiante';
-        }
-      }
-    });
+    this.firestoreService.getUserProfile().subscribe();
   }
 
   onSettingsModalClose() {
     this.showSettingsModal = false;
   }
 
-  async logout() {
-    await firstValueFrom(this.authService.logout());
-    this.router.navigate(['/']);
+  updateRecordDisplay() {
+    const allRecords = this.dashSvc.paesRecords();
+    if (allRecords.length === 0) {
+      this.displayedRecord = null;
+      return;
+    }
+
+    const currentSubjectId = this.recordSubjects[this.currentRecordIdx].id;
+
+    if (currentSubjectId === 'all') {
+      this.displayedRecord = this.dashSvc.bestPaesRecord();
+    } else {
+      const subjectRecords = allRecords.filter(r => r.subject === currentSubjectId || r.subject === currentSubjectId.replace('ciencias-', ''));
+      if (subjectRecords.length === 0) {
+        this.displayedRecord = null;
+      } else {
+        this.displayedRecord = subjectRecords.reduce((best, r) => r.correctAnswers > best.correctAnswers ? r : best, subjectRecords[0]);
+      }
+    }
   }
+
+  getSubjectName(id: string): string {
+    return this.recordSubjects.find(s => s.id === id || s.id.replace('ciencias-', '') === id)?.name || id;
+  }
+
+  nextRecordSubject() {
+    this.currentRecordIdx = (this.currentRecordIdx + 1) % this.recordSubjects.length;
+    this.updateRecordDisplay();
+  }
+
+  prevRecordSubject() {
+    this.currentRecordIdx = (this.currentRecordIdx - 1 + this.recordSubjects.length) % this.recordSubjects.length;
+    this.updateRecordDisplay();
+  }
+
+  nextRecommendation() {
+    const len = this.dashSvc.recommendations().length;
+    this.activeRecIdx = (this.activeRecIdx + 1) % len;
+  }
+
+  prevRecommendation() {
+    const len = this.dashSvc.recommendations().length;
+    this.activeRecIdx = (this.activeRecIdx - 1 + len) % len;
+  }
+
+  setRecordSubject(idx: number) {
+    this.currentRecordIdx = idx;
+    this.updateRecordDisplay();
+  }
+
+  onActivityClick(act: any) {
+    if (act.type === 'ensayo') {
+      const ensayoId = act.ensayoId || act.id.match(/^ensayo-(.+?)-\d+$/)?.[1];
+      if (ensayoId) {
+        this.router.navigate(['/ensayo', ensayoId, 'review'], {
+          queryParams: { intento: act.intentoId }
+        });
+      }
+    }
+  }
+
 }

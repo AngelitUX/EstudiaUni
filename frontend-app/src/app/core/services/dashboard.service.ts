@@ -15,7 +15,9 @@ export interface ActivityEntry {
   score?: number;         // porcentaje para lecciones, puntaje para ensayos
   totalCorrect?: number;
   totalQuestions?: number;
-  timestamp: string;       // ISO string
+  timestamp: any;       // ISO string or Firestore Timestamp
+  ensayoId?: string;      // ID del ensayo original
+  intentoId?: string;     // ID del intento en Firestore
 }
 
 export interface SubjectMastery {
@@ -34,7 +36,7 @@ export interface PaesRecord {
   correctAnswers: number;
   totalQuestions: number;
   score: number;           // puntaje calculado tipo PAES
-  timestamp: string;
+  timestamp: any;
 }
 
 export interface AIRecommendation {
@@ -47,15 +49,16 @@ export interface AIRecommendation {
   type: 'leccion' | 'ensayo' | 'repaso';
 }
 
-const STORAGE_KEY_ACTIVITIES = 'estudiauni_activities';
-const STORAGE_KEY_STREAK = 'estudiauni_streak';
-const STORAGE_KEY_PAES_RECORDS = 'estudiauni_paes_records';
+function storageKeyActivities(uid: string) { return `estudiauni_activities_${uid}`; }
+function storageKeyStreak(uid: string) { return `estudiauni_streak_${uid}`; }
+function storageKeyPaesRecords(uid: string) { return `estudiauni_paes_records_${uid}`; }
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private paesContent = inject(PaesContentService);
   private firestoreService = inject(FirestoreService);
   private auth = inject(Auth);
+  private currentUid: string | null = null;
 
   // ─── Signals ───
   private _activities = signal<ActivityEntry[]>([]);
@@ -195,9 +198,26 @@ export class DashboardService {
   });
 
   constructor() {
-    this.loadFromStorage();
-    this.recalculateStreak();
-    this.syncWithFirebase();
+    // Subscribe to auth state changes to load/clear user-specific data
+    this.auth.onAuthStateChanged((user) => {
+      if (user && user.uid !== this.currentUid) {
+        this.currentUid = user.uid;
+        this.clearSignals();
+        this.loadFromStorage();
+        this.recalculateStreak();
+        this.syncWithFirebase();
+      } else if (!user) {
+        this.currentUid = null;
+        this.clearSignals();
+      }
+    });
+  }
+
+  private clearSignals(): void {
+    this._activities.set([]);
+    this._streakDays.set(0);
+    this._lastStudyDate.set(null);
+    this._paesRecords.set([]);
   }
 
   /** Sincronizar datos iniciales desde Firebase */
@@ -267,6 +287,7 @@ export class DashboardService {
     correctAnswers: number;
     totalQuestions: number;
     score: number;
+    intentoId?: string;
   }): void {
     // Activity entry
     const entry: ActivityEntry = {
@@ -279,6 +300,8 @@ export class DashboardService {
       totalCorrect: data.correctAnswers,
       totalQuestions: data.totalQuestions,
       timestamp: new Date().toISOString(),
+      ensayoId: data.ensayoId,
+      intentoId: data.intentoId,
     };
 
     const currentActivities = this._activities();
@@ -357,9 +380,27 @@ export class DashboardService {
 
   // ─── Helpers ───
 
-  getRelativeTime(isoString: string): string {
+  getRelativeTime(timestamp: any): string {
+    if (!timestamp) return '---';
+    
+    let date: Date;
+    if (timestamp instanceof Date) {
+      date = timestamp;
+    } else if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else if (timestamp && typeof timestamp.toDate === 'function') {
+      // Handle Firestore Timestamp
+      date = timestamp.toDate();
+    } else if (timestamp && timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      return 'Fecha inválida';
+    }
+
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+
     const now = Date.now();
-    const then = new Date(isoString).getTime();
+    const then = date.getTime();
     const diffMs = now - then;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
@@ -370,7 +411,7 @@ export class DashboardService {
     if (diffHours < 24) return `Hace ${diffHours}h`;
     if (diffDays === 1) return 'Ayer';
     if (diffDays < 7) return `Hace ${diffDays} días`;
-    return new Date(isoString).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
   }
 
   private getSubjectIcon(subject: string): string {
@@ -395,31 +436,33 @@ export class DashboardService {
   // ─── Persistence ───
 
   private saveToStorage(): void {
+    if (!this.currentUid) return;
     try {
-      localStorage.setItem(STORAGE_KEY_ACTIVITIES, JSON.stringify(this._activities()));
-      localStorage.setItem(STORAGE_KEY_STREAK, JSON.stringify({
+      localStorage.setItem(storageKeyActivities(this.currentUid), JSON.stringify(this._activities()));
+      localStorage.setItem(storageKeyStreak(this.currentUid), JSON.stringify({
         days: this._streakDays(),
         lastDate: this._lastStudyDate()
       }));
-      localStorage.setItem(STORAGE_KEY_PAES_RECORDS, JSON.stringify(this._paesRecords()));
+      localStorage.setItem(storageKeyPaesRecords(this.currentUid), JSON.stringify(this._paesRecords()));
     } catch { /* ignore quota errors */ }
   }
 
   private loadFromStorage(): void {
+    if (!this.currentUid) return;
     try {
-      const activitiesRaw = localStorage.getItem(STORAGE_KEY_ACTIVITIES);
+      const activitiesRaw = localStorage.getItem(storageKeyActivities(this.currentUid));
       if (activitiesRaw) {
         this._activities.set(JSON.parse(activitiesRaw));
       }
 
-      const streakRaw = localStorage.getItem(STORAGE_KEY_STREAK);
+      const streakRaw = localStorage.getItem(storageKeyStreak(this.currentUid));
       if (streakRaw) {
         const streak = JSON.parse(streakRaw);
         this._streakDays.set(streak.days || 0);
         this._lastStudyDate.set(streak.lastDate || null);
       }
 
-      const recordsRaw = localStorage.getItem(STORAGE_KEY_PAES_RECORDS);
+      const recordsRaw = localStorage.getItem(storageKeyPaesRecords(this.currentUid));
       if (recordsRaw) {
         this._paesRecords.set(JSON.parse(recordsRaw));
       }

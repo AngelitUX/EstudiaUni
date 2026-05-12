@@ -130,25 +130,21 @@ a {
 
 /* Toast Animations */
 @keyframes slideInRight {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(400px); opacity: 0; }
 }
 
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(400px);
-    opacity: 0;
-  }
+@keyframes slideInTop {
+  from { transform: translateY(-40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideOutTop {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-40px); opacity: 0; }
 }
 
 @keyframes fadeIn {
@@ -159,3 +155,54 @@ a {
 .animate-fade-in {
   animation: fadeIn 0.8s ease forwards;
 }
+
+/* Accessibility Globals */
+body.dyslexia-font {
+  --font-body: 'Comic Sans MS', 'OpenDyslexic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  --font-heading: 'Comic Sans MS', 'OpenDyslexic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+body.high-contrast {
+  --bg-color: #000000 !important;
+  --bg-secondary: #111111 !important;
+  --text-primary: #ffffff !important;
+  --text-secondary: #dddddd !important;
+  --text-muted: #aaaaaa !important;
+  --glass-border: #ffffff !important;
+  --section-border: #ffffff !important;
+  --accent-primary: #ffeb3b !important;
+  --gradient-brand: none !important;
+  color: #ffffff !important;
+  background-color: #000000 !important;
+}
+body.high-contrast .glass-card, 
+body.high-contrast .metric-card, 
+body.high-contrast .activity-card, 
+body.high-contrast .recent-activity, 
+body.high-contrast .section-block {
+  background-color: #000000 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+}
+body.high-contrast .text-gradient {
+  background: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+body.font-large {
+  font-size: 1.15rem !important;
+}
+body.font-large h1 { font-size: 3.2rem !important; }
+body.font-large h2 { font-size: 1.8rem !important; }
+body.font-large h3 { font-size: 1.5rem !important; }
+body.font-large p { font-size: 1.25rem !important; }
+body.font-large .nav-item { font-size: 1.2rem !important; }
+
+body.font-xlarge {
+  font-size: 1.3rem !important;
+}
+body.font-xlarge h1 { font-size: 3.5rem !important; }
+body.font-xlarge h2 { font-size: 2rem !important; }
+body.font-xlarge h3 { font-size: 1.6rem !important; }
+body.font-xlarge p { font-size: 1.4rem !important; }
+body.font-xlarge .nav-item { font-size: 1.35rem !important; }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { SoundService } from '../../core/services/sound.service';
 
 @Component({
   selector: 'app-settings-modal',
@@ -18,12 +19,12 @@ import { NotificationService } from '../../core/services/notification.service';
         </div>
         <div class="modal-scroll">
           <div class="section-block">
-            <div class="section-header"><h3>Objetivo académico</h3><p>Define tu meta para personalizar recomendaciones.</p></div>
-            <div class="grid">
-              <label>Carrera objetivo<input [(ngModel)]="settingsForm.targetCareer" type="text" maxlength="80" placeholder="Ej: Ingeniería"/></label>
-              <label>Universidad objetivo<input [(ngModel)]="settingsForm.targetUniversity" type="text" maxlength="80" placeholder="Ej: U. de Chile"/></label>
-              <label>Fecha meta de prueba<input [(ngModel)]="settingsForm.targetExamDate" type="date"/></label>
-              <label>Meta diaria (min)<input [(ngModel)]="settingsForm.studyGoalMinutesPerDay" type="number" min="10" max="240"/></label>
+            <div class="section-header"><h3>Ruta de Aprendizaje</h3><p>Selecciona las materias que quieres ver en tu ruta.</p></div>
+            <div class="grid subjects-grid">
+              <label class="switch" *ngFor="let subject of subjectsList">
+                <input type="checkbox" [checked]="isSubjectSelected(subject.id)" (change)="toggleSubject(subject.id)"/>
+                <span>{{ subject.name }}</span>
+              </label>
             </div>
           </div>
           <div class="section-block">
@@ -64,6 +65,22 @@ import { NotificationService } from '../../core/services/notification.service';
               <span class="status-dot" [class.granted]="notifPermissionGranted" [class.denied]="!notifPermissionGranted"></span>
               <span>{{ notifPermissionGranted ? 'Notificaciones permitidas ✓' : 'Permiso de notificaciones pendiente' }}</span>
               <button *ngIf="!notifPermissionGranted" class="btn-request-perm" (click)="requestNotifPermission()">Permitir</button>
+            </div>
+          </div>
+          <div class="section-block">
+            <div class="section-header"><h3>Accesibilidad</h3><p>Adapta la plataforma a tus necesidades visuales y cognitivas.</p></div>
+            <div class="grid">
+              <label class="switch">
+                <input [(ngModel)]="settingsForm.dyslexiaFont" type="checkbox" (change)="applyAccessibility()"/>
+                <span>Fuente para dislexia</span>
+              </label>
+              <label>Tamaño de fuente
+                <select [(ngModel)]="settingsForm.fontSize" (change)="applyAccessibility()">
+                  <option value="normal">Normal</option>
+                  <option value="large">Grande</option>
+                  <option value="xlarge">Extra grande</option>
+                </select>
+              </label>
             </div>
           </div>
           <div class="action-bar">
@@ -112,6 +129,7 @@ export class SettingsModalComponent implements OnInit {
   private readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly notificationService = inject(NotificationService);
+  private readonly soundSvc = inject(SoundService);
 
   @Output() close = new EventEmitter<void>();
 
@@ -120,29 +138,37 @@ export class SettingsModalComponent implements OnInit {
   notifPermissionGranted = false;
 
   settingsForm = {
-    targetCareer: '',
-    targetUniversity: '',
-    targetExamDate: '',
-    studyGoalMinutesPerDay: 45,
+    selectedSubjects: [] as string[],
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
     theme: 'dark' as 'dark' | 'light' | 'auto',
     notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
+    dyslexiaFont: false,
+    fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
   };
+
+  subjectsList = [
+    { id: 'comp-lectora', name: 'Competencia Lectora' },
+    { id: 'mat1', name: 'Matemática M1' },
+    { id: 'historia', name: 'Historia y Cs. Sociales' },
+    { id: 'ciencias-tp', name: 'Ciencias T.P.' },
+    { id: 'ciencias-biologia', name: 'Biología' },
+    { id: 'ciencias-fisica', name: 'Física' },
+    { id: 'ciencias-quimica', name: 'Química' }
+  ];
 
   ngOnInit(): void {
     this.notifPermissionGranted = this.notificationService.isNotificationPermissionGranted();
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
-          this.settingsForm.targetCareer = profile.targetCareer || '';
-          this.settingsForm.targetUniversity = profile.targetUniversity || '';
-          this.settingsForm.targetExamDate = profile.targetExamDate || '';
-          this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
+          this.settingsForm.selectedSubjects = profile.selectedSubjects || this.subjectsList.map(s => s.id);
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
           this.settingsForm.theme = profile.theme || 'dark';
           this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
+          this.settingsForm.dyslexiaFont = profile.dyslexiaFont || false;
+          this.settingsForm.fontSize = profile.fontSize || 'normal';
         }
         this.loading = false;
       },
@@ -152,13 +178,36 @@ export class SettingsModalComponent implements OnInit {
 
   closeModal() { this.close.emit(); }
 
+  isSubjectSelected(id: string): boolean {
+    return this.settingsForm.selectedSubjects.includes(id);
+  }
+
+  toggleSubject(id: string) {
+    this.soundSvc.playToggle();
+    if (this.isSubjectSelected(id)) {
+      this.settingsForm.selectedSubjects = this.settingsForm.selectedSubjects.filter(s => s !== id);
+    } else {
+      this.settingsForm.selectedSubjects.push(id);
+    }
+  }
+
   async requestNotifPermission() {
     this.notifPermissionGranted = await this.notificationService.requestPermission();
     if (this.notifPermissionGranted) this.toast.success('Notificaciones permitidas');
     else this.toast.error('No se pudo obtener permiso de notificaciones');
   }
 
+  applyAccessibility() {
+    this.soundSvc.playToggle();
+    const classList = document.body.classList;
+    if (this.settingsForm.dyslexiaFont) classList.add('dyslexia-font'); else classList.remove('dyslexia-font');
+    classList.remove('font-large', 'font-xlarge');
+    if (this.settingsForm.fontSize === 'large') classList.add('font-large');
+    else if (this.settingsForm.fontSize === 'xlarge') classList.add('font-xlarge');
+  }
+
   onNotificationsToggle(): void {
+    this.soundSvc.playToggle();
     if (this.settingsForm.notificationsEnabled) {
       this.notificationService.startReminders({
         preferredStudyTime: this.settingsForm.preferredStudyTime,
@@ -176,14 +225,13 @@ export class SettingsModalComponent implements OnInit {
     this.saving = true;
     try {
       await this.firestoreService.updateProfileSettings({
-        targetCareer: this.settingsForm.targetCareer.trim(),
-        targetUniversity: this.settingsForm.targetUniversity.trim(),
-        targetExamDate: this.settingsForm.targetExamDate || null,
-        studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
+        selectedSubjects: this.settingsForm.selectedSubjects,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
         theme: this.settingsForm.theme,
         notificationIntensity: this.settingsForm.notificationIntensity,
+        dyslexiaFont: this.settingsForm.dyslexiaFont,
+        fontSize: this.settingsForm.fontSize,
       });
       // Restart reminders with new config after saving
       if (this.settingsForm.notificationsEnabled) {

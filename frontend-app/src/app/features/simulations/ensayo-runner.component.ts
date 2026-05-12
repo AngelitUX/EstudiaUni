@@ -1515,19 +1515,22 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       this.answers[q.id] === q.correctAnswer
     ).length;
     
-    // Log to dashboard service
-    try {
-      const firstQuestion = this.questions[0];
-      this.dashboardService.logEnsayoCompleted({
-        ensayoId: this.examId,
-        ensayoTitle: this.examTitle,
-        subject: firstQuestion?.subject || 'general',
-        correctAnswers,
-        totalQuestions: this.totalQuestions,
-        score: Math.round(100 + (correctAnswers / Math.max(this.totalQuestions, 1)) * 900),
-      });
-    } catch (err) { 
-      console.warn('[EnsayoRunner] Error logging to dashboard:', err);
+    // Log to dashboard service only if it is a real (unassisted) exam
+    if (!this.isAssisted) {
+      try {
+        const subject = this.getSubjectFromExamId(this.examId);
+        this.dashboardService.logEnsayoCompleted({
+          ensayoId: this.examId,
+          ensayoTitle: this.examTitle,
+          subject,
+          correctAnswers,
+          totalQuestions: this.totalQuestions,
+          score: Math.round(100 + (correctAnswers / Math.max(this.totalQuestions, 1)) * 900),
+          intentoId: this.intentoId || undefined,
+        });
+      } catch (err) { 
+        console.warn('[EnsayoRunner] Error logging to dashboard:', err);
+      }
     }
     
     // Finalizar intento en Firestore
@@ -1744,5 +1747,20 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   // Single global key: only ONE assisted exam can be in-progress at a time
   private get storageKey(): string {
     return 'estudiauni_active_asistido';
+  }
+
+  /** Derive the dashboard subject ID from the exam ID */
+  private getSubjectFromExamId(examId: string): string {
+    const id = examId.toLowerCase();
+    if (id.includes('ciencias-tp') || id.includes('ciencias_tp') || id.includes('tp')) return 'ciencias-tp';
+    if (id.includes('ciencias-biologia') || id.includes('biologia') || id.includes('bio')) return 'ciencias-biologia';
+    if (id.includes('ciencias-fisica') || id.includes('fisica') || id.includes('fis')) return 'ciencias-fisica';
+    if (id.includes('ciencias-quimica') || id.includes('quimica') || id.includes('qui')) return 'ciencias-quimica';
+    if (id.includes('ciencias')) return 'ciencias-tp'; // generic ciencias fallback
+    if (id.startsWith('l-') || id.includes('lectora') || id.includes('lenguaje')) return 'comp-lectora';
+    if (id.includes('m2')) return 'mat2';
+    if (id.includes('m1')) return 'mat1';
+    if (id.includes('historia')) return 'historia';
+    return 'general';
   }
 }

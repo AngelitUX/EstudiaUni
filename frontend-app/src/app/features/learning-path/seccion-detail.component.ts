@@ -9,6 +9,8 @@ import { PaesContentService } from './services/paes-content.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="sec-page" *ngIf="seccion() as sec">
+      <!-- EXIT BUTTON -->
+      <button class="btn-exit-top" (click)="goBackPath()" title="Salir">✕</button>
       <!-- BREADCRUMB -->
       <nav class="breadcrumb">
         <a routerLink="/dashboard">🏠</a>
@@ -121,6 +123,31 @@ import { PaesContentService } from './services/paes-content.service';
     .btn-back-text { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; padding: 0; margin-top: 1rem; }
     .btn-back-text:hover { color: var(--accent-primary); }
 
+    .btn-exit-top {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.06);
+      background: #fff;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 100;
+    }
+    .btn-exit-top:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background: rgba(239,68,68,0.05);
+      transform: scale(1.1);
+    }
+
     @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes ctaBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     @keyframes testPulse { 0%, 100% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 10px rgba(133,92,214,0); } }
@@ -156,6 +183,10 @@ export class SeccionDetailComponent {
 
   goToTest() {
     this.router.navigate(['/test', this.seccionId()]);
+  }
+
+  goBackPath() {
+    this.router.navigate(['/ruta', this.materiaId()]);
   }
 
   highlightBold(text: string): string {
