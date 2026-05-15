@@ -9,6 +9,7 @@ import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } 
 export interface ActivityEntry {
   id: string;
   type: 'leccion' | 'ensayo';
+  mode?: 'real' | 'asistido';
   title: string;
   subject: string;
   subjectIcon: string;
@@ -36,6 +37,7 @@ export interface PaesRecord {
   correctAnswers: number;
   totalQuestions: number;
   score: number;           // puntaje calculado tipo PAES
+  mode: 'real' | 'asistido';
   timestamp: any;
 }
 
@@ -63,19 +65,31 @@ export class DashboardService {
   // ─── Signals ───
   private _activities = signal<ActivityEntry[]>([]);
   private _streakDays = signal<number>(0);
+  private _superStreakDays = signal<number>(0);
   private _lastStudyDate = signal<string | null>(null);
+  private _lastSuperStudyDate = signal<string | null>(null);
   private _paesRecords = signal<PaesRecord[]>([]);
 
   // ─── Readonly accessors ───
   readonly activities = this._activities.asReadonly();
   readonly streakDays = this._streakDays.asReadonly();
+  readonly superStreakDays = this._superStreakDays.asReadonly();
   readonly paesRecords = this._paesRecords.asReadonly();
 
   // ─── Computed: Best PAES record ───
   readonly bestPaesRecord = computed<PaesRecord | null>(() => {
     const records = this._paesRecords();
     if (records.length === 0) return null;
-    return records.reduce((best, r) => r.correctAnswers > best.correctAnswers ? r : best, records[0]);
+    return records.reduce((best, r) => {
+      if (r.correctAnswers > best.correctAnswers) return r;
+      if (r.correctAnswers === best.correctAnswers) {
+        // If tied, take the most recent
+        const timeR = new Date(r.timestamp).getTime();
+        const timeB = new Date(best.timestamp).getTime();
+        return timeR > timeB ? r : best;
+      }
+      return best;
+    }, records[0]);
   });
 
   // ─── Computed: Subject Mastery (only subjects with at least 1 completed lesson) ───
@@ -216,7 +230,9 @@ export class DashboardService {
   private clearSignals(): void {
     this._activities.set([]);
     this._streakDays.set(0);
+    this._superStreakDays.set(0);
     this._lastStudyDate.set(null);
+    this._lastSuperStudyDate.set(null);
     this._paesRecords.set([]);
   }
 
@@ -268,6 +284,7 @@ export class DashboardService {
     const current = this._activities();
     this._activities.set([entry, ...current].slice(0, 50)); // Keep last 50
     this.updateStreak();
+    this.updateSuperStreak();
     this.saveToStorage();
 
     // Persistir en Firebase
@@ -287,12 +304,14 @@ export class DashboardService {
     correctAnswers: number;
     totalQuestions: number;
     score: number;
+    mode: 'real' | 'asistido';
     intentoId?: string;
   }): void {
     // Activity entry
     const entry: ActivityEntry = {
       id: `ensayo-${data.ensayoId}-${Date.now()}`,
       type: 'ensayo',
+      mode: data.mode,
       title: data.ensayoTitle,
       subject: data.subject,
       subjectIcon: this.getSubjectIcon(data.subject),
@@ -315,6 +334,7 @@ export class DashboardService {
       correctAnswers: data.correctAnswers,
       totalQuestions: data.totalQuestions,
       score: data.score,
+      mode: data.mode,
       timestamp: new Date().toISOString(),
     };
 
@@ -322,6 +342,7 @@ export class DashboardService {
     this._paesRecords.set([record, ...currentRecords].slice(0, 20));
 
     this.updateStreak();
+    this.updateSuperStreak();
     this.saveToStorage();
 
     // Persistir en Firebase
@@ -374,8 +395,57 @@ export class DashboardService {
     if (lastDate !== today && lastDate !== yesterday) {
       // More than 1 day without studying, reset
       this._streakDays.set(0);
-      this.saveToStorage();
     }
+
+    const lastSuperDate = this._lastSuperStudyDate();
+    if (!lastSuperDate) {
+      this._superStreakDays.set(0);
+    } else {
+      if (lastSuperDate !== today && lastSuperDate !== yesterday) {
+        this._superStreakDays.set(0);
+      }
+    }
+
+    this.saveToStorage();
+  }
+
+  private updateSuperStreak(): void {
+    const today = this.getDateString(new Date());
+    const lastDate = this._lastSuperStudyDate();
+
+    if (lastDate === today) return; // Already gained super streak today
+
+    // Evaluate today's activities
+    const todayActivities = this._activities().filter(a => {
+      const actDateStr = this.getDateString(new Date(a.timestamp));
+      return actDateStr === today;
+    });
+
+    let meetsCondition = false;
+
+    // Cond: 1 leccion de cada materia activa
+    const activeMaterias = this.paesContent.allMaterias().filter(m => m.isActive).map(m => m.id);
+    const todayLeccionSubjects = new Set(todayActivities.filter(a => a.type === 'leccion').map(a => a.subject));
+    const hasAllMaterias = activeMaterias.length > 0 && activeMaterias.every(m => todayLeccionSubjects.has(m));
+
+    if (hasAllMaterias) {
+      meetsCondition = true;
+    }
+
+    if (!meetsCondition) return;
+
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = this.getDateString(yesterdayDate);
+
+    if (lastDate === yesterday) {
+      this._superStreakDays.update(s => s + 1);
+    } else {
+      this._superStreakDays.set(1);
+    }
+
+    this._lastSuperStudyDate.set(today);
+    this.saveToStorage();
   }
 
   // ─── Helpers ───
@@ -441,7 +511,9 @@ export class DashboardService {
       localStorage.setItem(storageKeyActivities(this.currentUid), JSON.stringify(this._activities()));
       localStorage.setItem(storageKeyStreak(this.currentUid), JSON.stringify({
         days: this._streakDays(),
-        lastDate: this._lastStudyDate()
+        lastDate: this._lastStudyDate(),
+        superDays: this._superStreakDays(),
+        lastSuperDate: this._lastSuperStudyDate()
       }));
       localStorage.setItem(storageKeyPaesRecords(this.currentUid), JSON.stringify(this._paesRecords()));
     } catch { /* ignore quota errors */ }
@@ -460,6 +532,8 @@ export class DashboardService {
         const streak = JSON.parse(streakRaw);
         this._streakDays.set(streak.days || 0);
         this._lastStudyDate.set(streak.lastDate || null);
+        this._superStreakDays.set(streak.superDays || 0);
+        this._lastSuperStudyDate.set(streak.lastSuperDate || null);
       }
 
       const recordsRaw = localStorage.getItem(storageKeyPaesRecords(this.currentUid));

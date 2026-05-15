@@ -1526,6 +1526,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
           correctAnswers,
           totalQuestions: this.totalQuestions,
           score: Math.round(100 + (correctAnswers / Math.max(this.totalQuestions, 1)) * 900),
+          mode: 'real',
           intentoId: this.intentoId || undefined,
         });
       } catch (err) { 
