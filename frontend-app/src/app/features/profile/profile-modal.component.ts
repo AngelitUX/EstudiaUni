@@ -28,16 +28,18 @@ import { SoundService } from '../../core/services/sound.service';
         <div class="modal-scroll">
           <div class="profile-shell">
             <aside class="profile-sidebar">
-              <div class="avatar-wrap clickable" (click)="photoInput.click()" title="Cambiar foto de perfil">
-                <img *ngIf="profileForm.photoURL; else avatarFallback" [src]="profileForm.photoURL" class="avatar" alt="Foto de perfil"/>
-                <ng-template #avatarFallback><div class="avatar fallback">{{ initial }}</div></ng-template>
+              <div class="avatar-container">
+                <div class="avatar-wrap clickable" (click)="photoInput.click()" title="Cambiar foto de perfil">
+                  <img *ngIf="profileForm.photoURL; else avatarFallback" [src]="profileForm.photoURL" class="avatar" alt="Foto de perfil"/>
+                  <ng-template #avatarFallback><div class="avatar fallback">{{ initial }}</div></ng-template>
+                  <div class="avatar-overlay">
+                    <span>Cambiar foto</span>
+                  </div>
+                  <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;"/>
+                </div>
                 <div class="emoji-pill clickable" (click)="$event.stopPropagation(); showEmojiPicker = true" title="Cambiar emote">
                   {{ profileForm.profileEmoji || '✨' }}
                 </div>
-                <div class="avatar-overlay">
-                  <span>Cambiar foto</span>
-                </div>
-                <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;"/>
               </div>
               <div class="profile-summary">
                 <div class="name-edit-wrap">
@@ -67,10 +69,6 @@ import { SoundService } from '../../core/services/sound.service';
               </div>
               
               <div class="sidebar-spacer"></div>
-
-              <button class="logout-profile-btn" (click)="logout()">
-                <span class="icon">🚪</span> Cerrar Sesión
-              </button>
             </aside>
             <div class="profile-main">
               <div class="section-block">
@@ -163,6 +161,27 @@ import { SoundService } from '../../core/services/sound.service';
           </div>
       </div>
     </div>
+
+    <!-- CUSTOM LOGOUT CONFIRMATION -->
+    <div class="logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
+      <div class="logout-confirm-modal glass" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h2>Cerrar Sesión</h2>
+          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+        </div>
+        <div class="confirm-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">🚪</div>
+            <h3>¿Estás seguro de que quieres salir?</h3>
+            <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
+          </div>
+        </div>
+        <div class="confirm-footer">
+          <button class="btn-cancel" (click)="showLogoutConfirm = false">Cancelar</button>
+          <button class="btn-logout-final" (click)="executeLogout()">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .modal-overlay{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:fadeOverlay .25s ease}
@@ -191,12 +210,13 @@ import { SoundService } from '../../core/services/sound.service';
     .profile-subtitle{margin:0;color:var(--text-secondary);font-size:.9rem;line-height:1.5;font-weight:500}
     .admin-badge{display:inline-block;margin-top:.5rem;background:#fee2e2;border:2px solid #fecaca;color:#dc2626;padding:.35rem .75rem;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;transition:all .2s}
     .admin-badge:hover{background:#fecaca;transform:translateY(-2px)}
-    .avatar-wrap{position:relative;width:100px;height:100px;flex-shrink:0;cursor:pointer;overflow:visible}
+    .avatar-container{position:relative;width:100px;height:100px}
+    .avatar-wrap{position:relative;width:100px;height:100px;flex-shrink:0;cursor:pointer;overflow:hidden;border-radius:50%}
     .avatar-wrap:hover .avatar-overlay{opacity:1}
     .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:white;font-size:0.85rem;font-weight:800;text-align:center;padding:0.5rem;line-height:1.2}
     .avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid var(--accent-primary);box-shadow:0 0 15px rgba(133,92,214,0.2)}
     .avatar.fallback{display:grid;place-items:center;background:linear-gradient(135deg,#855cd6,#6b46b8);font-size:2rem;font-weight:700}
-    .emoji-pill{position:absolute;right:-4px;bottom:-4px;background:#111827;border:1.5px solid rgba(255,255,255,0.2);border-radius:999px;padding:.2rem .45rem;font-size:.95rem;line-height:1;z-index:2;animation:emote-swing 2s ease-in-out infinite;transform-origin:center bottom}
+    .emoji-pill{position:absolute;right:0;bottom:0;background:#111827;border:1.5px solid rgba(255,255,255,0.2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;z-index:2;animation:emote-swing 2s ease-in-out infinite;transform-origin:center bottom}
     @keyframes emote-swing{
       0%,100%{transform:rotate(-8deg)}
       50%{transform:rotate(8deg)}
@@ -211,7 +231,27 @@ import { SoundService } from '../../core/services/sound.service';
     .sidebar-field{width:100%;margin-bottom:0.85rem;text-align:left;font-size:0.85rem;color:var(--text-secondary);font-weight:600}
     .sidebar-select{width:100%;margin-top:0.35rem;padding:0.45rem;border-radius:8px;border:1.5px solid var(--glass-border);background:white;font-size:0.85rem;font-weight:600;color:var(--text-primary);cursor:pointer}
     .logout-profile-btn{margin-top:auto;width:100%;padding:.75rem;border-radius:12px;border:2px solid rgba(239,68,68,0.45);background:rgba(239,68,68,0.05);color:#ef4444;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.6rem;transition:all .2s}
-    .logout-profile-btn:hover{background:#ef4444;color:#fff;border-color:#ef4444;transform:translateY(-2px);box-shadow:0 4px 12px rgba(239,68,68,0.25)}
+    .logout-profile-btn:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; transform: translateY(-1px); }
+
+    /* LOGOUT CONFIRMATION */
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 10000; animation: fadeIn .2s ease; }
+    .logout-confirm-modal { width: min(420px, 90vw); background: #ffffff; border-radius: 24px; border: 2px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.25); animation: slideUp .3s cubic-bezier(.16,1,.3,1); overflow: hidden; }
+    .confirm-header { padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .confirm-header h2 { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary); }
+    .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+    .confirm-body { padding: 2rem 1.5rem; }
+    .confirm-content { text-align: center; }
+    .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; font-weight: 800; }
+    .confirm-content p { margin: 0; color: var(--text-secondary); font-weight: 500; }
+    .confirm-footer { padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--glass-border); background: var(--bg-secondary); }
+    .btn-cancel { padding: 0.85rem; border-radius: 12px; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel:hover { background: var(--bg-secondary); }
+    .btn-logout-final { padding: 0.85rem; border-radius: 12px; border: none; background: #ef4444; color: #ffffff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239,68,68,0.25); }
+    .btn-logout-final:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
     .logout-profile-btn .icon{font-size:1.1rem}
     .profile-main{display:flex;flex-direction:column;gap:1.2rem}
     .section-block{background:var(--bg-color);border:2px solid var(--glass-border);border-radius:16px;padding:1rem;display:flex;flex-direction:column;gap:.85rem}
@@ -311,6 +351,7 @@ export class ProfileModalComponent implements OnInit {
   loading = true;
   saving = false;
   showEmojiPicker = false;
+  showLogoutConfirm = false;
   showImageEditor = false;
   shakeSaveButton = false;
   isEditingName = false;
@@ -452,12 +493,15 @@ export class ProfileModalComponent implements OnInit {
     }
   }
 
-  async logout() {
-    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-      await this.authService.logout().toPromise();
-      this.closeModal();
-      this.router.navigate(['/login']);
-    }
+  logout() {
+    this.showLogoutConfirm = true;
+  }
+
+  async executeLogout() {
+    this.showLogoutConfirm = false;
+    await this.authService.logout().toPromise();
+    this.router.navigate(['/']);
+    this.closeModal();
   }
 
   isSubjectSelected(id: string): boolean {

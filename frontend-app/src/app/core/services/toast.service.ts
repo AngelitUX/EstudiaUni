@@ -59,6 +59,12 @@ export class ToastService {
       this.initContainer();
     }
 
+    // Prevent duplicate messages
+    const existingToasts = Array.from(this.toastContainer?.querySelectorAll('.toast') || []);
+    if (existingToasts.some(t => t.textContent === message)) {
+      return;
+    }
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
