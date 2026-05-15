@@ -82,6 +82,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/admin/question-editor.component').then(m => m.QuestionEditorComponent),
     canActivate: [authGuard, adminGuard]
   },
+  {
+    path: 'encuentra-tu-carrera',
+    loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   { path: '**', redirectTo: '' }
 ];
 

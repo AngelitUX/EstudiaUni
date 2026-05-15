@@ -38,6 +38,10 @@ import { AdminService } from '../admin/services/admin.service';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
           </a>
+          <a class="nav-item" routerLink="/encuentra-tu-carrera">
+            <span class="nav-icon">🎓</span>
+            <span class="nav-text">Encuentra tu Carrera</span>
+          </a>
         </nav>
         <div class="sidebar-footer">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -67,6 +71,10 @@ import { AdminService } from '../admin/services/admin.service';
             <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
               <span class="nav-icon">📚</span>
               <span class="nav-text">Ensayos PAES</span>
+            </a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🎓</span>
+              <span class="nav-text">Encuentra tu Carrera</span>
             </a>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
