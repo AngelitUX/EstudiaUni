@@ -6,6 +6,7 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 interface Prueba {
   id: string;
@@ -177,8 +178,12 @@ type ExamMode = 'real' | 'asistido';
                     type="button"
                     class="subprueba-card"
                     (click)="seleccionarSubprueba(sub)"
-                    [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id">
-                    <span class="subprueba-name">{{ sub.nombre }}</span>
+                    [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id"
+                    [class.perfect-gold]="isPerfect(sub.id)">
+                    <span class="subprueba-name">
+                      {{ sub.nombre }}
+                      <span class="gold-badge" *ngIf="isPerfect(sub.id)">🏆</span>
+                    </span>
                     <span class="subprueba-desc">{{ sub.descripcion }}</span>
                   </button>
                 </div>
@@ -192,8 +197,12 @@ type ExamMode = 'real' | 'asistido';
                     type="button"
                     class="subprueba-card"
                     (click)="seleccionarEnsayo(ensayo)"
-                    [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id">
-                    <span class="subprueba-name">{{ ensayo.nombre }}</span>
+                    [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id"
+                    [class.perfect-gold]="isPerfect(ensayo.id)">
+                    <span class="subprueba-name">
+                      {{ ensayo.nombre }}
+                      <span class="gold-badge" *ngIf="isPerfect(ensayo.id)">🏆</span>
+                    </span>
                     <span class="subprueba-desc">{{ ensayo.descripcion }}</span>
                   </button>
                 </div>
@@ -203,6 +212,17 @@ type ExamMode = 'real' | 'asistido';
                 <div class="detalle-item">
                   <span class="detalle-label">Prueba</span>
                   <span class="detalle-valor">{{ getNombreSeleccionado() }}</span>
+                </div>
+                <div class="detalle-item" *ngIf="getBestScoreForCurrent() as record">
+                  <span class="detalle-label">Récord Personal</span>
+                  <span class="detalle-valor" [class.gold-text]="isPerfect(getCurrentEnsayoId())">
+                    {{ record.correctAnswers }}/{{ record.totalQuestions }} <span class="score-percent">({{ ((record.correctAnswers / record.totalQuestions) * 100).toFixed(0) }}%)</span>
+                  </span>
+                  <span class="detalle-subtext" *ngIf="record.timestamp">Logrado el {{ record.timestamp | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="detalle-item" *ngIf="getAttemptCount(getCurrentEnsayoId()) > 0">
+                  <span class="detalle-label">Intentos Realizados</span>
+                  <span class="detalle-valor">{{ getAttemptCount(getCurrentEnsayoId()) }}</span>
                 </div>
                 <div class="detalle-item">
                   <span class="detalle-label">Preguntas</span>
@@ -693,21 +713,24 @@ type ExamMode = 'real' | 'asistido';
       gap: 0.75rem;
     }
     .subprueba-card {
+      padding: 1.15rem;
+      border-radius: 16px;
+      background: #fff;
+      border: 2px solid rgba(133, 92, 214, 0.12);
       text-align: left;
-      border-radius: 12px;
-      padding: 0.85rem 1rem;
-      background: rgba(0, 0, 0, 0.02);
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      color: inherit;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
     }
     .subprueba-card:hover {
-      border-color: rgba(133, 92, 214, 0.3);
-      background: rgba(133, 92, 214, 0.05);
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(133, 92, 214, 0.4);
+      background: rgba(133, 92, 214, 0.08);
+      box-shadow: 0 8px 25px rgba(133, 92, 214, 0.12);
     }
     .subprueba-card-selected {
       border-color: var(--accent-primary);
@@ -747,6 +770,12 @@ type ExamMode = 'real' | 'asistido';
       font-size: 1rem;
       font-weight: 700;
       color: var(--accent-primary);
+    }
+    .detalle-subtext {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      font-weight: 500;
     }
     .detalle-desc {
       grid-column: 1 / -1;
@@ -818,6 +847,26 @@ type ExamMode = 'real' | 'asistido';
       border-color: var(--accent-primary) !important;
       box-shadow: 0 10px 25px rgba(133, 92, 214, 0.15);
     }
+    .perfect-gold {
+      background: linear-gradient(135deg, #fffcf0, #fff9db) !important;
+      border-color: #fcd34d !important;
+      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+    }
+    .perfect-gold:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(251, 191, 36, 0.35);
+      border-color: #fbbf24 !important;
+    }
+    .perfect-gold.subprueba-card-selected {
+      border-color: #d97706 !important;
+      border-width: 2.5px;
+      background: linear-gradient(135deg, #fff9db, #fff3bf) !important;
+      box-shadow: 0 10px 30px rgba(217, 119, 6, 0.25);
+    }
+    .perfect-gold .subprueba-name { color: #b45309 !important; }
+    .gold-badge { font-size: 0.9rem; margin-left: 4px; }
+    .gold-text { color: #d97706 !important; font-weight: 800; }
+    .score-percent { font-size: 0.85rem; opacity: 0.8; font-weight: 600; }
     .mode-header {
       display: flex;
       align-items: center;
@@ -1320,6 +1369,7 @@ export class EnsayosListComponent implements OnInit {
   private authService = inject(AuthService);
   public firestoreService = inject(FirestoreService);
   public adminService = inject(AdminService);
+  public dashSvc = inject(DashboardService);
   showSettingsModal = false;
   showProfileModal = false;
   isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
@@ -1526,6 +1576,34 @@ export class EnsayosListComponent implements OnInit {
     }
     // M1, M2, Historia: the subprueba IS the essay
     return this.subPruebaSeleccionada !== null;
+  }
+
+  getCurrentEnsayoId(): string {
+    return this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? '';
+  }
+
+  getBestScoreForCurrent() {
+    const id = this.getCurrentEnsayoId();
+    if (!id) return null;
+    return this.getBestScore(id);
+  }
+
+  getBestScore(ensayoId: string) {
+    const records = this.dashSvc.paesRecords();
+    const relevant = records.filter(r => r.ensayoId === ensayoId && r.mode === 'real');
+    if (!relevant.length) return null;
+    return relevant.reduce((best, curr) => curr.correctAnswers > best.correctAnswers ? curr : best);
+  }
+
+  getAttemptCount(ensayoId: string): number {
+    if (!ensayoId) return 0;
+    const records = this.dashSvc.paesRecords();
+    return records.filter(r => r.ensayoId === ensayoId && r.mode === 'real').length;
+  }
+
+  isPerfect(ensayoId: string): boolean {
+    const best = this.getBestScore(ensayoId);
+    return !!best && best.correctAnswers === best.totalQuestions && best.totalQuestions > 0;
   }
 
 }
