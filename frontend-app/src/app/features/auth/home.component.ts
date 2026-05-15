@@ -222,8 +222,8 @@ import { FirestoreService } from '../../core/services/firestore.service';
 
           <div class="bento-card glass-card">
             <div class="bento-icon">🎓</div>
-            <h3>Contenido Experto</h3>
-            <p>Material de profesores especializados en la PAES.</p>
+            <h3>Encuentra tu Carrera</h3>
+            <p>Explora universidades y carreras según tu ubicación e intereses.</p>
           </div>
 
           <div class="bento-card glass-card">

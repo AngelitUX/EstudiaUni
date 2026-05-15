@@ -175,4 +175,41 @@ Si te envío una imagen, léela con atención. Es la captura oficial de la pregu
       reader.readAsDataURL(blob);
     });
   }
+
+  async askQuestion(systemPrompt: string, history: ChatMessage[]): Promise<string> {
+    if (!this.genAI) {
+      return '⚠️ El tutor IA no está configurado. Agrega tu API key en environment.ts';
+    }
+
+    try {
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        systemInstruction: systemPrompt,
+        generationConfig: {
+          maxOutputTokens: 1000,
+          temperature: 0.7,
+        }
+      });
+
+      let geminiHistory = history.slice(0, -1).map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
+
+      while (geminiHistory.length > 0 && geminiHistory[0].role === 'model') {
+        geminiHistory.shift();
+      }
+
+      const chat = model.startChat({ history: geminiHistory });
+      
+      const lastMsg = history[history.length - 1];
+      const userText = lastMsg?.role === 'user' ? lastMsg.content : 'Hola';
+
+      const result = await chat.sendMessage(userText);
+      return result.response.text();
+    } catch (error: any) {
+      console.error('[AiAssistService] askQuestion error:', error);
+      return `⚠️ Error de conexión: ${error?.message || 'Error desconocido'}`;
+    }
+  }
 }

@@ -25,6 +25,7 @@ import { AdminService } from '../admin/services/admin.service';
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
         </nav>
         <div class="sidebar-footer">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -40,12 +41,11 @@ import { AdminService } from '../admin/services/admin.service';
         <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
-        <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
@@ -54,7 +54,6 @@ import { AdminService } from '../admin/services/admin.service';
             </a>
           </div>
         </div>
-      </div>
 
       <!-- MAIN -->
       <main class="main-content">

@@ -61,6 +61,10 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayo PAES</span>
           </a>
+          <a class="nav-item" routerLink="/encuentra-tu-carrera">
+            <span class="nav-icon">🎓</span>
+            <span class="nav-text">Encuentra tu Carrera</span>
+          </a>
         </nav>
         
         <div class="sidebar-footer">

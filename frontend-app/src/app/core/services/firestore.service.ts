@@ -44,6 +44,7 @@ export interface UserProfile {
   highContrast?: boolean;
   fontSize?: 'normal' | 'large' | 'xlarge';
   linkedinUrl?: string;
+  favoriteCareers?: any[];
   location?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
 }
