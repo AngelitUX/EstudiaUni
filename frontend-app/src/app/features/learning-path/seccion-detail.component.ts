@@ -43,7 +43,7 @@ import { PaesContentService } from './services/paes-content.service';
           <span class="pregunta-count">{{ sec.test.preguntas.length }} {{ sec.test.preguntas.length === 1 ? 'pregunta' : 'preguntas' }}</span>
         </div>
         <div class="context-body">
-          <p>{{ sec.test.contexto_base }}</p>
+          <p [innerHTML]="highlightBold(sec.test.contexto_base!)"></p>
         </div>
       </div>
 
@@ -190,7 +190,9 @@ export class SeccionDetailComponent {
   }
 
   highlightBold(text: string): string {
-    // Bold para **texto** markdown
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>');
+    // Bold para **texto** markdown + newlines to <br>
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>')
+      .replace(/\n/g, '<br>');
   }
 }

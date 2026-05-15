@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { CAP1_GUIA_FLASHCARDS } from './data/cap1-localizar-data';
 
 @Component({
   selector: 'app-capitulo-detail',
@@ -20,6 +21,39 @@ import { PaesContentService } from './services/paes-content.service';
         <h1>Guía de Estudio: {{ cap.title }}</h1>
         <p class="hero-intro">{{ cap.introduccion }}</p>
       </header>
+
+      <!-- FLASHCARD CAROUSEL -->
+      <div class="flashcard-section" *ngIf="flashcards.length > 0">
+        <div class="flashcard-header">
+          <h2>🃏 Guía Rápida</h2>
+          <span class="flashcard-counter">{{ currentFlashcard() + 1 }} / {{ flashcards.length }}</span>
+        </div>
+        
+        <div class="flashcard-viewport">
+          <div class="flashcard" 
+            *ngFor="let card of flashcards; let i = index"
+            [class.flashcard-active]="i === currentFlashcard()"
+            [class.flashcard-prev]="i < currentFlashcard()"
+            [class.flashcard-next]="i > currentFlashcard()">
+            <div class="flashcard-inner">
+              <h3>{{ card.titulo }}</h3>
+              <p [innerHTML]="highlightBold(card.contenido)"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOTS & ARROWS -->
+        <div class="flashcard-controls">
+          <button class="fc-arrow" (click)="prevFlashcard()" [disabled]="currentFlashcard() === 0">‹</button>
+          <div class="fc-dots">
+            <span *ngFor="let card of flashcards; let i = index" 
+              class="fc-dot" 
+              [class.fc-dot-active]="i === currentFlashcard()"
+              (click)="currentFlashcard.set(i)"></span>
+          </div>
+          <button class="fc-arrow" (click)="nextFlashcard()" [disabled]="currentFlashcard() === flashcards.length - 1">›</button>
+        </div>
+      </div>
 
       <!-- CONTENT BODY -->
       <main class="guide-content">
@@ -66,6 +100,30 @@ import { PaesContentService } from './services/paes-content.service';
     .guide-hero h1 { font-family: var(--font-heading); font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1rem; }
     .hero-intro { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
+    /* FLASHCARD SECTION */
+    .flashcard-section { margin-bottom: 3rem; }
+    .flashcard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .flashcard-header h2 { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .flashcard-counter { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); background: rgba(0,0,0,0.04); padding: 0.3rem 0.8rem; border-radius: 99px; }
+
+    .flashcard-viewport { position: relative; height: 220px; perspective: 1000px; overflow: hidden; border-radius: 20px; }
+    .flashcard { position: absolute; inset: 0; transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateX(100%) scale(0.9); pointer-events: none; }
+    .flashcard-active { opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; }
+    .flashcard-prev { opacity: 0; transform: translateX(-100%) scale(0.9); }
+    .flashcard-next { opacity: 0; transform: translateX(100%) scale(0.9); }
+
+    .flashcard-inner { height: 100%; padding: 2rem 2.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; border: 2px solid rgba(133,92,214,0.15); background: linear-gradient(135deg, #f5f0ff, #ede5ff); }
+    .flashcard-inner h3 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: var(--accent-primary); margin: 0 0 0.85rem; }
+    .flashcard-inner p { font-size: 1rem; color: var(--text-primary); line-height: 1.65; margin: 0; }
+
+    .flashcard-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+    .fc-arrow { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.08); background: #fff; font-size: 1.3rem; font-weight: 700; color: var(--text-primary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .fc-arrow:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); transform: scale(1.1); }
+    .fc-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .fc-dots { display: flex; gap: 8px; }
+    .fc-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(0,0,0,0.12); cursor: pointer; transition: all 0.2s; }
+    .fc-dot-active { background: var(--accent-primary); transform: scale(1.3); box-shadow: 0 0 0 3px rgba(133,92,214,0.2); }
+
     /* CONTENT */
     .theory-section { margin-bottom: 4rem; position: relative; padding-left: 2rem; }
     .theory-section::before { content: ''; position: absolute; left: 0; top: 0; bottom: -2rem; width: 4px; background: rgba(0,0,0,0.05); border-radius: 4px; }
@@ -95,6 +153,8 @@ import { PaesContentService } from './services/paes-content.service';
       .guide-hero h1 { font-size: 1.75rem; }
       .theory-section { padding-left: 0; }
       .theory-section::before { display: none; }
+      .flashcard-viewport { height: 260px; }
+      .flashcard-inner { padding: 1.5rem; }
     }
   `]
 })
@@ -105,17 +165,38 @@ export class CapituloDetailComponent {
 
   materiaId = signal('');
   capituloId = signal('');
+  currentFlashcard = signal(0);
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
   capitulo = computed(() => this.paes.getCapitulosByMateria(this.materiaId()).find(c => c.id === this.capituloId()));
 
+  // Load flashcards based on chapter ID
+  flashcards: { titulo: string; contenido: string }[] = [];
+
   constructor() {
     this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
     this.capituloId.set(this.route.snapshot.paramMap.get('capituloId') || '');
+
+    // Map flashcards by chapter ID
+    if (this.capituloId() === 'cap-localizar') {
+      this.flashcards = CAP1_GUIA_FLASHCARDS;
+    }
   }
 
   goBack() {
     this.router.navigate(['/ruta', this.materiaId()]);
+  }
+
+  nextFlashcard() {
+    if (this.currentFlashcard() < this.flashcards.length - 1) {
+      this.currentFlashcard.update(v => v + 1);
+    }
+  }
+
+  prevFlashcard() {
+    if (this.currentFlashcard() > 0) {
+      this.currentFlashcard.update(v => v - 1);
+    }
   }
 
   highlightBold(text: string): string {
