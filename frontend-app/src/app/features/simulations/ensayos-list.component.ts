@@ -67,10 +67,14 @@ type ExamMode = 'real' | 'asistido';
           </a>
         </nav>
         
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
+          </a>
+          <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
       </aside>
@@ -126,9 +130,9 @@ type ExamMode = 'real' | 'asistido';
                   <span class="profile-avatar-wrap">
                     <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
                     <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
-                    <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
                   </span>
                 </button>
+                <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
               </div>
             </div>
           </div>
@@ -285,6 +289,27 @@ type ExamMode = 'real' | 'asistido';
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
     <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
 
+    <!-- CUSTOM LOGOUT CONFIRMATION -->
+    <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
+      <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Cerrar Sesión</h2>
+          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">🚪</div>
+            <h3>¿Estás seguro de que quieres salir?</h3>
+            <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
+          </div>
+        </div>
+        <div class="modal-footer confirm-actions">
+          <button class="btn-secondary-modal" (click)="showLogoutConfirm = false">Cancelar</button>
+          <button class="btn-primary-modal btn-danger" (click)="executeLogout()">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+
     <!-- OVERWRITE PROGRESS MODAL -->
     <div class="modal-overlay" *ngIf="showOverwriteModal" (click)="showOverwriteModal = false">
       <div class="modal-content glass-card" (click)="$event.stopPropagation()">
@@ -378,10 +403,27 @@ type ExamMode = 'real' | 'asistido';
       align-items: center;
       justify-content: center;
     }
-    .sidebar-footer {
-      padding: 1.25rem 0.75rem;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
+    .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
+    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
+    .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .modal-body { padding: 1.5rem; }
+    .confirm-content { text-align: center; padding: 1rem 0; }
+    .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+    .confirm-content p { color: var(--text-secondary); margin: 0; }
+    .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
+    .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-secondary-modal { padding: 0.85rem; border-radius: 12px; border: 2px solid var(--glass-border); background: transparent; color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary-modal:hover { background: var(--bg-secondary); }
+    .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-danger { background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239,68,68,0.25) !important; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MAIN CONTENT */
     .main-content { 
@@ -416,7 +458,7 @@ type ExamMode = 'real' | 'asistido';
     .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
     .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
     .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
-    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; }
+    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
     .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
@@ -1370,8 +1412,9 @@ export class EnsayosListComponent implements OnInit {
   public firestoreService = inject(FirestoreService);
   public adminService = inject(AdminService);
   public dashSvc = inject(DashboardService);
-  showSettingsModal = false;
   showProfileModal = false;
+  showSettingsModal = false;
+  showLogoutConfirm = false;
   isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
 
   profileInitial = computed(() => {
@@ -1604,6 +1647,16 @@ export class EnsayosListComponent implements OnInit {
   isPerfect(ensayoId: string): boolean {
     const best = this.getBestScore(ensayoId);
     return !!best && best.correctAnswers === best.totalQuestions && best.totalQuestions > 0;
+  }
+
+  confirmLogout() {
+    this.showLogoutConfirm = true;
+  }
+
+  async executeLogout() {
+    this.showLogoutConfirm = false;
+    await this.authService.logout().toPromise();
+    this.router.navigate(['/']);
   }
 
 }
