@@ -26,7 +26,7 @@ import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.serv
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayo PAES</span></a>
           <a class="nav-item active" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
         </nav>
         <div class="sidebar-footer">
@@ -47,7 +47,7 @@ import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.serv
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayo PAES</span></a>
             <a class="nav-item active" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
           </nav>
         </div>
@@ -55,44 +55,51 @@ import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.serv
 
       <!-- MAIN CONTENT -->
       <main class="main-content">
-        <header class="page-header" style="position: relative;">
-          <div class="header-titles">
-            <h1>Encuentra tu Carrera 🎓</h1>
-            <p class="page-subtitle">Descubre tu futuro académico basado en tus intereses y ubicación.</p>
-          </div>
+        <header class="header" style="position: relative;">
+          <div class="header-main-row">
+            <div class="header-left">
+              <div class="header-content">
+                <h1 class="title">Encuentra tu Carrera 🎓</h1>
+                <p class="subtitle">Descubre tu futuro académico basado en tus intereses y ubicación.</p>
+              </div>
+            </div>
           
-          <div class="header-right">
-            <!-- BOTÓN DESPLEGABLE FAVORITOS -->
-            <div class="favorites-dropdown-container" *ngIf="favorites().length > 0">
-              <button class="btn btn-outline fav-toggle-btn" (click)="showFavorites.set(!showFavorites())" [class.active]="showFavorites()">
-                ❤️ Favoritos ({{ favorites().length }})
-              </button>
-              
-              <div class="favorites-wrapper" *ngIf="showFavorites()">
-                <h4>Tus Favoritos <span>{{favorites().length}}/5</span></h4>
-                <div class="fav-list">
-                  <div class="fav-item animate-fade-in" *ngFor="let fav of favorites()">
-                    <div class="fav-text">
-                      <strong>{{ fav.nombre }}</strong>
-                      <span>{{ fav.abreviatura }} • {{ fav.puntajeCorte2025 }} pts</span>
+            <div class="header-actions">
+              <!-- BOTÓN DESPLEGABLE FAVORITOS -->
+              <div class="favorites-dropdown-container" *ngIf="favorites().length > 0">
+                <button class="btn btn-outline fav-toggle-btn" (click)="showFavorites.set(!showFavorites())" [class.active]="showFavorites()">
+                  ❤️ Favoritos ({{ favorites().length }})
+                </button>
+                
+                <div class="favorites-wrapper" *ngIf="showFavorites()">
+                  <h4>Tus Favoritos <span>{{favorites().length}}/5</span></h4>
+                  <div class="fav-list">
+                    <div class="fav-item animate-fade-in" *ngFor="let fav of favorites()">
+                      <div class="fav-text">
+                        <strong>{{ fav.nombre }}</strong>
+                        <span>{{ fav.abreviatura }} • {{ fav.puntajeCorte2025 }} pts</span>
+                      </div>
+                      <button class="btn-remove-fav" (click)="toggleFavorite(fav)" title="Quitar">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
                     </div>
-                    <button class="btn-remove-fav" (click)="toggleFavorite(fav)" title="Quitar">
-                      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">
-              {{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}
-            </span>
-            <button class="profile-trigger" (click)="showProfileModal = true">
-              <span class="profile-avatar-wrap">
-                <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" class="profile-avatar"/>
-                <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">
+                {{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}
               </span>
-            </button>
+              <div class="profile-menu-wrap">
+                <button class="profile-trigger" (click)="showProfileModal = true">
+                  <span class="profile-avatar-wrap">
+                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" class="profile-avatar"/>
+                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                    <span class="profile-emoji-badge" *ngIf="firestoreService.profileSignal()?.profileEmoji">{{ firestoreService.profileSignal()?.profileEmoji }}</span>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -383,16 +390,16 @@ import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.serv
   styles: [`
     .career-layout { display: flex; min-height: 100vh; background: var(--bg-color); }
     
-    /* SIDEBAR (Copy-paste adaptado de dashboard) */
-    .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    /* SIDEBAR */
+    .sidebar { width: 260px; background: rgba(13, 15, 23, 0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; }
+    .sidebar-logo { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); position: relative; }
     .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; }
-    .nav-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); border: 1.5px solid rgba(255,255,255,0.15); }
+    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.12); color: #fff; transform: translateX(4px); }
+    .nav-item.active { background: rgba(99, 102, 241, 0.25); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
-    .sidebar-footer { padding: 1.25rem 1rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
 
     /* MOBILE HEADER */
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
@@ -403,17 +410,27 @@ import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.serv
 
     /* MAIN CONTENT */
     .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); }
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
-    .page-header h1 { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary); }
-    .page-subtitle { color: var(--text-secondary); font-size: 1.15rem; }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
-
-    /* PROFILE & BADGE */
-    .profile-trigger { border: 2px solid var(--glass-border); background: #ffffff; border-radius: 50%; padding: 0.35rem; cursor: pointer; width: 62px; height: 62px; }
+    
+    /* HEADER */
+    .header { margin-bottom: 3rem; }
+    .header-main-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
+    .header-left { display: flex; flex-direction: column; gap: 1rem; }
+    .header-actions { display: flex; align-items: center; gap: 1.25rem; }
+    
+    .profile-menu-wrap { position: relative; }
+    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
+    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
+    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
     .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: var(--gradient-brand); color: white; font-weight: 700; width: 52px; height: 52px; border-radius: 50%; }
-    .plan-badge { font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); }
+    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
+    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; }
+    
+    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
+    
+    .title { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
+    .subtitle { color: var(--text-secondary); font-size: 1.15rem; font-weight: 500; }
 
     /* FINDER FORM */
     .finder-form { padding: 2rem; margin-bottom: 2.5rem; }
