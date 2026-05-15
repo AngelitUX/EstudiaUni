@@ -18,15 +18,7 @@ import { SoundService } from '../../core/services/sound.service';
           <button class="btn-close" (click)="closeModal()">✕</button>
         </div>
         <div class="modal-scroll">
-          <div class="section-block">
-            <div class="section-header"><h3>Ruta de Aprendizaje</h3><p>Selecciona las materias que quieres ver en tu ruta.</p></div>
-            <div class="grid subjects-grid">
-              <label class="switch" *ngFor="let subject of subjectsList">
-                <input type="checkbox" [checked]="isSubjectSelected(subject.id)" (change)="toggleSubject(subject.id)"/>
-                <span>{{ subject.name }}</span>
-              </label>
-            </div>
-          </div>
+          <!-- Ruta de Aprendizaje se movió a Perfil -->
           <div class="section-block">
             <div class="section-header"><h3>Preferencias</h3><p>Configura tu ritmo ideal de estudio.</p></div>
             <div class="grid">
@@ -120,8 +112,8 @@ import { SoundService } from '../../core/services/sound.service';
     .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .status-dot.granted{background:#10b981}
     .status-dot.denied{background:#f59e0b}
-    .btn-request-perm{border:1px solid rgba(133,92,214,0.5);background:rgba(133,92,214,0.18);color:#e9d5ff;border-radius:8px;padding:.3rem .7rem;font-size:.8rem;font-weight:600;cursor:pointer;margin-left:auto;transition:all .2s}
-    .btn-request-perm:hover{background:rgba(133,92,214,0.3)}
+    .btn-request-perm{border:none;background:var(--accent-primary);color:#ffffff;border-radius:8px;padding:.4rem .9rem;font-size:.85rem;font-weight:700;cursor:pointer;margin-left:auto;transition:all .2s;box-shadow:0 2px 8px rgba(133,92,214,0.25)}
+    .btn-request-perm:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(133,92,214,0.35)}
     @media(max-width:720px){.grid{grid-template-columns:1fr}}
   `]
 })
@@ -138,7 +130,6 @@ export class SettingsModalComponent implements OnInit {
   notifPermissionGranted = false;
 
   settingsForm = {
-    selectedSubjects: [] as string[],
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
     theme: 'dark' as 'dark' | 'light' | 'auto',
@@ -147,22 +138,12 @@ export class SettingsModalComponent implements OnInit {
     fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
   };
 
-  subjectsList = [
-    { id: 'comp-lectora', name: 'Competencia Lectora' },
-    { id: 'mat1', name: 'Matemática M1' },
-    { id: 'historia', name: 'Historia y Cs. Sociales' },
-    { id: 'ciencias-tp', name: 'Ciencias T.P.' },
-    { id: 'ciencias-biologia', name: 'Biología' },
-    { id: 'ciencias-fisica', name: 'Física' },
-    { id: 'ciencias-quimica', name: 'Química' }
-  ];
 
   ngOnInit(): void {
     this.notifPermissionGranted = this.notificationService.isNotificationPermissionGranted();
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
-          this.settingsForm.selectedSubjects = profile.selectedSubjects || this.subjectsList.map(s => s.id);
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
           this.settingsForm.theme = profile.theme || 'dark';
@@ -178,23 +159,20 @@ export class SettingsModalComponent implements OnInit {
 
   closeModal() { this.close.emit(); }
 
-  isSubjectSelected(id: string): boolean {
-    return this.settingsForm.selectedSubjects.includes(id);
-  }
-
-  toggleSubject(id: string) {
-    this.soundSvc.playToggle();
-    if (this.isSubjectSelected(id)) {
-      this.settingsForm.selectedSubjects = this.settingsForm.selectedSubjects.filter(s => s !== id);
-    } else {
-      this.settingsForm.selectedSubjects.push(id);
-    }
-  }
-
   async requestNotifPermission() {
+    // Si ya está bloqueado a nivel de navegador, el API de Notification no abrirá el prompt
+    if ('Notification' in window && Notification.permission === 'denied') {
+      this.toast.error('Las notificaciones están bloqueadas en tu navegador. Por favor, actívalas en la configuración de la barra de direcciones 🔒.');
+      return;
+    }
+
     this.notifPermissionGranted = await this.notificationService.requestPermission();
-    if (this.notifPermissionGranted) this.toast.success('Notificaciones permitidas');
-    else this.toast.error('No se pudo obtener permiso de notificaciones');
+    
+    if (this.notifPermissionGranted) {
+      this.toast.success('Notificaciones permitidas');
+    } else {
+      this.toast.error('No se pudo obtener permiso de notificaciones');
+    }
   }
 
   applyAccessibility() {
@@ -225,7 +203,6 @@ export class SettingsModalComponent implements OnInit {
     this.saving = true;
     try {
       await this.firestoreService.updateProfileSettings({
-        selectedSubjects: this.settingsForm.selectedSubjects,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
         theme: this.settingsForm.theme,

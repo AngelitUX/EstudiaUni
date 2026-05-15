@@ -162,22 +162,75 @@ import { AdminService } from '../admin/services/admin.service';
             </div>
           </div>
 
-          <!-- STREAK -->
-          <div class="metric-card glass-card streak-card">
+          <!-- COMBINED STREAK CARD -->
+          <div class="metric-card glass-card combined-streak-card clickable" (click)="showStreakInfo = true">
             <div class="metric-header">
-              <span class="metric-label">Racha de Estudio</span>
+              <span class="metric-label">Tus Rachas Activas</span>
               <span class="metric-icon">🔥</span>
             </div>
-            <div class="metric-body">
-              <div class="metric-number streak">{{ dashSvc.streakDays() }}</div>
-              <span class="metric-unit">{{ dashSvc.streakDays() === 1 ? 'día' : 'días' }}</span>
+            <div class="metric-body streaks-container">
+              <div class="streak-item normal-streak">
+                <div class="streak-icon-wrap">🔥</div>
+                <div class="streak-details">
+                  <div class="streak-value">{{ dashSvc.streakDays() }} <span class="streak-label">días</span></div>
+                  <div class="streak-name">Racha de Estudio</div>
+                </div>
+              </div>
+              
+              <div class="streak-divider"></div>
+              
+              <div class="streak-item super-streak">
+                <div class="streak-icon-wrap">⚡</div>
+                <div class="streak-details">
+                  <div class="streak-value">{{ dashSvc.superStreakDays() }} <span class="streak-label">días</span></div>
+                  <div class="streak-name">Súper Racha</div>
+                </div>
+              </div>
             </div>
             <div class="metric-footer">
-              <span class="metric-subtext" *ngIf="dashSvc.streakDays() > 0">🔥 ¡Sigue así, no rompas la racha!</span>
-              <span class="metric-subtext" *ngIf="dashSvc.streakDays() === 0">Completa una lección hoy para iniciar</span>
+              <span class="metric-subtext" *ngIf="dashSvc.superStreakDays() > 0">⚡ ¡Imparable! Dominando al máximo.</span>
+              <span class="metric-subtext" *ngIf="dashSvc.streakDays() > 0 && dashSvc.superStreakDays() === 0">🔥 Vas muy bien, intenta la Súper Racha.</span>
+              <span class="metric-subtext" *ngIf="dashSvc.streakDays() === 0">Completa una lección para iniciar tu racha.</span>
             </div>
           </div>
         </section>
+
+        <!-- STREAK EXPLANATION MODAL -->
+        <div class="modal-overlay" *ngIf="showStreakInfo" (click)="showStreakInfo = false">
+          <div class="modal-container glass streak-info-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>¿Cómo funcionan las Rachas?</h2>
+              <button class="close-btn" (click)="showStreakInfo = false">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="info-section">
+                <div class="info-icon normal">🔥</div>
+                <div class="info-content">
+                  <h3>Racha de Estudio</h3>
+                  <p>Es tu constancia diaria. Se suma cada día que completas al menos <strong>una lección</strong> o <strong>un ensayo</strong>.</p>
+                  <span class="info-tip">💡 Tip: ¡Basta con 10 minutos al día para mantenerla viva!</span>
+                </div>
+              </div>
+
+              <div class="info-divider"></div>
+
+              <div class="info-section">
+                <div class="info-icon super">⚡</div>
+                <div class="info-content">
+                  <h3>Súper Racha</h3>
+                  <p>Es el máximo nivel de disciplina. Se suma únicamente si logras:</p>
+                  <ul>
+                    <li>Completar al menos <strong>una lección</strong> de <strong>CADA materia</strong> activa en tu ruta de aprendizaje durante el mismo día.</li>
+                  </ul>
+                  <span class="info-tip">🚀 Reto: ¡Mantener esta racha te garantiza un progreso masivo!</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-primary-modal" (click)="showStreakInfo = false">¡Entendido!</button>
+            </div>
+          </div>
+        </div>
 
         <!-- ACTIVITY / RECOMMENDATION -->
         <section class="activity-section">
@@ -323,16 +376,15 @@ import { AdminService } from '../admin/services/admin.service';
     .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
 
     /* METRICS */
-    .metrics-section { display: grid; grid-template-columns: 1.2fr 0.9fr 0.9fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .metrics-section { display: grid; grid-template-columns: 1.2fr 0.9fr 1.1fr; gap: 1.5rem; margin-bottom: 2rem; }
     .metric-card { padding: 1.5rem; border-radius: 16px; display: flex; flex-direction: column; background: #ffffff; border: 2px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow); }
     .metric-card:hover { border-color: rgba(133,92,214,0.4); transform: translateY(-4px); box-shadow: var(--shadow-md); }
     .metric-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .metric-label { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
     .metric-icon { font-size: 1.5rem; }
     .metric-body { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-    .metric-number { font-size: 3rem; font-weight: 800; font-family: var(--font-heading); background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .metric-number.streak { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; }
-    .metric-unit { font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+    .metric-number { font-size: 3rem; font-weight: 800; font-family: var(--font-heading); background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+    .metric-unit { font-size: 1rem; color: var(--text-muted); font-weight: 600; margin-top: -0.25rem; }
     .metric-footer { margin-top: 1rem; padding-top: 1rem; border-top: 1.5px solid var(--glass-border); }
     .metric-subtext { color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
 
@@ -440,8 +492,51 @@ import { AdminService } from '../admin/services/admin.service';
     .mastery-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .mastery-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
 
-    /* Streak */
-    .streak-card .metric-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    /* COMBINED STREAK CARD */
+    .combined-streak-card .metric-body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 1rem; padding-top: 0.5rem; }
+    .streak-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 14px; background: rgba(0,0,0,0.02); border: 1.5px solid var(--glass-border); transition: all 0.2s; }
+    .streak-item:hover { transform: translateX(4px); background: #ffffff; }
+    .streak-item.normal-streak:hover { border-color: rgba(249,115,22,0.3); box-shadow: 0 4px 12px rgba(249,115,22,0.08); }
+    .streak-item.super-streak:hover { border-color: rgba(139,92,246,0.3); box-shadow: 0 4px 12px rgba(139,92,246,0.08); }
+    
+    .streak-icon-wrap { font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+    .normal-streak .streak-icon-wrap { background: rgba(249,115,22,0.1); color: #ea580c; }
+    .super-streak .streak-icon-wrap { background: rgba(139,92,246,0.1); color: #7c3aed; }
+    
+    .streak-details { display: flex; flex-direction: column; flex: 1; }
+    .streak-value { font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading); line-height: 1; margin-bottom: 0.15rem; display: flex; align-items: baseline; gap: 0.25rem; }
+    .normal-streak .streak-value { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .super-streak .streak-value { background: linear-gradient(135deg, #8b5cf6, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .streak-label { font-size: 1rem; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; }
+    .streak-name { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .streak-divider { height: 2px; background: var(--glass-border); width: 60%; margin: 0 auto; border-radius: 2px; }
+    .combined-streak-card.clickable { cursor: pointer; }
+    .combined-streak-card.clickable:hover { transform: translateY(-6px) scale(1.02); border-color: var(--accent-primary); box-shadow: 0 10px 25px rgba(133,92,214,0.15); }
+
+    /* STREAK INFO MODAL */
+    .streak-info-modal { max-width: 500px !important; }
+    .info-section { display: flex; gap: 1.25rem; align-items: flex-start; padding: 0.5rem 0; }
+    .info-icon { font-size: 2.5rem; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 16px; flex-shrink: 0; }
+    .info-icon.normal { background: rgba(249,115,22,0.1); }
+    .info-icon.super { background: rgba(139,92,246,0.1); }
+    .info-content h3 { margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--text-primary); }
+    .info-content p { margin: 0 0 0.75rem 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-secondary); }
+    .info-content ul { margin: 0 0 0.75rem 0; padding-left: 1.2rem; font-size: 0.9rem; color: var(--text-secondary); }
+    .info-content li { margin-bottom: 0.4rem; }
+    .info-tip { display: block; font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); background: rgba(133,92,214,0.08); padding: 0.6rem 0.85rem; border-radius: 8px; border-left: 3px solid var(--accent-primary); }
+    .info-divider { height: 1.5px; background: var(--glass-border); margin: 1.25rem 0; opacity: 0.6; }
+    .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 1000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .modal-container.glass { background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
+    .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .modal-body { padding: 1.5rem; }
+    .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* AI Recs Side Nav */
     .ai-recs-card { display: flex; flex-direction: column; }
@@ -481,6 +576,7 @@ export class DashboardComponent implements OnInit {
   showProfileModal = false;
   showSettingsModal = false;
   showHistoryModal = false;
+  showStreakInfo = false;
   currentDate = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 
   isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
@@ -562,7 +658,13 @@ export class DashboardComponent implements OnInit {
       if (subjectRecords.length === 0) {
         this.displayedRecord = null;
       } else {
-        this.displayedRecord = subjectRecords.reduce((best, r) => r.correctAnswers > best.correctAnswers ? r : best, subjectRecords[0]);
+        this.displayedRecord = subjectRecords.reduce((best, r) => {
+          if (r.correctAnswers > best.correctAnswers) return r;
+          if (r.correctAnswers === best.correctAnswers) {
+            return new Date(r.timestamp).getTime() > new Date(best.timestamp).getTime() ? r : best;
+          }
+          return best;
+        }, subjectRecords[0]);
       }
     }
   }
