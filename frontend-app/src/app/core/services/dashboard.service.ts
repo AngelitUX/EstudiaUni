@@ -9,13 +9,16 @@ import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } 
 export interface ActivityEntry {
   id: string;
   type: 'leccion' | 'ensayo';
+  mode?: 'real' | 'asistido';
   title: string;
   subject: string;
   subjectIcon: string;
   score?: number;         // porcentaje para lecciones, puntaje para ensayos
   totalCorrect?: number;
   totalQuestions?: number;
-  timestamp: string;       // ISO string
+  timestamp: any;       // ISO string or Firestore Timestamp
+  ensayoId?: string;      // ID del ensayo original
+  intentoId?: string;     // ID del intento en Firestore
 }
 
 export interface SubjectMastery {
@@ -34,7 +37,8 @@ export interface PaesRecord {
   correctAnswers: number;
   totalQuestions: number;
   score: number;           // puntaje calculado tipo PAES
-  timestamp: string;
+  mode: 'real' | 'asistido';
+  timestamp: any;
 }
 
 export interface AIRecommendation {
@@ -47,32 +51,45 @@ export interface AIRecommendation {
   type: 'leccion' | 'ensayo' | 'repaso';
 }
 
-const STORAGE_KEY_ACTIVITIES = 'estudiauni_activities';
-const STORAGE_KEY_STREAK = 'estudiauni_streak';
-const STORAGE_KEY_PAES_RECORDS = 'estudiauni_paes_records';
+function storageKeyActivities(uid: string) { return `estudiauni_activities_${uid}`; }
+function storageKeyStreak(uid: string) { return `estudiauni_streak_${uid}`; }
+function storageKeyPaesRecords(uid: string) { return `estudiauni_paes_records_${uid}`; }
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private paesContent = inject(PaesContentService);
   private firestoreService = inject(FirestoreService);
   private auth = inject(Auth);
+  private currentUid: string | null = null;
 
   // ─── Signals ───
   private _activities = signal<ActivityEntry[]>([]);
   private _streakDays = signal<number>(0);
+  private _superStreakDays = signal<number>(0);
   private _lastStudyDate = signal<string | null>(null);
+  private _lastSuperStudyDate = signal<string | null>(null);
   private _paesRecords = signal<PaesRecord[]>([]);
 
   // ─── Readonly accessors ───
   readonly activities = this._activities.asReadonly();
   readonly streakDays = this._streakDays.asReadonly();
+  readonly superStreakDays = this._superStreakDays.asReadonly();
   readonly paesRecords = this._paesRecords.asReadonly();
 
   // ─── Computed: Best PAES record ───
   readonly bestPaesRecord = computed<PaesRecord | null>(() => {
     const records = this._paesRecords();
     if (records.length === 0) return null;
-    return records.reduce((best, r) => r.correctAnswers > best.correctAnswers ? r : best, records[0]);
+    return records.reduce((best, r) => {
+      if (r.correctAnswers > best.correctAnswers) return r;
+      if (r.correctAnswers === best.correctAnswers) {
+        // If tied, take the most recent
+        const timeR = new Date(r.timestamp).getTime();
+        const timeB = new Date(best.timestamp).getTime();
+        return timeR > timeB ? r : best;
+      }
+      return best;
+    }, records[0]);
   });
 
   // ─── Computed: Subject Mastery (only subjects with at least 1 completed lesson) ───
@@ -195,9 +212,28 @@ export class DashboardService {
   });
 
   constructor() {
-    this.loadFromStorage();
-    this.recalculateStreak();
-    this.syncWithFirebase();
+    // Subscribe to auth state changes to load/clear user-specific data
+    this.auth.onAuthStateChanged((user) => {
+      if (user && user.uid !== this.currentUid) {
+        this.currentUid = user.uid;
+        this.clearSignals();
+        this.loadFromStorage();
+        this.recalculateStreak();
+        this.syncWithFirebase();
+      } else if (!user) {
+        this.currentUid = null;
+        this.clearSignals();
+      }
+    });
+  }
+
+  private clearSignals(): void {
+    this._activities.set([]);
+    this._streakDays.set(0);
+    this._superStreakDays.set(0);
+    this._lastStudyDate.set(null);
+    this._lastSuperStudyDate.set(null);
+    this._paesRecords.set([]);
   }
 
   /** Sincronizar datos iniciales desde Firebase */
@@ -248,6 +284,7 @@ export class DashboardService {
     const current = this._activities();
     this._activities.set([entry, ...current].slice(0, 50)); // Keep last 50
     this.updateStreak();
+    this.updateSuperStreak();
     this.saveToStorage();
 
     // Persistir en Firebase
@@ -267,11 +304,14 @@ export class DashboardService {
     correctAnswers: number;
     totalQuestions: number;
     score: number;
+    mode: 'real' | 'asistido';
+    intentoId?: string;
   }): void {
     // Activity entry
     const entry: ActivityEntry = {
       id: `ensayo-${data.ensayoId}-${Date.now()}`,
       type: 'ensayo',
+      mode: data.mode,
       title: data.ensayoTitle,
       subject: data.subject,
       subjectIcon: this.getSubjectIcon(data.subject),
@@ -279,6 +319,8 @@ export class DashboardService {
       totalCorrect: data.correctAnswers,
       totalQuestions: data.totalQuestions,
       timestamp: new Date().toISOString(),
+      ensayoId: data.ensayoId,
+      intentoId: data.intentoId,
     };
 
     const currentActivities = this._activities();
@@ -292,6 +334,7 @@ export class DashboardService {
       correctAnswers: data.correctAnswers,
       totalQuestions: data.totalQuestions,
       score: data.score,
+      mode: data.mode,
       timestamp: new Date().toISOString(),
     };
 
@@ -299,6 +342,7 @@ export class DashboardService {
     this._paesRecords.set([record, ...currentRecords].slice(0, 20));
 
     this.updateStreak();
+    this.updateSuperStreak();
     this.saveToStorage();
 
     // Persistir en Firebase
@@ -351,15 +395,82 @@ export class DashboardService {
     if (lastDate !== today && lastDate !== yesterday) {
       // More than 1 day without studying, reset
       this._streakDays.set(0);
-      this.saveToStorage();
     }
+
+    const lastSuperDate = this._lastSuperStudyDate();
+    if (!lastSuperDate) {
+      this._superStreakDays.set(0);
+    } else {
+      if (lastSuperDate !== today && lastSuperDate !== yesterday) {
+        this._superStreakDays.set(0);
+      }
+    }
+
+    this.saveToStorage();
+  }
+
+  private updateSuperStreak(): void {
+    const today = this.getDateString(new Date());
+    const lastDate = this._lastSuperStudyDate();
+
+    if (lastDate === today) return; // Already gained super streak today
+
+    // Evaluate today's activities
+    const todayActivities = this._activities().filter(a => {
+      const actDateStr = this.getDateString(new Date(a.timestamp));
+      return actDateStr === today;
+    });
+
+    let meetsCondition = false;
+
+    // Cond: 1 leccion de cada materia activa
+    const activeMaterias = this.paesContent.allMaterias().filter(m => m.isActive).map(m => m.id);
+    const todayLeccionSubjects = new Set(todayActivities.filter(a => a.type === 'leccion').map(a => a.subject));
+    const hasAllMaterias = activeMaterias.length > 0 && activeMaterias.every(m => todayLeccionSubjects.has(m));
+
+    if (hasAllMaterias) {
+      meetsCondition = true;
+    }
+
+    if (!meetsCondition) return;
+
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = this.getDateString(yesterdayDate);
+
+    if (lastDate === yesterday) {
+      this._superStreakDays.update(s => s + 1);
+    } else {
+      this._superStreakDays.set(1);
+    }
+
+    this._lastSuperStudyDate.set(today);
+    this.saveToStorage();
   }
 
   // ─── Helpers ───
 
-  getRelativeTime(isoString: string): string {
+  getRelativeTime(timestamp: any): string {
+    if (!timestamp) return '---';
+    
+    let date: Date;
+    if (timestamp instanceof Date) {
+      date = timestamp;
+    } else if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else if (timestamp && typeof timestamp.toDate === 'function') {
+      // Handle Firestore Timestamp
+      date = timestamp.toDate();
+    } else if (timestamp && timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      return 'Fecha inválida';
+    }
+
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+
     const now = Date.now();
-    const then = new Date(isoString).getTime();
+    const then = date.getTime();
     const diffMs = now - then;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
@@ -370,7 +481,7 @@ export class DashboardService {
     if (diffHours < 24) return `Hace ${diffHours}h`;
     if (diffDays === 1) return 'Ayer';
     if (diffDays < 7) return `Hace ${diffDays} días`;
-    return new Date(isoString).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
   }
 
   private getSubjectIcon(subject: string): string {
@@ -395,31 +506,37 @@ export class DashboardService {
   // ─── Persistence ───
 
   private saveToStorage(): void {
+    if (!this.currentUid) return;
     try {
-      localStorage.setItem(STORAGE_KEY_ACTIVITIES, JSON.stringify(this._activities()));
-      localStorage.setItem(STORAGE_KEY_STREAK, JSON.stringify({
+      localStorage.setItem(storageKeyActivities(this.currentUid), JSON.stringify(this._activities()));
+      localStorage.setItem(storageKeyStreak(this.currentUid), JSON.stringify({
         days: this._streakDays(),
-        lastDate: this._lastStudyDate()
+        lastDate: this._lastStudyDate(),
+        superDays: this._superStreakDays(),
+        lastSuperDate: this._lastSuperStudyDate()
       }));
-      localStorage.setItem(STORAGE_KEY_PAES_RECORDS, JSON.stringify(this._paesRecords()));
+      localStorage.setItem(storageKeyPaesRecords(this.currentUid), JSON.stringify(this._paesRecords()));
     } catch { /* ignore quota errors */ }
   }
 
   private loadFromStorage(): void {
+    if (!this.currentUid) return;
     try {
-      const activitiesRaw = localStorage.getItem(STORAGE_KEY_ACTIVITIES);
+      const activitiesRaw = localStorage.getItem(storageKeyActivities(this.currentUid));
       if (activitiesRaw) {
         this._activities.set(JSON.parse(activitiesRaw));
       }
 
-      const streakRaw = localStorage.getItem(STORAGE_KEY_STREAK);
+      const streakRaw = localStorage.getItem(storageKeyStreak(this.currentUid));
       if (streakRaw) {
         const streak = JSON.parse(streakRaw);
         this._streakDays.set(streak.days || 0);
         this._lastStudyDate.set(streak.lastDate || null);
+        this._superStreakDays.set(streak.superDays || 0);
+        this._lastSuperStudyDate.set(streak.lastSuperDate || null);
       }
 
-      const recordsRaw = localStorage.getItem(STORAGE_KEY_PAES_RECORDS);
+      const recordsRaw = localStorage.getItem(storageKeyPaesRecords(this.currentUid));
       if (recordsRaw) {
         this._paesRecords.set(JSON.parse(recordsRaw));
       }

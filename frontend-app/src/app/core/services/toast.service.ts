@@ -39,12 +39,15 @@ export class ToastService {
       container.id = 'toast-container';
       container.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 10000;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        align-items: center;
+        gap: 12px;
+        pointer-events: none;
       `;
       document.body.appendChild(container);
     }
@@ -54,6 +57,12 @@ export class ToastService {
   show(message: string, type: 'success' | 'error' | 'info' = 'info', duration: number = 4000) {
     if (!this.toastContainer) {
       this.initContainer();
+    }
+
+    // Prevent duplicate messages
+    const existingToasts = Array.from(this.toastContainer?.querySelectorAll('.toast') || []);
+    if (existingToasts.some(t => t.textContent === message)) {
+      return;
     }
 
     const toast = document.createElement('div');
@@ -72,12 +81,14 @@ export class ToastService {
       padding: 16px 24px;
       border-radius: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-      min-width: 300px;
-      max-width: 500px;
+      min-width: 320px;
+      max-width: 90vw;
       font-size: 14px;
-      font-weight: 500;
-      animation: slideInRight 0.3s ease;
+      font-weight: 600;
+      animation: slideInTop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
+      pointer-events: auto;
+      text-align: center;
     `;
 
     this.toastContainer?.appendChild(toast);
@@ -94,7 +105,7 @@ export class ToastService {
   }
 
   private removeToast(toast: HTMLElement) {
-    toast.style.animation = 'slideOutRight 0.3s ease';
+    toast.style.animation = 'slideOutTop 0.3s ease forwards';
     setTimeout(() => {
       toast.remove();
     }, 300);

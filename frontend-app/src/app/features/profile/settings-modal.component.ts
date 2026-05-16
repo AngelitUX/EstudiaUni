@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { SoundService } from '../../core/services/sound.service';
 
 @Component({
   selector: 'app-settings-modal',
@@ -17,15 +18,7 @@ import { NotificationService } from '../../core/services/notification.service';
           <button class="btn-close" (click)="closeModal()">✕</button>
         </div>
         <div class="modal-scroll">
-          <div class="section-block">
-            <div class="section-header"><h3>Objetivo académico</h3><p>Define tu meta para personalizar recomendaciones.</p></div>
-            <div class="grid">
-              <label>Carrera objetivo<input [(ngModel)]="settingsForm.targetCareer" type="text" maxlength="80" placeholder="Ej: Ingeniería"/></label>
-              <label>Universidad objetivo<input [(ngModel)]="settingsForm.targetUniversity" type="text" maxlength="80" placeholder="Ej: U. de Chile"/></label>
-              <label>Fecha meta de prueba<input [(ngModel)]="settingsForm.targetExamDate" type="date"/></label>
-              <label>Meta diaria (min)<input [(ngModel)]="settingsForm.studyGoalMinutesPerDay" type="number" min="10" max="240"/></label>
-            </div>
-          </div>
+          <!-- Ruta de Aprendizaje se movió a Perfil -->
           <div class="section-block">
             <div class="section-header"><h3>Preferencias</h3><p>Configura tu ritmo ideal de estudio.</p></div>
             <div class="grid">
@@ -66,6 +59,22 @@ import { NotificationService } from '../../core/services/notification.service';
               <button *ngIf="!notifPermissionGranted" class="btn-request-perm" (click)="requestNotifPermission()">Permitir</button>
             </div>
           </div>
+          <div class="section-block">
+            <div class="section-header"><h3>Accesibilidad</h3><p>Adapta la plataforma a tus necesidades visuales y cognitivas.</p></div>
+            <div class="grid">
+              <label class="switch">
+                <input [(ngModel)]="settingsForm.dyslexiaFont" type="checkbox" (change)="applyAccessibility()"/>
+                <span>Fuente para dislexia</span>
+              </label>
+              <label>Tamaño de fuente
+                <select [(ngModel)]="settingsForm.fontSize" (change)="applyAccessibility()">
+                  <option value="normal">Normal</option>
+                  <option value="large">Grande</option>
+                  <option value="xlarge">Extra grande</option>
+                </select>
+              </label>
+            </div>
+          </div>
           <div class="action-bar">
             <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>
@@ -103,8 +112,8 @@ import { NotificationService } from '../../core/services/notification.service';
     .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .status-dot.granted{background:#10b981}
     .status-dot.denied{background:#f59e0b}
-    .btn-request-perm{border:1px solid rgba(133,92,214,0.5);background:rgba(133,92,214,0.18);color:#e9d5ff;border-radius:8px;padding:.3rem .7rem;font-size:.8rem;font-weight:600;cursor:pointer;margin-left:auto;transition:all .2s}
-    .btn-request-perm:hover{background:rgba(133,92,214,0.3)}
+    .btn-request-perm{border:none;background:var(--accent-primary);color:#ffffff;border-radius:8px;padding:.4rem .9rem;font-size:.85rem;font-weight:700;cursor:pointer;margin-left:auto;transition:all .2s;box-shadow:0 2px 8px rgba(133,92,214,0.25)}
+    .btn-request-perm:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(133,92,214,0.35)}
     @media(max-width:720px){.grid{grid-template-columns:1fr}}
   `]
 })
@@ -112,6 +121,7 @@ export class SettingsModalComponent implements OnInit {
   private readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly notificationService = inject(NotificationService);
+  private readonly soundSvc = inject(SoundService);
 
   @Output() close = new EventEmitter<void>();
 
@@ -120,29 +130,26 @@ export class SettingsModalComponent implements OnInit {
   notifPermissionGranted = false;
 
   settingsForm = {
-    targetCareer: '',
-    targetUniversity: '',
-    targetExamDate: '',
-    studyGoalMinutesPerDay: 45,
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
     theme: 'dark' as 'dark' | 'light' | 'auto',
     notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
+    dyslexiaFont: false,
+    fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
   };
+
 
   ngOnInit(): void {
     this.notifPermissionGranted = this.notificationService.isNotificationPermissionGranted();
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
-          this.settingsForm.targetCareer = profile.targetCareer || '';
-          this.settingsForm.targetUniversity = profile.targetUniversity || '';
-          this.settingsForm.targetExamDate = profile.targetExamDate || '';
-          this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
           this.settingsForm.theme = profile.theme || 'dark';
           this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
+          this.settingsForm.dyslexiaFont = profile.dyslexiaFont || false;
+          this.settingsForm.fontSize = profile.fontSize || 'normal';
         }
         this.loading = false;
       },
@@ -153,12 +160,32 @@ export class SettingsModalComponent implements OnInit {
   closeModal() { this.close.emit(); }
 
   async requestNotifPermission() {
+    // Si ya está bloqueado a nivel de navegador, el API de Notification no abrirá el prompt
+    if ('Notification' in window && Notification.permission === 'denied') {
+      this.toast.error('Las notificaciones están bloqueadas en tu navegador. Por favor, actívalas en la configuración de la barra de direcciones 🔒.');
+      return;
+    }
+
     this.notifPermissionGranted = await this.notificationService.requestPermission();
-    if (this.notifPermissionGranted) this.toast.success('Notificaciones permitidas');
-    else this.toast.error('No se pudo obtener permiso de notificaciones');
+    
+    if (this.notifPermissionGranted) {
+      this.toast.success('Notificaciones permitidas');
+    } else {
+      this.toast.error('No se pudo obtener permiso de notificaciones');
+    }
+  }
+
+  applyAccessibility() {
+    this.soundSvc.playToggle();
+    const classList = document.body.classList;
+    if (this.settingsForm.dyslexiaFont) classList.add('dyslexia-font'); else classList.remove('dyslexia-font');
+    classList.remove('font-large', 'font-xlarge');
+    if (this.settingsForm.fontSize === 'large') classList.add('font-large');
+    else if (this.settingsForm.fontSize === 'xlarge') classList.add('font-xlarge');
   }
 
   onNotificationsToggle(): void {
+    this.soundSvc.playToggle();
     if (this.settingsForm.notificationsEnabled) {
       this.notificationService.startReminders({
         preferredStudyTime: this.settingsForm.preferredStudyTime,
@@ -176,14 +203,12 @@ export class SettingsModalComponent implements OnInit {
     this.saving = true;
     try {
       await this.firestoreService.updateProfileSettings({
-        targetCareer: this.settingsForm.targetCareer.trim(),
-        targetUniversity: this.settingsForm.targetUniversity.trim(),
-        targetExamDate: this.settingsForm.targetExamDate || null,
-        studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
         theme: this.settingsForm.theme,
         notificationIntensity: this.settingsForm.notificationIntensity,
+        dyslexiaFont: this.settingsForm.dyslexiaFont,
+        fontSize: this.settingsForm.fontSize,
       });
       // Restart reminders with new config after saving
       if (this.settingsForm.notificationsEnabled) {

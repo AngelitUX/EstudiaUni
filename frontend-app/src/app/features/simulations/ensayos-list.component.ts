@@ -1,10 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
+import { AdminService } from '../admin/services/admin.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 interface Prueba {
   id: string;
@@ -40,9 +42,9 @@ type ExamMode = 'real' | 'asistido';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-logo">
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;">
             <span class="text-gradient">EstudiaUni</span>
-          </span>
+          </a>
         </div>
         
         <nav class="sidebar-nav">
@@ -59,17 +61,21 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayo PAES</span>
           </a>
+          <a class="nav-item" routerLink="/encuentra-tu-carrera">
+            <span class="nav-icon">🎓</span>
+            <span class="nav-text">Encuentra tu Carrera</span>
+          </a>
+        </nav>
+        
+        <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
           </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-          <button class="nav-item logout-btn" (click)="logout()">
+          <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
             <span class="nav-icon">🚪</span>
             <span class="nav-text">Cerrar Sesión</span>
-          </button>
+          </a>
         </div>
       </aside>
 
@@ -118,15 +124,15 @@ type ExamMode = 'real' | 'asistido';
             </div>
             
             <div class="header-actions">
-              <span class="plan-badge" [class.pro]="isProPlan">{{ isProPlan ? 'PRO' : 'BASICO' }}</span>
+              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
               <div class="profile-menu-wrap">
                 <button class="profile-trigger" (click)="showProfileModal = true">
                   <span class="profile-avatar-wrap">
-                    <img *ngIf="userProfile?.photoURL; else avatarFallback" [src]="userProfile?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial }}</span></ng-template>
-                    <span class="profile-emoji-badge">{{ userProfile?.profileEmoji || '✨' }}</span>
+                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                   </span>
                 </button>
+                <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
               </div>
             </div>
           </div>
@@ -176,8 +182,12 @@ type ExamMode = 'real' | 'asistido';
                     type="button"
                     class="subprueba-card"
                     (click)="seleccionarSubprueba(sub)"
-                    [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id">
-                    <span class="subprueba-name">{{ sub.nombre }}</span>
+                    [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id"
+                    [class.perfect-gold]="isPerfect(sub.id)">
+                    <span class="subprueba-name">
+                      {{ sub.nombre }}
+                      <span class="gold-badge" *ngIf="isPerfect(sub.id)">🏆</span>
+                    </span>
                     <span class="subprueba-desc">{{ sub.descripcion }}</span>
                   </button>
                 </div>
@@ -191,8 +201,12 @@ type ExamMode = 'real' | 'asistido';
                     type="button"
                     class="subprueba-card"
                     (click)="seleccionarEnsayo(ensayo)"
-                    [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id">
-                    <span class="subprueba-name">{{ ensayo.nombre }}</span>
+                    [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id"
+                    [class.perfect-gold]="isPerfect(ensayo.id)">
+                    <span class="subprueba-name">
+                      {{ ensayo.nombre }}
+                      <span class="gold-badge" *ngIf="isPerfect(ensayo.id)">🏆</span>
+                    </span>
                     <span class="subprueba-desc">{{ ensayo.descripcion }}</span>
                   </button>
                 </div>
@@ -202,6 +216,17 @@ type ExamMode = 'real' | 'asistido';
                 <div class="detalle-item">
                   <span class="detalle-label">Prueba</span>
                   <span class="detalle-valor">{{ getNombreSeleccionado() }}</span>
+                </div>
+                <div class="detalle-item" *ngIf="getBestScoreForCurrent() as record">
+                  <span class="detalle-label">Récord Personal</span>
+                  <span class="detalle-valor" [class.gold-text]="isPerfect(getCurrentEnsayoId())">
+                    {{ record.correctAnswers }}/{{ record.totalQuestions }} <span class="score-percent">({{ ((record.correctAnswers / record.totalQuestions) * 100).toFixed(0) }}%)</span>
+                  </span>
+                  <span class="detalle-subtext" *ngIf="record.timestamp">Logrado el {{ record.timestamp | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="detalle-item" *ngIf="getAttemptCount(getCurrentEnsayoId()) > 0">
+                  <span class="detalle-label">Intentos Realizados</span>
+                  <span class="detalle-valor">{{ getAttemptCount(getCurrentEnsayoId()) }}</span>
                 </div>
                 <div class="detalle-item">
                   <span class="detalle-label">Preguntas</span>
@@ -263,6 +288,27 @@ type ExamMode = 'real' | 'asistido';
     </div>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
     <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+
+    <!-- CUSTOM LOGOUT CONFIRMATION -->
+    <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
+      <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Cerrar Sesión</h2>
+          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">🚪</div>
+            <h3>¿Estás seguro de que quieres salir?</h3>
+            <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
+          </div>
+        </div>
+        <div class="modal-footer confirm-actions">
+          <button class="btn-secondary-modal" (click)="showLogoutConfirm = false">Cancelar</button>
+          <button class="btn-primary-modal btn-danger" (click)="executeLogout()">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
 
     <!-- OVERWRITE PROGRESS MODAL -->
     <div class="modal-overlay" *ngIf="showOverwriteModal" (click)="showOverwriteModal = false">
@@ -357,30 +403,27 @@ type ExamMode = 'real' | 'asistido';
       align-items: center;
       justify-content: center;
     }
-    .sidebar-footer {
-      padding: 1.25rem 1rem;
-      border-top: none;
-      display: flex;
-      justify-content: center;
-    }
-    .logout-btn {
-      width: fit-content;
-      min-width: 180px;
-      justify-content: center; 
-      padding: 0.65rem 1rem;
-      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
-      background: transparent !important; 
-      color: rgba(252, 165, 165, 0.6) !important; 
-      margin: 0 auto;
-      border-radius: 14px;
-      font-weight: 500;
-    }
-    .logout-btn:hover { 
-      background: rgba(239, 68, 68, 0.1) !important; 
-      border-color: #ef4444 !important; 
-      color: #ef4444 !important; 
-      transform: none !important; 
-    }
+    .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
+    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
+    .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .modal-body { padding: 1.5rem; }
+    .confirm-content { text-align: center; padding: 1rem 0; }
+    .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+    .confirm-content p { color: var(--text-secondary); margin: 0; }
+    .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
+    .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-secondary-modal { padding: 0.85rem; border-radius: 12px; border: 2px solid var(--glass-border); background: transparent; color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary-modal:hover { background: var(--bg-secondary); }
+    .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-danger { background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239,68,68,0.25) !important; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MAIN CONTENT */
     .main-content { 
@@ -407,7 +450,7 @@ type ExamMode = 'real' | 'asistido';
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
     }
     .profile-menu-wrap { position: relative; }
     .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
@@ -415,9 +458,10 @@ type ExamMode = 'real' | 'asistido';
     .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
     .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
     .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
-    .profile-emoji-badge { position: absolute; right: -5px; bottom: -5px; background: #111827; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.1rem 0.3rem; font-size: 0.75rem; line-height: 1; }
+    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
     .header-back {
       margin-bottom: 0;
     }
@@ -650,7 +694,7 @@ type ExamMode = 'real' | 'asistido';
       border-radius: 12px;
       width: fit-content;
       box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.03);
+      border: 2px solid rgba(133,92,214,0.3);
     }
     .countdown-label {
       font-size: 0.85rem;
@@ -711,21 +755,24 @@ type ExamMode = 'real' | 'asistido';
       gap: 0.75rem;
     }
     .subprueba-card {
+      padding: 1.15rem;
+      border-radius: 16px;
+      background: #fff;
+      border: 2px solid rgba(133, 92, 214, 0.12);
       text-align: left;
-      border-radius: 12px;
-      padding: 0.85rem 1rem;
-      background: rgba(0, 0, 0, 0.02);
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      color: inherit;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
     }
     .subprueba-card:hover {
-      border-color: rgba(133, 92, 214, 0.3);
-      background: rgba(133, 92, 214, 0.05);
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(133, 92, 214, 0.4);
+      background: rgba(133, 92, 214, 0.08);
+      box-shadow: 0 8px 25px rgba(133, 92, 214, 0.12);
     }
     .subprueba-card-selected {
       border-color: var(--accent-primary);
@@ -765,6 +812,12 @@ type ExamMode = 'real' | 'asistido';
       font-size: 1rem;
       font-weight: 700;
       color: var(--accent-primary);
+    }
+    .detalle-subtext {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      font-weight: 500;
     }
     .detalle-desc {
       grid-column: 1 / -1;
@@ -836,6 +889,26 @@ type ExamMode = 'real' | 'asistido';
       border-color: var(--accent-primary) !important;
       box-shadow: 0 10px 25px rgba(133, 92, 214, 0.15);
     }
+    .perfect-gold {
+      background: linear-gradient(135deg, #fffcf0, #fff9db) !important;
+      border-color: #fcd34d !important;
+      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+    }
+    .perfect-gold:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(251, 191, 36, 0.35);
+      border-color: #fbbf24 !important;
+    }
+    .perfect-gold.subprueba-card-selected {
+      border-color: #d97706 !important;
+      border-width: 2.5px;
+      background: linear-gradient(135deg, #fff9db, #fff3bf) !important;
+      box-shadow: 0 10px 30px rgba(217, 119, 6, 0.25);
+    }
+    .perfect-gold .subprueba-name { color: #b45309 !important; }
+    .gold-badge { font-size: 0.9rem; margin-left: 4px; }
+    .gold-text { color: #d97706 !important; font-weight: 800; }
+    .score-percent { font-size: 0.85rem; opacity: 0.8; font-weight: 600; }
     .mode-header {
       display: flex;
       align-items: center;
@@ -1336,33 +1409,21 @@ export class EnsayosListComponent implements OnInit {
 
   private router = inject(Router);
   private authService = inject(AuthService);
-  private firestoreService = inject(FirestoreService);
-  showSettingsModal = false;
+  public firestoreService = inject(FirestoreService);
+  public adminService = inject(AdminService);
+  public dashSvc = inject(DashboardService);
   showProfileModal = false;
-  userProfile: any = null;
+  showSettingsModal = false;
+  showLogoutConfirm = false;
+  isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
 
-  get profileInitial(): string {
-    return this.userProfile?.displayName?.charAt(0)?.toUpperCase() || 'U';
-  }
-  
-  get isProPlan(): boolean {
-    const plan = this.userProfile?.plan || this.userProfile?.subscription?.tier;
-    return plan === 'premium' || plan === 'pro';
-  }
+  profileInitial = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.displayName?.charAt(0).toUpperCase() || 'U';
+  });
 
   onProfileModalClose() {
     this.showProfileModal = false;
-    this.loadUserProfile();
-  }
-
-  private loadUserProfile() {
-    this.firestoreService.getUserProfile().subscribe({
-      next: (profile) => {
-        if (profile) {
-          this.userProfile = profile;
-        }
-      }
-    });
   }
 
   countdown = { days: 0, hours: 0, minutes: 0 };
@@ -1371,16 +1432,7 @@ export class EnsayosListComponent implements OnInit {
   private countdownInterval: any;
 
   ngOnInit() {
-    // Pre-cargar datos desde Auth para evitar parpadeo
-    const currentUser = this.authService.currentUser;
-    if (currentUser) {
-      this.userProfile = {
-        displayName: currentUser.displayName,
-        photoURL: currentUser.photoURL
-      };
-    }
-
-    this.loadUserProfile();
+    this.firestoreService.getUserProfile().subscribe();
     this.refreshActiveProgress();
     this.startCountdown();
   }
@@ -1569,9 +1621,42 @@ export class EnsayosListComponent implements OnInit {
     return this.subPruebaSeleccionada !== null;
   }
 
-  logout() {
-    this.authService.logout().subscribe(() => {
-      this.router.navigate(['/']);
-    });
+  getCurrentEnsayoId(): string {
+    return this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? '';
   }
+
+  getBestScoreForCurrent() {
+    const id = this.getCurrentEnsayoId();
+    if (!id) return null;
+    return this.getBestScore(id);
+  }
+
+  getBestScore(ensayoId: string) {
+    const records = this.dashSvc.paesRecords();
+    const relevant = records.filter(r => r.ensayoId === ensayoId && r.mode === 'real');
+    if (!relevant.length) return null;
+    return relevant.reduce((best, curr) => curr.correctAnswers > best.correctAnswers ? curr : best);
+  }
+
+  getAttemptCount(ensayoId: string): number {
+    if (!ensayoId) return 0;
+    const records = this.dashSvc.paesRecords();
+    return records.filter(r => r.ensayoId === ensayoId && r.mode === 'real').length;
+  }
+
+  isPerfect(ensayoId: string): boolean {
+    const best = this.getBestScore(ensayoId);
+    return !!best && best.correctAnswers === best.totalQuestions && best.totalQuestions > 0;
+  }
+
+  confirmLogout() {
+    this.showLogoutConfirm = true;
+  }
+
+  async executeLogout() {
+    this.showLogoutConfirm = false;
+    await this.authService.logout().toPromise();
+    this.router.navigate(['/']);
+  }
+
 }

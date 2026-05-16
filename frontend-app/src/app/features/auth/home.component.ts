@@ -1,6 +1,9 @@
-import { Component, inject, HostListener, AfterViewInit } from '@angular/core';
+import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { FirestoreService } from '../../core/services/firestore.service';
 
 @Component({
   selector: 'app-home',
@@ -21,8 +24,21 @@ import { Router, RouterModule } from '@angular/router';
         </div>
         
         <div class="nav-actions">
-          <button class="btn btn-ghost" (click)="goTo('/login')">Iniciar Sesión</button>
-          <button class="btn btn-primary" (click)="goTo('/register')">Crear Cuenta</button>
+          <ng-container *ngIf="!isLoggedIn(); else loggedInNav">
+            <button class="btn btn-ghost" (click)="goTo('/login')">Iniciar Sesión</button>
+            <button class="btn btn-primary" (click)="goTo('/register')">Crear Cuenta</button>
+          </ng-container>
+          <ng-template #loggedInNav>
+            <div class="user-profile-nav" (click)="goTo('/dashboard')">
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" 
+                   [src]="firestoreService.profileSignal()?.photoURL" 
+                   alt="Profile" class="nav-avatar">
+              <ng-template #avatarFallback>
+                <div class="nav-avatar-fallback">{{ profileInitial() }}</div>
+              </ng-template>
+              <span class="nav-enter-text">Ingresar</span>
+            </div>
+          </ng-template>
         </div>
         
         <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">
@@ -36,8 +52,15 @@ import { Router, RouterModule } from '@angular/router';
         <a (click)="scrollTo('testimonials'); mobileMenuOpen = false">Testimonios</a>
         <a (click)="scrollTo('pricing'); mobileMenuOpen = false">Precios</a>
         <hr>
-        <button class="btn btn-ghost w-full" (click)="goTo('/login')">Iniciar Sesión</button>
-        <button class="btn btn-primary w-full" (click)="goTo('/register')">Crear Cuenta</button>
+        <ng-container *ngIf="!isLoggedIn(); else mobileLoggedIn">
+          <button class="btn btn-ghost w-full" (click)="goTo('/login')">Iniciar Sesión</button>
+          <button class="btn btn-primary w-full" (click)="goTo('/register')">Crear Cuenta</button>
+        </ng-container>
+        <ng-template #mobileLoggedIn>
+          <button class="btn btn-primary w-full" (click)="goTo('/dashboard')">
+            🚀 Entrar al Panel
+          </button>
+        </ng-template>
       </div>
     </nav>
 
@@ -59,12 +82,19 @@ import { Router, RouterModule } from '@angular/router';
           </p>
           
           <div class="hero-actions">
-            <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/register')">
-              🚀 Comenzar Gratis
-            </button>
-            <button class="btn btn-outline btn-large" (click)="goTo('/login')">
-              Iniciar Sesión →
-            </button>
+            <ng-container *ngIf="!isLoggedIn(); else heroLoggedIn">
+              <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/register')">
+                🚀 Comenzar Gratis
+              </button>
+              <button class="btn btn-outline btn-large" (click)="goTo('/login')">
+                Iniciar Sesión →
+              </button>
+            </ng-container>
+            <ng-template #heroLoggedIn>
+              <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/dashboard')">
+                ⚡ Ir a mi Dashboard
+              </button>
+            </ng-template>
           </div>
 
           <div class="stats">
@@ -192,8 +222,8 @@ import { Router, RouterModule } from '@angular/router';
 
           <div class="bento-card glass-card">
             <div class="bento-icon">🎓</div>
-            <h3>Contenido Experto</h3>
-            <p>Material de profesores especializados en la PAES.</p>
+            <h3>Encuentra tu Carrera</h3>
+            <p>Explora universidades y carreras según tu ubicación e intereses.</p>
           </div>
 
           <div class="bento-card glass-card">
@@ -315,7 +345,9 @@ import { Router, RouterModule } from '@angular/router';
               <li><span class="x">✗</span> Análisis profundo con IA</li>
               <li><span class="x">✗</span> Estadísticas avanzadas</li>
             </ul>
-            <button class="btn btn-outline w-full" (click)="goTo('/register')">Comenzar Gratis</button>
+            <button class="btn btn-outline w-full" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
+              {{ isLoggedIn() ? 'Ir al Panel' : 'Comenzar Gratis' }}
+            </button>
           </div>
 
           <div class="pricing-card glass-card premium">
@@ -329,7 +361,9 @@ import { Router, RouterModule } from '@angular/router';
               <li><span class="check">✓</span> Estadísticas avanzadas</li>
               <li><span class="check">✓</span> Soporte prioritario</li>
             </ul>
-            <button class="btn btn-primary w-full" (click)="goTo('/register')">Comenzar Prueba</button>
+            <button class="btn btn-primary w-full" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
+              {{ isLoggedIn() ? 'Ir al Panel' : 'Comenzar Prueba' }}
+            </button>
           </div>
         </div>
       </section>
@@ -339,8 +373,8 @@ import { Router, RouterModule } from '@angular/router';
         <div class="cta-content glass-card">
           <h2>¿Listo para mejorar tu puntaje?</h2>
           <p>Únete a miles de estudiantes preparándose con EstudiaUni</p>
-          <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/register')">
-            Crear Cuenta Gratis 🎓
+          <button class="btn btn-primary btn-large btn-glow" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
+            {{ isLoggedIn() ? '⚡ Ir a mi Dashboard' : 'Crear Cuenta Gratis 🎓' }}
           </button>
         </div>
       </section>
@@ -445,6 +479,75 @@ import { Router, RouterModule } from '@angular/router';
     .btn-ghost:hover { 
       background: var(--bg-secondary);
       border-color: var(--accent-primary);
+    }
+    .user-profile-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.5rem 1.2rem;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(133, 92, 214, 0.4);
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .user-profile-nav:hover {
+      border-color: var(--accent-primary);
+      background: #ffffff;
+      box-shadow: 0 8px 25px rgba(133, 92, 214, 0.15);
+      transform: translateY(-2px);
+    }
+    .user-profile-nav::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 9999px;
+      background: var(--gradient-brand);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .user-profile-nav:hover::before {
+      opacity: 0.15;
+    }
+    .nav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 0 2px var(--accent-primary);
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .user-profile-nav:hover .nav-avatar {
+      transform: scale(1.1);
+    }
+    .nav-avatar-fallback {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--gradient-brand);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 0 2px var(--accent-primary);
+      transition: transform 0.3s;
+    }
+    .user-profile-nav:hover .nav-avatar-fallback {
+      transform: scale(1.1);
+    }
+    .nav-enter-text {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 1rem;
+      letter-spacing: -0.01em;
     }
     .mobile-menu-btn {
       display: none;
@@ -1184,11 +1287,30 @@ import { Router, RouterModule } from '@angular/router';
     }
   `]
 })
-export class HomeComponent implements AfterViewInit {
+export class HomeComponent implements AfterViewInit, OnInit {
   private router = inject(Router);
+  private authService = inject(AuthService);
+  public firestoreService = inject(FirestoreService);
+  
+  isLoggedIn$ = this.authService.isLoggedIn$;
+  user$ = this.authService.user$;
+  
+  // Use toSignal for easy access in template and expressions
+  isLoggedIn = toSignal(this.isLoggedIn$, { initialValue: false });
+  user = toSignal(this.user$, { initialValue: null });
+  
+  profileInitial = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.displayName?.charAt(0).toUpperCase() || 'U';
+  });
+
   isScrolled = false;
   mobileMenuOpen = false;
   animationsReady = false;
+
+  ngOnInit() {
+    this.firestoreService.getUserProfile().subscribe();
+  }
 
   ngAfterViewInit() {
     requestAnimationFrame(() => {

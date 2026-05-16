@@ -1,52 +1,67 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
 import { AuthService } from '../../core/services/auth.service';
+import { FirestoreService } from '../../core/services/firestore.service';
 import { Materia } from './models/paes.models';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
+import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { AdminService } from '../admin/services/admin.service';
 
 @Component({
   selector: 'app-learning-path',
   standalone: true,
-  imports: [CommonModule, RouterModule, SettingsModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
   template: `
     <div class="lp-layout">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-logo"><span class="text-gradient">EstudiaUni</span></span>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" (click)="showSettingsModal = true"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+          <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
         </nav>
-        <div class="sidebar-footer">
-          <button class="nav-item logout-btn" (click)="logout()">
+        <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
+          <a class="nav-item" (click)="showSettingsModal = true">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Configuración</span>
+          </a>
+          <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
             <span class="nav-icon">🚪</span>
             <span class="nav-text">Cerrar Sesión</span>
-          </button>
+          </a>
         </div>
       </aside>
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
         <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <span class="text-gradient">EstudiaUni</span>
+        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
-        <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
-            <a class="nav-item" (click)="logout()"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
           </nav>
+          <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-text">Configuración</span>
+            </a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
+              <span class="nav-icon">🚪</span>
+              <span class="nav-text">Cerrar Sesión</span>
+            </a>
+          </div>
         </div>
-      </div>
 
       <!-- MAIN -->
       <main class="main-content">
@@ -62,29 +77,67 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
               <h1>Mi Ruta de Aprendizaje</h1>
               <p class="page-subtitle">Elige una materia para empezar tu camino PAES 🚀</p>
             </div>
-            <div class="overall-stats">
-              <div class="ov-stat">
-                <span class="ov-val">{{ totalCompleted() }}</span>
-                <span class="ov-label">Completadas</span>
+            <div class="header-right-actions" style="display:flex; align-items:center; gap:1.5rem;">
+              <div class="overall-stats">
+                <div class="ov-stat">
+                  <span class="ov-val">{{ totalCompleted() }}</span>
+                  <span class="ov-label">Completadas</span>
+                </div>
+                <div class="ov-stat accent">
+                  <span class="ov-val">{{ totalSections() }}</span>
+                  <span class="ov-label">Total</span>
+                </div>
               </div>
-              <div class="ov-stat accent">
-                <span class="ov-val">{{ totalSections() }}</span>
-                <span class="ov-label">Total</span>
+              <div class="welcome-actions">
+                <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
+                <div class="profile-menu-wrap">
+                  <button class="profile-trigger" (click)="showProfileModal = true">
+                    <span class="profile-avatar-wrap">
+                      <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                      <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                    </span>
+                  </button>
+                  <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+              
+          <!-- CONTROLS ROW -->
+          <div class="controls-row">
+            <div class="countdown-row">
+              <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
+              <div class="countdown-timer">
+                <div class="time-unit"><span>{{ countdown.days }}</span><label>d</label></div>
+                <div class="time-unit"><span>{{ countdown.hours }}</span><label>h</label></div>
+                <div class="time-unit"><span>{{ countdown.minutes }}</span><label>m</label></div>
+              </div>
+            </div>
+
+            <div class="filters-row">
+              <div class="filter-group">
+                <label for="sortOrder">Ordenar por:</label>
+                <select id="sortOrder" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
+                  <option value="default">Por Defecto</option>
+                  <option value="progress-desc">Más Avanzado a Menos Avanzado</option>
+                  <option value="progress-asc">Menos Avanzado a Más Avanzado</option>
+                </select>
               </div>
             </div>
           </div>
 
           <!-- MATERIAS GRID -->
           <div class="materias-grid">
-            <div *ngFor="let m of paes.materias()"
+            <div *ngFor="let m of filteredAndSortedMaterias()"
               class="materia-card horizontal-card"
               [class.has-progress]="getMateriaProgress(m.id).percentage > 0"
               [class.completed]="getMateriaProgress(m.id).percentage === 100"
+              [style.background-color]="getMateriaInfo(m).bgColor || '#fff'"
               (click)="goToMateria(m)">
 
               <!-- Izquierda: Imagen grande -->
               <div class="card-image-col">
-                <img [src]="getMateriaInfo(m.id).img" [alt]="m.title" class="materia-main-img" />
+                <img [src]="getMateriaInfo(m).img" [alt]="m.title" class="materia-main-img" />
               </div>
 
               <!-- Derecha: Contenido -->
@@ -103,9 +156,9 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
                 </div>
 
                 <!-- Descripción y Tópicos -->
-                <p class="materia-desc">{{ getMateriaInfo(m.id).desc }}</p>
+                <p class="materia-desc">{{ getMateriaInfo(m).desc }}</p>
                 <div class="materia-topics">
-                  <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m.id).topics">{{ topic }}</span>
+                  <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m).topics">{{ topic }}</span>
                 </div>
 
                 <!-- Footer de la tarjeta: Progreso + Botón -->
@@ -144,7 +197,29 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
         </ng-container>
       </main>
     </div>
-    <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
+    <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsClose()"></app-settings-modal>
+    <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+
+    <!-- CUSTOM LOGOUT CONFIRMATION -->
+    <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
+      <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Cerrar Sesión</h2>
+          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">🚪</div>
+            <h3>¿Estás seguro de que quieres salir?</h3>
+            <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
+          </div>
+        </div>
+        <div class="modal-footer confirm-actions">
+          <button class="btn-secondary-modal" (click)="showLogoutConfirm = false">Cancelar</button>
+          <button class="btn-primary-modal btn-danger" (click)="executeLogout()">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
@@ -170,25 +245,27 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
     .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
-    .sidebar-footer { padding: 1.25rem 1rem; border-top: none; display: flex; justify-content: center; }
-    .logout-btn { 
-      width: fit-content;
-      min-width: 180px;
-      justify-content: center; 
-      padding: 0.65rem 1rem;
-      border: 1px solid rgba(239, 68, 68, 0.18) !important; 
-      background: transparent !important; 
-      color: rgba(252, 165, 165, 0.6) !important; 
-      margin: 0 auto;
-      border-radius: 14px;
-      font-weight: 500;
-    }
-    .logout-btn:hover { 
-      background: rgba(239, 68, 68, 0.1) !important; 
-      border-color: #ef4444 !important; 
-      color: #ef4444 !important; 
-      transform: none !important; 
-    }
+    .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
+    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
+    .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .modal-body { padding: 1.5rem; }
+    .confirm-content { text-align: center; padding: 1rem 0; }
+    .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+    .confirm-content p { color: var(--text-secondary); margin: 0; }
+    .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
+    .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-secondary-modal { padding: 0.85rem; border-radius: 12px; border: 2px solid var(--glass-border); background: transparent; color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary-modal:hover { background: var(--bg-secondary); }
+    .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-danger { background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239,68,68,0.25) !important; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MOBILE */
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
@@ -202,13 +279,86 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 
     /* PAGE HEADER */
     .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
-    .page-header h1 { font-family: var(--font-heading); font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem; }
-    .page-subtitle { color: var(--text-secondary); font-size: 0.95rem; margin: 0; }
+    .page-header h1 { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem; letter-spacing: -0.03em; }
+    .page-subtitle { color: var(--text-secondary); font-size: 1.15rem; margin: 0; font-weight: 500; }
+    
+    /* PROFILE MENU & PLAN BADGE */
+    .welcome-actions { display: flex; align-items: center; gap: 1rem; }
+    .profile-menu-wrap { position: relative; }
+    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; box-shadow: var(--shadow-sm); }
+    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: var(--shadow); }
+    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
+    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+    .profile-avatar.fallback { display: grid; place-items: center; background: var(--gradient-brand); font-weight: 700; font-size: 0.9rem; color: white; }
+    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
+    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
+    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
+
     .overall-stats { display: flex; gap: 0.75rem; }
     .ov-stat { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; padding: 0.75rem 1.25rem; text-align: center; min-width: 75px; }
     .ov-stat.accent { border-color: rgba(133,92,214,0.15); background: rgba(133,92,214,0.03); }
     .ov-val { display: block; font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
     .ov-label { font-size: 0.68rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+
+    /* CONTROLS ROW */
+    .controls-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+    /* COUNTDOWN WIDGET */
+    .countdown-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: #fff;
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      width: fit-content;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 2px solid rgba(133,92,214,0.3);
+    }
+    .countdown-label { font-size: 0.85rem; font-weight: 700; color: #64748b; }
+    .countdown-timer { display: flex; gap: 0.75rem; }
+    .time-unit { display: flex; align-items: baseline; gap: 2px; }
+    .time-unit span { font-size: 1rem; font-weight: 800; color: var(--accent-primary); min-width: 20px; text-align: center; }
+    .time-unit label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; }
+
+    /* FILTERS */
+    .filters-row {
+      display: flex;
+      gap: 1.5rem;
+      background: #fff;
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      border: 2px solid rgba(0,0,0,0.06);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .filter-group label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .filter-group select {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 2px solid rgba(0,0,0,0.06);
+      background: #f8f9fa;
+      font-family: inherit;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .filter-group select:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(133,92,214,0.1);
+    }
 
     /* MATERIAS GRID */
     .materias-grid { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -218,8 +368,20 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
     .horizontal-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(133,92,214,0.1); border-color: rgba(133,92,214,0.25); }
 
     /* IMAGE COLUMN */
-    .card-image-col { flex: 0 0 280px; display: flex; align-items: center; justify-content: center; }
-    .materia-main-img { width: 100%; height: auto; max-height: 220px; object-fit: contain; border-radius: 12px; transition: transform 0.4s ease; }
+    .card-image-col { flex: 0 0 360px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16px; }
+    .materia-main-img { 
+      width: 100%; 
+      height: auto;
+      max-height: 280px; 
+      object-fit: contain; 
+      border-radius: 12px; 
+      transition: transform 0.4s ease;
+      /* Efecto de difuminado en los bordes para mezcla suave */
+      mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent),
+                  linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+      mask-composite: intersect;
+      -webkit-mask-composite: source-in;
+    }
     .horizontal-card:hover .materia-main-img { transform: scale(1.05); }
 
     /* CONTENT COLUMN */
@@ -281,19 +443,109 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
     }
   `]
 })
-export class LearningPathComponent {
-  public paes = inject(PaesContentService);
+export class LearningPathComponent implements OnInit, OnDestroy {
+  public firestoreService = inject(FirestoreService);
   private auth = inject(AuthService);
+  public paes = inject(PaesContentService);
   private router = inject(Router);
+  public adminService = inject(AdminService);
 
   mobileOpen = false;
   showSettingsModal = false;
+  showProfileModal = false;
+  showLogoutConfirm = false;
 
-  materiaDataConfig: Record<string, { desc: string, topics: string[], img: string }> = {
+  isProPlan = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.plan === 'premium';
+  });
+  profileInitial = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.displayName?.charAt(0).toUpperCase() || 'U';
+  });
+
+  countdown = { days: 0, hours: 0, minutes: 0 };
+  nextExamLabel = '';
+  private countdownInterval: any;
+
+  userSelectedSubjects = computed(() => this.firestoreService.profileSignal()?.selectedSubjects || ['comp-lectora', 'mat1', 'historia', 'ciencias-tp', 'ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica']);
+  sortOrder = signal<string>('default');
+
+  filteredAndSortedMaterias = computed(() => {
+    let list = [...this.paes.materias()];
+    
+    // Filter
+    const selected = this.userSelectedSubjects();
+    if (selected !== null && selected.length > 0) {
+      list = list.filter(m => selected.includes(m.id));
+    }
+    
+    // Sort
+    const s = this.sortOrder();
+    if (s === 'progress-desc') {
+      list.sort((a, b) => this.getMateriaProgress(b.id).percentage - this.getMateriaProgress(a.id).percentage);
+    } else if (s === 'progress-asc') {
+      list.sort((a, b) => this.getMateriaProgress(a.id).percentage - this.getMateriaProgress(b.id).percentage);
+    }
+    
+    return list;
+  });
+
+  onSettingsClose() {
+    this.showSettingsModal = false;
+  }
+
+  onProfileModalClose() {
+    this.showProfileModal = false;
+  }
+
+  ngOnInit() {
+    this.firestoreService.getUserProfile().subscribe();
+    this.startCountdown();
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+  }
+
+  private startCountdown() {
+    const targets = [
+      { label: 'PAES Invierno 2026', date: new Date('June 15, 2026 09:00:00') },
+      { label: 'PAES Regular 2026', date: new Date('November 30, 2026 09:00:00') },
+      { label: 'PAES Invierno 2027', date: new Date('June 14, 2027 09:00:00') },
+      { label: 'PAES Regular 2027', date: new Date('November 29, 2027 09:00:00') }
+    ];
+
+    const update = () => {
+      const now = new Date().getTime();
+      const nextTarget = targets.find(t => t.date.getTime() > now);
+
+      if (!nextTarget) {
+        this.nextExamLabel = 'Próxima PAES';
+        this.countdown = { days: 0, hours: 0, minutes: 0 };
+        return;
+      }
+
+      this.nextExamLabel = nextTarget.label;
+      const diff = nextTarget.date.getTime() - now;
+      
+      this.countdown = {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      };
+    };
+    
+    update();
+    this.countdownInterval = setInterval(update, 60000);
+  }
+
+  materiaDataConfig: Record<string, { desc: string, topics: string[], img: string, bgColor?: string }> = {
     'comp-lectora': {
       desc: 'Mejora tu comprensión lectora, análisis de textos literarios y no literarios, y desarrolla un pensamiento crítico fundamental para la prueba.',
       topics: ['Textos Literarios', 'Textos No Literarios', 'Vocabulario'],
-      img: 'assets/images/comp-lectora.png'
+      img: 'assets/images/subjects/comp-lectora.png',
+      bgColor: '#F7A08F'
     },
     'mat1': {
       desc: 'Domina los conceptos fundamentales de números, álgebra, geometría y probabilidad para asegurar un alto puntaje en la prueba M1.',
@@ -309,14 +561,40 @@ export class LearningPathComponent {
       desc: 'Prepárate integralmente en los ejes de Biología, Física y Química, comprendiendo los fenómenos naturales y sus leyes.',
       topics: ['Biología', 'Física', 'Química'],
       img: 'assets/images/ciencias.png'
+    },
+    'ciencias-tp': {
+      desc: 'Prepárate para la prueba de Ciencias Técnico Profesional con enfoque en fenómenos aplicados al ámbito laboral.',
+      topics: ['Biología TP', 'Física TP', 'Química TP'],
+      img: 'assets/images/subjects/ciencias-tp.png',
+      bgColor: '#F3D8AB'
+    },
+    'ciencias-biologia': {
+      desc: 'Profundiza en la biología celular, herencia, procesos vitales, evolución e interacción de los organismos con su ambiente.',
+      topics: ['Organización Celular', 'Herencia', 'Ecosistemas'],
+      img: 'assets/images/subjects/biologia.png',
+      bgColor: '#D0D9AC'
+    },
+    'ciencias-fisica': {
+      desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',
+      topics: ['Ondas', 'Mecánica', 'Electricidad'],
+      img: 'assets/images/subjects/fisica.png',
+      bgColor: '#DCCEF9'
+    },
+    'ciencias-quimica': {
+      desc: 'Estudia la estructura de la materia, enlaces, química orgánica y reacciones estequiométricas fundamentales.',
+      topics: ['Estructura Atómica', 'Química Orgánica', 'Estequiometría'],
+      img: 'assets/images/subjects/quimica.png',
+      bgColor: '#B8F4D2'
     }
   };
 
-  getMateriaInfo(id: string) {
-    return this.materiaDataConfig[id] || {
-      desc: 'Prepárate para la prueba con material actualizado y ejercicios prácticos.',
-      topics: ['General', 'Ejercicios'],
-      img: 'assets/images/comp-lectora.png'
+  getMateriaInfo(m: Materia) {
+    const config = this.materiaDataConfig[m.id];
+    return {
+      desc: config?.desc || 'Prepárate para la prueba con material actualizado y ejercicios prácticos.',
+      topics: config?.topics || ['General', 'Ejercicios'],
+      img: m.imageUrl || config?.img || 'assets/images/comp-lectora.png',
+      bgColor: config?.bgColor
     };
   }
 
@@ -353,8 +631,14 @@ export class LearningPathComponent {
     this.router.navigate(['/ruta', m.id]);
   }
 
-  async logout() {
-    await this.auth.logout();
+  confirmLogout() {
+    this.showLogoutConfirm = true;
+  }
+
+  async executeLogout() {
+    this.showLogoutConfirm = false;
+    await this.auth.logout().toPromise();
     this.router.navigate(['/']);
   }
+
 }

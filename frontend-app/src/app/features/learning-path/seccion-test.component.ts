@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
+import { SoundService } from '../../core/services/sound.service';
 
 @Component({
   selector: 'app-seccion-test',
@@ -13,6 +14,7 @@ import { KatexService } from '../../core/services/katex.service';
     <div class="test-page" *ngIf="test() as t">
       <!-- TOP BAR -->
       <div class="top-bar">
+        <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
         <div class="top-progress">
           <div class="top-progress-fill" [style.width.%]="progressPct()"></div>
         </div>
@@ -203,6 +205,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private katex = inject(KatexService);
   private sanitizer = inject(DomSanitizer);
+  private soundSvc = inject(SoundService);
 
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
@@ -259,6 +262,11 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   checkAnswer() {
+    if (this.isCurrentCorrect()) {
+      this.soundSvc.playCorrect();
+    } else {
+      this.soundSvc.playWrong();
+    }
     this.showFeedback.set(true);
   }
 
