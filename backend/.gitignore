@@ -9,6 +9,7 @@ dist/
 
 # Firebase
 serviceAccountKey.json
+firebase-admin-key.json
 
 # IDE
 .idea/
