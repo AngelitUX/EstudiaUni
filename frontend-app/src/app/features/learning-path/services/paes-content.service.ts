@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject, Injector } from '@angular/core';
 import { Materia, Capitulo, Seccion, TestPaes, SeccionProgress, TestResult, TestAnswer } from '../models/paes.models';
-import { Firestore, collection, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, collectionGroup } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { DashboardService } from '../../../core/services/dashboard.service';
 
@@ -562,20 +562,30 @@ export class PaesContentService {
         } as TestPaes);
       });
 
+      // 5. Cargar todas las secciones de una sola vez con un Collection Group
+      const seccionesSnap = await getDocs(collectionGroup(this.firestore, 'secciones'));
+      const seccionesByCapitulo = new Map<string, Seccion[]>();
+      
+      seccionesSnap.docs.forEach(secDoc => {
+        const secData = secDoc.data() as any;
+        const test = testsMap.get(secData.testId);
+        const seccion = {
+          ...secData,
+          test
+        } as Seccion;
+        
+        const capId = secData.capituloId;
+        if (capId) {
+          if (!seccionesByCapitulo.has(capId)) {
+            seccionesByCapitulo.set(capId, []);
+          }
+          seccionesByCapitulo.get(capId)!.push(seccion);
+        }
+      });
+
       for (const capDoc of capitulosSnap.docs) {
         const capData = capDoc.data() as Omit<Capitulo, 'secciones'>;
-        
-        // Cargar secciones de este capítulo
-        const seccionesSnap = await getDocs(collection(this.firestore, `lp_capitulos/${capDoc.id}/secciones`));
-        const secciones: Seccion[] = seccionesSnap.docs.map(secDoc => {
-          const secData = secDoc.data() as any;
-          // Vincular el test hidratado
-          const test = testsMap.get(secData.testId);
-          return {
-            ...secData,
-            test
-          } as Seccion;
-        });
+        const secciones = seccionesByCapitulo.get(capDoc.id) || [];
 
         capitulos.push({
           ...capData,
