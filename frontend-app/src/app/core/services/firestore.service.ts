@@ -15,7 +15,7 @@ import {
   Timestamp
 } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
-import { from, map, Observable, of, catchError, switchMap } from 'rxjs';
+import { from, map, Observable, of, catchError, switchMap, shareReplay } from 'rxjs';
 
 // @ts-ignore
 import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
@@ -96,10 +96,20 @@ export class FirestoreService {
   public firestore = inject(Firestore);
   private auth = inject(Auth);
   public profileSignal: WritableSignal<UserProfile | null> = signal(null);
+  private cachedProfile$: Observable<UserProfile | null> | null = null;
 
-  constructor() { (window as any).firestoreService = this; }
+  constructor() { 
+    (window as any).firestoreService = this; 
+    // Clear cached profile observable when auth status resets
+    authState(this.auth).subscribe(user => {
+      if (!user) {
+        this.cachedProfile$ = null;
+        this.profileSignal.set(null);
+      }
+    });
+  }
 
-  getUserProfile(uid?: string): Observable<UserProfile | null> {
+  getUserProfile(forceRefresh = false, uid?: string): Observable<UserProfile | null> {
     if (uid) {
       const docRef = doc(this.firestore, 'users', uid);
       return from(getDoc(docRef)).pipe(
@@ -107,13 +117,23 @@ export class FirestoreService {
       );
     }
 
-    // Esperamos reactivamente al estado de Auth
-    return authState(this.auth).pipe(
+    if (this.cachedProfile$ && !forceRefresh) {
+      return this.cachedProfile$;
+    }
+
+    this.cachedProfile$ = authState(this.auth).pipe(
       switchMap((user: any) => {
         if (!user) {
           this.profileSignal.set(null);
           return of(null);
         }
+
+        // Return local cached signal immediately if populated and not force-refreshing
+        const current = this.profileSignal();
+        if (current && current.uid === user.uid && !forceRefresh) {
+          return of(current);
+        }
+
         const docRef = doc(this.firestore, 'users', user.uid);
         return from(getDoc(docRef)).pipe(
           map(snap => {
@@ -122,26 +142,50 @@ export class FirestoreService {
             return p;
           })
         );
-      })
+      }),
+      shareReplay(1)
     );
+
+    return this.cachedProfile$;
   }
 
   async saveUserProfile(data: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) return;
     await setDoc(doc(this.firestore, 'users', user.uid), data, { merge: true });
+
+    // Update local profile signal immediately to avoid redundant fetches
+    const current = this.profileSignal();
+    if (current && current.uid === user.uid) {
+      this.profileSignal.set({ ...current, ...data });
+    }
   }
 
   async updateProfileSettings(settings: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) return;
     await updateDoc(doc(this.firestore, 'users', user.uid), settings);
+
+    // Update local profile signal immediately to avoid redundant fetches
+    const current = this.profileSignal();
+    if (current && current.uid === user.uid) {
+      this.profileSignal.set({ ...current, ...settings });
+    }
   }
 
   async updateUserStats(stats: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) return;
     await updateDoc(doc(this.firestore, 'users', user.uid), stats);
+
+    // Update local profile signal immediately to avoid redundant fetches
+    const current = this.profileSignal();
+    if (current && current.uid === user.uid) {
+      this.profileSignal.set({ 
+        ...current, 
+        stats: { ...current.stats, ...stats } 
+      });
+    }
   }
 
   getEnsayos(subjectFilter?: string): Observable<Ensayo[]> {
