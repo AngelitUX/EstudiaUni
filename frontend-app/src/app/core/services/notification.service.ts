@@ -63,21 +63,26 @@ export class NotificationService {
   /**
    * Inicia el sistema de recordatorios según la configuración
    */
-  async startReminders(config: NotificationConfig): Promise<void> {
-    // Solicitar permiso si no está concedido
-    if (!this.notificationPermissionGranted$.value) {
-      const granted = await this.requestPermission();
-      if (!granted) {
-        console.warn('Permiso de notificaciones denegado');
-        return;
-      }
-    }
-
+  async startReminders(config: NotificationConfig, userInitiated = false): Promise<void> {
     // Detener recordatorios previos
     this.stopReminders();
 
     if (!config.notificationsEnabled) {
       return;
+    }
+
+    // Solicitar permiso si no está concedido y es iniciado por el usuario
+    if (!this.notificationPermissionGranted$.value) {
+      if (userInitiated) {
+        const granted = await this.requestPermission();
+        if (!granted) {
+          console.warn('Permiso de notificaciones denegado');
+          return;
+        }
+      } else {
+        console.log('Permiso de notificaciones no concedido aún, ignorando inicio automático.');
+        return;
+      }
     }
 
     // Iniciar chequeo cada minuto

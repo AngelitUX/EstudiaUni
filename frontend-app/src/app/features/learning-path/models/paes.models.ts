@@ -44,11 +44,11 @@ export interface TestPaes {
 
 export interface PreguntaTest {
   id: number;
-  preambulo_texto: string | null;         // Citas cortas (Historia/Ciencias)
-  preambulo_imagen_url: string | null;    // Imagen de apoyo (Ciencias/Matemáticas)
+  preambulo_texto?: string | null;         // Citas cortas (Historia/Ciencias)
+  preambulo_imagen_url?: string | null;    // Imagen de apoyo (Ciencias/Matemáticas)
   enunciado: string;
-  formula_latex: string | null;           // Fórmulas LaTeX (Matemáticas M1/M2)
-  tipo_alternativas: 'texto' | 'imagen';  // Flag para renderizado dinámico
+  formula_latex?: string | null;           // Fórmulas LaTeX (Matemáticas M1/M2)
+  tipo_alternativas?: 'texto' | 'imagen';  // Flag para renderizado dinámico
   alternativas: { A: string; B: string; C: string; D: string };
   respuesta_correcta: 'A' | 'B' | 'C' | 'D';
   feedback_acierto: string;

@@ -886,7 +886,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationIntensity: this.settingsForm.notificationIntensity,
         notificationsEnabled: true,
-      });
+      }, true);
       this.toast.success('Recordatorios activados');
     } else {
       this.notificationService.stopReminders();
