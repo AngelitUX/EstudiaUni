@@ -29,7 +29,6 @@ export class AdminService {
   readonly allPreguntas = this._preguntas.asReadonly();
   readonly totalPreguntas = computed(() => this._preguntas().length);
 
-  // ─── Materias disponibles ───
   readonly materiasDisponibles: { id: MateriaId; label: string; icon: string }[] = [
     { id: 'competencia-lectora', label: 'Competencia Lectora', icon: '📖' },
     { id: 'matematicas-m1', label: 'Matemáticas M1', icon: '🔢' },
@@ -37,7 +36,8 @@ export class AdminService {
     { id: 'ciencias-biologia', label: 'Biología', icon: '🧬' },
     { id: 'ciencias-fisica', label: 'Física', icon: '⚛️' },
     { id: 'ciencias-quimica', label: 'Química', icon: '🧪' },
-    { id: 'historia', label: 'Historia', icon: '🏛️' },
+    { id: 'ciencias-tp', label: 'Ciencias Técnico Profesional', icon: '🛠️' },
+    { id: 'historia', label: 'Historia y Ciencias Sociales', icon: '🏛️' },
   ];
 
   constructor() {

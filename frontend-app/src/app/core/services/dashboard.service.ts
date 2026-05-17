@@ -8,17 +8,23 @@ import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } 
 
 export interface ActivityEntry {
   id: string;
-  type: 'leccion' | 'ensayo';
+  type: 'leccion' | 'ensayo' | 'mente-veloz';
   mode?: 'real' | 'asistido';
   title: string;
   subject: string;
   subjectIcon: string;
-  score?: number;         // porcentaje para lecciones, puntaje para ensayos
+  score?: number;         // porcentaje para lecciones, puntaje para ensayos, correctas para mente-veloz
   totalCorrect?: number;
   totalQuestions?: number;
   timestamp: any;       // ISO string or Firestore Timestamp
   ensayoId?: string;      // ID del ensayo original
   intentoId?: string;     // ID del intento en Firestore
+  difficulty?: string;
+  timeLimit?: number;
+  avgSpeed?: string;
+  bestStreak?: number;
+  materiasKey?: string;
+  playedQuestionsRaw?: string;
 }
 
 export interface SubjectMastery {
@@ -350,6 +356,53 @@ export class DashboardService {
     if (user) {
       this.firestoreService.saveActivity(user.uid, entry).catch(err => 
         console.error('[DashboardService] Error guardando record en Firebase:', err)
+      );
+    }
+  }
+
+  /** Log a completed Mente Veloz round */
+  logMenteVelozCompleted(data: {
+    title: string;
+    correctAnswers: number;
+    totalQuestions: number;
+    score: number; // percentage
+    difficulty: string;
+    timeLimit: number;
+    avgSpeed: string;
+    bestStreak: number;
+    materiasKey: string;
+    playedQuestionsRaw: string;
+  }): void {
+    const entry: ActivityEntry = {
+      id: `mente-veloz-${Date.now()}`,
+      type: 'mente-veloz',
+      title: data.title,
+      subject: 'mente-veloz',
+      subjectIcon: '⚡',
+      score: data.score,
+      totalCorrect: data.correctAnswers,
+      totalQuestions: data.totalQuestions,
+      timestamp: new Date().toISOString(),
+      difficulty: data.difficulty,
+      timeLimit: data.timeLimit,
+      avgSpeed: data.avgSpeed,
+      bestStreak: data.bestStreak,
+      materiasKey: data.materiasKey,
+      playedQuestionsRaw: data.playedQuestionsRaw
+    };
+
+    const currentActivities = this._activities();
+    this._activities.set([entry, ...currentActivities].slice(0, 50));
+
+    this.updateStreak();
+    this.updateSuperStreak();
+    this.saveToStorage();
+
+    // Persistir en Firebase
+    const user = this.auth.currentUser;
+    if (user) {
+      this.firestoreService.saveActivity(user.uid, entry).catch(err => 
+        console.error('[DashboardService] Error guardando record de Mente Veloz en Firebase:', err)
       );
     }
   }

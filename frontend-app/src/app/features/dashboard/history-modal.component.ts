@@ -19,17 +19,17 @@ import { Router } from '@angular/router';
           <div class="activity-list" *ngIf="activities.length > 0; else noActivity">
             <div *ngFor="let act of activities" 
                  class="activity-item" 
-                 [class.clickable]="act.type === 'ensayo'"
+                 [class.clickable]="act.type === 'ensayo' || act.type === 'mente-veloz'"
                  (click)="onActivityClick(act)">
-              <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : '📝' }}</span>
+              <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : (act.type === 'mente-veloz' ? '⚡' : '📝') }}</span>
               <div class="activity-info">
                 <span class="activity-title">{{ act.title }}</span>
                 <span class="activity-time">{{ getRelativeTime(act.timestamp) }}</span>
               </div>
               <div class="activity-right">
-                <span class="clickable-badge" *ngIf="act.type === 'ensayo'">Ver Resultados →</span>
+                <span class="clickable-badge" *ngIf="act.type === 'ensayo' || act.type === 'mente-veloz'">Ver Resultados →</span>
                 <span class="activity-score" *ngIf="act.score !== undefined">
-                  {{ act.type === 'leccion' ? act.score + '%' : act.totalCorrect + '/' + act.totalQuestions }}
+                  {{ act.type === 'leccion' ? act.score + '%' : (act.type === 'mente-veloz' ? act.totalCorrect + ' correctas' : act.totalCorrect + '/' + act.totalQuestions) }}
                 </span>
               </div>
             </div>
@@ -101,6 +101,11 @@ export class HistoryModalComponent implements OnInit {
         });
         this.close.emit();
       }
+    } else if (act.type === 'mente-veloz') {
+      this.router.navigate(['/mente-veloz'], {
+        queryParams: { historyId: act.id }
+      });
+      this.close.emit();
     }
   }
 }

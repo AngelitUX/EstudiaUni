@@ -301,16 +301,18 @@ import { AdminService } from '../admin/services/admin.service';
             <div class="activity-list" *ngIf="dashSvc.activities().length > 0; else noActivity">
               <div *ngFor="let act of dashSvc.activities().slice(0, 4)" 
                    class="activity-item"
-                   [class.clickable]="act.type === 'ensayo'"
+                   [class.clickable]="act.type === 'ensayo' || act.type === 'mente-veloz'"
                    (click)="onActivityClick(act)">
-                <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : '📝' }}</span>
+                <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : (act.type === 'mente-veloz' ? '⚡' : '📝') }}</span>
                 <div class="activity-info">
                   <span class="activity-title">{{ act.title }}</span>
                   <span class="activity-time">{{ dashSvc.getRelativeTime(act.timestamp) }}</span>
                 </div>
                 <div class="activity-right">
-                  <span class="clickable-badge" *ngIf="act.type === 'ensayo'">Ver →</span>
-                  <span class="activity-score" *ngIf="act.score !== undefined">{{ act.type === 'leccion' ? act.score + '%' : act.totalCorrect + '/' + act.totalQuestions }}</span>
+                  <span class="clickable-badge" *ngIf="act.type === 'ensayo' || act.type === 'mente-veloz'">Ver →</span>
+                  <span class="activity-score" *ngIf="act.score !== undefined">
+                    {{ act.type === 'leccion' ? act.score + '%' : (act.type === 'mente-veloz' ? act.totalCorrect + ' corr.' : act.totalCorrect + '/' + act.totalQuestions) }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -424,7 +426,7 @@ import { AdminService } from '../admin/services/admin.service';
     .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
 
     /* METRICS */
     .metrics-section { display: grid; grid-template-columns: 1.2fr 0.9fr 1.1fr; gap: 1.5rem; margin-bottom: 2rem; }
@@ -758,6 +760,10 @@ export class DashboardComponent implements OnInit {
           queryParams: { intento: act.intentoId }
         });
       }
+    } else if (act.type === 'mente-veloz') {
+      this.router.navigate(['/mente-veloz'], {
+        queryParams: { historyId: act.id }
+      });
     }
   }
 
