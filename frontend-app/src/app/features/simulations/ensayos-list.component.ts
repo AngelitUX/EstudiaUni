@@ -65,6 +65,10 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">🎓</span>
             <span class="nav-text">Encuentra tu Carrera</span>
           </a>
+          <a class="nav-item" routerLink="/mente-veloz">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-text">Mente Veloz</span>
+          </a>
         </nav>
         
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
@@ -80,7 +84,7 @@ type ExamMode = 'real' | 'asistido';
       </aside>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content">
+      <main class="main-content animate-fade-in">
         <!-- HEADER -->
         <header class="header">
           <div class="header-main-row">

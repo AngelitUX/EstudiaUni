@@ -87,6 +87,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
+  {
+    path: 'mente-veloz',
+    loadComponent: () => import('./features/mente-veloz/mente-veloz.component').then(m => m.MenteVelozComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   { path: '**', redirectTo: '' }
 ];
 

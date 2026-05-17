@@ -114,6 +114,10 @@ export class AdminService {
 
     const docRef = await addDoc(collection(this.firestore, 'pool_preguntas'), data);
     
+    // Invalidate PaesContentService cache
+    localStorage.removeItem('paes_content_cache');
+    localStorage.removeItem('paes_content_cache_timestamp');
+
     // Update local state
     this._preguntas.update(list => [{ ...data, id: docRef.id } as PoolPregunta, ...list]);
     
@@ -130,6 +134,10 @@ export class AdminService {
 
     await updateDoc(doc(this.firestore, 'pool_preguntas', id), data);
 
+    // Invalidate PaesContentService cache
+    localStorage.removeItem('paes_content_cache');
+    localStorage.removeItem('paes_content_cache_timestamp');
+
     // Update local state
     this._preguntas.update(list =>
       list.map(p => (p.id === id ? { ...p, ...data } as PoolPregunta : p))
@@ -138,6 +146,11 @@ export class AdminService {
 
   async deletePregunta(id: string): Promise<void> {
     await deleteDoc(doc(this.firestore, 'pool_preguntas', id));
+    
+    // Invalidate PaesContentService cache
+    localStorage.removeItem('paes_content_cache');
+    localStorage.removeItem('paes_content_cache_timestamp');
+
     this._preguntas.update(list => list.filter(p => p.id !== id));
   }
 
