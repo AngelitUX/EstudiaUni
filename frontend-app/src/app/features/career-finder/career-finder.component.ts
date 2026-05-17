@@ -29,6 +29,7 @@ import { AuthService } from '../../core/services/auth.service';
           <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayo PAES</span></a>
           <a class="nav-item active" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -54,6 +55,7 @@ import { AuthService } from '../../core/services/auth.service';
             <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayo PAES</span></a>
             <a class="nav-item active" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
@@ -69,7 +71,7 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content">
+      <main class="main-content animate-fade-in">
         <header class="header" style="position: relative;">
           <div class="header-main-row">
             <div class="header-left">
@@ -120,7 +122,7 @@ import { AuthService } from '../../core/services/auth.service';
 
         <!-- AI TUTOR PROMO BANNER -->
         <div class="ai-promo-container" *ngIf="!isAiOpen()">
-          <div class="ai-promo-banner animate-fade-in">
+          <div class="ai-promo-banner">
             <div class="ai-promo-content">
               <span class="ai-icon">🤖</span>
               <div class="ai-promo-text">
@@ -133,7 +135,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <!-- FILTROS -->
-        <section class="finder-form glass-card animate-fade-in">
+        <section class="finder-form glass-card">
           <div class="form-grid">
             <div class="form-group search-group">
               <label>Busca tu carrera</label>
@@ -227,7 +229,7 @@ import { AuthService } from '../../core/services/auth.service';
         <!-- RESULTADOS -->
         <section class="results-section">
           <!-- WELCOME STATE (When no search yet) -->
-          <div *ngIf="!hasSearched()" class="welcome-search animate-fade-in">
+          <div *ngIf="!hasSearched()" class="welcome-search">
             <div class="welcome-icon">🎓</div>
             <h2>Comienza tu búsqueda</h2>
             <p>Escribe el nombre de una carrera o selecciona tus intereses para ver recomendaciones personalizadas.</p>
@@ -241,7 +243,7 @@ import { AuthService } from '../../core/services/auth.service';
 
           <!-- CAREERS GRID -->
           <div *ngIf="hasSearched()" class="careers-grid">
-            <div *ngFor="let career of visibleCareers()" class="career-card glass-card animate-fade-in">
+            <div *ngFor="let career of visibleCareers()" class="career-card glass-card">
               <div class="card-top">
                 <div class="uni-info">
                   <span class="uni-name">{{ career.universidad }}</span>

@@ -191,7 +191,7 @@ export class SettingsModalComponent implements OnInit {
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationIntensity: this.settingsForm.notificationIntensity,
         notificationsEnabled: true,
-      });
+      }, true);
       this.toast.success('Recordatorios activados');
     } else {
       this.notificationService.stopReminders();
@@ -216,7 +216,7 @@ export class SettingsModalComponent implements OnInit {
           preferredStudyTime: this.settingsForm.preferredStudyTime,
           notificationIntensity: this.settingsForm.notificationIntensity,
           notificationsEnabled: true,
-        });
+        }, false);
       }
       this.toast.success('Configuración guardada.');
       this.close.emit();

@@ -42,6 +42,10 @@ import { AdminService } from '../admin/services/admin.service';
             <span class="nav-icon">🎓</span>
             <span class="nav-text">Encuentra tu Carrera</span>
           </a>
+          <a class="nav-item" routerLink="/mente-veloz">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-text">Mente Veloz</span>
+          </a>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -80,6 +84,10 @@ import { AdminService } from '../admin/services/admin.service';
               <span class="nav-icon">🎓</span>
               <span class="nav-text">Encuentra tu Carrera</span>
             </a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">⚡</span>
+              <span class="nav-text">Mente Veloz</span>
+            </a>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
@@ -95,7 +103,7 @@ import { AdminService } from '../admin/services/admin.service';
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content">
+      <main class="main-content animate-fade-in">
         <!-- WELCOME -->
         <section class="welcome-section">
           <div class="welcome-text">

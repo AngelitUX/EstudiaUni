@@ -718,8 +718,6 @@ export class ProfileModalComponent implements OnInit {
 
   private normalizeEmoji(value?: string | null): string {
     if (!value) return '✨';
-    const normalized = value.trim();
-    const emojiMatch = normalized.match(/\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*/u);
-    return emojiMatch ? emojiMatch[0] : '✨';
+    return value.trim() || '✨';
   }
 }
