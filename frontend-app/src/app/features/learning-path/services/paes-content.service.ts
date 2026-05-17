@@ -489,8 +489,42 @@ export class PaesContentService {
     });
   }
 
+  public clearCache(): void {
+    localStorage.removeItem('paes_content_cache');
+    localStorage.removeItem('paes_content_cache_timestamp');
+    console.log('[PaesContentService] Caché local de PAES borrado.');
+  }
+
   private async loadDataFromFirestore() {
+    const cacheKey = 'paes_content_cache';
+    const cacheTimeKey = 'paes_content_cache_timestamp';
+    const cacheTTL = 30 * 60 * 1000; // 30 minutos
+
     try {
+      // 0. Intentar cargar desde caché
+      const cachedDataRaw = localStorage.getItem(cacheKey);
+      const cachedTimeRaw = localStorage.getItem(cacheTimeKey);
+
+      if (cachedDataRaw && cachedTimeRaw) {
+        const cachedTime = parseInt(cachedTimeRaw, 10);
+        if (Date.now() - cachedTime < cacheTTL) {
+          const cached = JSON.parse(cachedDataRaw);
+          if (cached.materias && cached.poolPreguntas && cached.capitulos) {
+            console.log('[PaesContentService] Cargando datos desde caché local...');
+            this._materias.set(cached.materias);
+            this._poolPreguntas.set(cached.poolPreguntas);
+            this._capitulos.set(cached.capitulos);
+            this.loading.set(false);
+            return;
+          }
+        }
+      }
+    } catch (cacheError) {
+      console.warn('[PaesContentService] Error leyendo caché local:', cacheError);
+    }
+
+    try {
+      console.log('[PaesContentService] Obteniendo datos frescos desde Firestore...');
       // 1. Cargar materias
       const materiasSnap = await getDocs(collection(this.firestore, 'lp_materias'));
       const materias = materiasSnap.docs.map(doc => doc.data() as Materia);
@@ -568,9 +602,27 @@ export class PaesContentService {
           hist.title = 'Historia y Cs. Sociales';
         }
 
-        this._materias.set(materias.sort((a, b) => a.order - b.order));
-        this._poolPreguntas.set(poolArray.length > 0 ? poolArray : LOCAL_POOL_PREGUNTAS);
-        this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
+        const sortedMaterias = materias.sort((a, b) => a.order - b.order);
+        const finalPool = poolArray.length > 0 ? poolArray : LOCAL_POOL_PREGUNTAS;
+        const sortedCapitulos = capitulos.sort((a, b) => a.order - b.order);
+
+        this._materias.set(sortedMaterias);
+        this._poolPreguntas.set(finalPool);
+        this._capitulos.set(sortedCapitulos);
+
+        // Guardar en caché
+        try {
+          const cacheData = {
+            materias: sortedMaterias,
+            poolPreguntas: finalPool,
+            capitulos: sortedCapitulos
+          };
+          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+          localStorage.setItem(cacheTimeKey, Date.now().toString());
+          console.log('[PaesContentService] Datos guardados en caché local con éxito.');
+        } catch (cacheError) {
+          console.warn('[PaesContentService] No se pudo guardar en caché:', cacheError);
+        }
       } else {
         this.loadLocalFallbacks();
       }
