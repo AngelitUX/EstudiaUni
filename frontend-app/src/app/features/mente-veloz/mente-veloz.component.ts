@@ -1,13 +1,14 @@
 import { Component, HostListener, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { PaesContentService } from '../learning-path/services/paes-content.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 type DifficultyMode = 'normal' | 'hardcore' | 'suddendeath';
 type GameState = 'setup' | 'playing' | 'results';
@@ -144,6 +145,12 @@ interface PlayedQuestion {
             </div>
             <div class="pool-counter" *ngIf="selectedMaterias.size > 0">
               📋 {{ getPoolCount() }} preguntas disponibles en {{ selectedMaterias.size }} materia{{ selectedMaterias.size > 1 ? 's' : '' }}
+            </div>
+            <div class="setup-summary" style="margin-top: 1.25rem; justify-content: center; margin-bottom: 0;" *ngIf="selectedMaterias.size > 0">
+              <div class="summary-pill personal-record-badge" style="background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3); color: #d97706; padding: 0.6rem 1.2rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; border: 2px solid rgba(245,158,11,0.3);">
+                <span>🏆 Récord en esta combinación:</span> 
+                <strong style="font-size: 1.15rem; color: #b45309;">{{ currentCombinationRecord() }} correctas</strong>
+              </div>
             </div>
             <div class="setup-error-alert" *ngIf="setupError && selectedMaterias.size === 0">
               ⚠️ Debes seleccionar al menos una materia para poder iniciar.
@@ -524,7 +531,7 @@ interface PlayedQuestion {
     .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2.5px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
 
     .setup-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(24px); border: 2.5px solid var(--glass-border); border-radius: var(--border-radius); padding: 2.5rem; box-shadow: var(--shadow-lg); }
     .setup-section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
@@ -1013,6 +1020,13 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   public firestoreService = inject(FirestoreService);
   public adminService = inject(AdminService);
   private authService = inject(AuthService);
+  private dashSvc = inject(DashboardService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  // --- PERSONAL RECORDS ---
+  personalRecords: Record<string, number> = {};
+  currentCombinationRecord = signal<number>(0);
 
   mobileOpen = false;
   showSettingsModal = false;
@@ -1057,8 +1071,72 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     return p?.displayName?.charAt(0).toUpperCase() || 'U';
   });
 
+  updateCurrentRecord() {
+    if (this.selectedMaterias.size === 0) {
+      this.currentCombinationRecord.set(0);
+      return;
+    }
+    const key = Array.from(this.selectedMaterias).sort().join(',');
+    const record = this.personalRecords[key] || 0;
+    this.currentCombinationRecord.set(record);
+  }
+
   ngOnInit() {
     this.paesContent.materias().forEach(m => this.selectedMaterias.add(m.id));
+
+    // Load personal records when auth is resolved
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        const raw = localStorage.getItem(`estudiauni_mv_records_${user.uid}`);
+        if (raw) {
+          try { this.personalRecords = JSON.parse(raw); } catch { this.personalRecords = {}; }
+        } else {
+          this.personalRecords = {};
+        }
+        this.updateCurrentRecord();
+      }
+    });
+
+    // Check query parameters to load historical review
+    this.route.queryParams.subscribe(params => {
+      const historyId = params['historyId'];
+      if (historyId) {
+        this.loadHistoryReview(historyId);
+      }
+    });
+  }
+
+  loadHistoryReview(historyId: string) {
+    const user = this.authService.currentUser;
+    const uid = user ? user.uid : null;
+    if (!uid) return;
+
+    const activitiesRaw = localStorage.getItem(`estudiauni_activities_${uid}`);
+    if (!activitiesRaw) return;
+
+    try {
+      const activities: any[] = JSON.parse(activitiesRaw);
+      const entry = activities.find(a => a.id === historyId);
+      if (entry && entry.type === 'mente-veloz' && entry.playedQuestionsRaw) {
+        const parsedQuestions = JSON.parse(entry.playedQuestionsRaw);
+        
+        this.gameState.set('results');
+        this.playedQuestions = parsedQuestions;
+        this.correctAnswers.set(entry.totalCorrect || 0);
+        this.totalAnswered.set(entry.totalQuestions || 0);
+        this.bestStreak = entry.bestStreak || 0;
+        
+        if (entry.timeLimit) this.timeLimit.set(entry.timeLimit);
+        if (entry.difficulty) this.difficulty.set(entry.difficulty as DifficultyMode);
+        if (entry.materiasKey) {
+          this.selectedMaterias.clear();
+          entry.materiasKey.split(',').forEach((id: string) => this.selectedMaterias.add(id));
+        }
+        this.updateCurrentRecord();
+      }
+    } catch (e) {
+      console.error('Error loading Mente Veloz history review:', e);
+    }
   }
 
   ngOnDestroy() {
@@ -1071,6 +1149,7 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     } else {
       this.selectedMaterias.add(id);
     }
+    this.updateCurrentRecord();
   }
 
   toggleAllMaterias() {
@@ -1080,6 +1159,7 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     } else {
       all.forEach(m => this.selectedMaterias.add(m.id));
     }
+    this.updateCurrentRecord();
   }
 
   normalizeMateriaId(id: string): string {
@@ -1089,7 +1169,7 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     if (norm === 'mat2' || norm === 'matematicas-m2' || norm === 'm2') return 'mat2';
     if (norm === 'comp-lectora' || norm === 'competencia-lectora' || norm === 'lectura') return 'comp-lectora';
     if (norm === 'historia' || norm === 'historia y cs. sociales' || norm === 'historia y cs. soc.') return 'historia';
-    if (norm === 'ciencias' || norm.startsWith('ciencias-')) return 'ciencias';
+    if (norm === 'ciencias') return 'ciencias';
     return norm;
   }
 
@@ -1265,7 +1345,58 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   endGame() {
     this.clearTimer();
     this.showTimeUpOverlay.set(true);
-    
+
+    // 1. Check & Update Personal Record for current subject combination
+    const user = this.authService.currentUser;
+    if (user) {
+      const key = Array.from(this.selectedMaterias).sort().join(',');
+      const currentRecord = this.personalRecords[key] || 0;
+      const currentScore = this.correctAnswers();
+      if (currentScore > currentRecord) {
+        this.personalRecords[key] = currentScore;
+        localStorage.setItem(`estudiauni_mv_records_${user.uid}`, JSON.stringify(this.personalRecords));
+        this.updateCurrentRecord();
+      }
+    }
+
+    // 2. Save Activity Entry to History via DashboardService
+    const materiaNames = Array.from(this.selectedMaterias)
+      .map(id => this.getMateriaName(id))
+      .join(', ');
+
+    const playedQuestionsRaw = JSON.stringify(this.playedQuestions.map(pq => ({
+      question: {
+        materiaId: pq.question.materiaId,
+        enunciado: pq.question.enunciado,
+        alternativas: pq.question.alternativas,
+        respuesta_correcta: pq.question.respuesta_correcta,
+        feedback_error: pq.question.feedback_error || null,
+        feedback_acierto: pq.question.feedback_acierto || null,
+        preambulo_texto: pq.question.preambulo_texto || null,
+        preambulo_imagen_url: pq.question.preambulo_imagen_url || null,
+      },
+      selectedOption: pq.selectedOption,
+      isCorrect: pq.isCorrect,
+      timeTaken: pq.timeTaken
+    })));
+
+    const scorePercentage = this.totalAnswered() > 0 
+      ? Math.round((this.correctAnswers() / this.totalAnswered()) * 100) 
+      : 0;
+
+    this.dashSvc.logMenteVelozCompleted({
+      title: `Ronda de Mente Veloz: ${materiaNames}`,
+      correctAnswers: this.correctAnswers(),
+      totalQuestions: this.totalAnswered(),
+      score: scorePercentage,
+      difficulty: this.difficulty() === 'normal' ? 'Normal' : this.difficulty() === 'hardcore' ? 'Hardcore' : 'Muerte Súbita',
+      timeLimit: this.timeLimit(),
+      avgSpeed: this.avgSpeed().toString(),
+      bestStreak: this.bestStreak,
+      materiasKey: Array.from(this.selectedMaterias).sort().join(','),
+      playedQuestionsRaw
+    });
+
     setTimeout(() => {
       this.gameState.set('results');
       setTimeout(() => {
@@ -1275,6 +1406,10 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   }
 
   resetGame() {
+    this.router.navigate([], {
+      queryParams: { historyId: null },
+      queryParamsHandling: 'merge'
+    });
     this.gameState.set('setup');
   }
 
