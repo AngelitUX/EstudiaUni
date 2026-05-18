@@ -79,11 +79,11 @@ service cloud.firestore {
     match /lp_capitulos/{capituloId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
-      
-      match /secciones/{seccionId} {
-        allow read: if isAuthenticated();
-        allow write: if isAdmin();
-      }
+    }
+
+    match /{path=**}/secciones/{seccionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
     
     match /lp_tests/{testId} {
