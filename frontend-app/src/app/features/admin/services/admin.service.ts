@@ -65,6 +65,87 @@ export class AdminService {
     }
   }
 
+  async cleanupDatabase(): Promise<{ deletedUsers: number, deletedAdmins: number, updatedUsers: number }> {
+    const whitelist = [
+      '4AHAu2xomGPiQPuhO7Nk9HJggy22',
+      'J3Bsp1TZ92QcriwOxYzsjqPdGVu1',
+      'Iz89GJLdakR3iOiokl6AfmjcomF2',
+      'gr9lsUQB18R5TGaTOknrZjPQDS2',
+      'fqfhKmRQ8NU55KLGc05DjhnVChP2',
+      'TIJ56kj8wlM7Jlvh8wmBJDFzNUy2',
+      'PQLYe6RgqmQmDwdL9Q25y2XynX62',
+      'PSkf4nj3XfaQlekOlVoxZuw170z2',
+      'rnDrpdyISBFMwGKWBLOWLAEDfnQ2',
+      '6N81QZQ7fIdeXAU1kPzVLE3jTKM2',
+      'm6D8ujsOh6f4Qk7jwsfDE1dvUAt2',
+      'H1ulAzlSK5cKoFRJY3je5ddlTfc2'
+    ];
+
+    const adminUids = [
+      'PSkf4nj3XfaQlekOlVoxZuw170z2',
+      'rnDrpdyISBFMwGKWBLOWLAEDfnQ2'
+    ];
+
+    let deletedUsers = 0;
+    let deletedAdmins = 0;
+    let updatedUsers = 0;
+
+    try {
+      // 1. Limpiar colección 'users' y actualizar roles
+      const usersRef = collection(this.firestore, 'users');
+      const usersSnap = await getDocs(usersRef);
+      for (const docSnap of usersSnap.docs) {
+        const uid = docSnap.id;
+        if (!whitelist.includes(uid)) {
+          // Borrar documento de usuario fantasma
+          await deleteDoc(doc(this.firestore, 'users', uid));
+          deletedUsers++;
+          
+          // Borrar subcolección 'actividad' si existiese
+          const actRef = collection(this.firestore, `users/${uid}/actividad`);
+          const actSnap = await getDocs(actRef);
+          for (const actDoc of actSnap.docs) {
+            await deleteDoc(doc(this.firestore, `users/${uid}/actividad`, actDoc.id));
+          }
+        } else {
+          // Actualizar rol del usuario en la lista activa
+          const isUserAdmin = adminUids.includes(uid);
+          await updateDoc(doc(this.firestore, 'users', uid), {
+            role: isUserAdmin ? 'admin' : 'student'
+          });
+          updatedUsers++;
+        }
+      }
+
+      // 2. Limpiar colección 'admins'
+      const adminsRef = collection(this.firestore, 'admins');
+      const adminsSnap = await getDocs(adminsRef);
+      for (const docSnap of adminsSnap.docs) {
+        const uid = docSnap.id;
+        if (!adminUids.includes(uid)) {
+          await deleteDoc(doc(this.firestore, 'admins', uid));
+          deletedAdmins++;
+        }
+      }
+
+      // 3. Limpiar 'intentos' huérfanos
+      const intentosRef = collection(this.firestore, 'intentos');
+      const intentosSnap = await getDocs(intentosRef);
+      for (const docSnap of intentosSnap.docs) {
+        const intento = docSnap.data();
+        const odId = intento['odId'];
+        if (odId && !whitelist.includes(odId)) {
+          await deleteDoc(doc(this.firestore, 'intentos', docSnap.id));
+        }
+      }
+    } catch (err) {
+      console.error('Error executing cleanupDatabase:', err);
+      throw err;
+    }
+
+    return { deletedUsers, deletedAdmins, updatedUsers };
+  }
+
   // ─── Filter ───
   setFilter(materia: MateriaId | 'all') {
     this._filterMateria.set(materia);

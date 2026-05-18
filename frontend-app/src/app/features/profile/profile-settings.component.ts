@@ -38,7 +38,7 @@ import { AdminService } from '../admin/services/admin.service';
 
             <div class="profile-summary">
               <h2 class="profile-title">
-                {{ profileForm.displayName || 'Tu perfil' }}
+                {{ getFirstName(profileForm.displayName) }}
                 <span>{{ profileForm.profileEmoji || '✨' }}</span>
               </h2>
               <a *ngIf="adminService.isAdmin()" routerLink="/admin" class="admin-badge">
@@ -728,6 +728,12 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     return base ? base.charAt(0).toUpperCase() : 'U';
   }
 
+  getFirstName(fullName: string): string {
+    if (!fullName) return 'Tu perfil';
+    const first = fullName.trim().split(/\s+/)[0];
+    return first || 'Tu perfil';
+  }
+
   ngOnInit(): void {
     this.isSettingsMode = this.router.url.includes('/settings');
 
@@ -758,6 +764,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const displayName = this.profileForm.displayName.trim();
     if (!displayName) {
       this.toast.error('El nombre visible es obligatorio.');
+      return;
+    }
+
+    if (this.profileForm.displayName.includes('\n') || this.profileForm.displayName.includes('\r')) {
+      this.toast.error('El nombre no puede contener saltos de línea.');
       return;
     }
 

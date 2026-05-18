@@ -27,8 +27,17 @@ type PathItem =
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
           <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
           <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+          
+          <div class="sidebar-section-title" (click)="toggleHerramientas()">
+            HERRAMIENTAS
+            <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
+          </div>
+          <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+          </div>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -53,8 +62,17 @@ type PathItem =
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
             <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
             <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            
+            <div class="sidebar-section-title" (click)="toggleHerramientas()">
+              HERRAMIENTAS
+              <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
+            </div>
+            <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
@@ -198,6 +216,64 @@ type PathItem =
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
     .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-section-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.75rem 1.1rem;
+      margin: 0.75rem 0.5rem 0.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+    }
+    .sidebar-section-title:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+    }
+    .sidebar-section-title .toggle-icon {
+      font-size: 0.65rem;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .sidebar-section-title:hover .toggle-icon {
+      color: #ffffff;
+    }
+    .sidebar-sub-items {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      margin-left: 1.4rem;
+      border-left: 1.5px solid rgba(255, 255, 255, 0.08);
+      padding-left: 0.4rem;
+      gap: 0.25rem;
+    }
+    .sidebar-sub-items.collapsible {
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+    .sidebar-sub-items.expanded {
+      max-height: 260px;
+      opacity: 1;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-sub-items .nav-item {
+      padding: 0.65rem 0.9rem;
+      font-size: 0.95rem;
+      border-radius: 10px;
+    }
+    .sidebar-sub-items .nav-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      transform: translateX(3px);
+    }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
     .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
@@ -341,6 +417,23 @@ export class MateriaPathComponent {
   showSettingsModal = false;
   showProfileModal = false;
   showLogoutConfirm = false;
+
+  get herramientasExpanded(): boolean {
+    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
+                        this.router.url.includes('/calculadora-nem') || 
+                        this.router.url.includes('/recursos');
+    if (isToolRoute) return true;
+    const val = localStorage.getItem('herramientasExpanded');
+    return val !== 'false';
+  }
+
+  toggleHerramientas() {
+    this.isCollapsible = true;
+    const current = this.herramientasExpanded;
+    localStorage.setItem('herramientasExpanded', String(!current));
+  }
+
+  isCollapsible = false;
 
   profileInitial = computed(() => {
     const name = this.firestoreService.profileSignal()?.displayName || '';

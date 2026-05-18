@@ -4,15 +4,196 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  position: relative;
+  overflow: hidden;
   background-color: var(--bg-color);
-  background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
 }
 
 .auth-box {
   width: 100%;
   max-width: 450px;
   position: relative;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(133, 92, 214, 0.1);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: authBoxIntro 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px -12px rgba(133, 92, 214, 0.25), 0 0 0 1px rgba(133, 92, 214, 0.15);
+}
+
+@keyframes authBoxIntro {
+  0% {
+    opacity: 0;
+    transform: translateY(35px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== PREMIUM BACKGROUND PATTERN & ANIMATIONS ===== */
+.hero-tech-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-grid-overlay {
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 120%;
+  height: 140%;
+  background-image: 
+    linear-gradient(rgba(133, 92, 214, 0.08) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(133, 92, 214, 0.08) 1.5px, transparent 1.5px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(circle at 50% 50%, black 25%, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 25%, transparent 75%);
+  opacity: 0.95;
+}
+
+.hero-glow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.hero-blob-purple {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(133, 92, 214, 0.35) 0%, rgba(133, 92, 214, 0) 70%);
+  top: -150px;
+  left: -150px;
+  animation: pulse-slow 8s ease-in-out infinite alternate;
+}
+
+.hero-blob-blue {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, rgba(59, 130, 246, 0) 70%);
+  bottom: -100px;
+  right: -100px;
+  animation: pulse-slow 12s ease-in-out infinite alternate-reverse;
+}
+
+.floating-symbol {
+  position: absolute;
+  font-family: var(--font-heading);
+  font-weight: 300;
+  color: var(--accent-primary);
+  opacity: 0.02;
+  will-change: opacity, filter;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sym-1 {
+  top: 22%;
+  left: 12%;
+  font-size: 2.2rem;
+  animation: symbol-fade-pulse-1 5s ease-in-out infinite;
+}
+
+.sym-2 {
+  top: 15%;
+  right: 14%;
+  color: rgba(59, 130, 246, 0.6);
+  font-size: 3.2rem;
+  animation: symbol-fade-pulse-2 6.5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.sym-3 {
+  top: 62%;
+  left: 8%;
+  font-size: 1.5rem;
+  color: rgba(59, 130, 246, 0.5);
+  animation: symbol-fade-pulse-3 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.sym-4 {
+  top: 50%;
+  right: 10%;
+  font-size: 1.6rem;
+  animation: symbol-fade-pulse-4 7s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.sym-5 {
+  top: 40%;
+  left: 16%;
+  font-size: 1.4rem;
+  color: rgba(59, 130, 246, 0.5);
+  animation: symbol-fade-pulse-1 5.5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.sym-6 {
+  top: 32%;
+  right: 18%;
+  font-size: 1.6rem;
+  color: var(--accent-primary);
+  animation: symbol-fade-pulse-2 7.5s ease-in-out infinite;
+  animation-delay: 2.5s;
+}
+
+.sym-7 {
+  bottom: 20%;
+  left: 15%;
+  font-size: 1.8rem;
+  animation: symbol-fade-pulse-3 6.8s ease-in-out infinite;
+  animation-delay: 1.8s;
+}
+
+.sym-8 {
+  bottom: 15%;
+  right: 12%;
+  font-size: 1.7rem;
+  color: rgba(133, 92, 214, 0.6);
+  animation: symbol-fade-pulse-4 7.2s ease-in-out infinite;
+  animation-delay: 2.8s;
+}
+
+@keyframes pulse-slow {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.12); opacity: 0.65; }
+}
+
+@keyframes symbol-fade-pulse-1 {
+  0%, 100% { opacity: 0.02; filter: blur(3px); }
+  50% { opacity: 0.18; filter: blur(0px); }
+}
+
+@keyframes symbol-fade-pulse-2 {
+  0%, 100% { opacity: 0.02; filter: blur(3px); }
+  50% { opacity: 0.15; filter: blur(0px); }
+}
+
+@keyframes symbol-fade-pulse-3 {
+  0%, 100% { opacity: 0.02; filter: blur(3px); }
+  50% { opacity: 0.16; filter: blur(0px); }
+}
+
+@keyframes symbol-fade-pulse-4 {
+  0%, 100% { opacity: 0.02; filter: blur(3px); }
+  50% { opacity: 0.14; filter: blur(0px); }
 }
 
 .btn-back {

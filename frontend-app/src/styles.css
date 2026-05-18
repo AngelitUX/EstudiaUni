@@ -236,7 +236,7 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
   display: block !important;
 }
 
-.mobile-menu {
+.mobile-overlay .mobile-menu {
   display: flex !important;
   flex-direction: column !important;
   height: 100vh !important;
@@ -369,11 +369,11 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
 
 /* 4. Highly Responsive Height Scaling for Mobile Drawer Menu */
 @media (max-height: 700px) and (max-width: 1024px) {
-  .mobile-menu .nav-item { padding: 0.55rem 0.85rem !important; font-size: 0.92rem !important; }
-  .mobile-menu .sidebar-section-title { padding: 0.45rem 0.85rem !important; }
+  .mobile-overlay .mobile-menu .nav-item { padding: 0.55rem 0.85rem !important; font-size: 0.92rem !important; }
+  .mobile-overlay .mobile-menu .sidebar-section-title { padding: 0.45rem 0.85rem !important; }
 }
 @media (max-height: 550px) and (max-width: 1024px) {
-  .mobile-menu .nav-item { padding: 0.4rem 0.75rem !important; font-size: 0.85rem !important; }
-  .mobile-menu .sidebar-section-title { padding: 0.35rem 0.75rem !important; }
-  .mobile-footer { padding: 0.75rem !important; }
+  .mobile-overlay .mobile-menu .nav-item { padding: 0.4rem 0.75rem !important; font-size: 0.85rem !important; }
+  .mobile-overlay .mobile-menu .sidebar-section-title { padding: 0.35rem 0.75rem !important; }
+  .mobile-overlay .mobile-footer { padding: 0.75rem !important; }
 }

@@ -182,15 +182,15 @@ interface AiMessage {
                     *ngIf="isAssisted && isAiCollapsed"
                     class="btn-ai-float"
                     (click)="toggleAi()"
-                    title="Abrir Tutor IA">
-                    🤖 Tutor
+                    title="Abrir Tutor Foco">
+                    🐙 Foco
                   </button>
                   <button
                     *ngIf="isAssisted && !isAiCollapsed"
                     class="btn-ai-float active"
                     (click)="toggleAi()"
-                    title="Cerrar Tutor IA">
-                    🤖 Cerrar
+                    title="Cerrar Tutor Foco">
+                    🐙 Cerrar
                   </button>
                 </div>
               </div>
@@ -280,9 +280,11 @@ interface AiMessage {
         <aside class="ai-panel glass-card" *ngIf="isAssisted && !isAiCollapsed">
           <div class="ai-header">
             <div class="ai-header-left">
-              <div class="ai-avatar">🤖</div>
+              <div class="ai-avatar">
+                <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
               <div>
-                <h4 class="ai-title">Tutor IA</h4>
+                <h4 class="ai-title">Foco, tu Pulpo Tutor</h4>
                 <span class="ai-status">{{ aiLoading ? 'Pensando...' : 'En línea' }}</span>
               </div>
             </div>
@@ -290,19 +292,22 @@ interface AiMessage {
           </div>
 
           <div class="ai-messages" #chatScrollContainer>
+            <div class="chat-empty-state" *ngIf="aiMessages.length === 0 && !aiLoading">
+              ¿Tienes preguntas? Foco está listo para guiarte.
+            </div>
             <div
               *ngFor="let msg of aiMessages"
               class="ai-bubble"
               [class.user]="msg.role === 'user'"
               [class.assistant]="msg.role === 'assistant'">
-              <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🤖 Tutor' }}</div>
+              <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🐙 Foco' }}</div>
               <div class="bubble-content" [innerHTML]="formatAiMessage(msg.content)"></div>
               <div class="bubble-time" *ngIf="msg.timestamp">
                 {{ msg.timestamp | date:'HH:mm' }}
               </div>
             </div>
             <div *ngIf="aiLoading" class="ai-bubble assistant loading-bubble">
-              <div class="bubble-role">🤖 Tutor</div>
+              <div class="bubble-role">🐙 Foco</div>
               <div class="typing-indicator">
                 <span></span><span></span><span></span>
               </div>
@@ -790,14 +795,11 @@ interface AiMessage {
     }
     .ai-header-left { display: flex; align-items: center; gap: 0.75rem; }
     .ai-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      width: 60px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
       flex-shrink: 0;
     }
     .ai-title {
@@ -833,6 +835,14 @@ interface AiMessage {
       overflow-y: auto;
       padding: 1rem 1rem;
       scroll-behavior: smooth;
+    }
+    .chat-empty-state {
+      margin: auto;
+      color: #94a3b8;
+      font-size: 0.88rem;
+      text-align: center;
+      padding: 2rem;
+      font-weight: 500;
     }
     .ai-messages::-webkit-scrollbar { width: 4px; }
     .ai-messages::-webkit-scrollbar-track { background: transparent; }
@@ -874,6 +884,41 @@ interface AiMessage {
       text-align: right;
     }
     .loading-bubble { opacity: 0.8; }
+    
+    /* Soporte para formato de vectores y sombreros matemáticos */
+    .math-vector {
+      position: relative;
+      display: inline-block;
+      padding-top: 0.1em;
+      font-weight: 700;
+    }
+    .math-vector::before {
+      content: "→";
+      position: absolute;
+      top: -0.45em;
+      left: 50%;
+      transform: translateX(-50%) scale(0.7, 0.5);
+      font-size: 0.7em;
+      font-weight: bold;
+      line-height: 1;
+    }
+    
+    .math-hat {
+      position: relative;
+      display: inline-block;
+      padding-top: 0.05em;
+      font-weight: 700;
+    }
+    .math-hat::before {
+      content: "^";
+      position: absolute;
+      top: -0.4em;
+      left: 50%;
+      transform: translateX(-50%) scale(1.1, 0.7);
+      font-size: 0.8em;
+      font-weight: bold;
+      line-height: 1;
+    }
     .typing-indicator {
       display: flex;
       gap: 5px;
@@ -1166,6 +1211,46 @@ interface AiMessage {
       .header-center { display: none; }
       .exam-title { display: none; }
     }
+
+    /* ===== MATH RENDERING & FOCO STYLING ===== */
+    .math-block {
+      display: block;
+      margin: 0.75rem auto;
+      text-align: center;
+      padding: 0.75rem;
+      background: rgba(241, 245, 249, 0.6);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: 'Cambria Math', 'Times New Roman', Times, serif, monospace;
+      font-size: 1.05rem;
+      color: #0f172a;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .math-inline {
+      font-family: 'Cambria Math', 'Times New Roman', Times, serif, monospace;
+      font-weight: 600;
+      font-size: 1.02rem;
+      color: #1d4ed8;
+      padding: 0 2px;
+      display: inline-block;
+    }
+    .math-fraction {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 4px;
+      line-height: 1.1;
+      font-size: 0.88em;
+    }
+    .fraction-num {
+      border-bottom: 1.5px solid #475569;
+      padding-bottom: 1px;
+    }
+    .fraction-den {
+      padding-top: 1px;
+    }
   `]
 })
 export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecked {
@@ -1204,9 +1289,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   isPaused = false;
   savedProgress: SavedProgress | null = null;
 
-  aiMessages: AiMessage[] = [
-    { role: 'assistant', content: '¡Hola! Soy tu tutor IA. Puedo darte pistas y ayudarte a razonar cada pregunta sin revelar la respuesta directa. ¿En qué puedo ayudarte?', timestamp: new Date() },
-  ];
+  aiMessages: AiMessage[] = [];
   aiLoading = false;
   chatInputText = '';
   private shouldScrollChat = false;
@@ -1437,6 +1520,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       this.saveProgress();
     }
     this.updateAssistContext();
+    this.scrollToTop();
   }
 
   prevQuestion() {
@@ -1446,6 +1530,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         this.saveProgress();
       }
       this.updateAssistContext();
+      this.scrollToTop();
     }
   }
 
@@ -1456,6 +1541,33 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         this.saveProgress();
       }
       this.updateAssistContext();
+      this.scrollToTop();
+    }
+  }
+
+  private scrollToTop() {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' as any });
+      
+      // Scrolear el contenedor principal o área de la pregunta
+      const mainContainer = document.querySelector('.exam-container') 
+        || document.querySelector('.simulation-layout') 
+        || document.querySelector('.question-column') 
+        || document.querySelector('.runner-body') 
+        || document.querySelector('.main-content')
+        || document.querySelector('.exam-body');
+        
+      if (mainContainer) {
+        mainContainer.scrollTop = 0;
+      }
+      
+      // Scrolear cualquier div con overflow excepto el chat de Foco
+      const scrollableDivs = document.querySelectorAll('.overflow-y-auto, .scrollable');
+      scrollableDivs.forEach(div => {
+        if (!div.classList.contains('ai-messages')) {
+          div.scrollTop = 0;
+        }
+      });
     }
   }
 
@@ -1556,9 +1668,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     const questionId = this.currentQuestion?.id;
     if (!questionId || this.assistQuestionId === questionId) return;
     this.assistQuestionId = questionId;
-    this.aiMessages = [
-      { role: 'assistant', content: '¡Nueva pregunta! Estoy listo para ayudarte. Puedes escribirme o usar las acciones rápidas.', timestamp: new Date() },
-    ];
+    this.aiMessages = [];
     this.shouldScrollChat = true;
   }
 
@@ -1610,9 +1720,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   /** Clears chat history for current question */
   clearChat() {
-    this.aiMessages = [
-      { role: 'assistant', content: 'Chat limpiado. ¿En qué puedo ayudarte con esta pregunta?', timestamp: new Date() },
-    ];
+    this.aiMessages = [];
     this.shouldScrollChat = true;
   }
 
@@ -1667,10 +1775,98 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   formatAiMessage(text: string): string {
     if (!text) return '';
     
-    // Convertir Markdown simple a HTML
-    let formatted = text
-      // Negritas: **texto** -> <b>texto</b>
+    let formatted = text;
+    
+    // 1. Reemplazar bloques de ecuaciones grandes $$ ... $$ o \[ ... \]
+    formatted = formatted.replace(/\$\$([\s\S]*?)\$\$/g, (match, p1) => {
+      return `<div class="math-block">${p1.trim()}</div>`;
+    });
+    formatted = formatted.replace(/\\\[([\s\S]*?)\\\]/g, (match, p1) => {
+      return `<div class="math-block">${p1.trim()}</div>`;
+    });
+    
+    // 2. Reemplazar ecuaciones inline $ ... $ o \( ... \)
+    formatted = formatted.replace(/\$([\s\S]*?)\$/g, (match, p1) => {
+      return `<span class="math-inline">${p1.trim()}</span>`;
+    });
+    formatted = formatted.replace(/\\\(([\s\S]*?)\\\)/g, (match, p1) => {
+      return `<span class="math-inline">${p1.trim()}</span>`;
+    });
+    
+    // 3. Procesar comandos matemáticos dentro de todo el texto (especialmente dentro de los tags matemáticos)
+    // Fracciones: \frac{a}{b} -> vertical fraction en HTML
+    while (formatted.includes('\\frac{') || formatted.includes('\\dfrac{')) {
+      const nextFormatted = formatted.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, (match, num, den) => {
+        return `<span class="math-fraction"><span class="fraction-num">${num}</span><span class="fraction-den">${den}</span></span>`;
+      });
+      if (nextFormatted === formatted) break;
+      formatted = nextFormatted;
+    }
+    
+    // Raíces: \sqrt{x} -> √x con línea superior styled
+    formatted = formatted.replace(/\\sqrt\{([^{}]+)\}/g, '√<span style="border-top: 1.5px solid; padding-top: 1px;">$1</span>');
+    
+    // Vectores: \vec{u} o \vec u -> <span class="math-vector">u</span> (con flecha CSS real, 100% segura para fuentes)
+    formatted = formatted.replace(/\\vec\{([a-zA-Z0-9+-]+)\}/g, '<span class="math-vector">$1</span>');
+    formatted = formatted.replace(/\\vec\s*([a-zA-Z])/g, '<span class="math-vector">$1</span>');
+    
+    // Estimadores/Sombreros: \hat{p} o \hat p -> <span class="math-hat">p</span> (con sombrero CSS real, 100% seguro para fuentes)
+    formatted = formatted.replace(/\\hat\{([a-zA-Z0-9+-]+)\}/g, '<span class="math-hat">$1</span>');
+    formatted = formatted.replace(/\\hat\s*([a-zA-Z])/g, '<span class="math-hat">$1</span>');
+    
+    // Medias/Barras: \bar{x} o \overline{AB} -> AB con línea superior HTML real (100% compatible y segura)
+    formatted = formatted.replace(/\\overline\{([a-zA-Z0-9+-]+)\}/g, '<span style="text-decoration: overline;">$1</span>');
+    formatted = formatted.replace(/\\bar\{([a-zA-Z0-9+-]+)\}/g, '<span style="text-decoration: overline;">$1</span>');
+    formatted = formatted.replace(/\\bar\s*([a-zA-Z])/g, '<span style="text-decoration: overline;">$1</span>');
+    
+    // Exponentes: x^2 o y^(a+1) -> superíndices HTML
+    formatted = formatted.replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>');
+    formatted = formatted.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
+    formatted = formatted.replace(/\^([a-zA-Z0-9+-]+)/g, '<sup>$1</sup>');
+    
+    // Subíndices: x_1 o x_(i+1) -> subíndices HTML
+    formatted = formatted.replace(/_\{([^}]+)\}/g, '<sub>$1</sub>');
+    formatted = formatted.replace(/_\(([^)]+)\)/g, '<sub>$1</sub>');
+    formatted = formatted.replace(/_([a-zA-Z0-9+-]+)/g, '<sub>$1</sub>');
+    
+    // Símbolos matemáticos de LaTeX a Unicode limpio
+    const mathSymbols: { [key: string]: string } = {
+      '\\\\pm': '±',
+      '\\\\approx': '≈',
+      '\\\\infty': '∞',
+      '\\\\times': '×',
+      '\\\\div': '÷',
+      '\\\\neq': '≠',
+      '\\\\ne': '≠',
+      '\\\\leq': '≤',
+      '\\\\le': '≤',
+      '\\\\geq': '≥',
+      '\\\\ge': '≥',
+      '\\\\cdot': '•',
+      '\\\\partial': '∂',
+      '\\\\alpha': 'α',
+      '\\\\beta': 'β',
+      '\\\\gamma': 'γ',
+      '\\\\delta': 'δ',
+      '\\\\pi': 'π',
+      '\\\\theta': 'θ',
+      '\\\\sigma': 'σ',
+      '\\\\lambda': 'λ',
+      '\\\\Delta': 'Δ',
+      '\\\\rightarrow': '→',
+      '\\\\to': '→'
+    };
+    
+    for (const [key, value] of Object.entries(mathSymbols)) {
+      formatted = formatted.replace(new RegExp(key, 'g'), value);
+    }
+    
+    // Convertir Markdown simple a HTML para el texto normal
+    formatted = formatted
+      // Negritas: **texto** -> <strong>texto</strong>
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Itálicas: *palabra* -> <em>palabra</em> (solo para palabras individuales, evitando multiplicar expresiones matemáticas como 3 * x * y)
+      .replace(/\*([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)\*/g, '<em>$1</em>')
       // Listas: * elemento -> • elemento
       .replace(/^\* (.*$)/gim, '• $1')
       // Saltos de línea: \n -> <br>

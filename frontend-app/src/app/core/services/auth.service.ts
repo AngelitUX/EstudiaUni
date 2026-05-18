@@ -46,11 +46,24 @@ export class AuthService {
     });
     
     const result = await signInWithPopup(this.auth, provider);
+    const googleUser = result.user;
+    const googleEmail = googleUser.email?.toLowerCase().trim();
+    
+    if (googleEmail) {
+      // Buscar si existe un perfil con este mismo correo pero diferente UID
+      const existingUid = await this.firestoreService.findUidByEmail(googleEmail);
+      if (existingUid && existingUid !== googleUser.uid) {
+        // ¡Se detectó la cuenta con el mismo correo pero diferente UID! Migrar todos los datos
+        console.log(`[Auth] Migrating existing user data from UID ${existingUid} to Google UID ${googleUser.uid}`);
+        await this.firestoreService.migrateUserData(existingUid, googleUser.uid);
+      }
+    }
     
     // Guardar/actualizar perfil en Firestore
     await this.firestoreService.saveUserProfile({
-      displayName: result.user.displayName || '',
-      email: result.user.email || ''
+      displayName: googleUser.displayName || '',
+      email: googleEmail || '',
+      emailVerified: true
     });
     
     return result;
@@ -60,13 +73,16 @@ export class AuthService {
     let userCreated = false;
     let cred: any = null;
     
+    // Sanear el nombre quitando saltos de línea
+    const cleanName = (name || '').replace(/[\r\n]+/g, ' ').trim();
+    
     try {
       // 1. Crear cuenta en Firebase Auth
       cred = await createUserWithEmailAndPassword(this.auth, email, pass);
       userCreated = true;
       
       // 2. Actualizar displayName
-      await updateProfile(cred.user, { displayName: name });
+      await updateProfile(cred.user, { displayName: cleanName });
       
       // 3. Enviar correo de verificación - si falla, eliminar cuenta
       await sendEmailVerification(cred.user, {
@@ -76,7 +92,7 @@ export class AuthService {
       
       // 4. Crear perfil de usuario en Firestore
       await this.firestoreService.saveUserProfile({
-        displayName: name,
+        displayName: cleanName,
         email: email,
         emailVerified: false
       });

@@ -142,10 +142,10 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="ai-promo-container" *ngIf="!isAiOpen()">
           <div class="ai-promo-banner">
             <div class="ai-promo-content">
-              <span class="ai-icon">🤖</span>
+              <img src="assets/img/gif.gif" style="width: 32px; height: 32px; object-fit: contain; margin-right: 0.25rem;" alt="Foco" />
               <div class="ai-promo-text">
                 <strong>¿Dudas vocacionales?</strong>
-                <span>Pregúntale a nuestro agente: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
+                <span>Pregúntale a Foco: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
               </div>
             </div>
             <button class="btn btn-primary" (click)="toggleAi()">Abrir</button>
@@ -345,9 +345,11 @@ import { AuthService } from '../../core/services/auth.service';
       <aside class="ai-panel" [class.open]="isAiOpen()">
         <div class="ai-header">
           <div class="ai-header-left">
-            <div class="ai-avatar">🤖</div>
+            <div class="ai-avatar">
+              <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
             <div>
-              <h4 class="ai-title">Orientador IA</h4>
+              <h4 class="ai-title">Foco, tu Pulpo Orientador</h4>
               <span class="ai-status">{{ aiLoading ? 'Pensando...' : 'En línea' }}</span>
             </div>
           </div>
@@ -359,22 +361,21 @@ import { AuthService } from '../../core/services/auth.service';
 
         <div class="ai-messages" #chatScrollContainer>
           <div *ngIf="aiMessages().length === 0" class="ai-empty-state">
-            <div class="ai-avatar-lg">🤖</div>
-            <p>¡Hola! Soy tu orientador vocacional. ¿En qué te puedo ayudar hoy? Pregúntame sobre carreras, universidades o empleabilidad.</p>
+            <p>¿Tienes preguntas? Foco está listo para guiarte en tu futuro vocacional. Pregúntame sobre carreras, universidades, ponderaciones o empleabilidad.</p>
           </div>
           <div
             *ngFor="let msg of aiMessages()"
             class="ai-bubble"
             [class.user]="msg.role === 'user'"
             [class.assistant]="msg.role === 'assistant'">
-            <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🤖 Tutor' }}</div>
+            <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🐙 Foco' }}</div>
             <div class="bubble-content" [innerHTML]="formatAiMessage(msg.content)"></div>
             <div class="bubble-time" *ngIf="msg.timestamp">
               {{ msg.timestamp | date:'HH:mm' }}
             </div>
           </div>
           <div *ngIf="aiLoading" class="ai-bubble assistant loading-bubble">
-            <div class="bubble-role">🤖 Tutor</div>
+            <div class="bubble-role">🐙 Foco</div>
             <div class="typing-indicator">
               <span></span><span></span><span></span>
             </div>
@@ -713,7 +714,7 @@ import { AuthService } from '../../core/services/auth.service';
     
     .ai-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #f8fafc; border-bottom: 1px solid var(--glass-border); }
     .ai-header-left { display: flex; align-items: center; gap: 0.75rem; }
-    .ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white;}
+    .ai-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .ai-title { margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b; }
     .ai-status { font-size: 0.75rem; color: #10b981; font-weight: 600; }
     .btn-icon-sm { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #64748b; padding: 0.2rem; transition: color 0.2s; border-radius: 4px;}
@@ -1172,13 +1173,21 @@ export class CareerFinderComponent implements OnInit {
     }));
 
     // Generate a context summarizing current state
-    const prompt = `
-Eres un orientador vocacional experto en el sistema universitario chileno. Tu trabajo es ayudar al estudiante a elegir su carrera ideal.
-El usuario está usando una plataforma llamada EstudiaUni.cl en el módulo "Encuentra tu Carrera".
-Debes responder de manera muy concisa, amigable y motivadora. Usa emojis. No escribas respuestas excesivamente largas, ve al grano.
-Si el usuario pregunta por detalles específicos (puntajes, duración) da la mejor estimación si no tienes el dato exacto, pero advierte que debe corroborar en canales oficiales.
-Responde esta consulta del usuario: "${text}"
-    `;
+    const prompt = `Eres Foco, la mascota oficial y orientador vocacional de EstudiaUni.cl. Eres un pulpo súper inteligente, entusiasta y amigable de 8 tentáculos. Tu rol es guiar a los estudiantes en sus dudas vocacionales con calidez, cercanía y mucha motivación.
+
+PERSONALIDAD Y TONO DE FOCO:
+- ¡Eres un pulpo! Usa metáforas marinas u oceanográficas de forma sutil, dinámica y divertida en tus explicaciones (ej. "mar de dudas", "corrientes de ideas", "navegar por tu futuro", "desenredar con mis tentáculos"), pero NUNCA las uses en saludos repetitivos.
+- Sé sumamente empático, motivador y usa un español chileno sutil y cercano, perfecto para estudiantes de enseñanza media (ej. "¡Dale!", "¡Súper!", "¡Excelente!", "¡Vamos con todo!").
+- En lugar de respuestas genéricas de IA, tu personalidad es vibrante, alegre y llena de emojis marinos y de luz (🐙, 💡, 🌊, 🧠, ✨).
+
+REGLAS DE RESOLUCIÓN PEDAGÓGICA (ESTRICTAS):
+- SIN INTRODUCCIONES REPETITIVAS (CRÍTICO): NUNCA incluyas saludos repetitivos, presentaciones o introducciones largas en tus respuestas (ej. evita decir "¡Hola!", "¡Vamos a sumergirnos!", "¡Hola crack!", "mis tentáculos están listos para...", etc.). Ve DIRECTAMENTE al grano, a la pista o a la pregunta en tu primer párrafo, sin rodeos tediosos para que la interacción fluya de forma ágil y rápida.
+- INTERACCIÓN PASO A PASO (CRÍTICO): NUNCA respondas a tus propias preguntas ni simules diálogos interactivos de ida y vuelta contigo mismo en una sola respuesta. Haz una única pregunta de reflexión o entrega una única pista inicial a la vez, deteniendo tu respuesta para esperar a que el estudiante interactúe y responda antes de avanzar al siguiente paso de la resolución.
+- Sé conciso y directo: responde de forma breve (idealmente entre 2 y 4 párrafos cortos) para no abrumar al estudiante, pero asegúrate de terminar SIEMPRE tus oraciones e ideas de forma completa y redonda.
+- FINALIZACIÓN OBLIGATORIA: Bajo ninguna circunstancia dejes una respuesta incompleta, una oración a medias o una explicación truncada. Cada mensaje tuyo debe tener un cierre perfecto y coherente.
+- Si te preguntan por detalles específicos de carreras en Chile (puntajes de corte, ponderaciones, duración, empleabilidad, gratuidad) da la mejor estimación/guía si no tienes el dato exacto, pero advierte con cariño que el estudiante debe corroborar la información en los canales oficiales de DEMRE y del Ministerio de Educación.
+
+Responde esta consulta del usuario: "${text}"`;
 
     try {
       const reply = await this.aiService.askQuestion(prompt, recentMessages);
@@ -1216,8 +1225,12 @@ Responde esta consulta del usuario: "${text}"
 
   formatAiMessage(text: string): string {
     if (!text) return '';
-    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    let html = text;
+    // Negritas: **texto** -> <strong>texto</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Itálicas: *palabra* -> <em>palabra</em> (solo para palabras individuales, evitando multiplicar expresiones matemáticas como 3 * x * y)
+    html = html.replace(/\*([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)\*/g, '<em>$1</em>');
+    // Saltos de línea: \n -> <br>
     html = html.replace(/\n/g, '<br>');
     return html;
   }

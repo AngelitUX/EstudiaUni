@@ -285,10 +285,10 @@ type ExamMode = 'real' | 'asistido';
                        [class.mode-selected]="selectedMode === 'asistido'"
                        (click)="selectedMode = 'asistido'">
                     <div class="mode-header">
-                      <span class="mode-icon">🤖</span>
+                      <span class="mode-icon">🐙</span>
                       <span class="mode-name">Ensayo Asistido</span>
                     </div>
-                    <p class="mode-desc">Aprende mientras practicas. Acceso al Tutor IA para resolver dudas. Puedes pausar, salir y tu progreso quedará guardado.</p>
+                    <p class="mode-desc">Aprende mientras practicas. Acceso a Foco, tu Pulpo Tutor, para resolver dudas. Puedes pausar, salir y tu progreso quedará guardado.</p>
                   </div>
                 </div>
               </div>
