@@ -17,8 +17,9 @@ service cloud.firestore {
 
     // ============ USUARIOS ============
     match /users/{userId} {
-      // El usuario solo puede leer y editar su propio documento
-      allow read, write: if isOwner(userId);
+      // Los usuarios autenticados pueden leer perfiles, pero sólo el propietario o un admin pueden escribir
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAdmin();
     }
     
     // ============ ENSAYOS ============
