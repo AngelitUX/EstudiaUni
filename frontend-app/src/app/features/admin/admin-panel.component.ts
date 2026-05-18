@@ -68,6 +68,9 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
             <button class="btn-refresh" (click)="refresh()" [disabled]="adminSvc.loading()">
               {{ adminSvc.loading() ? '⏳' : '🔄' }} Actualizar
             </button>
+            <button class="btn-refresh" (click)="runCleanup()" [disabled]="cleaning()" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">
+              {{ cleaning() ? '🧹 Depurando...' : '🧹 Depurar DB' }}
+            </button>
             <button class="btn-refresh" (click)="importModalOpen.set(true)" style="background: rgba(133,92,214,0.08); border-color: rgba(133,92,214,0.3); color: var(--accent-primary);">
               📥 Importar JSON
             </button>
@@ -881,6 +884,25 @@ export class AdminPanelComponent implements OnInit {
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
   deleteTarget = signal<PoolPregunta | null>(null);
   deleting = signal(false);
+  cleaning = signal(false);
+
+  async runCleanup() {
+    if (!confirm('¿Estás seguro de que deseas depurar la base de datos? Se eliminarán todas las cuentas fantasmas (no registradas en Authentication) y se reorganizarán los roles de forma segura.')) {
+      return;
+    }
+    
+    this.cleaning.set(true);
+    try {
+      const result = await this.adminSvc.cleanupDatabase();
+      alert(`🎉 ¡Depuración completada de forma 100% segura!\n\n- Usuarios fantasmas eliminados: ${result.deletedUsers}\n- Administradores huérfanos eliminados: ${result.deletedAdmins}\n- Usuarios activos actualizados/ordenados: ${result.updatedUsers}`);
+      this.refresh();
+    } catch (error) {
+      console.error('Error running cleanup:', error);
+      alert('Hubo un error al depurar la base de datos. Consulta la consola.');
+    } finally {
+      this.cleaning.set(false);
+    }
+  }
 
   // ─── Bulk JSON Importer State ───
   importModalOpen = signal(false);
