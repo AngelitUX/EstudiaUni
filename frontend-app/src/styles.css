@@ -207,3 +207,173 @@ body.font-xlarge h2 { font-size: 2rem !important; }
 body.font-xlarge h3 { font-size: 1.6rem !important; }
 body.font-xlarge p { font-size: 1.4rem !important; }
 body.font-xlarge .nav-item { font-size: 1.35rem !important; }
+
+
+/* ==========================================
+   ADVANCED RESPONSIVE SIDEBAR & LAYOUT OVERRIDES
+   Ensures EstudiaUni scales flawlessly on high zooms & small screens
+   ========================================== */
+
+/* CRITICAL: Force Sidebar scrollability and prevent elements from pushing off the screen on desktop/tablet views */
+.sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important; /* Never allow outer sidebar to grow or overflow the viewport */
+}
+
+/* Apply the exact same robust scroll containment to the mobile drawer menu */
+.mobile-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 10000 !important; /* Ensure z-index is elevated on top of other content */
+  display: none !important;
+}
+
+.mobile-overlay.open {
+  display: block !important;
+}
+
+.mobile-menu {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  width: 280px !important;
+  background: #0d0f17 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: -280px !important;
+  z-index: 10001 !important;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important; /* Prevent outer drawer container from expanding */
+  padding: 1rem 0 !important; /* Clean vertical spacing */
+}
+
+.mobile-overlay.open .mobile-menu {
+  left: 0 !important;
+}
+
+.mobile-footer {
+  padding: 1.25rem 0.75rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-top: auto !important; /* Force footer strictly to the bottom of the drawer flexbox */
+}
+
+.sidebar-nav {
+  flex: 1 1 0% !important; /* Force flex child to respect height boundaries */
+  min-height: 0 !important; /* Enforces scrollability instead of expanding */
+  overflow-y: auto !important; /* Enforce smooth vertical scrollbar */
+  scrollbar-width: thin !important; /* Custom styling for Firefox */
+}
+
+/* Highly visible premium custom scrollbar for sidebar navigation */
+.sidebar-nav::-webkit-scrollbar {
+  width: 8px !important;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 99px !important;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22) !important; /* Highly visible transparent white thumb */
+  border-radius: 99px !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* 1. Intermediate Width Scaling (1025px to 1240px)
+   Shrinks sidebar width to 220px to prevent overlapping/clipping of main content under zoom */
+@media (min-width: 1025px) and (max-width: 1240px) {
+  .sidebar {
+    width: 220px !important;
+  }
+  .main-content {
+    margin-left: 220px !important;
+    max-width: calc(100% - 220px) !important;
+  }
+  .sidebar-logo {
+    font-size: 1.7rem !important;
+  }
+  .nav-item {
+    padding: 0.65rem 0.85rem !important;
+    font-size: 0.92rem !important;
+    gap: 0.6rem !important;
+  }
+  .nav-icon {
+    font-size: 1.15rem !important;
+    width: 28px !important;
+  }
+  .sidebar-section-title {
+    padding: 0.45rem 0.85rem !important;
+    margin: 0.4rem 0.4rem 0.1rem !important;
+  }
+  .sidebar-sub-items {
+    margin-left: 1rem !important;
+  }
+}
+
+/* 2. Width Breakpoint Upgrade: Switch to mobile layout at 1024px instead of 768px */
+@media (max-width: 1024px) {
+  .sidebar {
+    display: none !important;
+  }
+  .mobile-header {
+    display: flex !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    padding: 80px 1rem 2rem !important;
+    max-width: 100% !important;
+  }
+}
+
+/* 3. Detailed Height-Based Responsiveness (Desktop/Tablet)
+   Dynamically scales all elements as screen height decreases due to browser zoom or screen size */
+@media (max-height: 960px) and (min-width: 1025px) {
+  .sidebar-header { padding: 1.75rem 1rem 1.25rem !important; }
+  .sidebar-logo { font-size: 1.9rem !important; }
+  .nav-item { padding: 0.75rem 0.95rem !important; font-size: 0.98rem !important; gap: 0.75rem !important; }
+}
+
+@media (max-height: 820px) and (min-width: 1025px) {
+  .sidebar-header { padding: 1.25rem 1rem 1rem !important; }
+  .sidebar-logo { font-size: 1.7rem !important; }
+  .nav-item { padding: 0.6rem 0.8rem !important; font-size: 0.92rem !important; gap: 0.6rem !important; }
+  .nav-icon { font-size: 1.1rem !important; width: 28px !important; }
+  .sidebar-section-title { padding: 0.45rem 0.8rem !important; margin: 0.4rem 0.4rem 0.1rem !important; }
+}
+
+@media (max-height: 700px) and (min-width: 1025px) {
+  .sidebar-header { padding: 0.85rem 0.75rem !important; }
+  .sidebar-logo { font-size: 1.45rem !important; }
+  .nav-item { padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important; gap: 0.5rem !important; }
+  .nav-icon { font-size: 1rem !important; width: 24px !important; }
+  .sidebar-section-title { padding: 0.35rem 0.75rem !important; font-size: 0.72rem !important; margin: 0.25rem 0.25rem 0.05rem !important; }
+  .sidebar-sub-items { margin-left: 0.85rem !important; }
+}
+
+@media (max-height: 580px) and (min-width: 1025px) {
+  .sidebar-header { padding: 0.5rem 0.5rem !important; }
+  .sidebar-logo { font-size: 1.25rem !important; }
+  .nav-item { padding: 0.38rem 0.65rem !important; font-size: 0.82rem !important; gap: 0.4rem !important; }
+  .nav-icon { font-size: 0.9rem !important; width: 20px !important; }
+  .sidebar-section-title { padding: 0.25rem 0.65rem !important; font-size: 0.68rem !important; margin: 0.15rem 0.15rem 0.05rem !important; }
+  .sidebar-sub-items { margin-left: 0.65rem !important; }
+  .sidebar-footer { padding: 0.5rem 0.4rem !important; }
+}
+
+/* 4. Highly Responsive Height Scaling for Mobile Drawer Menu */
+@media (max-height: 700px) and (max-width: 1024px) {
+  .mobile-menu .nav-item { padding: 0.55rem 0.85rem !important; font-size: 0.92rem !important; }
+  .mobile-menu .sidebar-section-title { padding: 0.45rem 0.85rem !important; }
+}
+@media (max-height: 550px) and (max-width: 1024px) {
+  .mobile-menu .nav-item { padding: 0.4rem 0.75rem !important; font-size: 0.85rem !important; }
+  .mobile-menu .sidebar-section-title { padding: 0.35rem 0.75rem !important; }
+  .mobile-footer { padding: 0.75rem !important; }
+}
