@@ -476,16 +476,26 @@ export class PaesContentService {
 
   constructor() {
     this.clearCache(); // Force immediate cache clear once to migrate to the new ID-mapped schema
-    this.loadDataFromFirestore();
-    // Subscribe to auth state changes to load user-specific progress
+    
+    // Subscribe to auth state changes to load user-specific progress and fetch fresh firestore data
     this.auth.onAuthStateChanged((user) => {
-      if (user && user.uid !== this.currentUid) {
+      if (user) {
+        const isNewUser = user.uid !== this.currentUid;
         this.currentUid = user.uid;
-        this._progress.set(new Map());
-        this.loadProgressFromStorage();
-      } else if (!user) {
+        
+        if (isNewUser) {
+          this._progress.set(new Map());
+          this.loadProgressFromStorage();
+        }
+
+        // Cargar datos de Firestore ahora que estamos 100% autenticados
+        if (this._materias().length === 0) {
+          this.loadDataFromFirestore();
+        }
+      } else {
         this.currentUid = null;
         this._progress.set(new Map());
+        this.loading.set(true); // Reset loading state for subsequent logins
       }
     });
   }
