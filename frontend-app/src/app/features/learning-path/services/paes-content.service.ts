@@ -536,15 +536,28 @@ export class PaesContentService {
 
     try {
       console.log('[PaesContentService] Obteniendo datos frescos desde Firestore...');
+      
       // 1. Cargar materias
-      const materiasSnap = await getDocs(collection(this.firestore, 'lp_materias'));
+      let materiasSnap;
+      try {
+        materiasSnap = await getDocs(collection(this.firestore, 'lp_materias'));
+      } catch (err) {
+        console.error('[PaesContentService] Error cargando lp_materias desde Firestore:', err);
+        throw err;
+      }
       const materias = materiasSnap.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Materia));
 
       // 2. Cargar el pool de preguntas completo
-      const poolSnap = await getDocs(collection(this.firestore, 'pool_preguntas'));
+      let poolSnap;
+      try {
+        poolSnap = await getDocs(collection(this.firestore, 'pool_preguntas'));
+      } catch (err) {
+        console.error('[PaesContentService] Error cargando pool_preguntas desde Firestore:', err);
+        throw err;
+      }
       const poolMap = new Map<string, any>();
       const poolArray: any[] = [];
       poolSnap.docs.forEach(doc => {
@@ -554,11 +567,23 @@ export class PaesContentService {
       });
 
       // 3. Cargar capítulos y sus secciones
-      const capitulosSnap = await getDocs(collection(this.firestore, 'lp_capitulos'));
+      let capitulosSnap;
+      try {
+        capitulosSnap = await getDocs(collection(this.firestore, 'lp_capitulos'));
+      } catch (err) {
+        console.error('[PaesContentService] Error cargando lp_capitulos desde Firestore:', err);
+        throw err;
+      }
       const capitulos: Capitulo[] = [];
 
       // 4. Cargar todos los tests (como referencias)
-      const testsSnap = await getDocs(collection(this.firestore, 'lp_tests'));
+      let testsSnap;
+      try {
+        testsSnap = await getDocs(collection(this.firestore, 'lp_tests'));
+      } catch (err) {
+        console.error('[PaesContentService] Error cargando lp_tests desde Firestore:', err);
+        throw err;
+      }
       const testsMap = new Map<string, TestPaes>();
       testsSnap.docs.forEach(doc => {
         const data = doc.data() as any;
@@ -577,7 +602,13 @@ export class PaesContentService {
       });
 
       // 5. Cargar todas las secciones de una sola vez con un Collection Group
-      const seccionesSnap = await getDocs(collectionGroup(this.firestore, 'secciones'));
+      let seccionesSnap;
+      try {
+        seccionesSnap = await getDocs(collectionGroup(this.firestore, 'secciones'));
+      } catch (err) {
+        console.error('[PaesContentService] Error cargando secciones (collectionGroup) desde Firestore:', err);
+        throw err;
+      }
       const seccionesByCapitulo = new Map<string, Seccion[]>();
       
       seccionesSnap.docs.forEach(secDoc => {
