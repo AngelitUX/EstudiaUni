@@ -27,6 +27,10 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
             <span class="nav-icon">➕</span>
             <span class="nav-text">Nueva Pregunta</span>
           </a>
+          <a routerLink="/admin/recursos" class="nav-item">
+            <span class="nav-icon">📂</span>
+            <span class="nav-text">Recursos</span>
+          </a>
         </nav>
 
         <div class="sidebar-divider"></div>

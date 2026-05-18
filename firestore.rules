@@ -39,6 +39,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // ============ POOL DE PREGUNTAS ============
+    match /pool_preguntas/{preguntaId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
     // ============ INTENTOS ============
     match /intentos/{intentoId} {
       // El usuario puede leer y escribir solo SUS propios intentos
@@ -81,6 +87,12 @@ service cloud.firestore {
     }
     
     match /lp_tests/{testId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ============ RECURSOS ADICIONALES ============
+    match /recursos_adicionales/{recursoId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
