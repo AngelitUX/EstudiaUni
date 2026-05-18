@@ -35,9 +35,6 @@ export interface UserProfile {
   preferredStudyTime?: 'manana' | 'tarde' | 'noche';
   bio?: string;
   profileEmoji?: string;
-  targetCareer?: string;
-  targetUniversity?: string;
-  targetExamDate?: string;
   studyGoalMinutesPerDay?: number;
   selectedSubjects?: string[];
   dyslexiaFont?: boolean;
@@ -47,6 +44,15 @@ export interface UserProfile {
   favoriteCareers?: any[];
   location?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
+  notasNem?: {
+    n1?: number | null;
+    n2?: number | null;
+    n3?: number | null;
+    n4?: number | null;
+    me?: number | null;
+    mae?: number | null;
+    grupo?: string;
+  };
 }
 
 export interface Ensayo {

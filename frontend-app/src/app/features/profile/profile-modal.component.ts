@@ -95,23 +95,39 @@ import { SoundService } from '../../core/services/sound.service';
                 <div class="helper-row"><span>Máx 140 caracteres</span><span class="counter">{{ profileForm.bio.length }}/140</span></div>
               </div>
               <div class="section-block">
-                <div class="section-header"><h3>Objetivo académico</h3><p>Define tu meta para personalizar recomendaciones.</p></div>
-                <div class="grid">
-                  <label>Carrera objetivo
-                    <select [(ngModel)]="profileForm.targetCareer">
-                      <option value="">Selecciona tu carrera</option>
-                      <option *ngFor="let c of careerOptions" [value]="c">{{ c }}</option>
-                      <option value="Otra">Otra</option>
-                    </select>
-                  </label>
-                  <label>Universidad objetivo
-                    <select [(ngModel)]="profileForm.targetUniversity">
-                      <option value="">Selecciona tu universidad</option>
-                      <option *ngFor="let u of universityOptions" [value]="u">{{ u }}</option>
-                      <option value="Otra">Otra</option>
-                    </select>
-                  </label>
+                <div class="section-header">
+                  <h3>Historial NEM</h3>
+                  <p>Tus notas guardadas desde la Calculadora NEM.</p>
                 </div>
+                <div class="nem-history-container" *ngIf="firestoreService.profileSignal()?.notasNem as nem; else noNemData">
+                  <div class="nem-history-grid">
+                    <div class="nem-stat">
+                      <span class="nem-stat-label">1° Medio</span>
+                      <span class="nem-stat-value">{{ nem.n1 || '--' }}</span>
+                    </div>
+                    <div class="nem-stat">
+                      <span class="nem-stat-label">2° Medio</span>
+                      <span class="nem-stat-value">{{ nem.n2 || '--' }}</span>
+                    </div>
+                    <div class="nem-stat">
+                      <span class="nem-stat-label">3° Medio</span>
+                      <span class="nem-stat-value">{{ nem.n3 || '--' }}</span>
+                    </div>
+                    <div class="nem-stat">
+                      <span class="nem-stat-label">4° Medio</span>
+                      <span class="nem-stat-value">{{ nem.n4 || '--' }}</span>
+                    </div>
+                  </div>
+                  <div class="nem-group" *ngIf="nem.grupo">
+                    <span class="nem-group-badge">Grupo {{ nem.grupo }} ({{ nem.grupo === 'A' ? 'HC Diurno' : nem.grupo === 'B' ? 'HC Vespertino' : 'TP' }})</span>
+                  </div>
+                </div>
+                <ng-template #noNemData>
+                  <div class="empty-nem">
+                    <p>Aún no has guardado tus notas.</p>
+                    <a routerLink="/calculadora-nem" (click)="closeModal()" class="btn-nem-link">Ir a la calculadora</a>
+                  </div>
+                </ng-template>
               </div>
               <div class="bottom-spacer"></div>
             </div>
@@ -196,8 +212,9 @@ import { SoundService } from '../../core/services/sound.service';
     .btn-close{border:none;background:var(--bg-secondary);color:var(--text-secondary);width:34px;height:34px;border-radius:10px;font-size:1.1rem;cursor:pointer;display:grid;place-items:center;transition:all .2s}
     .btn-close:hover{background:rgba(239,68,68,0.25);color:#fca5a5}
     .modal-scroll{overflow-y:auto;padding:1.25rem;flex:1;overscroll-behavior:contain}
-    .modal-scroll::-webkit-scrollbar{width:5px}
-    .modal-scroll::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:99px}
+    .modal-scroll::-webkit-scrollbar{width:8px}
+    .modal-scroll::-webkit-scrollbar-thumb{background:rgba(133,92,214,0.45);border-radius:99px}
+    .modal-scroll::-webkit-scrollbar-thumb:hover{background:rgba(133,92,214,0.65)}
 
     .profile-shell{display:grid;grid-template-columns:260px 1fr;gap:1.5rem}
     .profile-sidebar{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;padding:1.25rem;border-radius:16px;background:var(--bg-color);border:2px solid var(--glass-border);align-self:flex-start;position:sticky;top:0.5rem}
@@ -288,6 +305,18 @@ import { SoundService } from '../../core/services/sound.service';
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .bottom-spacer{height:5rem}
 
+    .nem-history-container{display:flex;flex-direction:column;gap:1rem;background:rgba(133,92,214,0.05);padding:1rem;border-radius:12px;border:1px solid rgba(133,92,214,0.15)}
+    .nem-history-grid{display:flex;justify-content:space-between;gap:0.5rem}
+    .nem-stat{display:flex;flex-direction:column;align-items:center;gap:0.25rem;background:#fff;padding:0.75rem 1rem;border-radius:10px;border:1px solid var(--glass-border);flex:1;box-shadow:var(--shadow-sm)}
+    .nem-stat-label{font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em}
+    .nem-stat-value{font-size:1.3rem;font-weight:800;color:var(--accent-primary);line-height:1}
+    .nem-group{display:flex;justify-content:center}
+    .nem-group-badge{font-size:0.8rem;font-weight:700;color:var(--text-secondary);background:var(--bg-secondary);padding:0.35rem 0.8rem;border-radius:99px;border:1px solid var(--glass-border)}
+    .empty-nem{display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:1.5rem;background:rgba(0,0,0,0.02);border-radius:12px;border:1px dashed var(--glass-border);text-align:center}
+    .empty-nem p{margin:0;font-size:0.9rem;color:var(--text-secondary);font-weight:500}
+    .btn-nem-link{display:inline-block;background:var(--accent-primary);color:white;text-decoration:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.9rem;font-weight:700;transition:all 0.2s}
+    .btn-nem-link:hover{filter:brightness(1.1);transform:translateY(-2px)}
+
     .primary.shake { animation: shake-btn 0.6s cubic-bezier(.36,.07,.19,.97) both; box-shadow: 0 0 0 2px #ef4444, 0 4px 12px rgba(239,68,68,0.4) !important; }
     @keyframes shake-btn {
       0%, 100% { transform: translate3d(0, 0, 0); }
@@ -338,7 +367,7 @@ import { SoundService } from '../../core/services/sound.service';
   `]
 })
 export class ProfileModalComponent implements OnInit {
-  private readonly firestoreService = inject(FirestoreService);
+  public readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(Auth);
   private readonly authService = inject(AuthService);
@@ -394,8 +423,6 @@ export class ProfileModalComponent implements OnInit {
     photoURL: '', 
     bio: '', 
     profileEmoji: '✨', 
-    targetCareer: '', 
-    targetUniversity: '', 
     linkedinUrl: '',
     location: '',
     selectedSubjects: [] as string[]
@@ -411,25 +438,10 @@ export class ProfileModalComponent implements OnInit {
     { id: 'ciencias-quimica', name: 'Química' }
   ];
   emojiOptions = ['✨','🔥','🎯','🚀','📚','🧠','😎','🌟','🎓','⚡','💪','🦊','🐼','🦄','😄','🤓','🥳','😺','🌈','🍀','🪐','🌙','☀️','🎵','🎮','🏆','💎','🧩','🫶','🛡️'];
-  careerOptions = [
-    'Medicina', 'Ingeniería Civil', 'Ingeniería Civil Industrial', 'Ingeniería Civil Minas', 'Ingeniería Civil Eléctrica',
-    'Ingeniería Civil Mecánica', 'Ingeniería Civil Informática', 'Derecho', 'Psicología', 'Enfermería',
-    'Ingeniería Comercial', 'Arquitectura', 'Medicina Veterinaria', 'Odontología', 'Kinesiología',
-    'Pedagogía Educación Básica', 'Pedagogía Matemáticas', 'Pedagogía Lenguaje', 'Pedagogía Inglés',
-    'Diseño Gráfico', 'Diseño Industrial', 'Periodismo', 'Geología', 'Obstetricia', 'Química y Farmacia',
-    'Terapia Ocupacional', 'Nutrición y Dietética', 'Trabajo Social', 'Biotecnología', 'Astronomía',
-    'Bioquímica', 'Administración Pública', 'Sociología', 'Antropología', 'Arqueología', 'Agronomía',
-    'Fonoaudiología', 'Tecnología Médica', 'Contador Auditor', 'Publicidad', 'Cine y Audiovisual'
-  ];
-  universityOptions = [
-    'U. de Chile', 'P. Universidad Católica', 'U. de Concepción', 'USACH', 'UTFSM', 'U. Diego Portales',
-    'U. Adolfo Ibáñez', 'PUCV', 'U. de Talca', 'U. de la Frontera', 'U. de los Andes', 'UNAB',
-    'U. San Sebastián', 'U. de Antofagasta', 'U. de Valparaíso', 'U. Central', 'U. Mayor', 'U. Austral',
-    'U. Católica del Norte', 'U. de Atacama', 'U. de Tarapacá', 'U. del Bio-Bío', 'U. de La Serena',
-    'U. de Magallanes', 'UMCE', 'U. de Playa Ancha', 'UTEM', 'U. de O\'Higgins', 'U. de Aysén',
-    'U. del Desarrollo', 'U. Finis Terrae', 'U. Santo Tomás', 'U. Autónoma', 'U. de Las Américas',
-    'U. Bernardo O\'Higgins', 'U. Gabriela Mistral', 'U. Viña del Mar'
-  ];
+  
+  public get firestoreServiceSignal() {
+    return this.firestoreService;
+  }
 
   isProPlan = () => this.firestoreService.profileSignal()?.plan === 'premium';
 
@@ -457,8 +469,6 @@ export class ProfileModalComponent implements OnInit {
           this.profileForm.photoURL = profile.photoURL || '';
           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
-          this.profileForm.targetCareer = profile.targetCareer || '';
-          this.profileForm.targetUniversity = profile.targetUniversity || '';
           this.profileForm.linkedinUrl = profile.linkedinUrl || '';
           this.profileForm.location = profile.location || '';
           this.profileForm.selectedSubjects = profile.selectedSubjects || this.subjectsList.map(s => s.id);
@@ -699,8 +709,6 @@ export class ProfileModalComponent implements OnInit {
         photoURL, 
         bio: this.profileForm.bio.trim(), 
         profileEmoji: selectedEmoji,
-        targetCareer: this.profileForm.targetCareer.trim(),
-        targetUniversity: this.profileForm.targetUniversity.trim(),
         linkedinUrl: this.profileForm.linkedinUrl.trim(),
         location: this.profileForm.location.trim(),
         selectedSubjects: this.profileForm.selectedSubjects
