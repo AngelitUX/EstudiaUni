@@ -475,6 +475,7 @@ export class PaesContentService {
   readonly poolPreguntas = this._poolPreguntas.asReadonly();
 
   constructor() {
+    this.clearCache(); // Force immediate cache clear once to migrate to the new ID-mapped schema
     this.loadDataFromFirestore();
     // Subscribe to auth state changes to load user-specific progress
     this.auth.onAuthStateChanged((user) => {
@@ -527,7 +528,10 @@ export class PaesContentService {
       console.log('[PaesContentService] Obteniendo datos frescos desde Firestore...');
       // 1. Cargar materias
       const materiasSnap = await getDocs(collection(this.firestore, 'lp_materias'));
-      const materias = materiasSnap.docs.map(doc => doc.data() as Materia);
+      const materias = materiasSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Materia));
 
       // 2. Cargar el pool de preguntas completo
       const poolSnap = await getDocs(collection(this.firestore, 'pool_preguntas'));

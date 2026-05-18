@@ -83,6 +83,11 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
   {
+    path: 'admin/recursos',
+    loadComponent: () => import('./features/admin/admin-recursos.component').then(m => m.AdminRecursosComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
     path: 'encuentra-tu-carrera',
     loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
     canActivate: [authGuard, emailVerifiedGuard]
@@ -92,6 +97,15 @@ export const routes: Routes = [
     loadComponent: () => import('./features/mente-veloz/mente-veloz.component').then(m => m.MenteVelozComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
+  {
+    path: 'calculadora-nem',
+    loadComponent: () => import('./features/nem-calculator/nem-calculator.component').then(m => m.NemCalculatorComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'recursos',
+    loadComponent: () => import('./features/recursos/recursos.component').then(m => m.RecursosComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   { path: '**', redirectTo: '' }
 ];
-

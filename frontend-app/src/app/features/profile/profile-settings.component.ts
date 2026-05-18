@@ -141,18 +141,6 @@ import { AdminService } from '../admin/services/admin.service';
           </div>
           <div class="grid">
             <label>
-              Carrera objetivo
-              <input [(ngModel)]="settingsForm.targetCareer" type="text" maxlength="80" placeholder="Ej: Ingeniería" />
-            </label>
-            <label>
-              Universidad objetivo
-              <input [(ngModel)]="settingsForm.targetUniversity" type="text" maxlength="80" placeholder="Ej: U. de Chile" />
-            </label>
-            <label>
-              Fecha meta de prueba
-              <input [(ngModel)]="settingsForm.targetExamDate" type="date" />
-            </label>
-            <label>
               Meta diaria (min)
               <input [(ngModel)]="settingsForm.studyGoalMinutesPerDay" type="number" min="10" max="240" />
             </label>
@@ -726,9 +714,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   ];
 
   settingsForm = {
-    targetCareer: '',
-    targetUniversity: '',
-    targetExamDate: '',
     studyGoalMinutesPerDay: 45,
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
@@ -754,9 +739,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
 
-          this.settingsForm.targetCareer = profile.targetCareer || '';
-          this.settingsForm.targetUniversity = profile.targetUniversity || '';
-          this.settingsForm.targetExamDate = profile.targetExamDate || '';
           this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
@@ -863,9 +845,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.saving = true;
     try {
       await this.firestoreService.updateProfileSettings({
-        targetCareer: this.settingsForm.targetCareer.trim(),
-        targetUniversity: this.settingsForm.targetUniversity.trim(),
-        targetExamDate: this.settingsForm.targetExamDate || null,
         studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
