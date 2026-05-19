@@ -160,13 +160,25 @@ type PathItem =
                   </div>
 
                   <!-- Guide CTA -->
-                  <div class="guide-btn-wrapper">
+                  <div class="guide-btn-wrapper" style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
                     <div class="guide-tooltip" *ngIf="item.isCurrentChapter && !isGuideCompleted(item.capituloId)">
                       EMPEZAR
                       <div class="tooltip-arrow"></div>
                     </div>
-                    <button class="splash-guide-btn" (click)="goToGuide(item.capituloId)">
+                    <button class="splash-guide-btn" (click)="goToGuide(item.capituloId)" style="flex: 1;">
                       <span class="sgb-icon">📖</span> Estudiar la Guía
+                    </button>
+                    <button *ngIf="adminService.isAdmin()"
+                      class="admin-guide-toggle-btn"
+                      [class.completed]="isGuideCompleted(item.capituloId)"
+                      [title]="isGuideCompleted(item.capituloId) ? 'Marcar guía como incompleta' : 'Marcar guía como completada'"
+                      (click)="toggleGuideCompletion($event, item.capituloId)">
+                      <span class="admin-guide-icon-default">
+                        {{ isGuideCompleted(item.capituloId) ? '✓ Guía' : '⚡ Completar' }}
+                      </span>
+                      <span class="admin-guide-icon-hover">
+                        ✕ Quitar
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -186,6 +198,17 @@ type PathItem =
                     {{ getChapterProgress(item.capituloId).completed === 0 ? 'EMPEZAR' : 'CONTINUAR' }}
                     <div class="tooltip-arrow"></div>
                   </div>
+
+                  <!-- Admin toggle node button -->
+                  <button *ngIf="adminService.isAdmin()"
+                    class="admin-node-toggle"
+                    [class.completed]="item.status === 'completed'"
+                    [title]="item.status === 'completed' ? 'Marcar lección como incompleta' : 'Marcar lección como completada'"
+                    (click)="toggleNodeCompletion($event, item)">
+                    <span class="admin-toggle-icon-default">{{ item.status === 'completed' ? '✓' : '+' }}</span>
+                    <span class="admin-toggle-icon-hover">✕</span>
+                  </button>
+
                   <button class="duo-node" 
                     [class.node-completed]="item.status === 'completed'"
                     [class.node-active]="item.status === 'active'"
@@ -467,6 +490,83 @@ type PathItem =
       100% { box-shadow: 0 8px 0 #a559d6, 0 0 0 0 rgba(206,130,255,0); }
     }
 
+    .admin-node-toggle {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      font-size: 0.9rem;
+      font-weight: 800;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .admin-node-toggle:hover {
+      transform: scale(1.15);
+      background: #1e293b;
+      border-color: var(--accent-primary);
+      box-shadow: 0 6px 16px rgba(133, 92, 214, 0.4);
+    }
+    .admin-node-toggle.completed {
+      background: #58cc02;
+      border-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(88, 204, 2, 0.4);
+    }
+    .admin-node-toggle.completed:hover {
+      background: #ef4444;
+      border-color: #ffffff;
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+    .admin-toggle-icon-hover { display: none; }
+    .admin-node-toggle.completed:hover .admin-toggle-icon-default { display: none; }
+    .admin-node-toggle.completed:hover .admin-toggle-icon-hover { display: block; }
+
+    .admin-guide-toggle-btn {
+      padding: 0.85rem 1.25rem;
+      border-radius: 14px;
+      border: 2px solid rgba(133,92,214,0.3);
+      background: rgba(133,92,214,0.06);
+      color: var(--accent-primary);
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .admin-guide-toggle-btn:hover {
+      background: var(--accent-primary);
+      color: #fff;
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(133,92,214,0.25);
+    }
+    .admin-guide-toggle-btn.completed {
+      background: rgba(88,204,2,0.08);
+      border-color: rgba(88,204,2,0.3);
+      color: #3d8c00;
+    }
+    .admin-guide-toggle-btn.completed:hover {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.15);
+    }
+    .admin-guide-icon-hover { display: none; }
+    .admin-guide-toggle-btn.completed:hover .admin-guide-icon-default { display: none; }
+    .admin-guide-toggle-btn.completed:hover .admin-guide-icon-hover { display: block; }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-header { display: flex; }
@@ -600,8 +700,27 @@ export class MateriaPathComponent {
   });
 
   handleNodeClick(item: any) {
-    if (item.status === 'locked') return;
+    if (item.status === 'locked' && !this.adminService.isAdmin()) return;
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
+  }
+
+  toggleNodeCompletion(event: Event, item: any) {
+    event.stopPropagation();
+    if (item.status === 'completed') {
+      this.paes.markSeccionIncomplete(item.id);
+    } else {
+      this.paes.markSeccionCompleted(item.id);
+    }
+  }
+
+  toggleGuideCompletion(event: Event, capId: string) {
+    event.stopPropagation();
+    const isCompleted = this.isGuideCompleted(capId);
+    if (isCompleted) {
+      this.paes.markSeccionIncomplete('guide_' + capId);
+    } else {
+      this.paes.markSeccionCompleted('guide_' + capId);
+    }
   }
 
   goToGuide(capId: string) {
