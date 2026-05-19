@@ -40,6 +40,22 @@ export const routes: Routes = [
   { path: 'ensayos', component: EnsayosListComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'ensayo/:id/run', component: EnsayoRunnerComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'ensayo/:id/review', component: EnsayoReviewComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  // Mini Ensayos
+  {
+    path: 'mini-ensayo',
+    loadComponent: () => import('./features/mini-ensayos/mini-ensayo-setup.component').then(m => m.MiniEnsayoSetupComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'mini-ensayo/run',
+    loadComponent: () => import('./features/mini-ensayos/mini-ensayo-runner.component').then(m => m.MiniEnsayoRunnerComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'mini-ensayo/review',
+    loadComponent: () => import('./features/mini-ensayos/mini-ensayo-review.component').then(m => m.MiniEnsayoReviewComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   // Ruta de Aprendizaje (Duolingo-style)
   {
     path: 'ruta',

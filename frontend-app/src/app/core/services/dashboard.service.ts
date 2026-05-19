@@ -8,7 +8,7 @@ import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } 
 
 export interface ActivityEntry {
   id: string;
-  type: 'leccion' | 'ensayo' | 'mente-veloz';
+  type: 'leccion' | 'ensayo' | 'mente-veloz' | 'mini-ensayo';
   mode?: 'real' | 'asistido';
   title: string;
   subject: string;
@@ -84,7 +84,7 @@ export class DashboardService {
 
   // ─── Computed: Best PAES record ───
   readonly bestPaesRecord = computed<PaesRecord | null>(() => {
-    const records = this._paesRecords();
+    const records = this._paesRecords().filter(r => r.mode === 'real');
     if (records.length === 0) return null;
     return records.reduce((best, r) => {
       if (r.correctAnswers > best.correctAnswers) return r;
@@ -264,6 +264,39 @@ export class DashboardService {
   }
 
   // ─── Public Methods ───
+
+  async logMiniEnsayoCompleted(data: Partial<ActivityEntry>) {
+    if (!this.currentUid) return;
+    const now = new Date().toISOString();
+
+    const entry: ActivityEntry = {
+      id: data.id || crypto.randomUUID(),
+      type: 'mini-ensayo',
+      mode: data.mode || 'personalizado' as any,
+      title: data.title || 'Mini Ensayo',
+      subject: data.subject || '',
+      subjectIcon: data.subjectIcon || '🎯',
+      score: data.score || 0,
+      totalCorrect: data.totalCorrect || 0,
+      totalQuestions: data.totalQuestions || 0,
+      timeLimit: data.timeLimit || 0,
+      timestamp: now,
+      playedQuestionsRaw: data.playedQuestionsRaw
+    };
+
+    const current = this._activities();
+    this._activities.set([entry, ...current].slice(0, 50));
+    this.updateStreak();
+    this.updateSuperStreak();
+    this.saveToStorage();
+
+    const user = this.auth.currentUser;
+    if (user) {
+      this.firestoreService.saveActivity(user.uid, entry).catch(err => 
+        console.error('[DashboardService] Error guardando actividad en Firebase:', err)
+      );
+    }
+  }
 
   /** Log a completed lesson from the learning path */
   logLessonCompleted(data: {

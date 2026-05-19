@@ -17,6 +17,7 @@ interface ReviewQuestion {
     tip: string;
   };
   imageUrl?: string;
+  tema?: string;
 }
 
 @Component({
@@ -24,22 +25,34 @@ interface ReviewQuestion {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="review-container">
+    <div class="review-container animate-fade-in">
       <!-- LOADING OVERLAY -->
       <div class="loading-overlay" *ngIf="loading">
         <div class="spinner"></div>
         <p>Calculando resultados...</p>
       </div>
 
-      <!-- HEADER -->
+      <ng-container *ngIf="!loading">
+        <!-- HEADER -->
         <header class="review-header">
-          <div class="header-left">
-            <button class="btn-back" routerLink="/ensayos">← Volver</button>
-            <div class="header-info">
-              <h1>Revisión: {{ examTitle }}</h1>
-              <p class="header-subtitle">Revisa tus respuestas y aprende de los errores</p>
+          <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+            <div class="header-left">
+              <button class="btn-back" routerLink="/ensayos">← Volver</button>
+              <div class="header-info">
+                <h1>Revisión: {{ examTitle }}</h1>
+                <p class="header-subtitle">Revisa tus respuestas y aprende de los errores</p>
+              </div>
             </div>
-        </div>
+            
+            <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+            <button class="btn btn-secondary btn-sm" (click)="mostrarModalMejorador = true" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+              📈 Mejorador de Puntaje
+            </button>
+            <button class="btn btn-primary btn-sm" routerLink="/ensayos" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+              Finalizar
+            </button>
+            </div>
+          </div>
         
         <div class="header-score">
           <div class="score-details">
@@ -60,7 +73,7 @@ interface ReviewQuestion {
       </header>
 
       <!-- MAIN CONTENT -->
-      <div class="review-body">
+      <div class="review-body animate-slide-up">
         <!-- SUMMARY CARDS -->
         <div class="summary-cards">
           <div class="summary-card correct">
@@ -151,13 +164,42 @@ interface ReviewQuestion {
           </div>
         </div>
 
-        <!-- ACTIONS -->
-        <div class="review-actions">
-          <button class="btn btn-primary btn-finalizar" routerLink="/ensayos">
-            Finalizar
-          </button>
+        <!-- ACTIONS MOVED TO HEADER -->
+
+        <!-- MODAL MEJORADOR DE PUNTAJE -->
+        <div class="modal-overlay animate-fade-in" *ngIf="mostrarModalMejorador" (click)="mostrarModalMejorador = false">
+          <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()" style="max-width: 500px;">
+            <div class="modal-icon" style="font-size: 3.8rem; filter: drop-shadow(0 4px 10px rgba(99,102,241,0.2)); margin-bottom: 0.75rem;">📈</div>
+            <h2 style="font-size: 1.85rem; font-weight: 800; color: #0f172a !important; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Mejorador de Puntaje</h2>
+            <p style="color: #475569 !important; font-size: 0.98rem; line-height: 1.6; margin: 0.5rem 0 1.75rem; text-align: center; font-weight: 600;">
+              ¿Cómo prefieres potenciar tu rendimiento hoy? Selecciona una de las siguientes opciones inteligentes diseñadas para fortalecer tus debilidades:
+            </p>
+            
+            <div class="mejorador-options-list" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; margin-bottom: 1.5rem;">
+              <!-- OPCIÓN 1: RUTA DE APRENDIZAJE -->
+              <button class="mejorador-opt-btn" (click)="irARutaDeAprendizaje()" style="display: flex; align-items: center; gap: 1.25rem; padding: 1.2rem; border: 2px solid rgba(99, 102, 241, 0.15); border-radius: 16px; background: #ffffff !important; cursor: pointer; transition: all 0.25s; text-align: left; width: 100%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                <span style="font-size: 2.4rem; filter: drop-shadow(0 2px 4px rgba(99,102,241,0.25)); flex-shrink: 0;">🗺️</span>
+                <div>
+                  <div style="font-weight: 800; font-size: 1.12rem; color: #0f172a !important; margin-bottom: 0.25rem;">Reforzar en Ruta de Aprendizaje</div>
+                  <div style="font-size: 0.88rem; color: #475569 !important; font-weight: 600; line-height: 1.45;">Estudia y domina los temas conceptuales específicos en los que tuviste fallos.</div>
+                </div>
+              </button>
+
+              <!-- OPCIÓN 2: MINI ENSAYO -->
+              <button class="mejorador-opt-btn" (click)="aceptarMejorador()" style="display: flex; align-items: center; gap: 1.25rem; padding: 1.2rem; border: 2px solid rgba(139, 92, 246, 0.15); border-radius: 16px; background: #ffffff !important; cursor: pointer; transition: all 0.25s; text-align: left; width: 100%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                <span style="font-size: 2.4rem; filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.25)); flex-shrink: 0;">🎯</span>
+                <div>
+                  <div style="font-weight: 800; font-size: 1.12rem; color: #0f172a !important; margin-bottom: 0.25rem;">Iniciar Mini Ensayo Personalizado</div>
+                  <div style="font-size: 0.88rem; color: #475569 !important; font-weight: 600; line-height: 1.45;">Un ensayo personalizado y único diseñado por la Inteligencia Artificial a tu medida para fortalecer tus debilidades y acelerar al máximo la mejora de tu rendimiento.</div>
+                </div>
+              </button>
+            </div>
+
+            <button class="btn-cancel" (click)="mostrarModalMejorador = false" style="width: 100%; padding: 0.9rem; border-radius: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgba(0,0,0,0.08); background: #f1f5f9; color: #475569; transition: all 0.2s;">Quizás más tarde</button>
+          </div>
         </div>
       </div>
+      </ng-container>
     </div>
   `,
   styles: [`
@@ -169,6 +211,24 @@ interface ReviewQuestion {
     }
     
     .review-container { min-height: 100vh; }
+    
+    /* MODAL STYLES */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 10, 18, 0.75); backdrop-filter: blur(12px) saturate(180%); display: flex; align-items: center; justify-content: center; z-index: 99999 !important; }
+    .modal-card { background: #ffffff !important; padding: 3rem 2.5rem 2.5rem; border-radius: 24px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important; border: 1px solid rgba(15, 23, 42, 0.08) !important; }
+    .modal-icon { font-size: 3.5rem; margin-bottom: 1.25rem; }
+    .modal-card h2 { font-family: var(--font-heading); font-size: 1.75rem; font-weight: 800; margin: 0 0 0.5rem; color: #0f172a !important; }
+    
+    .mejorador-opt-btn { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+    .mejorador-opt-btn:hover { border-color: #6366f1 !important; background: rgba(99, 102, 241, 0.05) !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.12); }
+    .btn-cancel { transition: all 0.25s; }
+    .btn-cancel:hover { background: #cbd5e1 !important; color: #0f172a !important; }
+    
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    .animate-scale-up { animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .animate-slide-up { animation: slideUp 0.4s ease-out backwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
     /* ===== HEADER ===== */
     .review-header {
@@ -394,7 +454,9 @@ interface ReviewQuestion {
     .btn { padding: 1rem 3rem; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; border: none; }
     .btn-primary { background: #855cd6; color: #fff; box-shadow: 0 4px 15px rgba(133, 92, 214, 0.3); }
     .btn-primary:hover { transform: translateY(-2px); background: #7349c2; box-shadow: 0 8px 25px rgba(133, 92, 214, 0.4); }
-    .btn-finalizar { text-transform: uppercase; letter-spacing: 1px; min-width: 250px; }
+    .btn-secondary { background: #fff; color: #855cd6; border: 2px solid #855cd6; }
+    .btn-secondary:hover { background: rgba(133, 92, 214, 0.05); transform: translateY(-2px); }
+    .btn-finalizar { text-transform: uppercase; letter-spacing: 1px; min-width: 200px; }
 
     .glass-card { background: rgba(255, 255, 255, 0.03); border: 2px solid var(--glass-border); backdrop-filter: blur(10px); }
 
@@ -455,6 +517,7 @@ export class EnsayoReviewComponent implements OnInit {
   totalQuestions = 0;
   activeFilter = 'all';
   loading = true;
+  mostrarModalMejorador = false;
 
   questions: ReviewQuestion[] = [];
 
@@ -520,6 +583,38 @@ export class EnsayoReviewComponent implements OnInit {
           
           this.questions = data.preguntas.map((p: any) => {
             const userAnsObj = data.intento?.answers.find((a: any) => a.preguntaId === p.id);
+            
+            // Map topic with fallbacks for official exams
+            let topic = p.tema || p.topic || p.subtema;
+            if (!topic) {
+              const lowerId = this.examId.toLowerCase();
+              const order = p.order || 1;
+              if (lowerId.includes('m1') || lowerId.includes('matematica')) {
+                if (order <= 15) topic = 'Números';
+                else if (order <= 35) topic = 'Álgebra';
+                else if (order <= 50) topic = 'Geometría';
+                else topic = 'Probabilidad';
+              } else if (lowerId.includes('lectora') || lowerId.includes('l-')) {
+                if (order <= 20) topic = 'Localizar';
+                else if (order <= 45) topic = 'Interpretar';
+                else topic = 'Evaluar';
+              } else if (lowerId.includes('ciencias') || lowerId.includes('biologia')) {
+                if (order <= 20) topic = 'Biología Celular';
+                else if (order <= 45) topic = 'Fisiología';
+                else topic = 'Ecosistemas';
+              } else if (lowerId.includes('fisica')) {
+                topic = 'Física';
+              } else if (lowerId.includes('quimica')) {
+                topic = 'Química';
+              } else if (lowerId.includes('historia')) {
+                if (order <= 22) topic = 'Época del Salitre';
+                else if (order <= 44) topic = 'Cuestión Social';
+                else topic = 'Constitución';
+              } else {
+                topic = 'General';
+              }
+            }
+
             return {
               id: p.order,
               stem: p.text,
@@ -538,7 +633,8 @@ export class EnsayoReviewComponent implements OnInit {
                 whyWrong: userAnsObj && !userAnsObj.isCorrect ? (p as any).whyWrong || 'La respuesta elegida no cumple con las condiciones del problema.' : undefined,
                 correctSolution: p.explanation || 'Consultar material de estudio para el desarrollo detallado.',
                 tip: (p as any).tip || 'Lee siempre bien el enunciado y las unidades antes de responder.'
-              }
+              },
+              tema: topic
             };
           });
         }
@@ -558,5 +654,97 @@ export class EnsayoReviewComponent implements OnInit {
     if (lower.includes('ciencias')) return 'Ciencias';
     if (lower.includes('historia')) return 'Historia';
     return 'Ensayo PAES';
+  }
+
+  private calculatePreviousTopicScores(): { topic: string; correct: number; total: number }[] {
+    const topicStats: Record<string, { correct: number, total: number }> = {};
+    
+    this.questions.forEach(q => {
+      if (q.tema) {
+        if (!topicStats[q.tema]) {
+          topicStats[q.tema] = { correct: 0, total: 0 };
+        }
+        topicStats[q.tema].total++;
+        if (q.isCorrect) {
+          topicStats[q.tema].correct++;
+        }
+      }
+    });
+
+    return Object.entries(topicStats).map(([topic, stats]) => ({
+      topic,
+      correct: stats.correct,
+      total: stats.total
+    }));
+  }
+
+  aceptarMejorador() {
+    this.mostrarModalMejorador = false;
+    this.entrenarTemas();
+  }
+
+  irARutaDeAprendizaje() {
+    this.mostrarModalMejorador = false;
+    let pathMateriaId = '';
+    const lower = this.examId.toLowerCase();
+    
+    if (lower.includes('l-') || lower.includes('lectora') || lower.includes('comp-lectora')) {
+      pathMateriaId = 'comp-lectora';
+    } else if (lower.includes('m1') || lower.includes('mat1')) {
+      pathMateriaId = 'mat1';
+    } else if (lower.includes('m2') || lower.includes('mat2')) {
+      pathMateriaId = 'mat2';
+    } else if (lower.includes('historia')) {
+      pathMateriaId = 'historia';
+    } else if (lower.includes('biologia') || lower.includes('fisica') || lower.includes('quimica') || lower.includes('tp') || lower.includes('ciencias')) {
+      pathMateriaId = 'ciencias';
+    }
+
+    if (pathMateriaId) {
+      this.router.navigate(['/ruta', pathMateriaId]);
+    } else {
+      this.router.navigate(['/ruta']);
+    }
+  }
+
+  entrenarTemas() {
+    let materiaId = '';
+    const lower = this.examId.toLowerCase();
+    if (lower.includes('l-') || lower.includes('lectora')) materiaId = 'competencia-lectora';
+    else if (lower.includes('m1')) materiaId = 'matematicas-m1';
+    else if (lower.includes('m2')) materiaId = 'matematicas-m2';
+    else if (lower.includes('biologia')) materiaId = 'ciencias-biologia';
+    else if (lower.includes('fisica')) materiaId = 'ciencias-fisica';
+    else if (lower.includes('quimica')) materiaId = 'ciencias-quimica';
+    else if (lower.includes('tp')) materiaId = 'ciencias-tp';
+    else if (lower.includes('historia')) materiaId = 'historia';
+
+    // Gather failed topics
+    const failedQuestions = this.questions.filter(q => q.userAnswer !== null && !q.isCorrect);
+    const failedTopicsSet = new Set<string>();
+    failedQuestions.forEach(q => {
+      if (q.tema) failedTopicsSet.add(q.tema);
+    });
+    const failedTopics = Array.from(failedTopicsSet);
+
+    // Build route query params
+    const queryParams: any = {
+      mode: 'mejorador',
+      materiaId
+    };
+    if (failedTopics.length > 0) {
+      queryParams['topics'] = failedTopics.join(',');
+    }
+    
+    // Pass baseline scores for comparison
+    const previousTopicScores = this.calculatePreviousTopicScores();
+    queryParams['sourceIntento'] = JSON.stringify({
+      intentoId: this.route.snapshot.queryParamMap.get('intento') || '',
+      ensayoId: this.examId,
+      ensayoTitle: this.examTitle,
+      previousTopicScores
+    });
+
+    this.router.navigate(['/mini-ensayo'], { queryParams });
   }
 }
