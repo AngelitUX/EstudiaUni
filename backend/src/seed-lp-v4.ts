@@ -12,105 +12,107 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-// ── TEXTO BASE (compartido por las 3 preguntas) ───────────────
-const TEXTO_BIBLIOTECA = 'La Biblioteca Nacional de Chile fue fundada en 1813, durante el gobierno de José Miguel Carrera. Inicialmente funcionó en dependencias del antiguo Convento de la Compañía de Jesús. En 1925 se trasladó a su edificio actual en la Alameda, en Santiago. Actualmente alberga más de siete millones de documentos entre libros, manuscritos, mapas y fotografías.';
+// ── TEXTO BASE ────────────────────────────────────────────────
+const TEXTO_AGUA = 'Durante los últimos años, diversas campañas de concientización han promovido el uso responsable del agua. Gracias a estas iniciativas, el consumo de agua en los hogares ha disminuido considerablemente.';
 
-// ── NODO loc-1 — DATOS ACTUALIZADOS ──────────────────────────
-const SECCION_LOC1 = {
-  id: 'loc-1',
-  capituloId: 'cap-localizar',
+// ── NODO int-1 — DATOS ACTUALIZADOS ──────────────────────────
+const SECCION_INT_1 = {
+  id: 'int-1',
+  capituloId: 'cap-interpretar',
   materiaId: 'comp-lectora',
   order: 1,
-  testId: 'test-loc-1',
-  title: 'Rastrear información explícita (Texto informativo)',
+  isBoss: false,
+  testId: 'test-int-1',
+  title: 'Establecer relaciones entre ideas (Texto informativo)',
   // Mini guía
-  guia_titulo: '¿Qué significa rastrear información explícita?',
-  guia_contenido: 'La información explícita es aquella que aparece directamente en el texto. No necesitas interpretar ni inferir, solo buscar y reconocer. Puede aparecer con las mismas palabras o con sinónimos y paráfrasis simples.',
-  introduccion: 'La información explícita es aquella que aparece directamente en el texto. No necesitas interpretar ni inferir, solo buscar y reconocer.',
+  guia_titulo: '¿Cómo relacionar ideas en un texto?',
+  guia_contenido: 'Los textos no solo entregan información, también conectan ideas. Estas relaciones pueden ser: causa → consecuencia, problema → solución o idea → ejemplo. Tu tarea es identificar cómo se conectan las ideas entre sí.',
+  introduccion: 'Los textos no solo entregan información, también conectan ideas. Estas relaciones pueden ser: causa → consecuencia, problema → solución o idea → ejemplo.',
   datos_claves: [
-    '🔍 **Busca palabras clave** de la pregunta en el texto para ubicar rápidamente la respuesta.',
-    '📌 **Lee con atención fechas, nombres y lugares** — son los datos que más aparecen en preguntas literales.',
-    '⚠️ **No te dejes confundir** por información similar pero de otra parte del texto — los distractores son trampas frecuentes.',
+    '🔗 **Busca conectores**: "porque", "por lo tanto", "debido a", "gracias a".',
+    '🧠 Pregúntate: **"¿qué provoca esto?"** o **"¿para qué ocurre?"**',
+    '📖 **No leas frases aisladas**, mira la relación entre ellas.',
+    '⚠️ **No confundas ideas separadas** con ideas relacionadas causalmente.',
   ],
 };
 
-// ── TEST loc-1 — PREGUNTAS REALES ─────────────────────────────
-const TEST_LOC1 = {
-  id: 'test-loc-1',
-  seccionId: 'loc-1',
-  contexto_base: TEXTO_BIBLIOTECA,
+// ── TEST int-1 — PREGUNTAS REALES ─────────────────────────────
+const TEST_INT_1 = {
+  id: 'test-int-1',
+  seccionId: 'int-1',
+  contexto_base: TEXTO_AGUA,
   preguntas: [
     {
-      id: 101,
-      enunciado: '¿Dónde funcionó inicialmente la Biblioteca Nacional?',
-      preambulo_texto: TEXTO_BIBLIOTECA,
+      id: 2101, // Usando el prefijo 2 por el capitulo 2
+      enunciado: '¿Cuál es la causa de la disminución del consumo de agua según el texto?',
+      preambulo_texto: TEXTO_AGUA,
       preambulo_imagen_url: null,
       formula_latex: null,
       tipo_alternativas: 'texto',
       alternativas: {
-        A: 'En la Alameda de Santiago',
-        B: 'En el Palacio de La Moneda',
-        C: 'En el Convento de la Compañía de Jesús',
-        D: 'En la Universidad de Chile',
-      },
-      respuesta_correcta: 'C',
-      feedback_acierto: '✅ Correcto. El texto indica explícitamente que funcionó inicialmente en el Convento de la Compañía de Jesús.',
-      feedback_error: '❌ Incorrecto. La Alameda corresponde a su ubicación actual (desde 1925), no la inicial. La respuesta está en la segunda oración del texto.',
-    },
-    {
-      id: 102,
-      enunciado: '¿En qué año fue fundada la Biblioteca Nacional de Chile?',
-      preambulo_texto: TEXTO_BIBLIOTECA,
-      preambulo_imagen_url: null,
-      formula_latex: null,
-      tipo_alternativas: 'texto',
-      alternativas: {
-        A: '1925',
-        B: '1813',
-        C: '1900',
-        D: '1850',
+        A: 'El aumento de la población',
+        B: 'Las campañas de concientización',
+        C: 'La falta de agua potable',
+        D: 'El cambio climático',
       },
       respuesta_correcta: 'B',
-      feedback_acierto: '✅ Correcto. El texto indica explícitamente que la Biblioteca Nacional fue fundada en 1813, primera oración.',
-      feedback_error: '❌ Incorrecto. No confundas 1925 (traslado) con 1813 (fundación). La respuesta está en la primera oración del texto.',
+      feedback_acierto: '✅ Correcto. El texto indica que las campañas de concientización provocaron la disminución del consumo de agua.',
+      feedback_error: '❌ Incorrecto. Debías identificar la relación causa–consecuencia. Busca qué acción provoca la disminución del consumo y reconoce la idea que cumple ese rol en el texto.',
     },
     {
-      id: 103,
-      enunciado: '¿Qué ocurrió en 1925 según el texto?',
-      preambulo_texto: TEXTO_BIBLIOTECA,
+      id: 2102,
+      enunciado: '¿Qué consecuencia se menciona en el texto?',
+      preambulo_texto: TEXTO_AGUA,
       preambulo_imagen_url: null,
       formula_latex: null,
       tipo_alternativas: 'texto',
       alternativas: {
-        A: 'Se fundó la Biblioteca Nacional',
-        B: 'Se trasladó a su edificio actual',
-        C: 'Se construyó el Convento de la Compañía de Jesús',
-        D: 'Se cerró la Biblioteca Nacional',
+        A: 'Se crearon nuevas campañas',
+        B: 'Disminuyó el consumo de agua',
+        C: 'Aumentó la contaminación',
+        D: 'Se prohibió el uso del agua',
       },
       respuesta_correcta: 'B',
-      feedback_acierto: '✅ Correcto. El texto señala explícitamente que en 1925 la Biblioteca Nacional se trasladó a su edificio actual en la Alameda.',
-      feedback_error: '❌ Incorrecto. El año 1813 corresponde a la fundación; 1925 corresponde al traslado. Busca el número en el texto.',
+      feedback_acierto: '✅ Correcto. El texto señala como consecuencia la disminución del consumo de agua.',
+      feedback_error: '❌ Incorrecto. Debías identificar el efecto de una acción. Busca en el texto qué ocurre como resultado de las campañas mencionadas.',
+    },
+    {
+      id: 2103,
+      enunciado: '¿Cuál de las siguientes opciones expresa la relación presente en el texto?',
+      preambulo_texto: TEXTO_AGUA,
+      preambulo_imagen_url: null,
+      formula_latex: null,
+      tipo_alternativas: 'texto',
+      alternativas: {
+        A: 'Las campañas provocaron una reducción en el consumo de agua',
+        B: 'El consumo de agua aumentó por las campañas',
+        C: 'Las campañas no tuvieron efecto en el consumo',
+        D: 'El consumo de agua generó campañas',
+      },
+      respuesta_correcta: 'A',
+      feedback_acierto: '✅ Correcto. La alternativa expresa la misma relación de causa y consecuencia presente en el texto.',
+      feedback_error: '❌ Incorrecto. Debías reconocer la relación entre las ideas. Identifica qué provoca qué en el texto y busca la alternativa que mantenga esa misma conexión.',
     },
   ],
 };
 
 async function updateNode() {
-  console.log('🔄 Actualizando nodo loc-1 con contenido real...\n');
+  console.log('🔄 Actualizando nodo int-1 (Capítulo 2) con contenido real...\n');
 
   // Actualizar sección
   await db
     .collection('lp_capitulos')
-    .doc('cap-localizar')
+    .doc('cap-interpretar')
     .collection('secciones')
-    .doc('loc-1')
-    .set(SECCION_LOC1);
-  console.log('✅ Sección loc-1 actualizada');
+    .doc('int-1')
+    .set(SECCION_INT_1);
+  console.log('✅ Sección int-1 actualizada en cap-interpretar');
 
   // Actualizar test
-  await db.collection('lp_tests').doc('test-loc-1').set(TEST_LOC1);
-  console.log('✅ Test test-loc-1 actualizado con 3 preguntas reales');
+  await db.collection('lp_tests').doc('test-int-1').set(TEST_INT_1);
+  console.log('✅ Test test-int-1 actualizado con 3 preguntas reales');
 
-  console.log('\n🎉 ¡Nodo 1 completo y listo!');
+  console.log('\n🎉 ¡Nodo 1 del Capítulo 2 completo y listo!');
 }
 
 updateNode().catch(console.error);

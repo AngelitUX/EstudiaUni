@@ -2,15 +2,25 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { SynonymPracticeComponent } from './synonym-practice.component';
 
 @Component({
   selector: 'app-seccion-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SynonymPracticeComponent],
   template: `
     <div class="sec-page" *ngIf="seccion() as sec">
-      <!-- EXIT BUTTON -->
-      <button class="btn-exit-top" (click)="goBackPath()" title="Salir">✕</button>
+      <!-- TOP NAV -->
+      <div class="guide-nav-container">
+        <button class="btn-back" (click)="goBackPath()">← Volver a la ruta</button>
+        
+        <div class="materia-progress-mini" *ngIf="materiaProgress() as progress">
+          <span class="progress-pct">{{ progress.percentage }}% Completado</span>
+          <div class="progress-bar-mini">
+            <div class="progress-fill-mini" [style.width.%]="progress.percentage"></div>
+          </div>
+        </div>
+      </div>
       <!-- BREADCRUMB -->
       <nav class="breadcrumb">
         <a routerLink="/dashboard">🏠</a>
@@ -26,6 +36,15 @@ import { PaesContentService } from './services/paes-content.service';
         <h1>{{ sec.title }}</h1>
       </div>
 
+      <!-- PRACTICE MODE (Synonym Game etc.) -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'synonyms'">
+        <div class="content-card practice-card">
+          <app-synonym-practice (onComplete)="completePractice()"></app-synonym-practice>
+        </div>
+      </ng-container>
+
+      <!-- NORMAL SECTION CONTENT -->
+      <ng-container *ngIf="!sec.isPractice">
       <!-- MINI GUÍA -->
       <div class="content-card guide-card">
         <div class="card-header">
@@ -43,7 +62,10 @@ import { PaesContentService } from './services/paes-content.service';
           <span class="pregunta-count">{{ sec.test.preguntas.length }} {{ sec.test.preguntas.length === 1 ? 'pregunta' : 'preguntas' }}</span>
         </div>
         <div class="context-body">
-          <p>{{ sec.test.contexto_base }}</p>
+          <p *ngFor="let p of getFormattedParagraphs(sec.test.contexto_base)">
+            <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+            <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
+          </p>
         </div>
       </div>
 
@@ -66,10 +88,11 @@ import { PaesContentService } from './services/paes-content.service';
         <div class="cta-card">
           <div class="cta-icon">🚀</div>
           <h3>¿Listo para practicar?</h3>
-          <p>{{ sec.test.preguntas.length }} preguntas te esperan. ¡Necesitas 60% para aprobar!</p>
+          <p>{{ sec.test.preguntas.length }} preguntas te esperan. ¡Debes responder todo correctamente para avanzar!</p>
           <button class="btn-start-test" (click)="goToTest()">Comenzar Test →</button>
         </div>
       </div>
+      </ng-container>
 
       <!-- BACK -->
       <button class="btn-back-text" [routerLink]="['/ruta', materiaId()]">← Volver a la ruta</button>
@@ -103,7 +126,10 @@ import { PaesContentService } from './services/paes-content.service';
 
     /* CONTEXT */
     .context-body { background: rgba(133,92,214,0.03); border-left: 4px solid var(--accent-primary); border-radius: 0 12px 12px 0; padding: 1.25rem; }
-    .context-body p { font-size: 0.93rem; color: var(--text-primary); line-height: 1.9; margin: 0; font-style: italic; }
+    .context-body p { font-size: 0.93rem; color: var(--text-primary); line-height: 1.9; margin: 0 0 1rem; font-style: italic; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .context-body p:last-child { margin-bottom: 0; }
+    .p-text { flex: 1; }
+    .p-text.p-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--accent-primary); font-style: normal; margin-top: 0.75rem; margin-bottom: 0.35rem; display: block; border-bottom: 2px solid rgba(133,92,214,0.15); padding-bottom: 0.35rem; }
 
     /* TIPS */
     .tips-list { display: flex; flex-direction: column; gap: 0.6rem; }
@@ -123,35 +149,25 @@ import { PaesContentService } from './services/paes-content.service';
     .btn-back-text { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; padding: 0; margin-top: 1rem; }
     .btn-back-text:hover { color: var(--accent-primary); }
 
-    .btn-exit-top {
-      position: absolute;
-      top: 1.5rem;
-      left: 1.5rem;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid rgba(0,0,0,0.06);
-      background: #fff;
-      color: var(--text-secondary);
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      z-index: 100;
-    }
-    .btn-exit-top:hover {
-      border-color: #ef4444;
-      color: #ef4444;
-      background: rgba(239,68,68,0.05);
-      transform: scale(1.1);
-    }
+    .guide-nav-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .btn-back { background: transparent; border: none; font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; transition: all 0.2s; }
+    .btn-back:hover { color: var(--accent-primary); transform: translateX(-4px); }
+
+    .materia-progress-mini { display: flex; align-items: center; gap: 0.75rem; background: rgba(133,92,214,0.04); padding: 0.4rem 0.85rem; border-radius: 99px; border: 1px solid rgba(133,92,214,0.08); }
+    .progress-pct { font-size: 0.75rem; font-weight: 800; color: var(--accent-primary); }
+    .progress-bar-mini { width: 80px; height: 6px; background: rgba(0, 0, 0, 0.06); border-radius: 99px; overflow: hidden; }
+    .progress-fill-mini { height: 100%; background: linear-gradient(90deg, var(--accent-primary), #58cc02); border-radius: 99px; transition: width 0.4s ease; }
+
+    .practice-card { padding: 2rem; border-radius: 20px; background: #fff; border: 2px solid rgba(133,92,214,0.1); animation: fadeSlide 0.4s ease both; }
+    .practice-success-actions { margin-top: 2rem; padding-top: 1.5rem; border-top: 2px dashed rgba(133,92,214,0.2); text-align: center; animation: fadeSlide 0.4s ease-out; }
+    .success-banner { display: inline-block; font-weight: 700; color: #58cc02; background: rgba(88,204,2,0.1); padding: 0.5rem 1.25rem; border-radius: 99px; margin-bottom: 1rem; }
+    .btn-next { background: #58cc02; box-shadow: 0 5px 0 #4caf00; }
+    .btn-next:hover { box-shadow: 0 2px 0 #4caf00; }
 
     @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes ctaBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     @keyframes testPulse { 0%, 100% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 10px rgba(133,92,214,0); } }
-    @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } }
+    @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } }
   `]
 })
 export class SeccionDetailComponent {
@@ -164,8 +180,14 @@ export class SeccionDetailComponent {
   materiaId = signal('');
   capituloId = signal('');
   seccionId = signal('');
+  practiceCompleted = signal(false);
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
+  materiaProgress = computed(() => {
+    const id = this.materiaId();
+    if (!id) return { completed: 0, total: 0, percentage: 0 };
+    return this.paes.getMateriaProgress(id);
+  });
   capitulo = computed(() => this.paes.getCapituloById(this.capituloId()));
   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
   capOrder = computed(() => {
@@ -175,10 +197,12 @@ export class SeccionDetailComponent {
   });
 
   constructor() {
-    const snap = this.route.snapshot;
-    this.materiaId.set(snap.paramMap.get('materiaId') || '');
-    this.capituloId.set(snap.paramMap.get('capituloId') || '');
-    this.seccionId.set(snap.paramMap.get('seccionId') || '');
+    this.route.paramMap.subscribe(params => {
+      this.materiaId.set(params.get('materiaId') || '');
+      this.capituloId.set(params.get('capituloId') || '');
+      this.seccionId.set(params.get('seccionId') || '');
+      this.practiceCompleted.set(false);
+    });
   }
 
   goToTest() {
@@ -192,5 +216,43 @@ export class SeccionDetailComponent {
   highlightBold(text: string): string {
     // Bold para **texto** markdown
     return text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>');
+  }
+
+  getFormattedParagraphs(text: string | null | undefined): { text: string; isTitle: boolean; number?: number }[] {
+    if (!text) return [];
+    const rawParagraphs = text.split('\n\n')
+      .map(p => p.trim())
+      .filter(p => p !== '' && p !== '--- DIVISION_TEXTOS ---');
+      
+    let paragraphCount = 0;
+    return rawParagraphs.map(p => {
+      const isTitle = p.startsWith('📖') || p.startsWith('TEXTO') || p.includes('TEXTO I') || p.includes('TEXTO II');
+      if (isTitle) {
+        paragraphCount = 0;
+        return { text: p, isTitle: true };
+      } else {
+        paragraphCount++;
+        return { text: p, isTitle: false, number: paragraphCount };
+      }
+    });
+  }
+
+  getParagraphs(text: string | null | undefined): string[] {
+    if (!text) return [];
+    return text.split('\n\n').map(p => p.trim()).filter(p => p !== '');
+  }
+
+  completePractice() {
+    this.paes.markSeccionCompleted(this.seccionId());
+    this.goNext();
+  }
+
+  goNext() {
+    const nextUrl = this.paes.getNextNodeUrl(this.materiaId());
+    if (nextUrl) {
+      this.router.navigate(nextUrl);
+    } else {
+      this.router.navigate(['/ruta', this.materiaId()]);
+    }
   }
 }

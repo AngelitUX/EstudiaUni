@@ -2,20 +2,29 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { GuideSlidesComponent } from './guide-slides.component';
 
 @Component({
   selector: 'app-capitulo-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, GuideSlidesComponent],
   template: `
-    <div class="guidebook-page" *ngIf="capitulo() as cap">
+    <div class="guidebook-page animate-enter" *ngIf="capitulo() as cap">
       
       <!-- BREADCRUMB & HEADER -->
-      <nav class="guide-nav">
+      <div class="guide-nav-container">
         <button class="btn-back" (click)="goBack()">← Volver a la ruta</button>
-      </nav>
+        
+        <div class="materia-progress-mini" *ngIf="materiaProgress() as progress">
+          <span class="progress-pct">{{ progress.percentage }}% Completado</span>
+          <div class="progress-bar-mini">
+            <div class="progress-fill-mini" [style.width.%]="progress.percentage"></div>
+          </div>
+        </div>
+      </div>
 
-      <header class="guide-hero">
+      <!-- Hero only for generic chapters -->
+      <header class="guide-hero" *ngIf="cap.id !== 'cap-localizar'">
         <div class="hero-icon">📖</div>
         <h1>Guía de Estudio: {{ cap.title }}</h1>
         <p class="hero-intro">{{ cap.introduccion }}</p>
@@ -24,28 +33,35 @@ import { PaesContentService } from './services/paes-content.service';
       <!-- CONTENT BODY -->
       <main class="guide-content">
         
-        <!-- Iterate through sections to show theory -->
-        <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
-          <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
-          <div class="sec-intro">
-            <p>{{ sec.introduccion }}</p>
-          </div>
+        <!-- INTERACTIVE SLIDES for Localizar -->
+        <ng-container *ngIf="cap.id === 'cap-localizar'">
+          <app-guide-slides (onFinish)="finishGuide()"></app-guide-slides>
+        </ng-container>
 
-          <!-- Tips & Examples -->
-          <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
-            <h3>💡 Conceptos Clave & Ejemplos</h3>
-            <ul class="tips-list">
-              <li *ngFor="let dato of sec.datos_claves">
-                <span [innerHTML]="highlightBold(dato)"></span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <!-- GENERIC SECTIONS for other chapters -->
+        <ng-container *ngIf="cap.id !== 'cap-localizar'">
+          <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
+            <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
+            <div class="sec-intro">
+              <p>{{ sec.introduccion }}</p>
+            </div>
 
-        <!-- CTA TO PRACTICE -->
-        <div class="cta-bottom">
+            <!-- Tips & Examples -->
+            <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
+              <h3>💡 Conceptos Clave & Ejemplos</h3>
+              <ul class="tips-list">
+                <li *ngFor="let dato of sec.datos_claves">
+                  <span [innerHTML]="highlightBold(dato)"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- CTA TO PRACTICE (only for non-slide guides) -->
+        <div class="cta-bottom" *ngIf="cap.id !== 'cap-localizar'">
           <p>¿Terminaste de repasar la teoría?</p>
-          <button class="btn-primary-lg" (click)="goBack()">¡Empezar a Practicar!</button>
+          <button class="btn-primary-lg" (click)="finishGuide()">¡Empezar a Practicar!</button>
         </div>
 
       </main>
@@ -54,11 +70,18 @@ import { PaesContentService } from './services/paes-content.service';
   styles: [`
     :host { display: block; min-height: 100vh; background: #ffffff; }
     .guidebook-page { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+    .animate-enter { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
     /* NAV */
-    .guide-nav { margin-bottom: 2rem; }
+    .guide-nav-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
     .btn-back { background: transparent; border: none; font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; transition: all 0.2s; }
     .btn-back:hover { color: var(--accent-primary); transform: translateX(-4px); }
+
+    .materia-progress-mini { display: flex; align-items: center; gap: 0.75rem; background: rgba(133,92,214,0.04); padding: 0.4rem 0.85rem; border-radius: 99px; border: 1px solid rgba(133,92,214,0.08); }
+    .progress-pct { font-size: 0.75rem; font-weight: 800; color: var(--accent-primary); }
+    .progress-bar-mini { width: 80px; height: 6px; background: rgba(0, 0, 0, 0.06); border-radius: 99px; overflow: hidden; }
+    .progress-fill-mini { height: 100%; background: linear-gradient(90deg, var(--accent-primary), #58cc02); border-radius: 99px; transition: width 0.4s ease; }
 
     /* HERO */
     .guide-hero { text-align: center; padding: 3rem 1rem; background: linear-gradient(135deg, rgba(133,92,214,0.05), rgba(133,92,214,0.15)); border-radius: 24px; margin-bottom: 3rem; border: 2px solid rgba(133,92,214,0.1); }
@@ -107,15 +130,32 @@ export class CapituloDetailComponent {
   capituloId = signal('');
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
+  materiaProgress = computed(() => {
+    const id = this.materiaId();
+    if (!id) return { completed: 0, total: 0, percentage: 0 };
+    return this.paes.getMateriaProgress(id);
+  });
   capitulo = computed(() => this.paes.getCapitulosByMateria(this.materiaId()).find(c => c.id === this.capituloId()));
 
   constructor() {
-    this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
-    this.capituloId.set(this.route.snapshot.paramMap.get('capituloId') || '');
+    this.route.paramMap.subscribe(params => {
+      this.materiaId.set(params.get('materiaId') || '');
+      this.capituloId.set(params.get('capituloId') || '');
+    });
   }
 
   goBack() {
     this.router.navigate(['/ruta', this.materiaId()]);
+  }
+
+  finishGuide() {
+    this.paes.markSeccionCompleted('guide_' + this.capituloId());
+    const nextUrl = this.paes.getNextNodeUrl(this.materiaId());
+    if (nextUrl) {
+      this.router.navigate(nextUrl);
+    } else {
+      this.router.navigate(['/ruta', this.materiaId()]);
+    }
   }
 
   highlightBold(text: string): string {
