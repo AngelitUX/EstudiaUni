@@ -1627,23 +1627,21 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       this.answers[q.id] === q.correctAnswer
     ).length;
     
-    // Log to dashboard service only if it is a real (unassisted) exam
-    if (!this.isAssisted) {
-      try {
-        const subject = this.getSubjectFromExamId(this.examId);
-        this.dashboardService.logEnsayoCompleted({
-          ensayoId: this.examId,
-          ensayoTitle: this.examTitle,
-          subject,
-          correctAnswers,
-          totalQuestions: this.totalQuestions,
-          score: Math.round(100 + (correctAnswers / Math.max(this.totalQuestions, 1)) * 900),
-          mode: 'real',
-          intentoId: this.intentoId || undefined,
-        });
-      } catch (err) { 
-        console.warn('[EnsayoRunner] Error logging to dashboard:', err);
-      }
+    // Log to dashboard service for both assisted and real modes
+    try {
+      const subject = this.getSubjectFromExamId(this.examId);
+      this.dashboardService.logEnsayoCompleted({
+        ensayoId: this.examId,
+        ensayoTitle: this.examTitle,
+        subject,
+        correctAnswers,
+        totalQuestions: this.totalQuestions,
+        score: Math.round(100 + (correctAnswers / Math.max(this.totalQuestions, 1)) * 900),
+        mode: this.isAssisted ? 'asistido' : 'real',
+        intentoId: this.intentoId || undefined,
+      });
+    } catch (err) { 
+      console.warn('[EnsayoRunner] Error logging to dashboard:', err);
     }
     
     // Finalizar intento en Firestore

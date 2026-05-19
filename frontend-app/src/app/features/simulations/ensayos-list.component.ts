@@ -61,6 +61,10 @@ type ExamMode = 'real' | 'asistido';
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
           </a>
+          <a class="nav-item" routerLink="/mini-ensayo">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-text">Mini Ensayos</span>
+          </a>
           <a class="nav-item" routerLink="/mente-veloz">
             <span class="nav-icon">⚡</span>
             <span class="nav-text">Mente Veloz</span>

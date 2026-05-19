@@ -12,6 +12,7 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { HistoryModalComponent } from './history-modal.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { AdminService } from '../admin/services/admin.service';
+import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,6 +38,10 @@ import { AdminService } from '../admin/services/admin.service';
           <a class="nav-item" routerLink="/ensayos">
             <span class="nav-icon">📚</span>
             <span class="nav-text">Ensayos PAES</span>
+          </a>
+          <a class="nav-item" routerLink="/mini-ensayo">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-text">Mini Ensayos</span>
           </a>
           <a class="nav-item" routerLink="/mente-veloz">
             <span class="nav-icon">⚡</span>
@@ -94,6 +99,10 @@ import { AdminService } from '../admin/services/admin.service';
             <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
               <span class="nav-icon">📚</span>
               <span class="nav-text">Ensayos PAES</span>
+            </a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🎯</span>
+              <span class="nav-text">Mini Ensayos</span>
             </a>
             <a class="nav-item" routerLink="/mente-veloz" (click)="mobileMenuOpen = false">
               <span class="nav-icon">⚡</span>
@@ -249,42 +258,30 @@ import { AdminService } from '../admin/services/admin.service';
           </div>
         </section>
 
-        <!-- STREAK EXPLANATION MODAL -->
-        <div class="modal-overlay" *ngIf="showStreakInfo" (click)="showStreakInfo = false">
-          <div class="modal-container glass streak-info-modal" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-              <h2>¿Cómo funcionan las Rachas?</h2>
-              <button class="close-btn" (click)="showStreakInfo = false">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div class="info-section">
-                <div class="info-icon normal">🔥</div>
-                <div class="info-content">
-                  <h3>Racha de Estudio</h3>
-                  <p>Es tu constancia diaria. Se suma cada día que completas al menos <strong>una lección</strong> o <strong>un ensayo</strong>.</p>
-                  <span class="info-tip">💡 Tip: ¡Basta con 10 minutos al día para mantenerla viva!</span>
+        <!-- MINI ENSAYOS PROMO -->
+        <section class="mini-ensayo-section" style="margin-bottom: 2.5rem;">
+          <div class="mini-ensayo-promo glass-card">
+            <div class="promo-content">
+              <div class="promo-header">
+                <span class="promo-icon">🎯</span>
+                <div>
+                  <h3>Mini Ensayos Personalizados</h3>
+                  <p>Practica temas específicos con preguntas reales del banco PAES</p>
                 </div>
+                <span class="badge-new">Nuevo</span>
               </div>
-
-              <div class="info-divider"></div>
-
-              <div class="info-section">
-                <div class="info-icon super">⚡</div>
-                <div class="info-content">
-                  <h3>Súper Racha</h3>
-                  <p>Es el máximo nivel de disciplina. Se suma únicamente si logras:</p>
-                  <ul>
-                    <li>Completar al menos <strong>una lección</strong> de <strong>CADA materia</strong> activa en tu ruta de aprendizaje durante el mismo día.</li>
-                  </ul>
-                  <span class="info-tip">🚀 Reto: ¡Mantener esta racha te garantiza un progreso masivo!</span>
-                </div>
+              <div class="promo-topics">
+                <span class="topic-pill">📐 Álgebra</span>
+                <span class="topic-pill">🔢 Números</span>
+                <span class="topic-pill">📖 Comprensión</span>
+                <span class="topic-pill">🧬 Células</span>
               </div>
             </div>
-            <div class="modal-footer">
-              <button class="btn-primary-modal" (click)="showStreakInfo = false">¡Entendido!</button>
-            </div>
+            <button class="btn-create-mini" routerLink="/mini-ensayo">
+              🚀 Crear Mini Ensayo
+            </button>
           </div>
-        </div>
+        </section>
 
         <!-- ACTIVITY / RECOMMENDATION -->
         <section class="activity-section">
@@ -331,15 +328,15 @@ import { AdminService } from '../admin/services/admin.service';
             <div class="activity-list" *ngIf="dashSvc.activities().length > 0; else noActivity">
               <div *ngFor="let act of dashSvc.activities().slice(0, 4)" 
                    class="activity-item"
-                   [class.clickable]="act.type === 'ensayo' || act.type === 'mente-veloz'"
+                   [class.clickable]="act.type === 'ensayo' || act.type === 'mente-veloz' || act.type === 'mini-ensayo'"
                    (click)="onActivityClick(act)">
-                <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : (act.type === 'mente-veloz' ? '⚡' : '📝') }}</span>
+                <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : (act.type === 'mente-veloz' ? '⚡' : (act.type === 'mini-ensayo' ? '🎯' : '📝')) }}</span>
                 <div class="activity-info">
                   <span class="activity-title">{{ act.title }}</span>
                   <span class="activity-time">{{ dashSvc.getRelativeTime(act.timestamp) }}</span>
                 </div>
                 <div class="activity-right">
-                  <span class="clickable-badge" *ngIf="act.type === 'ensayo' || act.type === 'mente-veloz'">Ver →</span>
+                  <span class="clickable-badge" *ngIf="act.type === 'ensayo' || act.type === 'mente-veloz' || act.type === 'mini-ensayo'">Ver →</span>
                   <span class="activity-score" *ngIf="act.score !== undefined">
                     {{ act.type === 'leccion' ? act.score + '%' : (act.type === 'mente-veloz' ? act.totalCorrect + ' corr.' : act.totalCorrect + '/' + act.totalQuestions) }}
                   </span>
@@ -382,13 +379,54 @@ import { AdminService } from '../admin/services/admin.service';
         </div>
       </div>
     </div>
+
+    <!-- STREAK EXPLANATION MODAL -->
+    <div class="modal-overlay" *ngIf="showStreakInfo" (click)="showStreakInfo = false">
+      <div class="modal-container glass streak-info-modal animate-scale-up" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>¿Cómo funcionan las Rachas?</h2>
+          <button class="close-btn" (click)="showStreakInfo = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="info-section">
+            <div class="info-icon normal">🔥</div>
+            <div class="info-content">
+              <h3>Racha de Estudio</h3>
+              <p>Es tu constancia diaria. Se suma cada día que completas al menos <strong>una lección</strong> o <strong>un ensayo</strong>.</p>
+              <span class="info-tip">💡 Tip: ¡Basta con 10 minutos al día para mantenerla viva!</span>
+            </div>
+          </div>
+
+          <div class="info-divider"></div>
+
+          <div class="info-section">
+            <div class="info-icon super">⚡</div>
+            <div class="info-content">
+              <h3>Súper Racha</h3>
+              <p>Es el máximo nivel de disciplina. Se suma únicamente si logras:</p>
+              <ul>
+                <li>Completar al menos <strong>una lección</strong> de <strong>CADA materia</strong> activa en tu ruta de aprendizaje durante el mismo día.</li>
+              </ul>
+              <span class="info-tip">🚀 Reto: ¡Mantener esta racha te garantiza un progreso masivo!</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary-modal" (click)="showStreakInfo = false">¡Entendido!</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
-    .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; transition: background 0.2s; }
+    .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
     .sidebar-header { 
       padding: 2.5rem 1.5rem 2rem; 
       border-bottom: 1px solid rgba(255,255,255,0.15); 
@@ -406,26 +444,10 @@ import { AdminService } from '../admin/services/admin.service';
       position: relative;
     }
     .sidebar-nav {
-      flex: 1;
       padding: 1rem 0.75rem;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      overflow-y: auto;
-    }
-    .sidebar-nav::-webkit-scrollbar {
-      width: 4px;
-    }
-    .sidebar-nav::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .sidebar-nav::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      transition: background 0.2s;
-    }
-    .sidebar-nav::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.25);
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
@@ -587,6 +609,19 @@ import { AdminService } from '../admin/services/admin.service';
     .btn-ver-todo { padding: 0.45rem 0.9rem; border-radius: 10px; background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.8rem; font-weight: 700; border: 1.5px solid rgba(133,92,214,0.15); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
     .btn-ver-todo:hover { background: var(--accent-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(133,92,214,0.2); }
 
+    /* MINI ENSAYOS PROMO */
+    .mini-ensayo-promo { display: flex; justify-content: space-between; align-items: center; padding: 2rem; background: linear-gradient(135deg, rgba(133,92,214,0.05), rgba(133,92,214,0.15)); border: 2px solid rgba(133,92,214,0.3); border-radius: 20px; flex-wrap: wrap; gap: 1.5rem; }
+    .promo-content { display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+    .promo-header { display: flex; align-items: flex-start; gap: 1rem; }
+    .promo-icon { font-size: 2.5rem; line-height: 1; }
+    .promo-header h3 { font-family: var(--font-heading); font-size: 1.4rem; margin: 0 0 0.3rem; color: var(--text-primary); }
+    .promo-header p { font-size: 0.95rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+    .badge-new { background: var(--gradient-brand); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; }
+    .promo-topics { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .topic-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+    .btn-create-mini { padding: 1rem 2rem; background: var(--gradient-brand); color: #fff; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(133,92,214,0.3); white-space: nowrap; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; }
+    .btn-create-mini:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(133,92,214,0.4); }
+
     /* ACTIVITY SECTION */
     .activity-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
     .activity-card, .recent-activity { padding: 1.5rem; border-radius: 16px; background: #ffffff; border: 2px solid var(--glass-border); transition: all 0.3s; box-shadow: var(--shadow); }
@@ -682,7 +717,7 @@ import { AdminService } from '../admin/services/admin.service';
     .combined-streak-card.clickable:hover { transform: translateY(-6px) scale(1.02); border-color: var(--accent-primary); box-shadow: 0 10px 25px rgba(133,92,214,0.15); }
 
     /* STREAK INFO MODAL */
-    .streak-info-modal { max-width: 500px !important; }
+    .streak-info-modal { max-width: 500px !important; width: 90% !important; margin: auto !important; }
     .info-section { display: flex; gap: 1.25rem; align-items: flex-start; padding: 0.5rem 0; }
     .info-icon { font-size: 2.5rem; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 16px; flex-shrink: 0; }
     .info-icon.normal { background: rgba(249,115,22,0.1); }
@@ -696,14 +731,16 @@ import { AdminService } from '../admin/services/admin.service';
     .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 1000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
-    .modal-container.glass { background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 10, 18, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 99999 !important; padding: 1.5rem; animation: fadeIn 0.25s ease both; }
+    .modal-container.glass { background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
     .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
     .modal-body { padding: 1.5rem; }
     .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .animate-scale-up { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
     /* AI Recs Side Nav */
     .ai-recs-card { display: flex; flex-direction: column; }
@@ -737,6 +774,7 @@ export class DashboardComponent implements OnInit {
   public router = inject(Router);
   public notificationService = inject(NotificationService);
   public adminService = inject(AdminService);
+  public miniEnsayoSvc = inject(MiniEnsayoService);
 
   get herramientasExpanded(): boolean {
     const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
@@ -828,7 +866,7 @@ export class DashboardComponent implements OnInit {
   }
 
   updateRecordDisplay() {
-    const allRecords = this.dashSvc.paesRecords();
+    const allRecords = this.dashSvc.paesRecords().filter(r => r.mode === 'real');
     if (allRecords.length === 0) {
       this.displayedRecord = null;
       return;
@@ -895,6 +933,20 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/mente-veloz'], {
         queryParams: { historyId: act.id }
       });
+    } else if (act.type === 'mini-ensayo') {
+      try {
+        const historyRaw = localStorage.getItem('estudiauni_mini_ensayo_history') || '[]';
+        const history = JSON.parse(historyRaw);
+        const result = history.find((h: any) => h.sessionId === act.id);
+        if (result) {
+          this.miniEnsayoSvc.setLastResult(result);
+          this.router.navigate(['/mini-ensayo/review']);
+        } else {
+          console.warn('[Dashboard] Historical mini-ensayo not found in localStorage:', act.id);
+        }
+      } catch (e) {
+        console.error('[Dashboard] Failed to load historical mini-ensayo', e);
+      }
     }
   }
 
