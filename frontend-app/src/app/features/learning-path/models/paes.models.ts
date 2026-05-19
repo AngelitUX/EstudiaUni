@@ -31,6 +31,8 @@ export interface Seccion {
   datos_claves: string[];
   order: number;
   isBoss?: boolean;
+  isPractice?: boolean;
+  practiceType?: string;
   test: TestPaes;
 }
 
@@ -44,6 +46,7 @@ export interface TestPaes {
 
 export interface PreguntaTest {
   id: number;
+  texto_index?: number;                    // Índice del texto contextual correspondiente (ej: para desafíos con múltiples textos)
   preambulo_texto?: string | null;         // Citas cortas (Historia/Ciencias)
   preambulo_imagen_url?: string | null;    // Imagen de apoyo (Ciencias/Matemáticas)
   enunciado: string;

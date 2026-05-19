@@ -609,7 +609,14 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     // Filter
     const selected = this.userSelectedSubjects();
     if (selected !== null && selected.length > 0) {
-      list = list.filter(m => selected.includes(m.id));
+      // Auto-include specific science branches if the legacy 'ciencias' is selected
+      let effectiveSelected = [...selected];
+      if (effectiveSelected.includes('ciencias')) {
+        effectiveSelected.push('ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica', 'ciencias-tp');
+        // Remove the legacy 'ciencias' so they don't click the empty generic card
+        effectiveSelected = effectiveSelected.filter(id => id !== 'ciencias');
+      }
+      list = list.filter(m => effectiveSelected.includes(m.id));
     }
     
     // Sort
@@ -674,8 +681,8 @@ export class LearningPathComponent implements OnInit, OnDestroy {
 
   materiaDataConfig: Record<string, { desc: string, topics: string[], img: string, bgColor?: string }> = {
     'comp-lectora': {
-      desc: 'Mejora tu comprensión lectora, análisis de textos literarios y no literarios, y desarrolla un pensamiento crítico fundamental para la prueba.',
-      topics: ['Textos Literarios', 'Textos No Literarios', 'Vocabulario'],
+      desc: 'Desarrolla las tres habilidades fundamentales evaluadas en la PAES de Competencia Lectora: Localizar información explícita, Interpretar y relacionar ideas, y Evaluar reflexivamente los textos.',
+      topics: ['Localizar', 'Interpretar', 'Evaluar'],
       img: 'assets/images/subjects/comp-lectora.png',
       bgColor: '#F7A08F'
     },

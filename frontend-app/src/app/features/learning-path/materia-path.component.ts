@@ -9,7 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 
 type PathItem = 
-  | { type: 'chapter', capituloId: string, title: string, subtitle: string }
+  | { type: 'chapter', capituloId: string, title: string, subtitle: string, isCurrentChapter?: boolean }
   | { type: 'node', id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
 
 @Component({
@@ -129,23 +129,61 @@ type PathItem =
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
             <ng-container *ngFor="let item of pathItems()">
-              <!-- CHAPTER DIVIDER -->
-              <div *ngIf="item.type === 'chapter'" class="chapter-divider">
-                <div class="div-line"></div>
-                <div class="div-content">
-                  <span class="div-title">{{ item.title }}</span>
-                  <button class="btn-guide" (click)="goToGuide(item.capituloId)">
-                    <span class="guide-icon">📖</span> Guía
-                  </button>
+              <!-- CHAPTER SPLASH BANNER -->
+              <div *ngIf="item.type === 'chapter'" class="chapter-splash" [ngClass]="item.capituloId">
+                <div class="splash-bg-pattern"></div>
+                <div class="splash-inner">
+                  <div class="splash-hero">
+                    <div class="splash-mascot-area">
+                      <img src="assets/img/foco-octopus.png" alt="Foco" class="splash-mascot" />
+                    </div>
+                    <div class="splash-info">
+                      <span class="splash-badge">Capítulo {{ getChapterNum(item.capituloId) }}</span>
+                      <h2 class="splash-title">{{ item.title }}</h2>
+                      <p class="splash-desc" *ngIf="item.capituloId === 'cap-localizar'">Identifica y extrae información explícita del texto. Domina sinónimos, paráfrasis y la técnica de escaneo.</p>
+                      <div class="splash-stats">
+                        <div class="ss"><span class="ss-icon">📊</span> ~30% de la PAES</div>
+                        <div class="ss"><span class="ss-icon">📝</span> {{ getChapterNodeCount(item.capituloId) }} ejercicios</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Progress -->
+                  <div class="splash-progress">
+                    <div class="sp-header">
+                      <span class="sp-label">Tu progreso</span>
+                      <span class="sp-count">{{ getChapterProgress(item.capituloId).completed }} / {{ getChapterProgress(item.capituloId).total }}</span>
+                    </div>
+                    <div class="sp-track">
+                      <div class="sp-fill" [style.width.%]="getChapterProgress(item.capituloId).pct"></div>
+                    </div>
+                  </div>
+
+                  <!-- Guide CTA -->
+                  <div class="guide-btn-wrapper">
+                    <div class="guide-tooltip" *ngIf="item.isCurrentChapter && !isGuideCompleted(item.capituloId)">
+                      EMPEZAR
+                      <div class="tooltip-arrow"></div>
+                    </div>
+                    <button class="splash-guide-btn" (click)="goToGuide(item.capituloId)">
+                      <span class="sgb-icon">📖</span> Estudiar la Guía
+                    </button>
+                  </div>
                 </div>
-                <div class="div-line"></div>
+
+                <!-- Visual separator -->
+                <div class="splash-separator">
+                  <div class="sep-line"></div>
+                  <span class="sep-text">Tu ruta comienza aquí ↓</span>
+                  <div class="sep-line"></div>
+                </div>
               </div>
 
               <!-- SECTION NODE -->
               <div *ngIf="item.type === 'node'" class="node-row">
                 <div class="node-wrapper" [style.transform]="'translateX(' + getOffset(item.nodeIndex) + 'px)'">
                   <div class="active-tooltip" *ngIf="item.status === 'active'">
-                    EMPEZAR
+                    {{ getChapterProgress(item.capituloId).completed === 0 ? 'EMPEZAR' : 'CONTINUAR' }}
                     <div class="tooltip-arrow"></div>
                   </div>
                   <button class="duo-node" 
@@ -165,7 +203,7 @@ type PathItem =
                       </svg>
                     </div>
                   </button>
-                  <div class="node-title-top" 
+                  <div class="node-title" 
                     [class.text-completed]="item.status === 'completed'"
                     [class.text-active]="item.status === 'active'">
                     {{ item.title }}
@@ -341,28 +379,57 @@ type PathItem =
     /* PATH CONTAINER */
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
 
-    /* CHAPTER DIVIDER */
-    .chapter-divider { display: flex; align-items: center; width: 100%; max-width: 440px; margin: 1.5rem 0 7.5rem; position: relative; z-index: 15; padding: 0 1rem; }
-    .div-line { flex: 1; height: 4px; background: var(--glass-border); border-radius: 99px; }
-    .div-content { padding: 0 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
-    .div-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; }
-    
-    .btn-guide { background: var(--accent-primary); border: 2px solid transparent; box-shadow: 0 4px 12px rgba(133,92,214,0.3); padding: 0.6rem 1.4rem; border-radius: 99px; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: #fff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
-    .btn-guide:hover { background: #714cc2; transform: translateY(-3px); box-shadow: 0 6px 16px rgba(133,92,214,0.4); }
-    .btn-guide:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(133,92,214,0.3); }
-    .guide-icon { font-size: 1.1rem; }
+    /* CHAPTER SPLASH BANNER */
+    .chapter-splash { width: 100%; max-width: 600px; margin: 0 auto 7rem; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 2px solid rgba(133,92,214,0.15); box-shadow: 0 12px 40px rgba(133,92,214,0.08); }
+    .chapter-splash.cap-localizar { background: linear-gradient(150deg, #f3eeff 0%, #e8dff8 40%, #f0ebff 100%); }
+    .chapter-splash.cap-interpretar { background: linear-gradient(150deg, #e8f4fd 0%, #d6ecfa 40%, #eaf6ff 100%); }
+    .chapter-splash.cap-evaluar { background: linear-gradient(150deg, #e8fde8 0%, #d6f5d6 40%, #eaffea 100%); }
+    .splash-bg-pattern { position: absolute; inset: 0; opacity: 0.04; background-image: radial-gradient(circle at 20% 50%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 80% 20%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 60% 80%, var(--accent-primary) 1px, transparent 1px); background-size: 40px 40px, 60px 60px, 50px 50px; pointer-events: none; }
+    .splash-inner { position: relative; padding: 2rem 2rem 1.5rem; }
+    .splash-hero { display: flex; align-items: center; gap: 1.5rem; }
+    .splash-mascot-area { flex-shrink: 0; }
+    .splash-mascot { width: 110px; height: 110px; object-fit: contain; animation: mascotFloat 4s ease-in-out infinite; filter: drop-shadow(0 8px 16px rgba(133,92,214,0.2)); }
+    @keyframes mascotFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(2deg)} }
+    .splash-info { flex: 1; min-width: 0; }
+    .splash-badge { display: inline-block; background: var(--accent-primary); color: #fff; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+    .splash-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.35rem; line-height: 1.2; }
+    .splash-desc { font-size: 0.88rem; line-height: 1.5; color: var(--text-secondary); margin: 0 0 0.65rem; }
+    .splash-stats { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .ss { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); background: rgba(255,255,255,0.6); padding: 0.3rem 0.6rem; border-radius: 8px; }
+    .ss-icon { font-size: 0.9rem; }
+
+    /* Progress */
+    .splash-progress { margin-top: 1.25rem; padding: 0.85rem 1rem; background: rgba(255,255,255,0.5); border-radius: 14px; border: 1px solid rgba(0,0,0,0.04); }
+    .sp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .sp-label { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); }
+    .sp-count { font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; color: var(--accent-primary); }
+    .sp-track { width: 100%; height: 10px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
+    .sp-fill { height: 100%; background: linear-gradient(90deg, #58cc02, #78e000); border-radius: 99px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); min-width: 4px; }
+
+    /* Guide CTA */
+    .guide-btn-wrapper { position: relative; width: 100%; margin-top: 2rem; }
+    .guide-tooltip { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; letter-spacing: 0.05em; animation: bounce 2s infinite; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 10; pointer-events: none; }
+    .guide-tooltip .tooltip-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #111827; }
+    .splash-guide-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.7); border: 2px solid rgba(133,92,214,0.2); border-radius: 14px; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); cursor: pointer; transition: all 0.2s; }
+    .splash-guide-btn:hover { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(133,92,214,0.25); }
+    .sgb-icon { font-size: 1.1rem; }
+
+    /* Separator */
+    .splash-separator { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem 2rem 1.5rem; }
+    .sep-line { flex: 1; height: 2px; background: linear-gradient(90deg, transparent, rgba(133,92,214,0.15), transparent); }
+    .sep-text { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
 
     /* NODE ROW */
-    .node-row { width: 100%; display: flex; justify-content: center; margin-bottom: 5.5rem; position: relative; z-index: 2; }
+    .node-row { width: 100%; display: flex; justify-content: center; margin-bottom: 6.5rem; position: relative; z-index: 2; }
     .node-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; transition: transform 0.3s ease; }
 
-    /* NODE FLOATING TITLE (TOP) */
-    .node-title-top { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; pointer-events: none; transition: all 0.2s; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
+    /* NODE FLOATING TITLE (BOTTOM) */
+    .node-title { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; pointer-events: none; transition: all 0.2s; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
     .text-completed { color: #3d8c00; }
-    .text-active { color: var(--accent-primary); top: -36px; }
+    .text-active { color: var(--accent-primary); bottom: -36px; }
 
     /* ACTIVE TOOLTIP */
-    .active-tooltip { position: absolute; top: -82px; background: #111827; color: #fff; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; letter-spacing: 0.05em; animation: bounce 2s infinite; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 10; }
+    .active-tooltip { position: absolute; top: -55px; background: #111827; color: #fff; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; letter-spacing: 0.05em; animation: bounce 2s infinite; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 10; }
     .tooltip-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #111827; }
 
     @keyframes bounce {
@@ -468,6 +535,21 @@ export class MateriaPathComponent {
   pathItems = computed(() => {
     const items: PathItem[] = [];
     let nodeIndex = 0;
+
+    let activeChapterId = '';
+    let foundActivePre = false;
+    for (const cap of this.capitulos()) {
+      for (const sec of cap.secciones) {
+        const prog = this.paes.getSeccionProgress(sec.id);
+        if (!prog?.completed) {
+          activeChapterId = cap.id;
+          foundActivePre = true;
+          break;
+        }
+      }
+      if (foundActivePre) break;
+    }
+
     let foundActive = false;
 
     this.capitulos().forEach((cap, capIndex) => {
@@ -476,8 +558,13 @@ export class MateriaPathComponent {
         type: 'chapter',
         capituloId: cap.id,
         title: cap.title,
-        subtitle: `Capítulo ${capIndex + 1}`
+        subtitle: `Capítulo ${capIndex + 1}`,
+        isCurrentChapter: cap.id === activeChapterId
       });
+
+      const guideProg = this.paes.getSeccionProgress('guide_' + cap.id);
+      const isGuideCompleted = guideProg?.completed || false;
+      const blockChapter = !isGuideCompleted;
 
       // 2. Add Sections as nodes
       cap.secciones.forEach((sec) => {
@@ -488,8 +575,11 @@ export class MateriaPathComponent {
 
         if (completed) {
           status = 'completed';
-        } else if (!foundActive) {
+        } else if (!foundActive && !blockChapter) {
           status = 'active';
+          foundActive = true;
+        } else if (!foundActive && blockChapter) {
+          status = 'locked';
           foundActive = true;
         } else {
           status = 'locked';
@@ -516,6 +606,29 @@ export class MateriaPathComponent {
 
   goToGuide(capId: string) {
     this.router.navigate(['/ruta', this.materiaId(), capId]);
+  }
+
+  getChapterNum(capId: string): number {
+    const caps = this.capitulos();
+    const idx = caps.findIndex(c => c.id === capId);
+    return idx >= 0 ? idx + 1 : 1;
+  }
+
+  getChapterNodeCount(capId: string): number {
+    const cap = this.capitulos().find(c => c.id === capId);
+    return cap ? cap.secciones.length : 0;
+  }
+
+  getChapterProgress(capId: string): { completed: number; total: number; pct: number } {
+    const cap = this.capitulos().find(c => c.id === capId);
+    if (!cap) return { completed: 0, total: 0, pct: 0 };
+    const total = cap.secciones.length;
+    const completed = cap.secciones.filter(s => this.paes.getSeccionProgress(s.id)?.completed).length;
+    return { completed, total, pct: total > 0 ? (completed / total) * 100 : 0 };
+  }
+
+  isGuideCompleted(capId: string): boolean {
+    return !!this.paes.getSeccionProgress('guide_' + capId)?.completed;
   }
 
   confirmLogout() {

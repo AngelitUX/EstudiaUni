@@ -706,6 +706,30 @@ export class PaesContentService {
     return this._capitulos().filter(c => c.materiaId === materiaId);
   }
 
+  getNextNodeUrl(materiaId: string): string[] | null {
+    const capitulos = this.getCapitulosByMateria(materiaId).sort((a, b) => a.order - b.order);
+    
+    for (const cap of capitulos) {
+      const guideProg = this.getSeccionProgress('guide_' + cap.id);
+      const isGuideCompleted = guideProg?.completed || false;
+      
+      if (!isGuideCompleted) {
+        return ['/ruta', materiaId, cap.id];
+      }
+
+      const secciones = [...cap.secciones].sort((a, b) => a.order - b.order);
+      for (const sec of secciones) {
+        const prog = this.getSeccionProgress(sec.id);
+        const isCompleted = prog?.completed || false;
+        if (!isCompleted) {
+          return ['/ruta', materiaId, cap.id, sec.id];
+        }
+      }
+    }
+    
+    return null;
+  }
+
   getCapituloById(capituloId: string): Capitulo | undefined {
     return this._capitulos().find(c => c.id === capituloId);
   }
@@ -792,11 +816,12 @@ export class PaesContentService {
 
     // Update progress
     const currentProgress = this._progress().get(seccionId);
+    const isPassing = seccionId === 'loc-boss' ? totalCorrect >= 10 : score === 100;
     const newProgress: SeccionProgress = {
       seccionId,
       capituloId: seccion?.capituloId || '',
       materiaId: seccion?.materiaId || '',
-      completed: (currentProgress?.completed || false) || (score >= 60),
+      completed: (currentProgress?.completed || false) || isPassing,
       bestScore: Math.max(currentProgress?.bestScore || 0, score),
       totalQuestions: test.preguntas.length,
       correctAnswers: totalCorrect,
@@ -826,6 +851,27 @@ export class PaesContentService {
     } catch { /* ignore */ }
 
     return result;
+  }
+
+  markSeccionCompleted(seccionId: string): void {
+    const seccion = this.getSeccionById(seccionId);
+    const currentProgress = this._progress().get(seccionId);
+    const newProgress: SeccionProgress = {
+      seccionId,
+      capituloId: seccion?.capituloId || '',
+      materiaId: seccion?.materiaId || '',
+      completed: true,
+      bestScore: 100,
+      totalQuestions: 0,
+      correctAnswers: 0,
+      lastAttemptDate: new Date().toISOString(),
+      attempts: (currentProgress?.attempts || 0) + 1
+    };
+
+    const newMap = new Map(this._progress());
+    newMap.set(seccionId, newProgress);
+    this._progress.set(newMap);
+    this.saveProgressToStorage();
   }
 
   // ─── Persistence (localStorage) ───
