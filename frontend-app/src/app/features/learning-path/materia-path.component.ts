@@ -8,7 +8,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 
-type PathItem = 
+type PathItem =
   | { type: 'chapter', capituloId: string, title: string, subtitle: string }
   | { type: 'node', id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
 
@@ -377,7 +377,7 @@ export class MateriaPathComponent {
       cap.secciones.forEach((sec) => {
         const prog = this.paes.getSeccionProgress(sec.id);
         const completed = prog?.completed || false;
-        
+
         let status: 'completed' | 'active' | 'locked' = 'locked';
 
         if (completed) {

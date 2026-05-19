@@ -448,7 +448,7 @@ export class QuestionEditorComponent implements OnInit {
 
   renderLatex(latex: string | null): SafeHtml {
     if (!latex) return '';
-    return this.sanitizer.bypassSecurityTrustHtml(this.katexSvc.render(latex));
+    return this.katexSvc.render(latex);
   }
 
   getTemasForMateria(materiaId: MateriaId): string[] {

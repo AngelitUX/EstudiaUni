@@ -1,0 +1,217 @@
+{
+  "cap-m2-1-numeros": {
+    "introduccion": "En este eje profundizarás en los números reales, incluyendo irracionales notables y aproximaciones de alta precisión, comprenderás de forma rigurosa la matemática financiera aplicada a AFP, jubilaciones y tasas de interés de créditos, y dominarás las potencias, raíces y logaritmos con todas sus propiedades algebraicas en contextos reales.",
+    "secciones": {
+      "sec-m2-1-1": {
+        "introduccion": "El conjunto de los números reales ($\\mathbb{R}$) está formado por la unión de los racionales ($\\mathbb{Q}$) y los irracionales ($\\mathbb{Q}^*$ o $\\mathbb{I}$). Aquí aprenderás a operar con números irracionales algebraicos (como $\\sqrt{2}$) y trascendentes (como $\\pi$ y $e$), además de dominar los criterios de aproximación por defecto, exceso y redondeo.",
+        "datos_claves": [
+          "**Conjuntos Numéricos:** $\\mathbb{R} = \\mathbb{Q} \\cup \\mathbb{I}$. Los irracionales NO se pueden escribir como fracción $\\frac{a}{b}$ con $a,b \\in \\mathbb{Z}$.",
+          "**Aproximaciones:** <br>• **Defecto:** Cortar el número conservando los dígitos decimales exactos (ej: $2,718$ a la centésima por defecto es $2,71$).<br>• **Exceso:** Aumentar en 1 la última cifra de interés (ej: $2,718$ a la centésima por exceso es $2,72$).<br>• **Redondeo:** Si el dígito siguiente es $\\geq 5$, se aproxima por exceso; si es $< 5$, se aproxima por defecto.",
+          "**Acotación del error:** El error absoluto de una aproximación es $|\\text{Valor Real} - \\text{Valor Aproximado}|$. Si redondeamos a la décima, el error máximo es $0,05$."
+        ]
+      },
+      "sec-m2-1-2": {
+        "introduccion": "Los problemas de aplicación en números reales simulan situaciones de mediciones físicas, escalas científicas y proporciones donde intervienen raíces y decimales infinitos. El objetivo es plantear ecuaciones con precisión absoluta.",
+        "datos_claves": [
+          "**Operaciones con Irracionales:** Recuerda que $\\sqrt{a} + \\sqrt{b} \\neq \\sqrt{a+b}$. Solo se pueden sumar raíces semejantes (con igual índice y radicando).<br>• **Ejemplo:** $3\\sqrt{2} + 5\\sqrt{2} = 8\\sqrt{2}$.",
+          "**Racionalización:** Técnica para eliminar raíces del denominador.<br>• **Caso simple:** $\\frac{a}{\\sqrt{b}} = \\frac{a\\sqrt{b}}{b}$.<br>• **Caso binomio:** $\\frac{a}{\\sqrt{b} + \\sqrt{c}} = \\frac{a(\\sqrt{b} - \\sqrt{c})}{b - c}$ (se multiplica por el conjugado)."
+        ]
+      },
+      "sec-m2-1-3": {
+        "introduccion": "La matemática financiera de la PAES M2 evalúa tu comprensión del sistema previsional chileno (AFP). Analizarás cómo se calcula la cotización obligatoria para la pensión, las comisiones y cómo crece el capital a través de la capitalización compuesta a largo plazo.",
+        "datos_claves": [
+          "**Cotización Previsional Obligatoria:** Corresponde al $10\\%$ de la renta imponible del trabajador. Existe un tope imponible mensual ajustable (ej: $\\approx 84,3$ UF).<br>• **Fórmula:** $\\text{Descuento AFP} = \\text{Renta Imponible} \\cdot 0,10$.",
+          "**Comisión de la AFP:** Cada administradora cobra un porcentaje adicional sobre la renta imponible por gestionar los fondos (suele variar entre $0,58\\%$ y $1,45\\%$, sumándose al $10\\%$ obligatorio).",
+          "**Capitalización Compuesta en Fondos:** El dinero en la cuenta de capitalización individual genera rentabilidad que se reinvierte periódicamente:<br>• $C_f = C_i \\cdot (1 + r)^t$ (donde $r$ es la tasa de rentabilidad real y $t$ es el tiempo en años)."
+        ]
+      },
+      "sec-m2-1-4": {
+        "introduccion": "Los créditos de consumo e hipotecarios implican analizar la devolución de un préstamo con intereses mediante el sistema de amortización. Aprenderás a calcular e interpretar el Costo Total del Crédito (CTC), la Carga Anual Equivalente (CAE) y las tasas de interés.",
+        "datos_claves": [
+          "**Carga Anual Equivalente (CAE):** Indicador porcentual que revela el costo real de un crédito por año, incluyendo tasa de interés, seguros obligatorios, gastos notariales y comisiones.",
+          "**Costo Total del Crédito (CTC):** Suma absoluta de todas las cuotas a pagar.<br>• **Fórmula:** $CTC = \\text{Valor Cuota} \\cdot \\text{Número de Cuotas}$.",
+          "**Amortización e Interés:** En cada cuota mensual pagada, una parte va a disminuir la deuda original (amortización) y otra parte va a pagar los intereses generados sobre el saldo insoluto (deuda restante)."
+        ]
+      },
+      "sec-m2-1-5": {
+        "introduccion": "Los logaritmos son la operación inversa de las potencias. Aprenderás a transitar con fluidez entre exponentes, radicales y logaritmos, dominando las propiedades de multiplicación, división, potencias y cambio de base algebraico.",
+        "datos_claves": [
+          "**Definición Fundamental:** $\\log_b(x) = y \\iff b^y = x$ (con base $b > 0, b \\neq 1$ y argumento $x > 0$).",
+          "**Propiedades Críticas:**<br>• **Multiplicación:** $\\log_b(x \\cdot y) = \\log_b(x) + \\log_b(y)$.<br>• **División:** $\\log_b(\\frac{x}{y}) = \\log_b(x) - \\log_b(y)$.<br>• **Potencia:** $\\log_b(x^k) = k \\cdot \\log_b(x)$.<br>• **Raíz:** $\\log_b(\\sqrt[n]{x}) = \\frac{1}{n} \\log_b(x)$.<br>• **Cambio de Base:** $\\log_a(b) = \\frac{\\log_c(b)}{\\log_c(a)}$."
+        ]
+      },
+      "sec-m2-1-6": {
+        "introduccion": "Los logaritmos se aplican en ciencias para comprimir escalas de magnitudes extremadamente grandes o pequeñas. Aprenderás a resolver problemas en la escala de Richter (terremotos), escala de pH (acidez) y decibeles (intensidad del sonido).",
+        "datos_claves": [
+          "**Escala de Richter:** Mide la energía liberada por un sismo. <br>• **Fórmula base:** $\\log(E) = 11,8 + 1,5M$ (donde $M$ es la magnitud). Un aumento de 1 grado en la escala equivale a multiplicar la energía liberada por $10^{1,5} \\approx 31,6$ veces.",
+          "**Escala de pH:** $pH = -\\log[H^+]$ (donde $[H^+]$ es la concentración de iones de hidrógeno en moles por litro).",
+          "**Escala de Decibeles (Sonido):** $dB = 10 \\cdot \\log(\\frac{I}{I_0})$, donde $I$ es la intensidad y $I_0$ es el umbral de audición humana."
+        ]
+      }
+    }
+  },
+  "cap-m2-2-algebra": {
+    "introduccion": "En este eje dominarás el análisis existencial de sistemas de ecuaciones lineales, comprenderás en profundidad los gráficos y problemas de las funciones potencia, exponencial y logarítmica, y te adentrarás en el estudio y modelamiento matemático con funciones trigonométricas sinusoidales.",
+    "secciones": {
+      "sec-m2-2-1": {
+        "introduccion": "Para un sistema de ecuaciones lineales $2 \\times 2$, no basta con saber resolverlo; debes analizar analíticamente cuándo el sistema posee solución única, infinitas soluciones o no tiene solución en base a las razones de sus coeficientes.",
+        "datos_claves": [
+          "**Representación General:** \n $a_1x + b_1y = c_1$\n $a_2x + b_2y = c_2$",
+          "**Criterios de Existencia:**<br>• **Solución Única (Rectas secantes):** $\\frac{a_1}{a_2} \\neq \\frac{b_1}{b_2}$. El sistema es compatible determinado.<br>• **Infinitas Soluciones (Rectas coincidentes):** $\\frac{a_1}{a_2} = \\frac{b_1}{b_2} = \\frac{c_1}{c_2}$. El sistema es compatible indeterminado.<br>• **Sin Solución (Rectas paralelas no coincidentes):** $\\frac{a_1}{a_2} = \\frac{b_1}{b_2} \\neq \\frac{c_1}{c_2}$. El sistema es incompatible."
+        ]
+      },
+      "sec-m2-2-2": {
+        "introduccion": "Las funciones potencia ($f(x)=ax^n$), exponencial ($f(x)=a \\cdot b^x$) y logarítmica ($f(x)=a \\cdot \\log_b(x)$) tienen comportamientos gráficos muy definidos que dependen de sus parámetros base. Aprenderás a reconocer sus asíntotas, dominios y recorridos de forma visual.",
+        "datos_claves": [
+          "**Función Potencia ($ax^n$):** Si $n$ es par positivo, es una curva simétrica respecto al eje Y (similar a una parábola). Si $n$ es impar positivo, es simétrica respecto al origen.<br>• **Si $n < 0$,** la gráfica presenta asíntotas en los ejes coordenados (ejes X e Y).",
+          "**Función Exponencial ($b^x$ con $b > 0, b \\neq 1$):** El dominio son todos los reales $\\mathbb{R}$, recorrido los reales positivos $\\mathbb{R}^+$. Pasa siempre por el punto $(0,1)$. Tiene una asíntota horizontal en el eje X ($y=0$).<br>• **Es creciente si $b > 1$, y decreciente si $0 < b < 1$.**",
+          "**Función Logarítmica ($\\log_b(x)$):** Es la inversa de la exponencial. Dominio $\\mathbb{R}^+$, recorrido $\\mathbb{R}$. Pasa siempre por $(1,0)$. Tiene una asíntota vertical en el eje Y ($x=0$)."
+        ]
+      },
+      "sec-m2-2-3": {
+        "introduccion": "Estas tres familias de funciones modelan fenómenos naturales complejos: el crecimiento bacteriano o de contagios (exponencial), la desintegración radiactiva (exponencial decreciente), el desgaste de maquinaria (potencia con exponente negativo) y escalas sensoriales (logarítmica).",
+        "datos_claves": [
+          "**Crecimiento Exponencial:** $N(t) = N_0 \\cdot (1 + r)^t$ o $N(t) = N_0 \\cdot e^{kt}$ (donde $N_0$ es la población inicial, $r$ es la tasa y $t$ el tiempo).",
+          "**Desintegración Radiactiva:** $C(t) = C_0 \\cdot (\\frac{1}{2})^{\\frac{t}{T}}$, donde $T$ es el período de semivida o vida media del elemento.",
+          "**Despeje con Logaritmos:** Para resolver ecuaciones exponenciales donde las bases no se pueden igualar, se aplican logaritmos a ambos lados de la igualdad:<br>• **Ejemplo:** $2^x = 5 \\implies x \\cdot \\log(2) = \\log(5) \\implies x = \\frac{\\log(5)}{\\log(2)}$."
+        ]
+      },
+      "sec-m2-2-4": {
+        "introduccion": "Las funciones trigonométricas básicas son el Seno ($f(x)=\\sin(x)$) y el Coseno ($f(x)=\\cos(x)$). Analizarás sus gráficas periódicas (ondas sinusoidales) y cómo cambian la amplitud, el período y el desfase al modificar sus parámetros.",
+        "datos_claves": [
+          "**Forma General de la Onda:** $f(x) = A \\cdot \\sin(B(x - C)) + D$ (o equivalente para el coseno).",
+          "**Significado de los Parámetros:**<br>• **Amplitud ($|A|$):** La altura máxima de la onda medida desde su línea central. Rango oscila entre $D - A$ y $D + A$.<br>• **Frecuencia angular ($B$):** Regula la velocidad de oscilación. Determina el período.<br>• **Período ($T$):** El ancho de un ciclo completo en el eje X. Se calcula como $T = \\frac{2\\pi}{|B|}$.<br>• **Desfase horizontal ($C$):** Desplazamiento a la izquierda o derecha.<br>• **Desplazamiento vertical ($D$):** Eleva o baja la línea central de la onda."
+        ]
+      },
+      "sec-m2-2-5": {
+        "introduccion": "Las funciones sinusoidales modelan movimientos oscilatorios repetitivos como las mareas, la corriente alterna, la temperatura a lo largo del año, la presión sanguínea y las ondas sonoras.",
+        "datos_claves": [
+          "**Modelo de Mareas:** La altura del mar se modela con $H(t) = A \\cdot \\cos(Bt) + D$. La diferencia entre marea alta y baja es exactamente $2A$.<br>• **Período de mareas:** Suele ser de aproximadamente $12$ horas, lo que implica que $B = \\frac{2\\pi}{12} = \\frac{\\pi}{6}$.",
+          "**Identificación gráfica:** Recuerda que la función seno estándar parte en el origen $(0,0)$ subiendo, mientras que la función coseno estándar parte en su valor máximo $(0,1)$."
+        ]
+      }
+    }
+  },
+  "cap-m2-3-geometria": {
+    "introduccion": "En este eje dominarás la homotecia de figuras planas y la razón de sus áreas, aplicarás razones trigonométricas en triángulos y ángulos notables, resolverás teoremas de cuerdas, secantes y tangentes en la circunferencia, calcularás volúmenes de esferas y analizarás la posición relativa de rectas en el plano mediante pendientes y sistemas lineales.",
+    "secciones": {
+      "sec-m2-3-1": {
+        "introduccion": "La homotecia es una transformación geométrica que proyecta una figura a escala a partir de un centro fijo $O$ con una razón de homotecia $k$. Aprenderás a distinguir homotecias directas e inversas y a calcular razones de perímetros y áreas.",
+        "datos_claves": [
+          "**Propiedad de Distancia:** Si $A'$ es la imagen homóloga de $A$, entonces $OA' = |k| \\cdot OA$. Las rectas que unen puntos homólogos concurren en el centro $O$.",
+          "**Razón de Homotecia ($k$):**<br>• **Directa ($k > 0$):** La figura resultante queda al mismo lado del centro $O$.<br>• **Inversa ($k < 0$):** La figura resultante queda al lado opuesto del centro $O$ y se invierte (rotación de $180^{\\circ}$).<br>• **Si $|k| > 1$** es una ampliación; **si $|k| < 1$** es una reducción.",
+          "**Efecto en Perímetro y Área:**<br>• **Perímetro:** Se multiplica por la razón absoluta: $\\text{Perímetro}' = |k| \\cdot \\text{Perímetro}$.<br>• **Área:** Se multiplica por la razón al cuadrado: $\\text{Área}' = k^2 \\cdot \\text{Área}$."
+        ]
+      },
+      "sec-m2-3-2": {
+        "introduccion": "La trigonometría relaciona los ángulos agudos de un triángulo rectángulo con las razones de sus lados. Definirás formalmente el Seno, Coseno y Tangente, y memorizarás las razones de los ángulos notables ($30^{\\circ}$, $45^{\\circ}$, $60^{\\circ}$).",
+        "datos_claves": [
+          "**Razones en Triángulo Rectángulo:**<br>• $\\sin(\\theta) = \\frac{\\text{Cateto Opuesto}}{\\text{Hipotenusa}}$.<br>• $\\cos(\\theta) = \\frac{\\text{Cateto Adyacente}}{\\text{Hipotenusa}}$.<br>• $\\tan(\\theta) = \\frac{\\text{Cateto Opuesto}}{\\text{Cateto Adyacente}} = \\frac{\\sin(\\theta)}{\\cos(\\theta)}$.",
+          "**Ángulos Notables Imprescindibles:**<br>• $\\sin(30^{\\circ}) = 1/2$; $\\cos(30^{\\circ}) = \\sqrt{3}/2$; $\\tan(30^{\\circ}) = \\sqrt{3}/3$.<br>• $\\sin(45^{\\circ}) = \\sqrt{2}/2$; $\\cos(45^{\\circ}) = \\sqrt{2}/2$; $\\tan(45^{\\circ}) = 1$.<br>• $\\sin(60^{\\circ}) = \\sqrt{3}/2$; $\\cos(60^{\\circ}) = 1/2$; $\\tan(60^{\\circ}) = \\sqrt{3}$.",
+          "**Identidad Fundamental:** $\\sin^2(\\theta) + \\cos^2(\\theta) = 1$."
+        ]
+      },
+      "sec-m2-3-3": {
+        "introduccion": "Los problemas trigonométricos aplican estas razones para calcular alturas inaccesibles, distancias horizontales y ángulos de elevación o depresión en problemas de navegación, topografía y construcción.",
+        "datos_claves": [
+          "**Ángulo de Elevación:** Ángulo formado por la línea horizontal de visión y la línea visual hacia arriba al observar un objeto elevado.",
+          "**Ángulo de Depresión:** Ángulo formado por la línea horizontal de visión y la línea visual hacia abajo al observar un objeto en una posición inferior. Ambos ángulos son congruentes por alternos internos entre paralelas.",
+          "**Tip Práctico:** Dibuja siempre el triángulo rectángulo imaginario. Si conoces el cateto adyacente y buscas la altura (cateto opuesto), usa siempre la **tangente**."
+        ]
+      },
+      "sec-m2-3-4": {
+        "introduccion": "La circunferencia posee propiedades angulares únicas basadas en la posición del vértice del ángulo respecto al centro. Domina la relación entre el ángulo del centro, el ángulo inscrito, el interior y el exterior.",
+        "datos_claves": [
+          "**Ángulo del Centro:** Su vértice está en el centro. Mide exactamente lo mismo que el arco que subtiende: $\\theta = \\text{Arco}$.",
+          "**Ángulo Inscrito:** Su vértice está en la circunferencia. Mide la mitad del arco que subtiende: $\\theta = \\frac{\\text{Arco}}{2}$.<br>• **Corolario:** Todos los ángulos inscritos que subtienden el mismo arco son iguales. Un ángulo inscrito que subtiende un diámetro mide siempre $90^{\\circ}$.",
+          "**Ángulos Interiores y Exteriores:**<br>• **Interior (vértice dentro):** Semisuma de los arcos: $\\theta = \\frac{\\alpha + \\beta}{2}$.<br>• **Exterior (vértice fuera):** Semidiferencia de los arcos: $\\theta = \\frac{\\alpha - \\beta}{2}$."
+        ]
+      },
+      "sec-m2-3-5": {
+        "introduccion": "Las relaciones métricas determinan las distancias entre segmentos cuando se cruzan cuerdas, secantes o tangentes. Aprenderás los tres teoremas fundamentales del círculo.",
+        "datos_claves": [
+          "**Teorema de las Cuerdas:** Si dos cuerdas $AB$ y $CD$ se cortan en un punto interior $P$, entonces:<br>• $PA \\cdot PB = PC \\cdot PD$.",
+          "**Teorema de las Secantes:** Si dos secantes parten de un punto exterior $P$ y cortan a la circunferencia en $A, B$ y $C, D$ respectivamente, entonces:<br>• $PA \\cdot PB = PC \\cdot PD$ (donde $PA$ y $PC$ son los segmentos exteriores).",
+          "**Teorema de la Tangente y la Secante:** Si una tangente y una secante parten de un punto exterior $P$, tocando en $T$ (tangencia) y cortando en $A, B$ (secancia), entonces:<br>• $PT^2 = PA \\cdot PB$."
+        ]
+      },
+      "sec-m2-3-6": {
+        "introduccion": "En esta sección integrarás los teoremas geométricos y métricos de la circunferencia en problemas geométricos de alta complejidad combinando congruencia de triángulos y teorema de Pitágoras.",
+        "datos_claves": [
+          "**Tangente y Radio:** Una recta tangente a una circunferencia es siempre **perpendicular** (forma un ángulo de $90^{\\circ}$) al radio dibujado en el punto de contacto.",
+          "**Cuerdas Congruentes:** Cuerdas de igual longitud en una misma circunferencia subtienden arcos de igual medida y están a la misma distancia del centro."
+        ]
+      },
+      "sec-m2-3-7": {
+        "introduccion": "La esfera es el cuerpo redondo tridimensional perfecto. Memorizarás y aplicarás las fórmulas exactas para calcular su área de superficie externa y su volumen interior.",
+        "datos_claves": [
+          "**Área de Superficie de la Esfera:** Corresponde a cuatro veces el área de un círculo máximo.<br>• **Fórmula:** $A = 4\\pi r^2$.",
+          "**Volumen de la Esfera:** Capacidad cúbica tridimensional de la esfera.<br>• **Fórmula:** $V = \\frac{4}{3}\\pi r^3$.",
+          "**Tip de cálculo:** Presta especial atención a si el enunciado te da el **diámetro** o el **radio**. Recuerda que $r = D/2$, y que al elevar al cubo debes multiplicar tres veces el radio por sí mismo."
+        ]
+      },
+      "sec-m2-3-8": {
+        "introduccion": "Aprenderás a analizar la posición relativa de dos rectas en el plano cartesiano a través de sus ecuaciones lineales. Determinarás analíticamente si son paralelas, perpendiculares, secantes o coincidentes.",
+        "datos_claves": [
+          "**Ecuación de la Recta:** $y = mx + n$ (donde $m$ es la pendiente y $n$ el coeficiente de posición).",
+          "**Criterios de Posición Relativa:**<br>• **Rectas Paralelas ($L_1 \\parallel L_2$):** Tienen igual pendiente y distinto coeficiente de posición: $m_1 = m_2$ y $n_1 \\neq n_2$.<br>• **Rectas Perpendiculares ($L_1 \\perp L_2$):** El producto de sus pendientes es igual a $-1$: $m_1 \\cdot m_2 = -1$.<br>• **Rectas Secantes:** Tienen distintas pendientes: $m_1 \\neq m_2$. Se cruzan en un único punto hallado resolviendo el sistema $2 \\times 2$.<br>• **Rectas Coincidentes:** Son la misma recta: $m_1 = m_2$ y $n_1 = n_2$."
+        ]
+      }
+    }
+  },
+  "cap-m2-4-datos": {
+    "introduccion": "En este eje dominarás el cálculo e interpretación de medidas de dispersión avanzadas, dominarás la probabilidad condicional y el Teorema de Bayes, aplicarás técnicas de conteo combinatorio con y sin repetición, y resolverás problemas de modelos binomiales y distribución normal estándar.",
+    "secciones": {
+      "sec-m2-4-1": {
+        "introduccion": "Las medidas de tendencia central no bastan para describir un grupo de datos; necesitamos saber cuán agrupados o separados están del centro. Definirás el Rango, Desviación Media, Varianza y Desviación Estándar.",
+        "datos_claves": [
+          "**Rango ($R$):** Diferencia entre el valor máximo y el mínimo: $R = X_{\\text{máx}} - X_{\\text{mín}}$.",
+          "**Desviación Media ($DM$):** Promedio de las distancias absolutas de cada dato al promedio.<br>• **Fórmula:** $DM = \\frac{\\sum |x_i - \\bar{x}|}{N}$.",
+          "**Varianza ($\\sigma^2$ o $S^2$):** Promedio de los cuadrados de las desviaciones respecto al promedio.<br>• **Fórmula:** $\\sigma^2 = \\frac{\\sum (x_i - \\bar{x})^2}{N}$.",
+          "**Desviación Estándar ($\\sigma$ o $S$):** Es la raíz cuadrada de la varianza. Permite expresar la dispersión en la misma unidad de medida que los datos originales: $\\sigma = \\sqrt{\\sigma^2}$."
+        ]
+      },
+      "sec-m2-4-2": {
+        "introduccion": "Aprenderás a comparar la homogeneidad de dos poblaciones de datos diferentes a través de sus desviaciones estándar y el cálculo del coeficiente de variación.",
+        "datos_claves": [
+          "**Interpretación de la Dispersión:** A menor desviación estándar, los datos están más concentrados cerca del promedio (grupo más **homogéneo** o consistente). A mayor desviación estándar, el grupo es más **heterogéneo**.<br>• **Efecto de transformaciones:** Si sumamos una constante $k$ a todos los datos, la desviación estándar **no cambia**. Si multiplicamos todos los datos por $k$, la desviación estándar se multiplica por $|k|$."
+        ]
+      },
+      "sec-m2-4-3": {
+        "introduccion": "La probabilidad condicional evalúa la probabilidad de que ocurra un evento $A$ dado que ya ocurrió un evento previo $B$. Domina la definición, la intersección y la independencia de sucesos.",
+        "datos_claves": [
+          "**Fórmula de Probabilidad Condicional:** $P(A|B) = \\frac{P(A \\cap B)}{P(B)}$ (con $P(B) > 0$).",
+          "**Teorema de la Multiplicación:** $P(A \\cap B) = P(B) \\cdot P(A|B)$.",
+          "**Independencia de Sucesos:** Dos sucesos son independientes si la ocurrencia de uno no afecta al otro. Esto se cumple si y solo si:<br>• $P(A|B) = P(A)$ o $P(A \\cap B) = P(A) \\cdot P(B)$."
+        ]
+      },
+      "sec-m2-4-4": {
+        "introduccion": "Las técnicas de conteo determinan el tamaño de espacios muestrales extremadamente grandes sin necesidad de listar cada caso. Aprenderás a elegir con precisión científica entre Permutaciones, Variaciones y Combinaciones.",
+        "datos_claves": [
+          "**¿Importa el Orden?**<br>• **SÍ importa:**<br>• **Permutación (usas todos los elementos):** $P_n = n!$. Con repetición: $P_n^{a,b} = \\frac{n!}{a! \\cdot b!}$. Circular: $P_{(c)n} = (n-1)!$.<br>• **Variación (usas un grupo de tamaño $k$):** $V_k^n = \\frac{n!}{(n-k)!}$. Con repetición: $VR_k^n = n^k$.<br>• **NO importa:**<br>• **Combinación (formas grupos de tamaño $k$ sin importar el orden):** $C_k^n = \\binom{n}{k} = \\frac{n!}{k!(n-k)!}$."
+        ]
+      },
+      "sec-m2-4-5": {
+        "introduccion": "Aplicarás las fórmulas combinatorias en problemas de olimpiadas, formación de directivas, combinaciones de claves de seguridad, rutas viales y problemas de juegos de azar complejos.",
+        "datos_claves": [
+          "**Método de descarte:** Hazte siempre dos preguntas:\n 1. ¿Entran todos los elementos del grupo? (SÍ = Permutación; NO = Variación o Combinación).\n 2. ¿Importa el orden en que los elijo? (SÍ = Variación; NO = Combinación)."
+        ]
+      },
+      "sec-m2-4-6": {
+        "introduccion": "El modelo Binomial describe experimentos aleatorios con dos posibles resultados: éxito (probabilidad $p$) o fracaso (probabilidad $q = 1 - p$), repetidos de forma independiente $n$ veces.",
+        "datos_claves": [
+          "**Fórmula de Probabilidad Binomial:** Si $X \\sim B(n, p)$, la probabilidad de obtener exactamente $k$ éxitos es:<br>• $P(X = k) = \\binom{n}{k} \\cdot p^k \\cdot (1 - p)^{n - k}$ (donde $\\binom{n}{k} = \\frac{n!}{k!(n-k)!}$).\n",
+          "**Media y Varianza Binomial:**<br>• **Media (Esperanza):** $\\mu = n \\cdot p$.<br>• **Varianza:** $\\sigma^2 = n \\cdot p \\cdot q$."
+        ]
+      },
+      "sec-m2-4-7": {
+        "introduccion": "La distribución normal es la curva en forma de campana (de Gauss) que modela variables continuas en la naturaleza. Aprenderás a estandarizar una variable normal para buscar probabilidades en tablas de distribución estándar.",
+        "datos_claves": [
+          "**Variable Normal Estándar ($Z$):** Tiene media $\\mu = 0$ y desviación estándar $\\sigma = 1$, expresada como $Z \\sim N(0, 1)$.",
+          "**Fórmula de Estandarización:** Para llevar cualquier variable $X \\sim N(\\mu, \\sigma)$ a la campana estándar:<br>• $Z = \\frac{X - \\mu}{\\sigma}$ (representa a cuántas desviaciones estándar del promedio está el dato).",
+          "**Regla Empírica del Intervalo:**<br>• El intervalo $[\\mu - \\sigma, \\mu + \\sigma]$ concentra el $68,2\\%$ de los datos.<br>• El intervalo $[\\mu - 2\\sigma, \\mu + 2\\sigma]$ concentra el $95,4\\%$ de los datos.<br>• El intervalo $[\\mu - 3\\sigma, \\mu + 3\\sigma]$ concentra el $99,7\\%$ de los datos."
+        ]
+      }
+    }
+  }
+}

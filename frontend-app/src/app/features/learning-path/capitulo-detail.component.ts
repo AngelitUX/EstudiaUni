@@ -1,7 +1,9 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
+import { KatexService } from '../../core/services/katex.service';
 
 @Component({
   selector: 'app-capitulo-detail',
@@ -28,7 +30,7 @@ import { PaesContentService } from './services/paes-content.service';
         <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
           <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
           <div class="sec-intro">
-            <p>{{ sec.introduccion }}</p>
+            <p [innerHTML]="parseMixed(sec.introduccion)"></p>
           </div>
 
           <!-- Tips & Examples -->
@@ -36,7 +38,7 @@ import { PaesContentService } from './services/paes-content.service';
             <h3>💡 Conceptos Clave & Ejemplos</h3>
             <ul class="tips-list">
               <li *ngFor="let dato of sec.datos_claves">
-                <span [innerHTML]="highlightBold(dato)"></span>
+                <span [innerHTML]="parseMixed(dato)"></span>
               </li>
             </ul>
           </div>
@@ -102,6 +104,8 @@ export class CapituloDetailComponent {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private katexSvc = inject(KatexService);
+  private sanitizer = inject(DomSanitizer);
 
   materiaId = signal('');
   capituloId = signal('');
@@ -118,7 +122,15 @@ export class CapituloDetailComponent {
     this.router.navigate(['/ruta', this.materiaId()]);
   }
 
-  highlightBold(text: string): string {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  parseMixed(text: string | undefined): SafeHtml {
+    if (!text) return '';
+    // Procesamos el LaTeX primero (que también escapa el HTML)
+    const renderedSafe = this.katexSvc.renderMixedText(text);
+    const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+    // Luego procesamos las negritas (**texto**)
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    // Lo marcamos como HTML seguro
+    return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 }

@@ -40,3 +40,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local testing mock files (Method B)
+src/assets/mocks/*-mock-local.json
+
+

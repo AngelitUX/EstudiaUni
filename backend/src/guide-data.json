@@ -1,0 +1,312 @@
+{
+  "cap-m1-1-numeros": {
+    "introduccion": "En este eje consolidarás tus habilidades operatorias con distintos conjuntos numéricos. Dominarás el uso de reglas de signos, prioridades, resolución de porcentajes y manipulación de potencias y raíces reales.",
+    "secciones": {
+      "sec-m1-1-1": {
+        "introduccion": "Los números enteros ($\\mathbb{Z}$) abarcan los naturales, el cero y los negativos. La clave aquí es dominar la regla de los signos y la jerarquía de operaciones (PAPOMUDAS).",
+        "datos_claves": [
+          "**Regla de signos:** En multiplicación y división, signos iguales dan $+$ y signos distintos dan $-$.",
+          "**Ejemplo Resuelto:** Al calcular $2 - 3 \\cdot (4 - 6)$, primero hacemos el paréntesis $(4-6)=-2$. Luego multiplicamos $-3 \\cdot -2 = +6$. Finalmente sumamos $2 + 6 = 8$."
+        ]
+      },
+      "sec-m1-1-2": {
+        "introduccion": "Los números racionales ($\\mathbb{Q}$) pueden escribirse como fracción $\\frac{a}{b}$. Debes saber operar fracciones (MCM) y transformar decimales finitos y periódicos a fracción.",
+        "datos_claves": [
+          "**Transformación:** Para un decimal periódico como $0.\\overline{45}$, escribimos $\\frac{45}{99}$, que simplificado es $\\frac{5}{11}$.",
+          "**División de fracciones:** $\\frac{a}{b} \\div \\frac{c}{d} = \\frac{a}{b} \\cdot \\frac{d}{c}$."
+        ]
+      },
+      "sec-m1-1-3": {
+        "introduccion": "En problemas de planteo, debes traducir enunciados verbales a lenguaje matemático. Palabras como 'de' o 'del' suelen indicar multiplicación.",
+        "datos_claves": [
+          "**Ejemplo Resuelto:** Si gasto $\\frac{1}{4}$ de mi sueldo y me quedan \\$300.000. ¿Cuál es mi sueldo? Si gasto $\\frac{1}{4}$, me quedan $\\frac{3}{4}$. Entonces $\\frac{3}{4}x = 300.000 \\implies x = 400.000$."
+        ]
+      },
+      "sec-m1-1-4": {
+        "introduccion": "Un porcentaje representa una parte de un todo dividido en 100 partes. Se puede calcular directamente usando fracciones o decimales ($20\\% = 0.2$).",
+        "datos_claves": [
+          "**Aumento porcentual:** Aumentar un valor en $15\\%$ es lo mismo que multiplicarlo por $1.15$.",
+          "**Descuento porcentual:** Descontar un $20\\%$ equivale a multiplicar el valor por $0.80$ (ya que pagas el $80\\%$)."
+        ]
+      },
+      "sec-m1-1-5": {
+        "introduccion": "El interés simple e interés compuesto son aplicaciones directas de los porcentajes a contextos financieros a lo largo del tiempo.",
+        "datos_claves": [
+          "**Interés Simple:** El capital no cambia. Ganancia = $C \\cdot i \\cdot t$.",
+          "**Interés Compuesto:** Los intereses se acumulan. Capital Final = $C(1+i)^t$."
+        ]
+      },
+      "sec-m1-1-6": {
+        "introduccion": "Las potencias son multiplicaciones iteradas. Las reglas más importantes son la suma de exponentes al multiplicar bases iguales y la resta al dividir.",
+        "datos_claves": [
+          "**Exponente negativo:** $a^{-n} = \\frac{1}{a^n}$ y $(\\frac{a}{b})^{-n} = (\\frac{b}{a})^n$.",
+          "**Ejemplo Resuelto:** $\\frac{2^5 \\cdot 2^{-2}}{2^4} = \\frac{2^3}{2^4} = 2^{-1} = \\frac{1}{2}$."
+        ]
+      },
+      "sec-m1-1-7": {
+        "introduccion": "Las raíces enésimas pueden expresarse como potencias de exponente fraccionario. La descomposición es clave para sumar y restar raíces.",
+        "datos_claves": [
+          "**Exponente fraccionario:** $\\sqrt[n]{a^m} = a^{\\frac{m}{n}}$.",
+          "**Descomposición:** $\\sqrt{50} = \\sqrt{25 \\cdot 2} = \\sqrt{25} \\cdot \\sqrt{2} = 5\\sqrt{2}$."
+        ]
+      },
+      "sec-m1-1-8": {
+        "introduccion": "Las potencias y raíces modelan problemas de crecimiento poblacional, áreas, volúmenes e interés compuesto.",
+        "datos_claves": [
+          "**Ejemplo Resuelto:** Si una bacteria se duplica cada hora, partiendo de 3 bacterias, en $t$ horas habrá $3 \\cdot 2^t$ bacterias."
+        ]
+      }
+    }
+  },
+  "cap-m1-2-algebra": {
+    "introduccion": "Aprenderás a operar expresiones algebraicas, resolver ecuaciones e inecuaciones de primer y segundo grado, y modelar situaciones reales usando funciones lineales, afines y cuadráticas.",
+    "secciones": {
+      "sec-m1-2-1": {
+        "introduccion": "Los productos notables son atajos para multiplicaciones algebraicas comunes. Memorizarlos ahorra mucho tiempo en la PAES.",
+        "datos_claves": [
+          "**Cuadrado de Binomio:** $(a \\pm b)^2 = a^2 \\pm 2ab + b^2$.",
+          "**Suma por su diferencia:** $(a + b)(a - b) = a^2 - b^2$."
+        ]
+      },
+      "sec-m1-2-2": {
+        "introduccion": "Factorizar es transformar sumas o restas en multiplicaciones. Los métodos más comunes son factor común y binomios con término común.",
+        "datos_claves": [
+          "**Ejemplo Resuelto:** Factorizar $x^2 - 5x + 6$. Buscamos dos números que sumados den $-5$ y multiplicados $+6$. Respuesta: $(x - 2)(x - 3)$."
+        ]
+      },
+      "sec-m1-2-3": {
+        "introduccion": "Al sumar o restar expresiones algebraicas fraccionarias, debes encontrar el MCM de los denominadores algebraicos.",
+        "datos_claves": [
+          "**Tip Clave:** Simplifica siempre ANTES de multiplicar fracciones algebraicas para evitar polinomios gigantes."
+        ]
+      },
+      "sec-m1-2-4": {
+        "introduccion": "Los problemas algebraicos requieren convertir frases verbales a ecuaciones. Por ejemplo: 'el doble de un número disminuido en tres' es $2x - 3$.",
+        "datos_claves": [
+          "**Ejemplo:** 'La mitad del exceso de $A$ sobre $B$' se escribe como $\\frac{A - B}{2}$."
+        ]
+      },
+      "sec-m1-2-5": {
+        "introduccion": "En proporción directa, si una variable sube, la otra sube igual. En la inversa, si una sube, la otra baja.",
+        "datos_claves": [
+          "**Directa:** Cociente constante $\\frac{y}{x} = k$. Gráfica: recta por el origen.",
+          "**Inversa:** Producto constante $x \\cdot y = k$. Gráfica: curva hipérbola."
+        ]
+      },
+      "sec-m1-2-6": {
+        "introduccion": "Para problemas de proporcionalidad, plantea una tabla de variables. Si es directa, multiplica cruzado. Si es inversa, multiplica horizontalmente.",
+        "datos_claves": [
+          "**Ejemplo:** Si 4 obreros tardan 10 días, 8 obreros tardarán 5 días (Proporción inversa, $4 \\cdot 10 = 8 \\cdot 5$)."
+        ]
+      },
+      "sec-m1-2-7": {
+        "introduccion": "Resolver una ecuación lineal significa despejar la incógnita $x$ agrupando términos semejantes a un lado de la igualdad.",
+        "datos_claves": [
+          "**Ejemplo:** $3x - 5 = x + 7 \\implies 2x = 12 \\implies x = 6$."
+        ]
+      },
+      "sec-m1-2-8": {
+        "introduccion": "En los problemas de ecuaciones, define claramente a quién llamarás $x$. Luego construye la ecuación en base a la relación dada.",
+        "datos_claves": [
+          "**Ejemplo:** 'Juan tiene 5 años más que Pedro'. Si Pedro tiene $x$, Juan tiene $x+5$."
+        ]
+      },
+      "sec-m1-2-9": {
+        "introduccion": "Las inecuaciones se resuelven como ecuaciones, pero con una **Regla de Oro**: si multiplicas o divides por un número negativo, el signo de desigualdad se invierte.",
+        "datos_claves": [
+          "**Ejemplo Resuelto:** $-2x > 4$. Al dividir por $-2$, el signo cambia: $x < -2$."
+        ]
+      },
+      "sec-m1-2-10": {
+        "introduccion": "Identifica restricciones en problemas. 'A lo más' significa $\\leq$. 'Como mínimo' significa $\\geq$.",
+        "datos_claves": [
+          "**Ejemplo:** 'Tengo máximo \\$10.000 para comprar $x$ dulces de \\$500' se plantea como $500x \\leq 10000$."
+        ]
+      },
+      "sec-m1-2-11": {
+        "introduccion": "Un sistema de 2 ecuaciones con 2 incógnitas busca el punto de intersección $(x,y)$ de dos rectas. El método de reducción suele ser el más rápido.",
+        "datos_claves": [
+          "**Reducción:** $x+y=10$ y $x-y=4$. Al sumar ambas ecuaciones obtenemos $2x=14 \\implies x=7$. Luego $y=3$."
+        ]
+      },
+      "sec-m1-2-12": {
+        "introduccion": "En problemas de sistemas, identifica las dos incógnitas principales (ej. precio de adulto y precio de niño) y arma dos ecuaciones distintas.",
+        "datos_claves": [
+          "**Ejemplo:** En un corral hay conejos y gallinas. Cabezas = $C+G=20$. Patas = $4C + 2G = 60$."
+        ]
+      },
+      "sec-m1-2-13": {
+        "introduccion": "La función lineal $f(x)=mx$ siempre pasa por el origen $(0,0)$. La función afín $f(x)=mx+n$ está desplazada y cruza el eje Y en $(0,n)$.",
+        "datos_claves": [
+          "**Pendiente ($m$):** Inclinación de la recta. Se calcula con $m = \\frac{y_2 - y_1}{x_2 - x_1}$."
+        ]
+      },
+      "sec-m1-2-14": {
+        "introduccion": "En los gráficos, la pendiente $m$ positiva sube de izquierda a derecha. El coeficiente $n$ te dice inmediatamente dónde la recta corta el eje vertical.",
+        "datos_claves": [
+          "**Corte eje X:** Se iguala la función a cero: $0 = mx + n \\implies x = -\\frac{n}{m}$."
+        ]
+      },
+      "sec-m1-2-15": {
+        "introduccion": "Modelan cobros fijos más cobros variables. Ej. Taxi de tarifa base (n) más costo por kilómetro (m).",
+        "datos_claves": [
+          "**Ejemplo:** Si un plan de celular cobra \\$5.000 fijos más \\$10 por minuto, el modelo es $C(x) = 10x + 5000$."
+        ]
+      },
+      "sec-m1-2-16": {
+        "introduccion": "La ecuación de segundo grado $ax^2+bx+c=0$ se resuelve con la fórmula general cuadrática o mediante factorización en dos binomios.",
+        "datos_claves": [
+          "**Fórmula General:** $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$."
+        ]
+      },
+      "sec-m1-2-17": {
+        "introduccion": "La función cuadrática es una parábola. Su concavidad depende del valor de 'a' (positivo = copa feliz $\\cup$; negativo = copa triste $\\cap$).",
+        "datos_claves": [
+          "**Discriminante ($\\Delta = b^2 - 4ac$):** Si $\\Delta > 0$, la gráfica corta al eje X en dos puntos. Si $\\Delta < 0$, no lo corta."
+        ]
+      },
+      "sec-m1-2-18": {
+        "introduccion": "El vértice es el punto más alto o más bajo de la parábola. Es clave para encontrar valores máximos y mínimos.",
+        "datos_claves": [
+          "**Fórmula del vértice:** La coordenada X del vértice es $x_v = -\\frac{b}{2a}$. Para hallar el Y, evalúa $f(x_v)$."
+        ]
+      },
+      "sec-m1-2-19": {
+        "introduccion": "Si te piden la 'altura máxima' de un proyectil, calcula la coordenada Y del vértice. Si te piden 'cuándo' ocurre, calcula el X del vértice.",
+        "datos_claves": [
+          "**Corte con el eje Y:** Siempre es el coeficiente $c$ independiente. Punto $(0,c)$."
+        ]
+      }
+    }
+  },
+  "cap-m1-3-geometria": {
+    "introduccion": "Aquí exploraremos las figuras en 2D y 3D, aprenderás a calcular áreas, perímetros y volúmenes, usarás el famoso Teorema de Pitágoras y descubrirás las transformaciones que mueven figuras en el plano.",
+    "secciones": {
+      "sec-m1-3-1": {
+        "introduccion": "El Teorema de Pitágoras aplica solo en triángulos rectángulos: el cuadrado de la hipotenusa (lado mayor) es igual a la suma de los cuadrados de los catetos.",
+        "datos_claves": [
+          "**Fórmula:** $a^2 + b^2 = c^2$.",
+          "**Tríos Pitagóricos:** Aprende los clásicos $(3, 4, 5)$ y $(5, 12, 13)$ para evitar cálculos lentos."
+        ]
+      },
+      "sec-m1-3-2": {
+        "introduccion": "Perímetro es el contorno, Área es la superficie interna. Cada figura plana tiene su propia fórmula directa.",
+        "datos_claves": [
+          "**Triángulo:** $\\frac{\\text{base} \\cdot \\text{altura}}{2}$.",
+          "**Círculo:** Perímetro = $2\\pi r$, Área = $\\pi r^2$."
+        ]
+      },
+      "sec-m1-3-3": {
+        "introduccion": "Para calcular el área de figuras compuestas o achuradas, usualmente debes calcular las áreas por separado y restarlas o sumarlas.",
+        "datos_claves": [
+          "**Ejemplo:** Área de un anillo (corona) circular = Área círculo mayor - Área círculo menor."
+        ]
+      },
+      "sec-m1-3-4": {
+        "introduccion": "El área de la superficie de un cuerpo 3D es la suma de las áreas de todas sus caras externas, como si lo envolvieras en papel de regalo.",
+        "datos_claves": [
+          "**Cubo:** Tiene 6 caras cuadradas iguales, entonces el Área de Superficie es $6a^2$."
+        ]
+      },
+      "sec-m1-3-5": {
+        "introduccion": "El volumen mide el espacio que ocupa un cuerpo. Para prismas y cilindros rectos, siempre es el Área de la base multiplicada por la altura.",
+        "datos_claves": [
+          "**Paralelepípedo (Caja):** $V = \\text{largo} \\cdot \\text{ancho} \\cdot \\text{alto}$.",
+          "**Cilindro:** $V = \\pi r^2 \\cdot h$."
+        ]
+      },
+      "sec-m1-3-6": {
+        "introduccion": "Cuidado con las unidades. Asegúrate de convertir todo a centímetros, metros o litros antes de aplicar las fórmulas de volumen.",
+        "datos_claves": [
+          "**Conversión Clave:** 1 Litro = 1.000 $cm^3$ = 1 $dm^3$."
+        ]
+      },
+      "sec-m1-3-7": {
+        "introduccion": "Un vector en el plano cartesiano es una flecha que indica un desplazamiento $(x, y)$. Sirve para definir las direcciones en traslaciones.",
+        "datos_claves": [
+          "**Suma de vectores:** Se suman componente a componente: $(x_1, y_1) + (x_2, y_2) = (x_1+x_2, y_1+y_2)$."
+        ]
+      },
+      "sec-m1-3-8": {
+        "introduccion": "Las isometrías no cambian el tamaño. La traslación es deslizar, la reflexión es el efecto espejo, y la rotación es girar en torno al origen.",
+        "datos_claves": [
+          "**Reflexión Eje X:** $(x,y) \\rightarrow (x, -y)$.",
+          "**Rotación 90° (Antihorario):** $(x,y) \\rightarrow (-y, x)$."
+        ]
+      },
+      "sec-m1-3-9": {
+        "introduccion": "Al componer transformaciones, aplica primero una y al resultado aplícale la siguiente.",
+        "datos_claves": [
+          "**Ejemplo:** Trasladar el punto $(2,3)$ según el vector $(1,-1)$ da como resultado el punto $(3,2)$."
+        ]
+      },
+      "sec-m1-3-10": {
+        "introduccion": "Dos figuras son semejantes si tienen la misma forma, es decir, sus ángulos son iguales y sus lados correspondientes están a escala.",
+        "datos_claves": [
+          "**Razón de semejanza ($k$):** Si los lados están en razón $k$, los perímetros están en razón $k$, las áreas en $k^2$ y los volúmenes en $k^3$."
+        ]
+      }
+    }
+  },
+  "cap-m1-4-datos": {
+    "introduccion": "Manejarás herramientas estadísticas descriptivas. Aprenderás a leer tablas y gráficos, calcular promedios, comprender diagramas de cajón y dominar las reglas esenciales del azar.",
+    "secciones": {
+      "sec-m1-4-1": {
+        "introduccion": "La frecuencia absoluta ($f$) es el conteo directo. La frecuencia relativa divide esa cantidad por el total, representando una fracción o porcentaje del total.",
+        "datos_claves": [
+          "**Frecuencia Acumulada ($F$):** Suma progresiva de las frecuencias absolutas. El último valor siempre es igual al total de datos ($n$)."
+        ]
+      },
+      "sec-m1-4-2": {
+        "introduccion": "Los gráficos circulares muestran porcentajes del todo. Los gráficos de barras son para datos discretos, y los histogramas para datos agrupados en intervalos continuos.",
+        "datos_claves": [
+          "**Ojo crítico:** Revisa siempre los ejes del gráfico. Muchas veces un eje no parte de cero y exagera visualmente las diferencias."
+        ]
+      },
+      "sec-m1-4-3": {
+        "introduccion": "El promedio o media aritmética es el 'punto de equilibrio'. Se suman todos los datos y se dividen por la cantidad de ellos.",
+        "datos_claves": [
+          "**Promedio para datos agrupados:** Se multiplica el valor (o la marca de clase del intervalo) por su frecuencia absoluta, se suma todo, y se divide por $n$."
+        ]
+      },
+      "sec-m1-4-4": {
+        "introduccion": "En problemas de PAES, suelen darte el promedio final y te piden encontrar un dato faltante despejando la fórmula original.",
+        "datos_claves": [
+          "**Ejemplo:** Si el promedio de 4 notas es 6.0, la suma de las notas debe ser $4 \\cdot 6.0 = 24.0$."
+        ]
+      },
+      "sec-m1-4-5": {
+        "introduccion": "Los cuartiles ($Q_1, Q_2, Q_3$) dividen los datos ordenados en 4 grupos del $25\\%$. Los percentiles ($P_1...P_{99}$) los dividen en 100 grupos del $1\\%$.",
+        "datos_claves": [
+          "**Posición:** Siempre OBLIGATORIO ordenar los datos de menor a mayor antes de buscar un cuartil.",
+          "**Equivalencias:** Mediana = $Q_2 = P_{50}$."
+        ]
+      },
+      "sec-m1-4-6": {
+        "introduccion": "El Boxplot o diagrama de cajón representa gráficamente los cuartiles. Muestra la dispersión y la concentración de los datos.",
+        "datos_claves": [
+          "**Caja central:** Va desde $Q_1$ hasta $Q_3$ y abarca exactamente al $50\\%$ central de los datos. La línea dentro de la caja es la Mediana ($Q_2$)."
+        ]
+      },
+      "sec-m1-4-7": {
+        "introduccion": "No puedes saber cómo se distribuyen los datos exactos *dentro* de cada cuarto del diagrama de cajón, solo sabes que cada cuarto contiene el $25\\%$ de los datos.",
+        "datos_claves": [
+          "**Rango Intercuartil (RIC):** Es la longitud de la caja central: $\\text{RIC} = Q_3 - Q_1$."
+        ]
+      },
+      "sec-m1-4-8": {
+        "introduccion": "La Regla de Laplace rige el azar básico: Probabilidad = $\\frac{\\text{Casos a favor}}{\\text{Casos Totales}}$. Siempre debe dar entre $0$ (imposible) y $1$ (seguro).",
+        "datos_claves": [
+          "**Ejemplo:** Al lanzar un dado, la probabilidad de sacar un número mayor a 4 (son el 5 y 6) es $\\frac{2}{6} = \\frac{1}{3}$."
+        ]
+      },
+      "sec-m1-4-9": {
+        "introduccion": "La conjunción 'O' implica sumar probabilidades (Regla Aditiva). La conjunción 'Y' (simultaneidad) implica multiplicarlas (Regla Multiplicativa).",
+        "datos_claves": [
+          "**Regla Aditiva:** $P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$. Si son eventos que no pueden pasar juntos (ej. sacar par e impar), la intersección es 0.",
+          "**Eventos Independientes (Y):** Tirar dos monedas y sacar cara Y cara: $\\frac{1}{2} \\cdot \\frac{1}{2} = \\frac{1}{4}$."
+        ]
+      }
+    }
+  }
+}

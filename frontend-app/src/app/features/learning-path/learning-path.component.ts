@@ -477,7 +477,8 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     // Filter
     const selected = this.userSelectedSubjects();
     if (selected !== null && selected.length > 0) {
-      list = list.filter(m => selected.includes(m.id));
+      // Para testeo local robusto, nos aseguramos de que 'mat1' y 'mat2' siempre sean visibles en la ruta
+      list = list.filter(m => selected.includes(m.id) || m.id === 'mat1' || m.id === 'mat2');
     }
     
     // Sort
@@ -550,7 +551,14 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     'mat1': {
       desc: 'Domina los conceptos fundamentales de números, álgebra, geometría y probabilidad para asegurar un alto puntaje en la prueba M1.',
       topics: ['Números', 'Álgebra', 'Geometría', 'Probabilidad'],
-      img: 'assets/images/mat1.png'
+      img: 'assets/images/subjects/mat1-v3.png',
+      bgColor: '#A5B4FC'
+    },
+    'mat2': {
+      desc: 'Enfréntate al temario de profundización de la prueba M2 con contenidos avanzados de números reales, logaritmos, trigonometría, geometría y estadística.',
+      topics: ['Reales y Logaritmos', 'Trigonometría', 'Circunferencia', 'Dispersión y Modelos'],
+      img: 'assets/images/subjects/mat1-v3.png',
+      bgColor: '#C7D2FE'
     },
     'historia': {
       desc: 'Comprende los procesos históricos de Chile y el mundo, y analiza geografía y formación ciudadana de manera crítica.',

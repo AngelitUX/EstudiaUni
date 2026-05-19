@@ -1,7 +1,9 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
+import { KatexService } from '../../core/services/katex.service';
 
 @Component({
   selector: 'app-seccion-detail',
@@ -32,7 +34,7 @@ import { PaesContentService } from './services/paes-content.service';
           <span class="card-icon">🧠</span>
           <h3>{{ sec.guia_titulo || '¿Qué aprenderás?' }}</h3>
         </div>
-        <p class="guide-body">{{ sec.guia_contenido || sec.introduccion }}</p>
+        <p class="guide-body" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
       </div>
 
       <!-- TEXTO BASE -->
@@ -56,7 +58,7 @@ import { PaesContentService } from './services/paes-content.service';
         <div class="tips-list">
           <div *ngFor="let dato of sec.datos_claves; let i = index" class="tip-item">
             <div class="tip-num" [style.background]="tipColors[i % tipColors.length]">{{ i + 1 }}</div>
-            <p [innerHTML]="highlightBold(dato)"></p>
+            <p [innerHTML]="parseMixed(dato)"></p>
           </div>
         </div>
       </div>
@@ -158,6 +160,8 @@ export class SeccionDetailComponent {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private katexSvc = inject(KatexService);
+  private sanitizer = inject(DomSanitizer);
 
   tipColors = ['#855cd6', '#1cb0f6', '#ff9600', '#58cc02', '#ef4444'];
 
@@ -189,8 +193,12 @@ export class SeccionDetailComponent {
     this.router.navigate(['/ruta', this.materiaId()]);
   }
 
-  highlightBold(text: string): string {
-    // Bold para **texto** markdown
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>');
+  parseMixed(text: string | null | undefined): SafeHtml {
+    if (!text) return '';
+    const renderedSafe = this.katexSvc.renderMixedText(text);
+    const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>');
+    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 }

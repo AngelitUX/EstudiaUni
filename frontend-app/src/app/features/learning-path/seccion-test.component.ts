@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -39,7 +39,7 @@ import { SoundService } from '../../core/services/sound.service';
             <img [src]="q.preambulo_imagen_url" alt="Imagen de apoyo" class="q-image" />
           </div>
 
-          <p class="q-text">{{ q.enunciado }}</p>
+          <p class="q-text" [innerHTML]="parseMixed(q.enunciado)"></p>
 
           <!-- Fórmula LaTeX (Matemáticas) -->
           <div class="q-formula" *ngIf="q.formula_latex"
@@ -55,7 +55,7 @@ import { SoundService } from '../../core/services/sound.service';
               [disabled]="showFeedback()"
               (click)="selectAnswer(q.id, key)">
               <span class="opt-letter" [class.sel]="answers().get(q.id) === key">{{ key }}</span>
-              <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'">{{ q.alternativas[key] }}</span>
+              <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(q.alternativas[key])"></span>
               <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
                 alt="Opción {{ key }}" class="opt-img" />
             </button>
@@ -68,7 +68,7 @@ import { SoundService } from '../../core/services/sound.service';
             <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
             <div class="feedback-body">
               <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
-              <p>{{ isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error }}</p>
+              <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
             </div>
           </div>
         </div>
@@ -310,6 +310,51 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   renderLatex(latex: string | null): SafeHtml {
     if (!latex) return '';
-    return this.sanitizer.bypassSecurityTrustHtml(this.katex.render(latex));
+    return this.katex.render(latex);
+  }
+
+  parseMixed(text: string | null | undefined): SafeHtml {
+    if (!text) return '';
+    const renderedSafe = this.katex.renderMixedText(text);
+    const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+  }
+
+/*
+// =========================================================================
+// 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
+// =========================================================================
+@HostListener('window:keydown', ['$event'])
+handleKeyboardEvent(event: KeyboardEvent) {
+  const key = event.key.toLowerCase();
+
+  // Select alternative
+  if (key === 'z') this.selectAnswerForCurrent('A');
+  if (key === 'x') this.selectAnswerForCurrent('B');
+  if (key === 'c') this.selectAnswerForCurrent('C');
+  if (key === 'v') this.selectAnswerForCurrent('D');
+
+  // Check answer or go to next (Enter or Right Arrow)
+  if (key === 'arrowright' || key === 'enter') {
+    if (!this.showFeedback() && this.hasCurrentAnswer()) {
+      this.checkAnswer();
+    } else if (this.showFeedback()) {
+      if (!this.isLastQuestion()) {
+        this.nextQuestion();
+      } else {
+        this.submitTest();
+      }
+    }
   }
 }
+
+private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
+  const q = this.currentQuestion();
+  if (q) {
+    this.selectAnswer(q.id, option);
+  }
+}
+*/
+}

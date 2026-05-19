@@ -88,7 +88,7 @@ import { SoundService } from '../../core/services/sound.service';
           <span class="rq-status-text">{{ isCorrect(r, p.id) ? 'Correcta' : 'Incorrecta' }}</span>
         </div>
 
-        <p class="rq-enunciado"><span class="rq-num">{{ i + 1 }}</span> {{ p.enunciado }}</p>
+        <p class="rq-enunciado"><span class="rq-num">{{ i + 1 }}</span> <span [innerHTML]="parseMixed(p.enunciado)"></span></p>
 
         <div class="rq-preambulo" *ngIf="p.preambulo_texto">
           <span>💬</span> {{ p.preambulo_texto }}
@@ -110,7 +110,7 @@ import { SoundService } from '../../core/services/sound.service';
             <span class="rq-letter"
               [class.letter-green]="key === p.respuesta_correcta"
               [class.letter-red]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">{{ key }}</span>
-            <span class="rq-text" *ngIf="p.tipo_alternativas !== 'imagen'">{{ p.alternativas[key] }}</span>
+            <span class="rq-text" *ngIf="p.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(p.alternativas[key])"></span>
             <img *ngIf="p.tipo_alternativas === 'imagen'" [src]="p.alternativas[key]"
               alt="Opción {{ key }}" class="rq-opt-img" />
             <span class="rq-tag correct-tag" *ngIf="key === p.respuesta_correcta">✓ Correcta</span>
@@ -122,7 +122,7 @@ import { SoundService } from '../../core/services/sound.service';
           <span class="exp-icon">{{ isCorrect(r, p.id) ? '💡' : '📖' }}</span>
           <div>
             <h4>{{ isCorrect(r, p.id) ? '¿Por qué es correcta?' : '¿Por qué te equivocaste?' }}</h4>
-            <p>{{ isCorrect(r, p.id) ? p.feedback_acierto : p.feedback_error }}</p>
+            <p [innerHTML]="parseMixed(isCorrect(r, p.id) ? p.feedback_acierto : p.feedback_error)"></p>
           </div>
         </div>
       </div>
@@ -309,6 +309,15 @@ export class SeccionTestReviewComponent {
 
   renderLatex(latex: string | null): SafeHtml {
     if (!latex) return '';
-    return this.sanitizer.bypassSecurityTrustHtml(this.katexSvc.render(latex));
+    return this.katexSvc.render(latex);
+  }
+
+  parseMixed(text: string | null | undefined): SafeHtml {
+    if (!text) return '';
+    const renderedSafe = this.katexSvc.renderMixedText(text);
+    const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 }

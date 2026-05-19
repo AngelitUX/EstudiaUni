@@ -35,7 +35,13 @@ export class PaesContentService {
   readonly lastTestResult = this._lastTestResult.asReadonly();
 
   constructor() {
-    this.loadDataFromFirestore();
+    // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
+    const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
+    if (useMocks) {
+      this.loadDataFromLocalMocks();
+    } else {
+      this.loadDataFromFirestore();
+    }
     // Subscribe to auth state changes to load user-specific progress
     this.auth.onAuthStateChanged((user) => {
       if (user && user.uid !== this.currentUid) {
@@ -47,6 +53,31 @@ export class PaesContentService {
         this._progress.set(new Map());
       }
     });
+  }
+
+  private async loadDataFromLocalMocks() {
+    try {
+      console.log('🚧 [EstudiaUni Testing] Loading learning path data from LOCAL MOCKS (Method B)...');
+      
+      // 1. Cargar materias mock (usando ruta absoluta)
+      const materiasRes = await fetch('/assets/mocks/materias-mock-local.json');
+      if (!materiasRes.ok) throw new Error('materias-mock-local.json not found');
+      const materias = await materiasRes.json() as Materia[];
+      this._materias.set(materias.sort((a, b) => a.order - b.order));
+
+      // 2. Cargar capítulos mock (usando ruta absoluta)
+      const capitulosRes = await fetch('/assets/mocks/capitulos-mock-local.json');
+      if (!capitulosRes.ok) throw new Error('capitulos-mock-local.json not found');
+      const capitulos = await capitulosRes.json() as Capitulo[];
+      this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
+      
+      console.log('✅ [EstudiaUni Testing] Local mocks loaded successfully!');
+    } catch (error) {
+      console.warn('⚠️ [EstudiaUni Testing] Failed to load local mocks. Falling back to Firestore...', error);
+      await this.loadDataFromFirestore();
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   private async loadDataFromFirestore() {
