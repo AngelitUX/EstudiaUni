@@ -1,17 +1,36 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { FirestoreService } from './core/services/firestore.service';
+import { PaymentService } from './core/services/payment.service';
+import { PricingModalComponent } from './features/payment/pricing-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule, PricingModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
   title = 'frontend-app';
   private firestoreService = inject(FirestoreService);
+  public readonly paymentService = inject(PaymentService);
+
+  @HostListener('document:click', ['$event'])
+  onGlobalClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const isPromoCard = target && (
+      target.classList.contains('sidebar-promo-card') || 
+      target.closest('.sidebar-promo-card')
+    );
+    
+    if (isPromoCard) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.paymentService.openPricingModal();
+    }
+  }
 
   ngOnInit() {
     this.firestoreService.getUserProfile().subscribe(profile => {

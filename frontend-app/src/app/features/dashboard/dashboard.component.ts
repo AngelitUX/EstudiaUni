@@ -13,6 +13,7 @@ import { HistoryModalComponent } from './history-modal.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { AdminService } from '../admin/services/admin.service';
 import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,7 +24,7 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard">
@@ -66,6 +67,13 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
               <span class="nav-text">Recursos Adicionales</span>
             </a>
           </div>
+          <!-- Sidebar Promo Card -->
+          <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
+            <span class="promo-crown">👑</span>
+            <h4>Pásate a PRO</h4>
+            <p>Explicaciones con IA y Ensayos Ilimitados</p>
+            <button class="btn-promo-sidebar">Ver Planes ⚡</button>
+          </div>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -82,7 +90,7 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
         <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">☰</button>
-        <span class="text-gradient">EstudiaUni</span>
+        <span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span>
       </div>
       <div class="mobile-overlay" [class.open]="mobileMenuOpen" (click)="mobileMenuOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -127,6 +135,14 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
                 <span class="nav-text">Recursos Adicionales</span>
               </a>
             </div>
+            
+            <!-- Sidebar Promo Card -->
+            <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
+              <span class="promo-crown">👑</span>
+              <h4>Pásate a PRO</h4>
+              <p>Explicaciones con IA y Ensayos Ilimitados</p>
+              <button class="btn-promo-sidebar">Ver Planes ⚡</button>
+            </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
@@ -146,11 +162,14 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
         <!-- WELCOME -->
         <section class="welcome-section">
           <div class="welcome-text">
-            <h1>¡Hola, <span class="text-gradient">{{ userName() }}</span>! 👋</h1>
+            <h1>¡Hola, <span class="text-gradient" [class.pro-username]="isProPlan()">{{ userName() }}</span>! 👋</h1>
             <p>Bienvenido de vuelta. Aquí está tu resumen de hoy.</p>
             <div class="welcome-date">{{ currentDate }}</div>
           </div>
           <div class="welcome-actions">
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
             <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
@@ -775,6 +794,7 @@ export class DashboardComponent implements OnInit {
   public notificationService = inject(NotificationService);
   public adminService = inject(AdminService);
   public miniEnsayoSvc = inject(MiniEnsayoService);
+  public paymentService = inject(PaymentService);
 
   get herramientasExpanded(): boolean {
     const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
@@ -854,6 +874,49 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+    this.checkPendingCheckout();
+  }
+
+  checkPendingCheckout() {
+    const pending = localStorage.getItem('estudiauni_pending_checkout');
+    if (!pending) return;
+
+    try {
+      const intent = JSON.parse(pending) as { plan: 'monthly' | 'yearly' };
+      localStorage.removeItem('estudiauni_pending_checkout');
+
+      // If user is already premium, do nothing
+      const profile = this.firestoreService.profileSignal();
+      if (profile?.plan === 'premium') {
+        return;
+      }
+
+      const returnUrl = window.location.origin + '/pago-resultado';
+      this.paymentService.createWebpayTransaction(intent.plan, returnUrl).subscribe({
+        next: (res: any) => {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = res.url;
+          
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'token_ws';
+          input.value = res.token;
+          
+          form.appendChild(input);
+          document.body.appendChild(form);
+          form.submit();
+        },
+        error: (err: any) => {
+          console.error('[Dashboard] Error initiating pending payment:', err);
+          const errMsg = err.error?.message || err.message || 'Error de conexión';
+          alert('Hubo un problema al iniciar el pago pendiente: ' + errMsg);
+        }
+      });
+    } catch (e) {
+      console.warn('Error reading pending checkout session:', e);
+      localStorage.removeItem('estudiauni_pending_checkout');
+    }
   }
 
   onProfileModalClose() {
