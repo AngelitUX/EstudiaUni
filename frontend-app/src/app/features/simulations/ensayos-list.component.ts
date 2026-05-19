@@ -43,7 +43,7 @@ type ExamMode = 'real' | 'asistido';
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;">
-            <span class="text-gradient">EstudiaUni</span>
+            <span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span>
           </a>
         </div>
         
@@ -59,12 +59,42 @@ type ExamMode = 'real' | 'asistido';
 
           <a class="nav-item active" routerLink="/ensayos">
             <span class="nav-icon">📚</span>
-            <span class="nav-text">Ensayo PAES</span>
+            <span class="nav-text">Ensayos PAES</span>
           </a>
-          <a class="nav-item" routerLink="/encuentra-tu-carrera">
-            <span class="nav-icon">🎓</span>
-            <span class="nav-text">Encuentra tu Carrera</span>
+          <a class="nav-item" routerLink="/mini-ensayo">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-text">Mini Ensayos</span>
           </a>
+          <a class="nav-item" routerLink="/mente-veloz">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-text">Mente Veloz</span>
+          </a>
+          
+          <div class="sidebar-section-title" (click)="toggleHerramientas()">
+            HERRAMIENTAS
+            <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
+          </div>
+          <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
+            <a class="nav-item" routerLink="/encuentra-tu-carrera">
+              <span class="nav-icon">🎓</span>
+              <span class="nav-text">Encuentra tu Carrera</span>
+            </a>
+            <a class="nav-item" routerLink="/calculadora-nem">
+              <span class="nav-icon">🧮</span>
+              <span class="nav-text">Calculadora NEM</span>
+            </a>
+            <a class="nav-item" routerLink="/recursos">
+              <span class="nav-icon">📂</span>
+              <span class="nav-text">Recursos Adicionales</span>
+            </a>
+          </div>
+          <!-- Sidebar Promo Card -->
+          <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
+            <span class="promo-crown">👑</span>
+            <h4>Pásate a PRO</h4>
+            <p>Explicaciones con IA y Ensayos Ilimitados</p>
+            <button class="btn-promo-sidebar">Ver Planes ⚡</button>
+          </div>
         </nav>
         
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
@@ -80,7 +110,7 @@ type ExamMode = 'real' | 'asistido';
       </aside>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content">
+      <main class="main-content animate-fade-in">
         <!-- HEADER -->
         <header class="header">
           <div class="header-main-row">
@@ -266,10 +296,10 @@ type ExamMode = 'real' | 'asistido';
                        [class.mode-selected]="selectedMode === 'asistido'"
                        (click)="selectedMode = 'asistido'">
                     <div class="mode-header">
-                      <span class="mode-icon">🤖</span>
+                      <span class="mode-icon">🐙</span>
                       <span class="mode-name">Ensayo Asistido</span>
                     </div>
-                    <p class="mode-desc">Aprende mientras practicas. Acceso al Tutor IA para resolver dudas. Puedes pausar, salir y tu progreso quedará guardado.</p>
+                    <p class="mode-desc">Aprende mientras practicas. Acceso a Foco, tu Pulpo Tutor, para resolver dudas. Puedes pausar, salir y tu progreso quedará guardado.</p>
                   </div>
                 </div>
               </div>
@@ -365,12 +395,27 @@ type ExamMode = 'real' | 'asistido';
       text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
       position: relative;
     }
-    .sidebar-nav { 
+    .sidebar-nav {
       flex: 1; 
       padding: 1rem 0.75rem; 
       display: flex; 
       flex-direction: column; 
       gap: 0.5rem; 
+      overflow-y: auto;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
     }
     .nav-item { 
       display: flex; 
@@ -402,6 +447,69 @@ type ExamMode = 'real' | 'asistido';
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .sidebar-section-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.75rem 1.1rem;
+      margin: 0.75rem 0.5rem 0.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+    }
+    .sidebar-section-title:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+    }
+    .sidebar-section-title .toggle-icon {
+      font-size: 0.65rem;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .sidebar-section-title:hover .toggle-icon {
+      color: #ffffff;
+    }
+    .sidebar-sub-items {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      margin-left: 1.4rem;
+      border-left: 1.5px solid rgba(255, 255, 255, 0.08);
+      padding-left: 0.4rem;
+      gap: 0.25rem;
+    }
+    .sidebar-sub-items.collapsible {
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+    .sidebar-sub-items.expanded {
+      max-height: 260px;
+      opacity: 1;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-sub-items .nav-item {
+      padding: 0.65rem 0.9rem;
+      font-size: 0.95rem;
+      border-radius: 10px;
+    }
+    .sidebar-sub-items .nav-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      transform: translateX(3px);
+    }
+    .sidebar-sub-items .nav-item.active {
+      background: rgba(99, 102, 241, 0.18);
+      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
@@ -461,7 +569,7 @@ type ExamMode = 'real' | 'asistido';
     .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
     .header-back {
       margin-bottom: 0;
     }
@@ -1073,6 +1181,23 @@ type ExamMode = 'real' | 'asistido';
   `]
 })
 export class EnsayosListComponent implements OnInit {
+  get herramientasExpanded(): boolean {
+    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
+                        this.router.url.includes('/calculadora-nem') || 
+                        this.router.url.includes('/recursos');
+    if (isToolRoute) return true;
+    const val = localStorage.getItem('herramientasExpanded');
+    return val !== 'false';
+  }
+
+  toggleHerramientas() {
+    this.isCollapsible = true;
+    const current = this.herramientasExpanded;
+    localStorage.setItem('herramientasExpanded', String(!current));
+  }
+
+  isCollapsible = false;
+
   pruebas: Prueba[] = [
     {
       id: 'm1',

@@ -40,6 +40,22 @@ export const routes: Routes = [
   { path: 'ensayos', component: EnsayosListComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'ensayo/:id/run', component: EnsayoRunnerComponent, canActivate: [authGuard, emailVerifiedGuard] },
   { path: 'ensayo/:id/review', component: EnsayoReviewComponent, canActivate: [authGuard, emailVerifiedGuard] },
+  // Mini Ensayos
+  {
+    path: 'mini-ensayo',
+    loadComponent: () => import('./features/mini-ensayos/mini-ensayo-setup.component').then(m => m.MiniEnsayoSetupComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'mini-ensayo/run',
+    loadComponent: () => import('./features/mini-ensayos/mini-ensayo-runner.component').then(m => m.MiniEnsayoRunnerComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'mini-ensayo/review',
+    loadComponent: () => import('./features/mini-ensayos/mini-ensayo-review.component').then(m => m.MiniEnsayoReviewComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   // Ruta de Aprendizaje (Duolingo-style)
   {
     path: 'ruta',
@@ -83,8 +99,33 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
   {
+    path: 'admin/recursos',
+    loadComponent: () => import('./features/admin/admin-recursos.component').then(m => m.AdminRecursosComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
     path: 'encuentra-tu-carrera',
     loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'mente-veloz',
+    loadComponent: () => import('./features/mente-veloz/mente-veloz.component').then(m => m.MenteVelozComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'calculadora-nem',
+    loadComponent: () => import('./features/nem-calculator/nem-calculator.component').then(m => m.NemCalculatorComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'recursos',
+    loadComponent: () => import('./features/recursos/recursos.component').then(m => m.RecursosComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'pago-resultado',
+    loadComponent: () => import('./features/payment/payment-result.component').then(m => m.PaymentResultComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
   { path: '**', redirectTo: '' }

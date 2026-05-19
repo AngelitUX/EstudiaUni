@@ -14,7 +14,7 @@ import { SoundService } from '../../core/services/sound.service';
     <div class="review-page" *ngIf="result() as r">
 
       <!-- CONFETTI (CSS only) -->
-      <div class="confetti-container" *ngIf="r.score >= 60">
+      <div class="confetti-container" *ngIf="r.score === 100">
         <div *ngFor="let c of confettiPieces" class="confetti-piece"
           [style.left.%]="c.left"
           [style.animationDelay]="c.delay + 's'"
@@ -22,15 +22,15 @@ import { SoundService } from '../../core/services/sound.service';
       </div>
 
       <!-- SCORE HERO -->
-      <div class="score-hero" [class.passed]="r.score >= 60" [class.failed]="r.score < 60">
+      <div class="score-hero" [class.passed]="passed()" [class.failed]="!passed()">
         <!-- Emoji burst -->
-        <div class="hero-emoji">{{ r.score >= 80 ? '🏆' : r.score >= 60 ? '🎉' : '💪' }}</div>
+        <div class="hero-emoji">{{ passed() ? '🏆' : '💪' }}</div>
 
         <div class="score-ring-wrap">
           <svg viewBox="0 0 120 120" class="score-ring-svg">
             <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="10"/>
             <circle cx="60" cy="60" r="52" fill="none"
-              [attr.stroke]="r.score >= 60 ? '#58cc02' : '#ef4444'"
+              [attr.stroke]="passed() ? '#58cc02' : '#ef4444'"
               stroke-width="10"
               stroke-linecap="round"
               stroke-dasharray="327"
@@ -42,10 +42,10 @@ import { SoundService } from '../../core/services/sound.service';
         </div>
 
         <h1 class="hero-title">
-          {{ r.score >= 80 ? '¡Excelente trabajo!' : r.score >= 60 ? '¡Buen trabajo!' : '¡Sigue practicando!' }}
+          {{ passed() ? '¡Excelente trabajo!' : '¡Sigue practicando!' }}
         </h1>
         <p class="hero-subtitle">
-          {{ r.score >= 60 ? '¡Superaste el umbral de aprobación!' : 'Necesitas al menos 60% para avanzar.' }}
+          {{ passed() ? '¡Dominaste este tema por completo!' : (seccionId() === 'loc-boss' ? 'Necesitas al menos 10 aciertos (80%) para avanzar.' : 'Necesitas responder todo correctamente para avanzar.') }}
         </p>
 
         <!-- Stats row -->
@@ -65,14 +65,15 @@ import { SoundService } from '../../core/services/sound.service';
         </div>
 
         <!-- XP Badge -->
-        <div class="xp-badge" *ngIf="r.score >= 60">
+        <div class="xp-badge" *ngIf="passed()">
           +{{ r.totalCorrect * 10 }} XP ganados ⚡
         </div>
 
         <!-- Hero actions -->
         <div class="hero-actions">
-          <button class="btn-primary-hero" (click)="retryTest()" *ngIf="r.score < 100">↩ Repetir test</button>
+          <button class="btn-primary-hero" (click)="retryTest()" *ngIf="!passed()">↩ Repetir test</button>
           <button class="btn-secondary-hero" (click)="goBack()">← Volver al capítulo</button>
+          <button class="btn-primary-hero btn-next-hero" (click)="goNext()" *ngIf="passed()">Siguiente Lección →</button>
         </div>
       </div>
 
@@ -130,7 +131,8 @@ import { SoundService } from '../../core/services/sound.service';
       <!-- BOTTOM -->
       <div class="bottom-actions">
         <button class="btn-outline-bottom" (click)="goBack()">← Volver al capítulo</button>
-        <button class="btn-solid-bottom" (click)="retryTest()" *ngIf="r.score < 100">↩ Intentar de nuevo</button>
+        <button class="btn-solid-bottom" (click)="retryTest()" *ngIf="!passed()">↩ Intentar de nuevo</button>
+        <button class="btn-solid-bottom" (click)="goNext()" *ngIf="passed()">Siguiente Lección →</button>
       </div>
     </div>
 
@@ -180,10 +182,11 @@ import { SoundService } from '../../core/services/sound.service';
     /* XP BADGE */
     .xp-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1.2rem; border-radius: 999px; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 0.9rem; margin-bottom: 1.5rem; animation: xpPop 0.5s ease-out 0.8s both; box-shadow: 0 3px 0 #cc7a00; }
 
-    /* HERO ACTIONS */
     .hero-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
     .btn-primary-hero { padding: 0.75rem 1.5rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
     .btn-primary-hero:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+    .btn-next-hero { background: #58cc02; box-shadow: 0 4px 0 #4caf00; }
+    .btn-next-hero:hover { box-shadow: 0 2px 0 #4caf00; }
     .btn-secondary-hero { padding: 0.75rem 1.5rem; border-radius: 999px; border: 2px solid rgba(0,0,0,0.1); background: #fff; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
     .btn-secondary-hero:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
 
@@ -268,6 +271,14 @@ export class SeccionTestReviewComponent {
     const test = this.paes.getTestBySeccionId(this.seccionId());
     return test?.preguntas || [];
   });
+  passed = computed(() => {
+    const r = this.result();
+    if (!r) return false;
+    if (this.seccionId() === 'loc-boss') {
+      return r.totalCorrect >= 10;
+    }
+    return r.score === 100;
+  });
 
   confettiPieces = Array.from({ length: 40 }, () => ({
     left: Math.random() * 100,
@@ -305,6 +316,21 @@ export class SeccionTestReviewComponent {
 
   retryTest() {
     this.router.navigate(['/test', this.seccionId()]);
+  }
+
+  goNext() {
+    const cap = this.paes.getCapituloBySeccionId(this.seccionId());
+    const materiaId = cap?.materiaId || this.seccion()?.materiaId;
+    if (materiaId) {
+      const nextUrl = this.paes.getNextNodeUrl(materiaId);
+      if (nextUrl) {
+        this.router.navigate(nextUrl);
+      } else {
+        this.router.navigate(['/ruta', materiaId]);
+      }
+    } else {
+      this.router.navigate(['/ruta']);
+    }
   }
 
   renderLatex(latex: string | null): SafeHtml {

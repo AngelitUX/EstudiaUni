@@ -21,6 +21,22 @@ import { SoundService } from '../../core/services/sound.service';
         <div class="top-timer" [class.urgent]="timer() >= 300">{{ formatTime(timer()) }}</div>
       </div>
 
+      <!-- CONTEXTO BASE -->
+      <div class="context-section" *ngIf="t.contexto_base">
+        <button class="context-toggle" (click)="contextCollapsed = !contextCollapsed">
+          <span>📄 Texto de referencia</span>
+          <span class="toggle-arrow" [style.transform]="contextCollapsed ? 'rotate(0)' : 'rotate(180deg)'">▼</span>
+        </button>
+        <div class="context-wrapper" [class.collapsed]="contextCollapsed">
+          <div class="context-body">
+            <p *ngFor="let p of getFormattedParagraphs(getActiveContexto(t))">
+              <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+              <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
         <div class="question-counter">
@@ -120,10 +136,18 @@ import { SoundService } from '../../core/services/sound.service';
 
     /* CONTEXT */
     .context-section { margin: 0.75rem 1.5rem 0; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; overflow: hidden; }
-    .context-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.85rem 1.15rem; background: transparent; border: none; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); cursor: pointer; }
-    .toggle-arrow { font-size: 0.7rem; color: var(--text-secondary); }
-    .context-body { padding: 0 1.15rem 1rem; }
-    .context-body p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; margin: 0; font-style: italic; }
+    .context-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.85rem 1.15rem; background: transparent; border: none; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: background 0.2s; }
+    .context-toggle:hover { background: rgba(0,0,0,0.02); }
+    .toggle-arrow { font-size: 0.75rem; color: var(--text-secondary); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .context-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .context-wrapper.collapsed { grid-template-rows: 0fr; }
+    .context-body { overflow: hidden; padding: 0 1.15rem 1rem; }
+    .context-body p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; margin: 0 0 0.85rem; font-style: italic; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .context-body p:last-child { margin-bottom: 0; }
+    .p-text { flex: 1; }
+    .p-text.p-title { font-family: var(--font-heading); font-size: 1rem; font-weight: 800; color: var(--accent-primary); font-style: normal; margin-top: 0.75rem; margin-bottom: 0.25rem; display: block; border-bottom: 2px solid rgba(133,92,214,0.15); padding-bottom: 0.35rem; }
+    .context-wrapper.collapsed .context-body { padding-top: 0; padding-bottom: 0; opacity: 0; transition: opacity 0.2s, padding 0.3s; }
+    .context-wrapper:not(.collapsed) .context-body { opacity: 1; transition: opacity 0.3s 0.1s, padding 0.3s; }
 
     /* QUESTION AREA */
     .question-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
@@ -308,6 +332,43 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
+  getActiveContexto(test: any): string {
+    if (!test || !test.contexto_base) return '';
+    const q = this.currentQuestion();
+    const activeTextIndex = q?.texto_index ?? 0;
+    
+    if (test.contexto_base.includes('--- DIVISION_TEXTOS ---')) {
+      const textos = test.contexto_base.split('--- DIVISION_TEXTOS ---').map((t: string) => t.trim());
+      return textos[activeTextIndex] || textos[0] || '';
+    }
+    
+    return test.contexto_base;
+  }
+
+  getFormattedParagraphs(text: string | null | undefined): { text: string; isTitle: boolean; number?: number }[] {
+    if (!text) return [];
+    const rawParagraphs = text.split('\n\n')
+      .map(p => p.trim())
+      .filter(p => p !== '' && p !== '--- DIVISION_TEXTOS ---');
+      
+    let paragraphCount = 0;
+    return rawParagraphs.map(p => {
+      const isTitle = p.startsWith('📖') || p.startsWith('TEXTO') || p.includes('TEXTO I') || p.includes('TEXTO II');
+      if (isTitle) {
+        paragraphCount = 0;
+        return { text: p, isTitle: true };
+      } else {
+        paragraphCount++;
+        return { text: p, isTitle: false, number: paragraphCount };
+      }
+    });
+  }
+
+  getParagraphs(text: string | null | undefined): string[] {
+    if (!text) return [];
+    return text.split('\n\n').map(p => p.trim()).filter(p => p !== '');
+  }
+
   renderLatex(latex: string | null): SafeHtml {
     if (!latex) return '';
     return this.katex.render(latex);
@@ -322,39 +383,39 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 
-/*
-// =========================================================================
-// 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
-// =========================================================================
-@HostListener('window:keydown', ['$event'])
-handleKeyboardEvent(event: KeyboardEvent) {
-  const key = event.key.toLowerCase();
+  /*
+  // =========================================================================
+  // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
+  // =========================================================================
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    const key = event.key.toLowerCase();
 
-  // Select alternative
-  if (key === 'z') this.selectAnswerForCurrent('A');
-  if (key === 'x') this.selectAnswerForCurrent('B');
-  if (key === 'c') this.selectAnswerForCurrent('C');
-  if (key === 'v') this.selectAnswerForCurrent('D');
+    // Select alternative
+    if (key === 'z') this.selectAnswerForCurrent('A');
+    if (key === 'x') this.selectAnswerForCurrent('B');
+    if (key === 'c') this.selectAnswerForCurrent('C');
+    if (key === 'v') this.selectAnswerForCurrent('D');
 
-  // Check answer or go to next (Enter or Right Arrow)
-  if (key === 'arrowright' || key === 'enter') {
-    if (!this.showFeedback() && this.hasCurrentAnswer()) {
-      this.checkAnswer();
-    } else if (this.showFeedback()) {
-      if (!this.isLastQuestion()) {
-        this.nextQuestion();
-      } else {
-        this.submitTest();
+    // Check answer or go to next (Enter or Right Arrow)
+    if (key === 'arrowright' || key === 'enter') {
+      if (!this.showFeedback() && this.hasCurrentAnswer()) {
+        this.checkAnswer();
+      } else if (this.showFeedback()) {
+        if (!this.isLastQuestion()) {
+          this.nextQuestion();
+        } else {
+          this.submitTest();
+        }
       }
     }
   }
-}
 
-private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
-  const q = this.currentQuestion();
-  if (q) {
-    this.selectAnswer(q.id, option);
+  private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
+    const q = this.currentQuestion();
+    if (q) {
+      this.selectAnswer(q.id, option);
+    }
   }
+  */
 }
-*/
-}

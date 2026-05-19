@@ -38,7 +38,7 @@ import { AdminService } from '../admin/services/admin.service';
 
             <div class="profile-summary">
               <h2 class="profile-title">
-                {{ profileForm.displayName || 'Tu perfil' }}
+                {{ getFirstName(profileForm.displayName) }}
                 <span>{{ profileForm.profileEmoji || '✨' }}</span>
               </h2>
               <a *ngIf="adminService.isAdmin()" routerLink="/admin" class="admin-badge">
@@ -140,18 +140,6 @@ import { AdminService } from '../admin/services/admin.service';
             <p>Define tu meta para personalizar recomendaciones.</p>
           </div>
           <div class="grid">
-            <label>
-              Carrera objetivo
-              <input [(ngModel)]="settingsForm.targetCareer" type="text" maxlength="80" placeholder="Ej: Ingeniería" />
-            </label>
-            <label>
-              Universidad objetivo
-              <input [(ngModel)]="settingsForm.targetUniversity" type="text" maxlength="80" placeholder="Ej: U. de Chile" />
-            </label>
-            <label>
-              Fecha meta de prueba
-              <input [(ngModel)]="settingsForm.targetExamDate" type="date" />
-            </label>
             <label>
               Meta diaria (min)
               <input [(ngModel)]="settingsForm.studyGoalMinutesPerDay" type="number" min="10" max="240" />
@@ -726,9 +714,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   ];
 
   settingsForm = {
-    targetCareer: '',
-    targetUniversity: '',
-    targetExamDate: '',
     studyGoalMinutesPerDay: 45,
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
     notificationsEnabled: true,
@@ -743,6 +728,12 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     return base ? base.charAt(0).toUpperCase() : 'U';
   }
 
+  getFirstName(fullName: string): string {
+    if (!fullName) return 'Tu perfil';
+    const first = fullName.trim().split(/\s+/)[0];
+    return first || 'Tu perfil';
+  }
+
   ngOnInit(): void {
     this.isSettingsMode = this.router.url.includes('/settings');
 
@@ -754,9 +745,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
 
-          this.settingsForm.targetCareer = profile.targetCareer || '';
-          this.settingsForm.targetUniversity = profile.targetUniversity || '';
-          this.settingsForm.targetExamDate = profile.targetExamDate || '';
           this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
@@ -776,6 +764,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const displayName = this.profileForm.displayName.trim();
     if (!displayName) {
       this.toast.error('El nombre visible es obligatorio.');
+      return;
+    }
+
+    if (this.profileForm.displayName.includes('\n') || this.profileForm.displayName.includes('\r')) {
+      this.toast.error('El nombre no puede contener saltos de línea.');
       return;
     }
 
@@ -863,9 +856,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.saving = true;
     try {
       await this.firestoreService.updateProfileSettings({
-        targetCareer: this.settingsForm.targetCareer.trim(),
-        targetUniversity: this.settingsForm.targetUniversity.trim(),
-        targetExamDate: this.settingsForm.targetExamDate || null,
         studyGoalMinutesPerDay: this.settingsForm.studyGoalMinutesPerDay,
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationsEnabled: this.settingsForm.notificationsEnabled,
@@ -886,7 +876,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         preferredStudyTime: this.settingsForm.preferredStudyTime,
         notificationIntensity: this.settingsForm.notificationIntensity,
         notificationsEnabled: true,
-      });
+      }, true);
       this.toast.success('Recordatorios activados');
     } else {
       this.notificationService.stopReminders();

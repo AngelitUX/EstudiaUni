@@ -8,6 +8,7 @@ import {
   setDoc, 
   updateDoc, 
   addDoc,
+  deleteDoc,
   query, 
   where, 
   orderBy, 
@@ -15,7 +16,7 @@ import {
   Timestamp
 } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
-import { from, map, Observable, of, catchError, switchMap } from 'rxjs';
+import { from, map, Observable, of, catchError, switchMap, shareReplay } from 'rxjs';
 
 // @ts-ignore
 import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
@@ -28,6 +29,12 @@ export interface UserProfile {
   displayName: string;
   photoURL?: string;
   plan: 'free' | 'premium';
+  subscription?: {
+    tier: 'free' | 'premium';
+    status: string;
+    startDate: any;
+    endDate: any;
+  };
   notificationsEnabled?: boolean;
   emailVerified?: boolean;
   theme?: 'auto' | 'dark' | 'light';
@@ -35,9 +42,6 @@ export interface UserProfile {
   preferredStudyTime?: 'manana' | 'tarde' | 'noche';
   bio?: string;
   profileEmoji?: string;
-  targetCareer?: string;
-  targetUniversity?: string;
-  targetExamDate?: string;
   studyGoalMinutesPerDay?: number;
   selectedSubjects?: string[];
   dyslexiaFont?: boolean;
@@ -47,6 +51,15 @@ export interface UserProfile {
   favoriteCareers?: any[];
   location?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
+  notasNem?: {
+    n1?: number | null;
+    n2?: number | null;
+    n3?: number | null;
+    n4?: number | null;
+    me?: number | null;
+    mae?: number | null;
+    grupo?: string;
+  };
 }
 
 export interface Ensayo {
@@ -96,52 +109,206 @@ export class FirestoreService {
   public firestore = inject(Firestore);
   private auth = inject(Auth);
   public profileSignal: WritableSignal<UserProfile | null> = signal(null);
+  private cachedProfile$: Observable<UserProfile | null> | null = null;
 
-  constructor() { (window as any).firestoreService = this; }
+  constructor() { 
+    (window as any).firestoreService = this; 
+    // Clear cached profile observable when auth status resets
+    authState(this.auth).subscribe(user => {
+      if (!user) {
+        this.cachedProfile$ = null;
+        this.profileSignal.set(null);
+      }
+    });
+  }
 
-  getUserProfile(uid?: string): Observable<UserProfile | null> {
+  private normalizeProfile(data: any): UserProfile | null {
+    if (!data) return null;
+    
+    let isExpired = false;
+    if (data.subscription?.endDate) {
+      let end: Date;
+      if (typeof data.subscription.endDate.toDate === 'function') {
+        end = data.subscription.endDate.toDate();
+      } else {
+        end = new Date(data.subscription.endDate);
+      }
+      if (end < new Date()) {
+        isExpired = true;
+      }
+    }
+
+    const plan = isExpired 
+      ? 'free' 
+      : (data.plan || (data.subscription?.tier === 'premium' ? 'premium' : 'free'));
+
+    return {
+      ...data,
+      plan
+    } as UserProfile;
+  }
+
+  getUserProfile(forceRefresh = false, uid?: string): Observable<UserProfile | null> {
     if (uid) {
       const docRef = doc(this.firestore, 'users', uid);
       return from(getDoc(docRef)).pipe(
-        map(snap => snap.exists() ? snap.data() as UserProfile : null)
+        map(snap => snap.exists() ? this.normalizeProfile(snap.data()) : null)
       );
     }
 
-    // Esperamos reactivamente al estado de Auth
-    return authState(this.auth).pipe(
+    if (this.cachedProfile$ && !forceRefresh) {
+      return this.cachedProfile$;
+    }
+
+    this.cachedProfile$ = authState(this.auth).pipe(
       switchMap((user: any) => {
         if (!user) {
           this.profileSignal.set(null);
           return of(null);
         }
+
+        // Return local cached signal immediately if populated and not force-refreshing
+        const current = this.profileSignal();
+        if (current && current.uid === user.uid && !forceRefresh) {
+          return of(current);
+        }
+
         const docRef = doc(this.firestore, 'users', user.uid);
         return from(getDoc(docRef)).pipe(
           map(snap => {
-            const p = snap.exists() ? snap.data() as UserProfile : null;
+            const p = snap.exists() ? this.normalizeProfile(snap.data()) : null;
             this.profileSignal.set(p);
             return p;
           })
         );
-      })
+      }),
+      shareReplay(1)
     );
+
+    return this.cachedProfile$;
   }
 
   async saveUserProfile(data: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) return;
+
+    // Si nos pasan un displayName, verificar que no estemos sobreescribiendo uno ya existente
+    if (data && data.displayName) {
+      // Reemplazar saltos de línea con espacio y limpiar espacios extra
+      data.displayName = data.displayName.replace(/[\r\n]+/g, ' ').trim();
+
+      try {
+        const docRef = doc(this.firestore, 'users', user.uid);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const existingData = snap.data();
+          if (existingData && existingData['displayName'] && existingData['displayName'].trim() !== '') {
+            // Si ya existe un nombre real guardado en su perfil, lo conservamos y no lo sobreescribimos con el de Google
+            data.displayName = existingData['displayName'].replace(/[\r\n]+/g, ' ').trim();
+          }
+        }
+      } catch (err) {
+        console.error('Error preserving displayName:', err);
+      }
+    }
+
     await setDoc(doc(this.firestore, 'users', user.uid), data, { merge: true });
+
+    // Update local profile signal immediately to avoid redundant fetches
+    const current = this.profileSignal();
+    if (current && current.uid === user.uid) {
+      this.profileSignal.set({ ...current, ...data });
+    }
+  }
+
+  async findUidByEmail(email: string): Promise<string | null> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const q = query(usersRef, where('email', '==', email.toLowerCase().trim()));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        return snap.docs[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding UID by email:', error);
+    }
+    return null;
+  }
+
+  async migrateUserData(oldUid: string, newUid: string): Promise<void> {
+    try {
+      console.log(`[Migration] Starting data migration from ${oldUid} to ${newUid}`);
+      
+      // 1. Copiar documento de perfil
+      const oldDocRef = doc(this.firestore, 'users', oldUid);
+      const newDocRef = doc(this.firestore, 'users', newUid);
+      const oldSnap = await getDoc(oldDocRef);
+      
+      if (oldSnap.exists()) {
+        const oldData = oldSnap.data();
+        console.log('[Migration] Migrating profile data:', oldData);
+        // Preservar uid del nuevo usuario y actualizar en Firestore
+        await setDoc(newDocRef, { ...oldData, uid: newUid }, { merge: true });
+        
+        // Eliminar documento antiguo de perfil para evitar futuras duplicaciones o re-migraciones
+        await deleteDoc(oldDocRef);
+        console.log('[Migration] Old profile document deleted successfully.');
+      } else {
+        console.warn('[Migration] Old profile document did not exist.');
+      }
+      
+      // 2. Migrar intentos de ensayos (cambiar odId de oldUid a newUid)
+      const intentosRef = collection(this.firestore, 'intentos');
+      const qIntentos = query(intentosRef, where('odId', '==', oldUid));
+      const intentosSnap = await getDocs(qIntentos);
+      console.log(`[Migration] Found ${intentosSnap.size} attempts to migrate.`);
+      for (const docSnap of intentosSnap.docs) {
+        await updateDoc(doc(this.firestore, 'intentos', docSnap.id), { odId: newUid });
+      }
+      console.log('[Migration] Simulation attempts migrated successfully.');
+      
+      // 3. Migrar actividades (copiar subcolección)
+      const oldActRef = collection(this.firestore, `users/${oldUid}/actividad`);
+      const newActRef = collection(this.firestore, `users/${newUid}/actividad`);
+      const actSnap = await getDocs(oldActRef);
+      console.log(`[Migration] Found ${actSnap.size} activities to migrate.`);
+      for (const docSnap of actSnap.docs) {
+        await setDoc(doc(newActRef, docSnap.id), docSnap.data());
+        // Eliminar actividad antigua
+        await deleteDoc(doc(oldActRef, docSnap.id));
+      }
+      console.log('[Migration] Activity history migrated and cleaned up successfully.');
+      
+    } catch (error) {
+      console.error('[Migration] Critical error migrating user data:', error);
+    }
   }
 
   async updateProfileSettings(settings: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) return;
     await updateDoc(doc(this.firestore, 'users', user.uid), settings);
+
+    // Update local profile signal immediately to avoid redundant fetches
+    const current = this.profileSignal();
+    if (current && current.uid === user.uid) {
+      this.profileSignal.set({ ...current, ...settings });
+    }
   }
 
   async updateUserStats(stats: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) return;
     await updateDoc(doc(this.firestore, 'users', user.uid), stats);
+
+    // Update local profile signal immediately to avoid redundant fetches
+    const current = this.profileSignal();
+    if (current && current.uid === user.uid) {
+      this.profileSignal.set({ 
+        ...current, 
+        stats: { ...current.stats, ...stats } 
+      });
+    }
   }
 
   getEnsayos(subjectFilter?: string): Observable<Ensayo[]> {

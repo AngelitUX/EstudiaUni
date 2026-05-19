@@ -2,6 +2,7 @@ import { Component, inject, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService, ActivityEntry } from '../../core/services/dashboard.service';
 import { Router } from '@angular/router';
+import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
 
 @Component({
   selector: 'app-history-modal',
@@ -19,17 +20,17 @@ import { Router } from '@angular/router';
           <div class="activity-list" *ngIf="activities.length > 0; else noActivity">
             <div *ngFor="let act of activities" 
                  class="activity-item" 
-                 [class.clickable]="act.type === 'ensayo'"
+                 [class.clickable]="act.type === 'ensayo' || act.type === 'mente-veloz' || act.type === 'mini-ensayo'"
                  (click)="onActivityClick(act)">
-              <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : '📝' }}</span>
+              <span class="activity-icon">{{ act.type === 'leccion' ? '✅' : (act.type === 'mente-veloz' ? '⚡' : (act.type === 'mini-ensayo' ? '🎯' : '📝')) }}</span>
               <div class="activity-info">
                 <span class="activity-title">{{ act.title }}</span>
                 <span class="activity-time">{{ getRelativeTime(act.timestamp) }}</span>
               </div>
               <div class="activity-right">
-                <span class="clickable-badge" *ngIf="act.type === 'ensayo'">Ver Resultados →</span>
+                <span class="clickable-badge" *ngIf="act.type === 'ensayo' || act.type === 'mente-veloz' || act.type === 'mini-ensayo'">Ver Resultados →</span>
                 <span class="activity-score" *ngIf="act.score !== undefined">
-                  {{ act.type === 'leccion' ? act.score + '%' : act.totalCorrect + '/' + act.totalQuestions }}
+                  {{ act.type === 'leccion' ? act.score + '%' : (act.type === 'mente-veloz' ? act.totalCorrect + ' correctas' : act.totalCorrect + '/' + act.totalQuestions) }}
                 </span>
               </div>
             </div>
@@ -78,6 +79,7 @@ import { Router } from '@angular/router';
 })
 export class HistoryModalComponent implements OnInit {
   private dashSvc = inject(DashboardService);
+  private miniEnsayoSvc = inject(MiniEnsayoService);
   private router = inject(Router);
 
   @Output() close = new EventEmitter<void>();
@@ -100,6 +102,26 @@ export class HistoryModalComponent implements OnInit {
           queryParams: { intento: act.intentoId }
         });
         this.close.emit();
+      }
+    } else if (act.type === 'mente-veloz') {
+      this.router.navigate(['/mente-veloz'], {
+        queryParams: { historyId: act.id }
+      });
+      this.close.emit();
+    } else if (act.type === 'mini-ensayo') {
+      try {
+        const historyRaw = localStorage.getItem('estudiauni_mini_ensayo_history') || '[]';
+        const history = JSON.parse(historyRaw);
+        const result = history.find((h: any) => h.sessionId === act.id);
+        if (result) {
+          this.miniEnsayoSvc.setLastResult(result);
+          this.router.navigate(['/mini-ensayo/review']);
+          this.close.emit();
+        } else {
+          console.warn('[HistoryModal] Historical mini-ensayo not found in localStorage:', act.id);
+        }
+      } catch (e) {
+        console.error('[HistoryModal] Failed to load historical mini-ensayo', e);
       }
     }
   }

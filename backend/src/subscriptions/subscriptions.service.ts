@@ -67,8 +67,26 @@ export class SubscriptionsService {
 
     const userData = userDoc.data()!;
 
-    // Premium users always allowed
-    if (userData.subscription?.tier === 'premium') {
+    // Premium check with expiration
+    let isPremium = userData.subscription?.tier === 'premium';
+    if (isPremium && userData.subscription?.endDate) {
+      const endDate = userData.subscription.endDate.toDate();
+      if (endDate < new Date()) {
+        isPremium = false;
+        // Expired! Revert back to free tier in Firestore
+        await this.firebaseService.firestore
+          .collection('users')
+          .doc(uid)
+          .update({
+            'subscription.tier': 'free',
+            'subscription.status': 'expired',
+            plan: 'free',
+            updatedAt: new Date(),
+          });
+      }
+    }
+
+    if (isPremium) {
       return { allowed: true };
     }
 
@@ -114,19 +132,29 @@ export class SubscriptionsService {
   /**
    * Upgrade user to premium (placeholder — no Stripe integration yet).
    */
-  async upgrade(uid: string) {
+  async upgrade(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
+    const startDate = new Date();
+    const endDate = new Date();
+    
+    if (planType === 'yearly') {
+      endDate.setFullYear(startDate.getFullYear() + 1);
+    } else {
+      endDate.setMonth(startDate.getMonth() + 1);
+    }
+
     await this.firebaseService.firestore
       .collection('users')
       .doc(uid)
       .update({
         'subscription.tier': 'premium',
         'subscription.status': 'active',
-        'subscription.startDate': new Date(),
-        'subscription.endDate': null, // indefinite for placeholder
+        'subscription.startDate': startDate,
+        'subscription.endDate': endDate,
+        plan: 'premium', // For frontend compatibility
         updatedAt: new Date(),
       });
 
-    return { success: true, message: 'Upgraded to premium' };
+    return { success: true, message: `Upgraded to premium (${planType})` };
   }
 
   /**
@@ -139,6 +167,7 @@ export class SubscriptionsService {
       .update({
         'subscription.tier': 'free',
         'subscription.status': 'cancelled',
+        plan: 'free', // For frontend compatibility
         updatedAt: new Date(),
       });
 

@@ -1,0 +1,1390 @@
+
+=========================================
+File: frontend-app/src/app/features/learning-path/capitulo-detail.component.ts
+=========================================
+Conflict found around lines 6 to 10:
+   3: import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+   4: import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+   5: import { PaesContentService } from './services/paes-content.service';
+>> 6: <<<<<<< HEAD
+>> 7: import { KatexService } from '../../core/services/katex.service';
+>> 8: =======
+>> 9: import { GuideSlidesComponent } from './guide-slides.component';
+>> 10: >>>>>>> master
+   11: 
+   12: @Component({
+   13:   selector: 'app-capitulo-detail',
+Conflict found around lines 41 to 72:
+   38:       <!-- CONTENT BODY -->
+   39:       <main class="guide-content">
+   40:         
+>> 41: <<<<<<< HEAD
+>> 42:         <!-- Iterate through sections to show theory -->
+>> 43:         <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
+>> 44:           <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
+>> 45:           <div class="sec-intro">
+>> 46:             <p [innerHTML]="parseMixed(sec.introduccion)"></p>
+>> 47:           </div>
+>> 48: 
+>> 49:           <!-- Tips & Examples -->
+>> 50:           <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
+>> 51:             <h3>💡 Conceptos Clave & Ejemplos</h3>
+>> 52:             <ul class="tips-list">
+>> 53:               <li *ngFor="let dato of sec.datos_claves">
+>> 54:                 <span [innerHTML]="parseMixed(dato)"></span>
+>> 55:               </li>
+>> 56:             </ul>
+>> 57:           </div>
+>> 58:         </div>
+>> 59: =======
+>> 60:         <!-- INTERACTIVE SLIDES for Localizar -->
+>> 61:         <ng-container *ngIf="cap.id === 'cap-localizar'">
+>> 62:           <app-guide-slides (onFinish)="finishGuide()"></app-guide-slides>
+>> 63:         </ng-container>
+>> 64: 
+>> 65:         <!-- GENERIC SECTIONS for other chapters -->
+>> 66:         <ng-container *ngIf="cap.id !== 'cap-localizar'">
+>> 67:           <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
+>> 68:             <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
+>> 69:             <div class="sec-intro">
+>> 70:               <p>{{ sec.introduccion }}</p>
+>> 71:             </div>
+>> 72: >>>>>>> master
+   73: 
+   74:             <!-- Tips & Examples -->
+   75:             <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
+Conflict found around lines 178 to 202:
+   175:     this.router.navigate(['/ruta', this.materiaId()]);
+   176:   }
+   177: 
+>> 178: <<<<<<< HEAD
+>> 179:   parseMixed(text: string | undefined): SafeHtml {
+>> 180:     if (!text) return '';
+>> 181:     // Procesamos el LaTeX primero (que también escapa el HTML)
+>> 182:     const renderedSafe = this.katexSvc.renderMixedText(text);
+>> 183:     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+>> 184:     // Luego procesamos las negritas (**texto**)
+>> 185:     const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+>> 186:     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+>> 187:     // Lo marcamos como HTML seguro
+>> 188:     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+>> 189: =======
+>> 190:   finishGuide() {
+>> 191:     this.paes.markSeccionCompleted('guide_' + this.capituloId());
+>> 192:     const nextUrl = this.paes.getNextNodeUrl(this.materiaId());
+>> 193:     if (nextUrl) {
+>> 194:       this.router.navigate(nextUrl);
+>> 195:     } else {
+>> 196:       this.router.navigate(['/ruta', this.materiaId()]);
+>> 197:     }
+>> 198:   }
+>> 199: 
+>> 200:   highlightBold(text: string): string {
+>> 201:     return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+>> 202: >>>>>>> master
+   203:   }
+   204: }
+   205: 
+
+=========================================
+File: frontend-app/src/app/features/learning-path/learning-path.component.ts
+=========================================
+Conflict found around lines 612 to 624:
+   609:     // Filter
+   610:     const selected = this.userSelectedSubjects();
+   611:     if (selected !== null && selected.length > 0) {
+>> 612: <<<<<<< HEAD
+>> 613:       // Para testeo local robusto, nos aseguramos de que 'mat1' y 'mat2' siempre sean visibles en la ruta
+>> 614:       list = list.filter(m => selected.includes(m.id) || m.id === 'mat1' || m.id === 'mat2');
+>> 615: =======
+>> 616:       // Auto-include specific science branches if the legacy 'ciencias' is selected
+>> 617:       let effectiveSelected = [...selected];
+>> 618:       if (effectiveSelected.includes('ciencias')) {
+>> 619:         effectiveSelected.push('ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica', 'ciencias-tp');
+>> 620:         // Remove the legacy 'ciencias' so they don't click the empty generic card
+>> 621:         effectiveSelected = effectiveSelected.filter(id => id !== 'ciencias');
+>> 622:       }
+>> 623:       list = list.filter(m => effectiveSelected.includes(m.id));
+>> 624: >>>>>>> master
+   625:     }
+   626:     
+   627:     // Sort
+
+=========================================
+File: frontend-app/src/app/features/learning-path/materia-path.component.ts
+=========================================
+Conflict found around lines 11 to 17:
+   8: import { FirestoreService } from '../../core/services/firestore.service';
+   9: import { AdminService } from '../admin/services/admin.service';
+   10: 
+>> 11: <<<<<<< HEAD
+>> 12: type PathItem =
+>> 13:   | { type: 'chapter', capituloId: string, title: string, subtitle: string }
+>> 14: =======
+>> 15: type PathItem = 
+>> 16:   | { type: 'chapter', capituloId: string, title: string, subtitle: string, isCurrentChapter?: boolean }
+>> 17: >>>>>>> master
+   18:   | { type: 'node', id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
+   19: 
+   20: @Component({
+
+=========================================
+File: frontend-app/src/app/features/learning-path/seccion-detail.component.ts
+=========================================
+Conflict found around lines 6 to 10:
+   3: import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+   4: import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+   5: import { PaesContentService } from './services/paes-content.service';
+>> 6: <<<<<<< HEAD
+>> 7: import { KatexService } from '../../core/services/katex.service';
+>> 8: =======
+>> 9: import { SynonymPracticeComponent } from './synonym-practice.component';
+>> 10: >>>>>>> master
+   11: 
+   12: @Component({
+   13:   selector: 'app-seccion-detail',
+
+=========================================
+File: frontend-app/src/app/features/learning-path/seccion-test.component.ts
+=========================================
+Conflict found around lines 1 to 739:
+>> 1: <<<<<<< HEAD
+>> 2: import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener } from '@angular/core';
+>> 3: import { CommonModule } from '@angular/common';
+>> 4: import { ActivatedRoute, Router } from '@angular/router';
+>> 5: import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+>> 6: import { PaesContentService } from './services/paes-content.service';
+>> 7: import { KatexService } from '../../core/services/katex.service';
+>> 8: import { SoundService } from '../../core/services/sound.service';
+>> 9: 
+>> 10: @Component({
+>> 11:   selector: 'app-seccion-test',
+>> 12:   standalone: true,
+>> 13:   imports: [CommonModule],
+>> 14:   template: `
+>> 15:     <div class="test-page" *ngIf="test() as t">
+>> 16:       <!-- TOP BAR -->
+>> 17:       <div class="top-bar">
+>> 18:         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
+>> 19:         <div class="top-progress">
+>> 20:           <div class="top-progress-fill" [style.width.%]="progressPct()"></div>
+>> 21:         </div>
+>> 22:         <div class="top-timer" [class.urgent]="timer() >= 300">{{ formatTime(timer()) }}</div>
+>> 23:       </div>
+>> 24: 
+>> 25:       <!-- QUESTION CARD (one at a time) -->
+>> 26:       <div class="question-area">
+>> 27:         <div class="question-counter">
+>> 28:           Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}
+>> 29:         </div>
+>> 30: 
+>> 31:         <div class="question-card" *ngIf="currentQuestion() as q">
+>> 32:           <!-- Preámbulo texto (Historia/Ciencias) -->
+>> 33:           <div class="q-preambulo" *ngIf="q.preambulo_texto">
+>> 34:             <span class="preambulo-icon">💬</span>
+>> 35:             <p>{{ q.preambulo_texto }}</p>
+>> 36:           </div>
+>> 37: 
+>> 38:           <!-- Preámbulo imagen (Ciencias/Matemáticas) -->
+>> 39:           <div class="q-image-wrap" *ngIf="q.preambulo_imagen_url">
+>> 40:             <img [src]="q.preambulo_imagen_url" alt="Imagen de apoyo" class="q-image" />
+>> 41:           </div>
+>> 42: 
+>> 43:           <p class="q-text" [innerHTML]="parseMixed(q.enunciado)"></p>
+>> 44: 
+>> 45:           <!-- Fórmula LaTeX (Matemáticas) -->
+>> 46:           <div class="q-formula" *ngIf="q.formula_latex"
+>> 47:             [innerHTML]="renderLatex(q.formula_latex)">
+>> 48:           </div>
+>> 49: 
+>> 50:           <div class="options-grid">
+>> 51:             <button *ngFor="let key of optionKeys"
+>> 52:               class="option-btn"
+>> 53:               [class.selected]="answers().get(q.id) === key"
+>> 54:               [class.correct]="showFeedback() && key === q.respuesta_correcta"
+>> 55:               [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
+>> 56:               [disabled]="showFeedback()"
+>> 57:               (click)="selectAnswer(q.id, key)">
+>> 58:               <span class="opt-letter" [class.sel]="answers().get(q.id) === key">{{ key }}</span>
+>> 59:               <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(q.alternativas[key])"></span>
+>> 60:               <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
+>> 61:                 alt="Opción {{ key }}" class="opt-img" />
+>> 62:             </button>
+>> 63:           </div>
+>> 64: 
+>> 65:           <!-- FEEDBACK -->
+>> 66:           <div class="feedback-bar" *ngIf="showFeedback()"
+>> 67:             [class.correct]="isCurrentCorrect()"
+>> 68:             [class.wrong]="!isCurrentCorrect()">
+>> 69:             <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
+>> 70:             <div class="feedback-body">
+>> 71:               <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
+>> 72:               <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
+>> 73:             </div>
+>> 74:           </div>
+>> 75:         </div>
+>> 76:       </div>
+>> 77: 
+>> 78:       <!-- BOTTOM BAR -->
+>> 79:       <div class="bottom-bar">
+>> 80:         <button class="btn-secondary" (click)="prevQuestion()" [disabled]="currentIndex() === 0 || showFeedback()">
+>> 81:           ← Anterior
+>> 82:         </button>
+>> 83: 
+>> 84:         <div class="dot-indicators">
+>> 85:           <span *ngFor="let p of t.preguntas; let i = index"
+>> 86:             class="dot"
+>> 87:             [class.answered]="answers().has(p.id)"
+>> 88:             [class.current]="i === currentIndex()"
+>> 89:             (click)="!showFeedback() && goToQuestion(i)"></span>
+>> 90:         </div>
+>> 91: 
+>> 92:         <ng-container *ngIf="!showFeedback()">
+>> 93:           <button class="btn-check" (click)="checkAnswer()" [disabled]="!hasCurrentAnswer()">
+>> 94:             Comprobar
+>> 95:           </button>
+>> 96:         </ng-container>
+>> 97:         <ng-container *ngIf="showFeedback()">
+>> 98:           <button class="btn-next" *ngIf="!isLastQuestion()" (click)="nextQuestion()">
+>> 99:             Continuar →
+>> 100:           </button>
+>> 101:           <button class="btn-finish" *ngIf="isLastQuestion()" (click)="submitTest()">
+>> 102:             Ver Resultados 🎉
+>> 103:           </button>
+>> 104:         </ng-container>
+>> 105:       </div>
+>> 106:     </div>
+>> 107:   `,
+>> 108:   styles: [`
+>> 109:     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
+>> 110:     .test-page { min-height: 100vh; display: flex; flex-direction: column; }
+>> 111: 
+>> 112:     /* TOP BAR */
+>> 113:     .top-bar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); }
+>> 114:     .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-secondary); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+>> 115:     .btn-close:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.05); }
+>> 116:     .top-progress { flex: 1; height: 14px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
+>> 117:     .top-progress-fill { height: 100%; background: linear-gradient(90deg, #58cc02, #78d64b); border-radius: 99px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+>> 118:     .top-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 60%); border-radius: 99px; }
+>> 119:     .top-timer { font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem; color: var(--text-secondary); min-width: 52px; text-align: center; }
+>> 120:     .top-timer.urgent { color: #ef4444; animation: urgentPulse 1s ease-in-out infinite; }
+>> 121: 
+>> 122:     /* CONTEXT */
+>> 123:     .context-section { margin: 0.75rem 1.5rem 0; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; overflow: hidden; }
+>> 124:     .context-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.85rem 1.15rem; background: transparent; border: none; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); cursor: pointer; }
+>> 125:     .toggle-arrow { font-size: 0.7rem; color: var(--text-secondary); }
+>> 126:     .context-body { padding: 0 1.15rem 1rem; }
+>> 127:     .context-body p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; margin: 0; font-style: italic; }
+>> 128: 
+>> 129:     /* QUESTION AREA */
+>> 130:     .question-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
+>> 131:     .question-counter { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+>> 132: 
+>> 133:     .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 2rem; max-width: 850px; width: 100%; animation: slideUp 0.35s ease-out; }
+>> 134:     .q-text { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.5rem; }
+>> 135: 
+>> 136:     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
+>> 137:     .q-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
+>> 138: 
+>> 139:     /* PREAMBULO */
+>> 140:     .q-preambulo { display: flex; gap: 0.8rem; padding: 1.25rem; margin: 0 0 1.5rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 4px solid rgba(133,92,214,0.4); }
+>> 141:     .q-preambulo p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7; margin: 0; font-style: italic; }
+>> 142:     .preambulo-icon { font-size: 1.1rem; flex-shrink: 0; }
+>> 143: 
+>> 144:     /* FORMULA */
+>> 145:     .q-formula { margin: 0 0 1.25rem; padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid rgba(22,163,74,0.15); border-radius: 10px; text-align: center; }
+>> 146:     .q-formula code { font-family: 'Courier New', monospace; font-size: 1rem; color: #166534; font-weight: 600; }
+>> 147: 
+>> 148:     /* IMAGE OPTIONS */
+>> 149:     .opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
+>> 150: 
+>> 151:     /* OPTIONS */
+>> 152:     .options-grid { display: flex; flex-direction: column; gap: 0.8rem; }
+>> 153:     .option-btn { display: flex; align-items: center; gap: 1rem; padding: 1.15rem 1.25rem; border: 2px solid rgba(0,0,0,0.08); border-radius: 14px; background: #fff; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
+>> 154:     .option-btn:hover:not(:disabled):not(.selected) { border-color: rgba(133,92,214,0.3); background: rgba(133,92,214,0.03); transform: translateX(4px); }
+>> 155:     .option-btn.selected { border-color: var(--accent-primary); background: rgba(133,92,214,0.06); box-shadow: 0 0 0 3px rgba(133,92,214,0.12); }
+>> 156:     .option-btn.correct { border-color: #58cc02; background: rgba(88,204,2,0.08); box-shadow: 0 0 0 3px rgba(88,204,2,0.15); }
+>> 157:     .option-btn.wrong { border-color: #ef4444; background: rgba(239,68,68,0.06); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
+>> 158:     .opt-letter { width: 36px; height: 36px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 0.95rem; color: var(--text-secondary); flex-shrink: 0; transition: all 0.2s; }
+>> 159:     .opt-letter.sel { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
+>> 160:     .option-btn.correct .opt-letter { background: #58cc02; border-color: #58cc02; color: #fff; }
+>> 161:     .option-btn.wrong .opt-letter { background: #ef4444; border-color: #ef4444; color: #fff; }
+>> 162:     .opt-text { font-size: 1.05rem; color: var(--text-primary); line-height: 1.5; }
+>> 163: 
+>> 164:     /* FEEDBACK */
+>> 165:     .feedback-bar { display: flex; align-items: flex-start; gap: 0.85rem; padding: 1.15rem; border-radius: 14px; margin-top: 1.25rem; animation: slideUp 0.3s ease-out; }
+>> 166:     .feedback-bar.correct { background: rgba(88,204,2,0.08); border: 1px solid rgba(88,204,2,0.2); }
+>> 167:     .feedback-bar.wrong { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); }
+>> 168:     .feedback-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+>> 169:     .feedback-body strong { display: block; font-family: var(--font-heading); font-size: 0.95rem; margin-bottom: 0.3rem; }
+>> 170:     .feedback-bar.correct strong { color: #3d8c00; }
+>> 171:     .feedback-bar.wrong strong { color: #dc2626; }
+>> 172:     .feedback-body p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+>> 173: 
+>> 174:     /* BOTTOM BAR */
+>> 175:     .bottom-bar { position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-top: 2px solid rgba(0,0,0,0.06); z-index: 50; }
+>> 176:     .btn-secondary { padding: 0.7rem 1.2rem; border-radius: 12px; border: 2px solid rgba(0,0,0,0.08); background: #fff; color: var(--text-secondary); font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; }
+>> 177:     .btn-secondary:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); }
+>> 178:     .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+>> 179:     .dot-indicators { display: flex; gap: 6px; }
+>> 180:     .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; }
+>> 181:     .dot.answered { background: var(--accent-primary); }
+>> 182:     .dot.current { background: var(--accent-primary); transform: scale(1.3); box-shadow: 0 0 0 3px rgba(133,92,214,0.2); }
+>> 183:     .btn-check { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
+>> 184:     .btn-check:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+>> 185:     .btn-check:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+>> 186:     .btn-next { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: #58cc02; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #4caf00; transition: all 0.2s; }
+>> 187:     .btn-next:hover { transform: translateY(2px); box-shadow: 0 2px 0 #4caf00; }
+>> 188:     .btn-finish { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #cc7a00; transition: all 0.2s; }
+>> 189:     .btn-finish:hover { transform: translateY(2px); box-shadow: 0 2px 0 #cc7a00; }
+>> 190: 
+>> 191:     @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+>> 192:     @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+>> 193: 
+>> 194:     @media (max-width: 640px) {
+>> 195:       .question-card { padding: 1.25rem; }
+>> 196:       .q-text { font-size: 1rem; }
+>> 197:       .bottom-bar { padding: 0.75rem 1rem; }
+>> 198:       .dot-indicators { gap: 4px; }
+>> 199:       .dot { width: 8px; height: 8px; }
+>> 200:     }
+>> 201:   `]
+>> 202: })
+>> 203: export class SeccionTestComponent implements OnInit, OnDestroy {
+>> 204:   private paes = inject(PaesContentService);
+>> 205:   private route = inject(ActivatedRoute);
+>> 206:   private router = inject(Router);
+>> 207:   private katex = inject(KatexService);
+>> 208:   private sanitizer = inject(DomSanitizer);
+>> 209:   private soundSvc = inject(SoundService);
+>> 210: 
+>> 211:   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+>> 212: 
+>> 213:   seccionId = signal('');
+>> 214:   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
+>> 215:   test = computed(() => this.paes.getTestBySeccionId(this.seccionId()));
+>> 216:   answers = signal(new Map<number, 'A' | 'B' | 'C' | 'D'>());
+>> 217:   timer = signal(0);
+>> 218:   private intervalId: any;
+>> 219: 
+>> 220:   currentIndex = signal(0);
+>> 221:   showFeedback = signal(false);
+>> 222:   contextCollapsed = false;
+>> 223: 
+>> 224:   currentQuestion = computed(() => {
+>> 225:     const t = this.test();
+>> 226:     return t ? t.preguntas[this.currentIndex()] : undefined;
+>> 227:   });
+>> 228: 
+>> 229:   totalQuestions = computed(() => this.test()?.preguntas.length || 0);
+>> 230:   answeredCount = computed(() => this.answers().size);
+>> 231: 
+>> 232:   progressPct = computed(() => {
+>> 233:     const t = this.totalQuestions();
+>> 234:     return t > 0 ? Math.round(((this.currentIndex() + (this.showFeedback() ? 1 : 0)) / t) * 100) : 0;
+>> 235:   });
+>> 236: 
+>> 237:   ngOnInit() {
+>> 238:     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
+>> 239:     this.timer.set(0);
+>> 240:     this.intervalId = setInterval(() => this.timer.update(v => v + 1), 1000);
+>> 241:   }
+>> 242: 
+>> 243:   ngOnDestroy() {
+>> 244:     if (this.intervalId) clearInterval(this.intervalId);
+>> 245:   }
+>> 246: 
+>> 247:   selectAnswer(preguntaId: number, option: 'A' | 'B' | 'C' | 'D') {
+>> 248:     if (this.showFeedback()) return;
+>> 249:     const newMap = new Map(this.answers());
+>> 250:     newMap.set(preguntaId, option);
+>> 251:     this.answers.set(newMap);
+>> 252:   }
+>> 253: 
+>> 254:   hasCurrentAnswer(): boolean {
+>> 255:     const q = this.currentQuestion();
+>> 256:     return q ? this.answers().has(q.id) : false;
+>> 257:   }
+>> 258: 
+>> 259:   isCurrentCorrect(): boolean {
+>> 260:     const q = this.currentQuestion();
+>> 261:     if (!q) return false;
+>> 262:     return this.answers().get(q.id) === q.respuesta_correcta;
+>> 263:   }
+>> 264: 
+>> 265:   checkAnswer() {
+>> 266:     if (this.isCurrentCorrect()) {
+>> 267:       this.soundSvc.playCorrect();
+>> 268:     } else {
+>> 269:       this.soundSvc.playWrong();
+>> 270:     }
+>> 271:     this.showFeedback.set(true);
+>> 272:   }
+>> 273: 
+>> 274:   nextQuestion() {
+>> 275:     this.showFeedback.set(false);
+>> 276:     this.currentIndex.update(v => v + 1);
+>> 277:   }
+>> 278: 
+>> 279:   prevQuestion() {
+>> 280:     this.showFeedback.set(false);
+>> 281:     this.currentIndex.update(v => Math.max(0, v - 1));
+>> 282:   }
+>> 283: 
+>> 284:   goToQuestion(index: number) {
+>> 285:     this.showFeedback.set(false);
+>> 286:     this.currentIndex.set(index);
+>> 287:   }
+>> 288: 
+>> 289:   isLastQuestion(): boolean {
+>> 290:     return this.currentIndex() === this.totalQuestions() - 1;
+>> 291:   }
+>> 292: 
+>> 293:   submitTest() {
+>> 294:     if (this.intervalId) clearInterval(this.intervalId);
+>> 295:     this.paes.submitTest(this.seccionId(), this.answers());
+>> 296:     this.router.navigate(['/test', this.seccionId(), 'review']);
+>> 297:   }
+>> 298: 
+>> 299:   confirmExit() {
+>> 300:     if (confirm('¿Seguro que quieres salir? Perderás tu progreso.')) {
+>> 301:       if (this.intervalId) clearInterval(this.intervalId);
+>> 302:       window.history.back();
+>> 303:     }
+>> 304:   }
+>> 305: 
+>> 306:   formatTime(seconds: number): string {
+>> 307:     const m = Math.floor(seconds / 60);
+>> 308:     const s = seconds % 60;
+>> 309:     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+>> 310:   }
+>> 311: 
+>> 312:   renderLatex(latex: string | null): SafeHtml {
+>> 313:     if (!latex) return '';
+>> 314:     return this.katex.render(latex);
+>> 315:   }
+>> 316: 
+>> 317:   parseMixed(text: string | null | undefined): SafeHtml {
+>> 318:     if (!text) return '';
+>> 319:     const renderedSafe = this.katex.renderMixedText(text);
+>> 320:     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+>> 321:     const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+>> 322:     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+>> 323:     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+>> 324:   }
+>> 325: 
+>> 326: /*
+>> 327: // =========================================================================
+>> 328: // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
+>> 329: // =========================================================================
+>> 330: @HostListener('window:keydown', ['$event'])
+>> 331: handleKeyboardEvent(event: KeyboardEvent) {
+>> 332:   const key = event.key.toLowerCase();
+>> 333: 
+>> 334:   // Select alternative
+>> 335:   if (key === 'z') this.selectAnswerForCurrent('A');
+>> 336:   if (key === 'x') this.selectAnswerForCurrent('B');
+>> 337:   if (key === 'c') this.selectAnswerForCurrent('C');
+>> 338:   if (key === 'v') this.selectAnswerForCurrent('D');
+>> 339: 
+>> 340:   // Check answer or go to next (Enter or Right Arrow)
+>> 341:   if (key === 'arrowright' || key === 'enter') {
+>> 342:     if (!this.showFeedback() && this.hasCurrentAnswer()) {
+>> 343:       this.checkAnswer();
+>> 344:     } else if (this.showFeedback()) {
+>> 345:       if (!this.isLastQuestion()) {
+>> 346:         this.nextQuestion();
+>> 347:       } else {
+>> 348:         this.submitTest();
+>> 349:       }
+>> 350:     }
+>> 351:   }
+>> 352: }
+>> 353: 
+>> 354: private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
+>> 355:   const q = this.currentQuestion();
+>> 356:   if (q) {
+>> 357:     this.selectAnswer(q.id, option);
+>> 358:   }
+>> 359: }
+>> 360: */
+>> 361: }
+>> 362: =======
+>> 363: import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+>> 364: import { CommonModule } from '@angular/common';
+>> 365: import { ActivatedRoute, Router } from '@angular/router';
+>> 366: import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+>> 367: import { PaesContentService } from './services/paes-content.service';
+>> 368: import { KatexService } from '../../core/services/katex.service';
+>> 369: import { SoundService } from '../../core/services/sound.service';
+>> 370: 
+>> 371: @Component({
+>> 372:   selector: 'app-seccion-test',
+>> 373:   standalone: true,
+>> 374:   imports: [CommonModule],
+>> 375:   template: `
+>> 376:     <div class="test-page" *ngIf="test() as t">
+>> 377:       <!-- TOP BAR -->
+>> 378:       <div class="top-bar">
+>> 379:         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
+>> 380:         <div class="top-progress">
+>> 381:           <div class="top-progress-fill" [style.width.%]="progressPct()"></div>
+>> 382:         </div>
+>> 383:         <div class="top-timer" [class.urgent]="timer() >= 300">{{ formatTime(timer()) }}</div>
+>> 384:       </div>
+>> 385: 
+>> 386:       <!-- CONTEXTO BASE -->
+>> 387:       <div class="context-section" *ngIf="t.contexto_base">
+>> 388:         <button class="context-toggle" (click)="contextCollapsed = !contextCollapsed">
+>> 389:           <span>📄 Texto de referencia</span>
+>> 390:           <span class="toggle-arrow" [style.transform]="contextCollapsed ? 'rotate(0)' : 'rotate(180deg)'">▼</span>
+>> 391:         </button>
+>> 392:         <div class="context-wrapper" [class.collapsed]="contextCollapsed">
+>> 393:           <div class="context-body">
+>> 394:             <p *ngFor="let p of getFormattedParagraphs(getActiveContexto(t))">
+>> 395:               <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+>> 396:               <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
+>> 397:             </p>
+>> 398:           </div>
+>> 399:         </div>
+>> 400:       </div>
+>> 401: 
+>> 402:       <!-- QUESTION CARD (one at a time) -->
+>> 403:       <div class="question-area">
+>> 404:         <div class="question-counter">
+>> 405:           Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}
+>> 406:         </div>
+>> 407: 
+>> 408:         <div class="question-card" *ngIf="currentQuestion() as q">
+>> 409:           <!-- Preámbulo texto (Historia/Ciencias) -->
+>> 410:           <div class="q-preambulo" *ngIf="q.preambulo_texto">
+>> 411:             <span class="preambulo-icon">💬</span>
+>> 412:             <p>{{ q.preambulo_texto }}</p>
+>> 413:           </div>
+>> 414: 
+>> 415:           <!-- Preámbulo imagen (Ciencias/Matemáticas) -->
+>> 416:           <div class="q-image-wrap" *ngIf="q.preambulo_imagen_url">
+>> 417:             <img [src]="q.preambulo_imagen_url" alt="Imagen de apoyo" class="q-image" />
+>> 418:           </div>
+>> 419: 
+>> 420:           <p class="q-text">{{ q.enunciado }}</p>
+>> 421: 
+>> 422:           <!-- Fórmula LaTeX (Matemáticas) -->
+>> 423:           <div class="q-formula" *ngIf="q.formula_latex"
+>> 424:             [innerHTML]="renderLatex(q.formula_latex)">
+>> 425:           </div>
+>> 426: 
+>> 427:           <div class="options-grid">
+>> 428:             <button *ngFor="let key of optionKeys"
+>> 429:               class="option-btn"
+>> 430:               [class.selected]="answers().get(q.id) === key"
+>> 431:               [class.correct]="showFeedback() && key === q.respuesta_correcta"
+>> 432:               [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
+>> 433:               [disabled]="showFeedback()"
+>> 434:               (click)="selectAnswer(q.id, key)">
+>> 435:               <span class="opt-letter" [class.sel]="answers().get(q.id) === key">{{ key }}</span>
+>> 436:               <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'">{{ q.alternativas[key] }}</span>
+>> 437:               <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
+>> 438:                 alt="Opción {{ key }}" class="opt-img" />
+>> 439:             </button>
+>> 440:           </div>
+>> 441: 
+>> 442:           <!-- FEEDBACK -->
+>> 443:           <div class="feedback-bar" *ngIf="showFeedback()"
+>> 444:             [class.correct]="isCurrentCorrect()"
+>> 445:             [class.wrong]="!isCurrentCorrect()">
+>> 446:             <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
+>> 447:             <div class="feedback-body">
+>> 448:               <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
+>> 449:               <p>{{ isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error }}</p>
+>> 450:             </div>
+>> 451:           </div>
+>> 452:         </div>
+>> 453:       </div>
+>> 454: 
+>> 455:       <!-- BOTTOM BAR -->
+>> 456:       <div class="bottom-bar">
+>> 457:         <button class="btn-secondary" (click)="prevQuestion()" [disabled]="currentIndex() === 0 || showFeedback()">
+>> 458:           ← Anterior
+>> 459:         </button>
+>> 460: 
+>> 461:         <div class="dot-indicators">
+>> 462:           <span *ngFor="let p of t.preguntas; let i = index"
+>> 463:             class="dot"
+>> 464:             [class.answered]="answers().has(p.id)"
+>> 465:             [class.current]="i === currentIndex()"
+>> 466:             (click)="!showFeedback() && goToQuestion(i)"></span>
+>> 467:         </div>
+>> 468: 
+>> 469:         <ng-container *ngIf="!showFeedback()">
+>> 470:           <button class="btn-check" (click)="checkAnswer()" [disabled]="!hasCurrentAnswer()">
+>> 471:             Comprobar
+>> 472:           </button>
+>> 473:         </ng-container>
+>> 474:         <ng-container *ngIf="showFeedback()">
+>> 475:           <button class="btn-next" *ngIf="!isLastQuestion()" (click)="nextQuestion()">
+>> 476:             Continuar →
+>> 477:           </button>
+>> 478:           <button class="btn-finish" *ngIf="isLastQuestion()" (click)="submitTest()">
+>> 479:             Ver Resultados 🎉
+>> 480:           </button>
+>> 481:         </ng-container>
+>> 482:       </div>
+>> 483:     </div>
+>> 484:   `,
+>> 485:   styles: [`
+>> 486:     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
+>> 487:     .test-page { min-height: 100vh; display: flex; flex-direction: column; }
+>> 488: 
+>> 489:     /* TOP BAR */
+>> 490:     .top-bar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); }
+>> 491:     .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-secondary); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+>> 492:     .btn-close:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.05); }
+>> 493:     .top-progress { flex: 1; height: 14px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
+>> 494:     .top-progress-fill { height: 100%; background: linear-gradient(90deg, #58cc02, #78d64b); border-radius: 99px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+>> 495:     .top-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 60%); border-radius: 99px; }
+>> 496:     .top-timer { font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem; color: var(--text-secondary); min-width: 52px; text-align: center; }
+>> 497:     .top-timer.urgent { color: #ef4444; animation: urgentPulse 1s ease-in-out infinite; }
+>> 498: 
+>> 499:     /* CONTEXT */
+>> 500:     .context-section { margin: 0.75rem 1.5rem 0; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; overflow: hidden; }
+>> 501:     .context-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.85rem 1.15rem; background: transparent; border: none; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: background 0.2s; }
+>> 502:     .context-toggle:hover { background: rgba(0,0,0,0.02); }
+>> 503:     .toggle-arrow { font-size: 0.75rem; color: var(--text-secondary); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+>> 504:     .context-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+>> 505:     .context-wrapper.collapsed { grid-template-rows: 0fr; }
+>> 506:     .context-body { overflow: hidden; padding: 0 1.15rem 1rem; }
+>> 507:     .context-body p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; margin: 0 0 0.85rem; font-style: italic; display: flex; gap: 0.5rem; align-items: flex-start; }
+>> 508:     .context-body p:last-child { margin-bottom: 0; }
+>> 509:     .p-text { flex: 1; }
+>> 510:     .p-text.p-title { font-family: var(--font-heading); font-size: 1rem; font-weight: 800; color: var(--accent-primary); font-style: normal; margin-top: 0.75rem; margin-bottom: 0.25rem; display: block; border-bottom: 2px solid rgba(133,92,214,0.15); padding-bottom: 0.35rem; }
+>> 511:     .context-wrapper.collapsed .context-body { padding-top: 0; padding-bottom: 0; opacity: 0; transition: opacity 0.2s, padding 0.3s; }
+>> 512:     .context-wrapper:not(.collapsed) .context-body { opacity: 1; transition: opacity 0.3s 0.1s, padding 0.3s; }
+>> 513: 
+>> 514:     /* QUESTION AREA */
+>> 515:     .question-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
+>> 516:     .question-counter { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+>> 517: 
+>> 518:     .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 2rem; max-width: 850px; width: 100%; animation: slideUp 0.35s ease-out; }
+>> 519:     .q-text { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.5rem; }
+>> 520: 
+>> 521:     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
+>> 522:     .q-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
+>> 523: 
+>> 524:     /* PREAMBULO */
+>> 525:     .q-preambulo { display: flex; gap: 0.8rem; padding: 1.25rem; margin: 0 0 1.5rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 4px solid rgba(133,92,214,0.4); }
+>> 526:     .q-preambulo p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7; margin: 0; font-style: italic; }
+>> 527:     .preambulo-icon { font-size: 1.1rem; flex-shrink: 0; }
+>> 528: 
+>> 529:     /* FORMULA */
+>> 530:     .q-formula { margin: 0 0 1.25rem; padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid rgba(22,163,74,0.15); border-radius: 10px; text-align: center; }
+>> 531:     .q-formula code { font-family: 'Courier New', monospace; font-size: 1rem; color: #166534; font-weight: 600; }
+>> 532: 
+>> 533:     /* IMAGE OPTIONS */
+>> 534:     .opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
+>> 535: 
+>> 536:     /* OPTIONS */
+>> 537:     .options-grid { display: flex; flex-direction: column; gap: 0.8rem; }
+>> 538:     .option-btn { display: flex; align-items: center; gap: 1rem; padding: 1.15rem 1.25rem; border: 2px solid rgba(0,0,0,0.08); border-radius: 14px; background: #fff; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
+>> 539:     .option-btn:hover:not(:disabled):not(.selected) { border-color: rgba(133,92,214,0.3); background: rgba(133,92,214,0.03); transform: translateX(4px); }
+>> 540:     .option-btn.selected { border-color: var(--accent-primary); background: rgba(133,92,214,0.06); box-shadow: 0 0 0 3px rgba(133,92,214,0.12); }
+>> 541:     .option-btn.correct { border-color: #58cc02; background: rgba(88,204,2,0.08); box-shadow: 0 0 0 3px rgba(88,204,2,0.15); }
+>> 542:     .option-btn.wrong { border-color: #ef4444; background: rgba(239,68,68,0.06); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
+>> 543:     .opt-letter { width: 36px; height: 36px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 0.95rem; color: var(--text-secondary); flex-shrink: 0; transition: all 0.2s; }
+>> 544:     .opt-letter.sel { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
+>> 545:     .option-btn.correct .opt-letter { background: #58cc02; border-color: #58cc02; color: #fff; }
+>> 546:     .option-btn.wrong .opt-letter { background: #ef4444; border-color: #ef4444; color: #fff; }
+>> 547:     .opt-text { font-size: 1.05rem; color: var(--text-primary); line-height: 1.5; }
+>> 548: 
+>> 549:     /* FEEDBACK */
+>> 550:     .feedback-bar { display: flex; align-items: flex-start; gap: 0.85rem; padding: 1.15rem; border-radius: 14px; margin-top: 1.25rem; animation: slideUp 0.3s ease-out; }
+>> 551:     .feedback-bar.correct { background: rgba(88,204,2,0.08); border: 1px solid rgba(88,204,2,0.2); }
+>> 552:     .feedback-bar.wrong { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); }
+>> 553:     .feedback-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+>> 554:     .feedback-body strong { display: block; font-family: var(--font-heading); font-size: 0.95rem; margin-bottom: 0.3rem; }
+>> 555:     .feedback-bar.correct strong { color: #3d8c00; }
+>> 556:     .feedback-bar.wrong strong { color: #dc2626; }
+>> 557:     .feedback-body p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+>> 558: 
+>> 559:     /* BOTTOM BAR */
+>> 560:     .bottom-bar { position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-top: 2px solid rgba(0,0,0,0.06); z-index: 50; }
+>> 561:     .btn-secondary { padding: 0.7rem 1.2rem; border-radius: 12px; border: 2px solid rgba(0,0,0,0.08); background: #fff; color: var(--text-secondary); font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; }
+>> 562:     .btn-secondary:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); }
+>> 563:     .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+>> 564:     .dot-indicators { display: flex; gap: 6px; }
+>> 565:     .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; }
+>> 566:     .dot.answered { background: var(--accent-primary); }
+>> 567:     .dot.current { background: var(--accent-primary); transform: scale(1.3); box-shadow: 0 0 0 3px rgba(133,92,214,0.2); }
+>> 568:     .btn-check { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
+>> 569:     .btn-check:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
+>> 570:     .btn-check:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+>> 571:     .btn-next { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: #58cc02; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #4caf00; transition: all 0.2s; }
+>> 572:     .btn-next:hover { transform: translateY(2px); box-shadow: 0 2px 0 #4caf00; }
+>> 573:     .btn-finish { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #cc7a00; transition: all 0.2s; }
+>> 574:     .btn-finish:hover { transform: translateY(2px); box-shadow: 0 2px 0 #cc7a00; }
+>> 575: 
+>> 576:     @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+>> 577:     @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+>> 578: 
+>> 579:     @media (max-width: 640px) {
+>> 580:       .question-card { padding: 1.25rem; }
+>> 581:       .q-text { font-size: 1rem; }
+>> 582:       .bottom-bar { padding: 0.75rem 1rem; }
+>> 583:       .dot-indicators { gap: 4px; }
+>> 584:       .dot { width: 8px; height: 8px; }
+>> 585:     }
+>> 586:   `]
+>> 587: })
+>> 588: export class SeccionTestComponent implements OnInit, OnDestroy {
+>> 589:   private paes = inject(PaesContentService);
+>> 590:   private route = inject(ActivatedRoute);
+>> 591:   private router = inject(Router);
+>> 592:   private katex = inject(KatexService);
+>> 593:   private sanitizer = inject(DomSanitizer);
+>> 594:   private soundSvc = inject(SoundService);
+>> 595: 
+>> 596:   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+>> 597: 
+>> 598:   seccionId = signal('');
+>> 599:   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
+>> 600:   test = computed(() => this.paes.getTestBySeccionId(this.seccionId()));
+>> 601:   answers = signal(new Map<number, 'A' | 'B' | 'C' | 'D'>());
+>> 602:   timer = signal(0);
+>> 603:   private intervalId: any;
+>> 604: 
+>> 605:   currentIndex = signal(0);
+>> 606:   showFeedback = signal(false);
+>> 607:   contextCollapsed = false;
+>> 608: 
+>> 609:   currentQuestion = computed(() => {
+>> 610:     const t = this.test();
+>> 611:     return t ? t.preguntas[this.currentIndex()] : undefined;
+>> 612:   });
+>> 613: 
+>> 614:   totalQuestions = computed(() => this.test()?.preguntas.length || 0);
+>> 615:   answeredCount = computed(() => this.answers().size);
+>> 616: 
+>> 617:   progressPct = computed(() => {
+>> 618:     const t = this.totalQuestions();
+>> 619:     return t > 0 ? Math.round(((this.currentIndex() + (this.showFeedback() ? 1 : 0)) / t) * 100) : 0;
+>> 620:   });
+>> 621: 
+>> 622:   ngOnInit() {
+>> 623:     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
+>> 624:     this.timer.set(0);
+>> 625:     this.intervalId = setInterval(() => this.timer.update(v => v + 1), 1000);
+>> 626:   }
+>> 627: 
+>> 628:   ngOnDestroy() {
+>> 629:     if (this.intervalId) clearInterval(this.intervalId);
+>> 630:   }
+>> 631: 
+>> 632:   selectAnswer(preguntaId: number, option: 'A' | 'B' | 'C' | 'D') {
+>> 633:     if (this.showFeedback()) return;
+>> 634:     const newMap = new Map(this.answers());
+>> 635:     newMap.set(preguntaId, option);
+>> 636:     this.answers.set(newMap);
+>> 637:   }
+>> 638: 
+>> 639:   hasCurrentAnswer(): boolean {
+>> 640:     const q = this.currentQuestion();
+>> 641:     return q ? this.answers().has(q.id) : false;
+>> 642:   }
+>> 643: 
+>> 644:   isCurrentCorrect(): boolean {
+>> 645:     const q = this.currentQuestion();
+>> 646:     if (!q) return false;
+>> 647:     return this.answers().get(q.id) === q.respuesta_correcta;
+>> 648:   }
+>> 649: 
+>> 650:   checkAnswer() {
+>> 651:     if (this.isCurrentCorrect()) {
+>> 652:       this.soundSvc.playCorrect();
+>> 653:     } else {
+>> 654:       this.soundSvc.playWrong();
+>> 655:     }
+>> 656:     this.showFeedback.set(true);
+>> 657:   }
+>> 658: 
+>> 659:   nextQuestion() {
+>> 660:     this.showFeedback.set(false);
+>> 661:     this.currentIndex.update(v => v + 1);
+>> 662:   }
+>> 663: 
+>> 664:   prevQuestion() {
+>> 665:     this.showFeedback.set(false);
+>> 666:     this.currentIndex.update(v => Math.max(0, v - 1));
+>> 667:   }
+>> 668: 
+>> 669:   goToQuestion(index: number) {
+>> 670:     this.showFeedback.set(false);
+>> 671:     this.currentIndex.set(index);
+>> 672:   }
+>> 673: 
+>> 674:   isLastQuestion(): boolean {
+>> 675:     return this.currentIndex() === this.totalQuestions() - 1;
+>> 676:   }
+>> 677: 
+>> 678:   submitTest() {
+>> 679:     if (this.intervalId) clearInterval(this.intervalId);
+>> 680:     this.paes.submitTest(this.seccionId(), this.answers());
+>> 681:     this.router.navigate(['/test', this.seccionId(), 'review']);
+>> 682:   }
+>> 683: 
+>> 684:   confirmExit() {
+>> 685:     if (confirm('¿Seguro que quieres salir? Perderás tu progreso.')) {
+>> 686:       if (this.intervalId) clearInterval(this.intervalId);
+>> 687:       window.history.back();
+>> 688:     }
+>> 689:   }
+>> 690: 
+>> 691:   formatTime(seconds: number): string {
+>> 692:     const m = Math.floor(seconds / 60);
+>> 693:     const s = seconds % 60;
+>> 694:     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+>> 695:   }
+>> 696: 
+>> 697:   getActiveContexto(test: any): string {
+>> 698:     if (!test || !test.contexto_base) return '';
+>> 699:     const q = this.currentQuestion();
+>> 700:     const activeTextIndex = q?.texto_index ?? 0;
+>> 701:     
+>> 702:     if (test.contexto_base.includes('--- DIVISION_TEXTOS ---')) {
+>> 703:       const textos = test.contexto_base.split('--- DIVISION_TEXTOS ---').map((t: string) => t.trim());
+>> 704:       return textos[activeTextIndex] || textos[0] || '';
+>> 705:     }
+>> 706:     
+>> 707:     return test.contexto_base;
+>> 708:   }
+>> 709: 
+>> 710:   getFormattedParagraphs(text: string | null | undefined): { text: string; isTitle: boolean; number?: number }[] {
+>> 711:     if (!text) return [];
+>> 712:     const rawParagraphs = text.split('\n\n')
+>> 713:       .map(p => p.trim())
+>> 714:       .filter(p => p !== '' && p !== '--- DIVISION_TEXTOS ---');
+>> 715:       
+>> 716:     let paragraphCount = 0;
+>> 717:     return rawParagraphs.map(p => {
+>> 718:       const isTitle = p.startsWith('📖') || p.startsWith('TEXTO') || p.includes('TEXTO I') || p.includes('TEXTO II');
+>> 719:       if (isTitle) {
+>> 720:         paragraphCount = 0;
+>> 721:         return { text: p, isTitle: true };
+>> 722:       } else {
+>> 723:         paragraphCount++;
+>> 724:         return { text: p, isTitle: false, number: paragraphCount };
+>> 725:       }
+>> 726:     });
+>> 727:   }
+>> 728: 
+>> 729:   getParagraphs(text: string | null | undefined): string[] {
+>> 730:     if (!text) return [];
+>> 731:     return text.split('\n\n').map(p => p.trim()).filter(p => p !== '');
+>> 732:   }
+>> 733: 
+>> 734:   renderLatex(latex: string | null): SafeHtml {
+>> 735:     if (!latex) return '';
+>> 736:     return this.sanitizer.bypassSecurityTrustHtml(this.katex.render(latex));
+>> 737:   }
+>> 738: }
+>> 739: >>>>>>> master
+   740: 
+
+=========================================
+File: frontend-app/src/app/features/learning-path/services/paes-content.service.ts
+=========================================
+Conflict found around lines 478 to 491:
+   475:   readonly poolPreguntas = this._poolPreguntas.asReadonly();
+   476: 
+   477:   constructor() {
+>> 478: <<<<<<< HEAD
+>> 479:     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
+>> 480:     const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
+>> 481:     if (useMocks) {
+>> 482:       this.loadDataFromLocalMocks();
+>> 483:     } else {
+>> 484:       this.loadDataFromFirestore();
+>> 485:     }
+>> 486:     // Subscribe to auth state changes to load user-specific progress
+>> 487: =======
+>> 488:     this.clearCache(); // Force immediate cache clear once to migrate to the new ID-mapped schema
+>> 489:     
+>> 490:     // Subscribe to auth state changes to load user-specific progress and fetch fresh firestore data
+>> 491: >>>>>>> master
+   492:     this.auth.onAuthStateChanged((user) => {
+   493:       if (user) {
+   494:         const isNewUser = user.uid !== this.currentUid;
+Conflict found around lines 514 to 552:
+   511:     });
+   512:   }
+   513: 
+>> 514: <<<<<<< HEAD
+>> 515:   private async loadDataFromLocalMocks() {
+>> 516:     try {
+>> 517:       console.log('🚧 [EstudiaUni Testing] Loading learning path data from LOCAL MOCKS (Method B)...');
+>> 518:       
+>> 519:       // 1. Cargar materias mock (usando ruta absoluta)
+>> 520:       const materiasRes = await fetch('/assets/mocks/materias-mock-local.json');
+>> 521:       if (!materiasRes.ok) throw new Error('materias-mock-local.json not found');
+>> 522:       const materias = await materiasRes.json() as Materia[];
+>> 523:       this._materias.set(materias.sort((a, b) => a.order - b.order));
+>> 524: 
+>> 525:       // 2. Cargar capítulos mock (usando ruta absoluta)
+>> 526:       const capitulosRes = await fetch('/assets/mocks/capitulos-mock-local.json');
+>> 527:       if (!capitulosRes.ok) throw new Error('capitulos-mock-local.json not found');
+>> 528:       const capitulos = await capitulosRes.json() as Capitulo[];
+>> 529:       this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
+>> 530:       
+>> 531:       console.log('✅ [EstudiaUni Testing] Local mocks loaded successfully!');
+>> 532:     } catch (error) {
+>> 533:       console.warn('⚠️ [EstudiaUni Testing] Failed to load local mocks. Falling back to Firestore...', error);
+>> 534:       await this.loadDataFromFirestore();
+>> 535:     } finally {
+>> 536:       this.loading.set(false);
+>> 537:     }
+>> 538:   }
+>> 539: 
+>> 540:   private async loadDataFromFirestore() {
+>> 541:     try {
+>> 542:       // 1. Cargar materias
+>> 543:       const materiasSnap = await getDocs(collection(this.firestore, 'lp_materias'));
+>> 544:       const materias = materiasSnap.docs.map(doc => doc.data() as Materia);
+>> 545:       this._materias.set(materias.sort((a, b) => a.order - b.order));
+>> 546: =======
+>> 547:   public clearCache(): void {
+>> 548:     localStorage.removeItem('paes_content_cache');
+>> 549:     localStorage.removeItem('paes_content_cache_timestamp');
+>> 550:     console.log('[PaesContentService] Caché local de PAES borrado.');
+>> 551:   }
+>> 552: >>>>>>> master
+   553: 
+   554:   private async loadDataFromFirestore() {
+   555:     const cacheKey = 'paes_content_cache';
+
+=========================================
+File: frontend-app/src/styles.css
+=========================================
+Conflict found around lines 270 to 689:
+   267: body.font-xlarge {
+   268:   font-size: 1.3rem !important;
+   269: }
+>> 270: <<<<<<< HEAD
+>> 271: 
+>> 272: body.font-xlarge h1 {
+>> 273:   font-size: 3.5rem !important;
+>> 274: }
+>> 275: 
+>> 276: body.font-xlarge h2 {
+>> 277:   font-size: 2rem !important;
+>> 278: }
+>> 279: 
+>> 280: body.font-xlarge h3 {
+>> 281:   font-size: 1.6rem !important;
+>> 282: }
+>> 283: 
+>> 284: body.font-xlarge p {
+>> 285:   font-size: 1.4rem !important;
+>> 286: }
+>> 287: 
+>> 288: body.font-xlarge .nav-item {
+>> 289:   font-size: 1.35rem !important;
+>> 290: }
+>> 291: =======
+>> 292: body.font-xlarge h1 { font-size: 3.5rem !important; }
+>> 293: body.font-xlarge h2 { font-size: 2rem !important; }
+>> 294: body.font-xlarge h3 { font-size: 1.6rem !important; }
+>> 295: body.font-xlarge p { font-size: 1.4rem !important; }
+>> 296: body.font-xlarge .nav-item { font-size: 1.35rem !important; }
+>> 297: 
+>> 298: 
+>> 299: /* ==========================================
+>> 300:    ADVANCED RESPONSIVE SIDEBAR & LAYOUT OVERRIDES
+>> 301:    Ensures EstudiaUni scales flawlessly on high zooms & small screens
+>> 302:    ========================================== */
+>> 303: 
+>> 304: /* CRITICAL: Force Sidebar scrollability and prevent elements from pushing off the screen on desktop/tablet views */
+>> 305: .sidebar {
+>> 306:   display: flex !important;
+>> 307:   flex-direction: column !important;
+>> 308:   height: 100vh !important;
+>> 309:   overflow: hidden !important; /* Never allow outer sidebar to grow or overflow the viewport */
+>> 310: }
+>> 311: 
+>> 312: /* Apply the exact same robust scroll containment to the mobile drawer menu */
+>> 313: .mobile-overlay {
+>> 314:   position: fixed !important;
+>> 315:   inset: 0 !important;
+>> 316:   background: rgba(0, 0, 0, 0.5) !important;
+>> 317:   backdrop-filter: blur(4px) !important;
+>> 318:   z-index: 10000 !important; /* Ensure z-index is elevated on top of other content */
+>> 319:   display: none !important;
+>> 320: }
+>> 321: 
+>> 322: .mobile-overlay.open {
+>> 323:   display: block !important;
+>> 324: }
+>> 325: 
+>> 326: .mobile-overlay .mobile-menu {
+>> 327:   display: flex !important;
+>> 328:   flex-direction: column !important;
+>> 329:   height: 100vh !important;
+>> 330:   width: 280px !important;
+>> 331:   background: #0d0f17 !important;
+>> 332:   position: fixed !important;
+>> 333:   top: 0 !important;
+>> 334:   left: -280px !important;
+>> 335:   z-index: 10001 !important;
+>> 336:   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+>> 337:   overflow: hidden !important; /* Prevent outer drawer container from expanding */
+>> 338:   padding: 1rem 0 !important; /* Clean vertical spacing */
+>> 339: }
+>> 340: 
+>> 341: .mobile-overlay.open .mobile-menu {
+>> 342:   left: 0 !important;
+>> 343: }
+>> 344: 
+>> 345: .mobile-footer {
+>> 346:   padding: 1.25rem 0.75rem !important;
+>> 347:   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+>> 348:   margin-top: auto !important; /* Force footer strictly to the bottom of the drawer flexbox */
+>> 349: }
+>> 350: 
+>> 351: .sidebar-nav {
+>> 352:   flex: 1 1 0% !important; /* Force flex child to respect height boundaries */
+>> 353:   min-height: 0 !important; /* Enforces scrollability instead of expanding */
+>> 354:   overflow-y: auto !important; /* Enforce smooth vertical scrollbar */
+>> 355:   scrollbar-width: thin !important; /* Standard property for modern scrollbar sizing */
+>> 356:   scrollbar-color: rgba(255, 255, 255, 0.1) transparent !important; /* Standard property for modern scrollbar colors (Chrome/Edge 121+, Firefox) */
+>> 357: }
+>> 358: 
+>> 359: /* Premium ultra-sleek custom scrollbar for sidebar navigation (Fallback for Webkit browsers) */
+>> 360: .sidebar-nav::-webkit-scrollbar {
+>> 361:   width: 5px !important;
+>> 362:   height: 5px !important;
+>> 363: }
+>> 364: .sidebar-nav::-webkit-scrollbar-track {
+>> 365:   background: transparent !important;
+>> 366: }
+>> 367: .sidebar-nav::-webkit-scrollbar-thumb {
+>> 368:   background: rgba(255, 255, 255, 0.08) !important;
+>> 369:   border-radius: 99px !important;
+>> 370:   transition: background 0.3s ease !important;
+>> 371: }
+>> 372: .sidebar-nav::-webkit-scrollbar-thumb:hover {
+>> 373:   background: rgba(255, 255, 255, 0.2) !important;
+>> 374: }
+>> 375: 
+>> 376: /* 1. Intermediate Width Scaling (1025px to 1240px)
+>> 377:    Shrinks sidebar width to 220px to prevent overlapping/clipping of main content under zoom */
+>> 378: @media (min-width: 1025px) and (max-width: 1240px) {
+>> 379:   .sidebar {
+>> 380:     width: 220px !important;
+>> 381:   }
+>> 382:   .main-content {
+>> 383:     margin-left: 220px !important;
+>> 384:     max-width: calc(100% - 220px) !important;
+>> 385:   }
+>> 386:   .sidebar-logo {
+>> 387:     font-size: 1.7rem !important;
+>> 388:   }
+>> 389:   .nav-item {
+>> 390:     padding: 0.65rem 0.85rem !important;
+>> 391:     font-size: 0.92rem !important;
+>> 392:     gap: 0.6rem !important;
+>> 393:   }
+>> 394:   .nav-icon {
+>> 395:     font-size: 1.15rem !important;
+>> 396:     width: 28px !important;
+>> 397:   }
+>> 398:   .sidebar-section-title {
+>> 399:     padding: 0.45rem 0.85rem !important;
+>> 400:     margin: 0.4rem 0.4rem 0.1rem !important;
+>> 401:   }
+>> 402:   .sidebar-sub-items {
+>> 403:     margin-left: 1rem !important;
+>> 404:   }
+>> 405: }
+>> 406: 
+>> 407: /* 2. Width Breakpoint Upgrade: Switch to mobile layout at 1024px instead of 768px */
+>> 408: @media (max-width: 1024px) {
+>> 409:   .sidebar {
+>> 410:     display: none !important;
+>> 411:   }
+>> 412:   .mobile-header {
+>> 413:     display: flex !important;
+>> 414:   }
+>> 415:   .main-content {
+>> 416:     margin-left: 0 !important;
+>> 417:     padding: 80px 1rem 2rem !important;
+>> 418:     max-width: 100% !important;
+>> 419:   }
+>> 420: }
+>> 421: 
+>> 422: /* 3. Detailed Height-Based Responsiveness (Desktop/Tablet)
+>> 423:    Dynamically scales all elements as screen height decreases due to browser zoom or screen size */
+>> 424: @media (max-height: 960px) and (min-width: 1025px) {
+>> 425:   .sidebar-header { padding: 1.75rem 1rem 1.25rem !important; }
+>> 426:   .sidebar-logo { font-size: 1.9rem !important; }
+>> 427:   .nav-item { padding: 0.75rem 0.95rem !important; font-size: 0.98rem !important; gap: 0.75rem !important; }
+>> 428:   
+>> 429:   /* Shrink promo card slightly */
+>> 430:   .sidebar-promo-card { margin: 1.25rem 0.85rem 0.4rem !important; padding: 1rem !important; }
+>> 431:   .promo-crown { font-size: 1.5rem !important; margin-bottom: 0.25rem !important; }
+>> 432:   .sidebar-promo-card h4 { font-size: 0.9rem !important; margin-bottom: 0.2rem !important; }
+>> 433:   .sidebar-promo-card p { font-size: 0.74rem !important; margin-bottom: 0.7rem !important; }
+>> 434:   .btn-promo-sidebar { padding: 0.4rem !important; font-size: 0.76rem !important; }
+>> 435: }
+>> 436: 
+>> 437: @media (max-height: 820px) and (min-width: 1025px) {
+>> 438:   .sidebar-header { padding: 1.25rem 1rem 1rem !important; }
+>> 439:   .sidebar-logo { font-size: 1.7rem !important; }
+>> 440:   .nav-item { padding: 0.6rem 0.8rem !important; font-size: 0.92rem !important; gap: 0.6rem !important; }
+>> 441:   .nav-icon { font-size: 1.1rem !important; width: 28px !important; }
+>> 442:   .sidebar-section-title { padding: 0.45rem 0.8rem !important; margin: 0.4rem 0.4rem 0.1rem !important; }
+>> 443:   
+>> 444:   /* Shrink promo card more */
+>> 445:   .sidebar-promo-card { margin: 1rem 0.75rem 0.35rem !important; padding: 0.85rem !important; border-radius: 12px !important; }
+>> 446:   .promo-crown { font-size: 1.35rem !important; margin-bottom: 0.2rem !important; }
+>> 447:   .sidebar-promo-card h4 { font-size: 0.85rem !important; margin-bottom: 0.15rem !important; }
+>> 448:   .sidebar-promo-card p { font-size: 0.72rem !important; margin-bottom: 0.6rem !important; line-height: 1.3 !important; }
+>> 449:   .btn-promo-sidebar { padding: 0.35rem !important; font-size: 0.74rem !important; }
+>> 450: }
+>> 451: 
+>> 452: @media (max-height: 700px) and (min-width: 1025px) {
+>> 453:   .sidebar-header { padding: 0.85rem 0.75rem !important; }
+>> 454:   .sidebar-logo { font-size: 1.45rem !important; }
+>> 455:   .nav-item { padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important; gap: 0.5rem !important; }
+>> 456:   .nav-icon { font-size: 1rem !important; width: 24px !important; }
+>> 457:   .sidebar-section-title { padding: 0.35rem 0.75rem !important; font-size: 0.72rem !important; margin: 0.25rem 0.25rem 0.05rem !important; }
+>> 458:   .sidebar-sub-items { margin-left: 0.85rem !important; }
+>> 459:   
+>> 460:   /* Shrink promo card to extra compact */
+>> 461:   .sidebar-promo-card { margin: 0.75rem 0.5rem 0.25rem !important; padding: 0.65rem !important; border-radius: 10px !important; }
+>> 462:   .promo-crown { font-size: 1.2rem !important; margin-bottom: 0.15rem !important; }
+>> 463:   .sidebar-promo-card h4 { font-size: 0.8rem !important; margin-bottom: 0.1rem !important; }
+>> 464:   .sidebar-promo-card p { font-size: 0.68rem !important; margin-bottom: 0.45rem !important; line-height: 1.2 !important; }
+>> 465:   .btn-promo-sidebar { padding: 0.3rem !important; font-size: 0.7rem !important; }
+>> 466: }
+>> 467: 
+>> 468: @media (max-height: 580px) and (min-width: 1025px) {
+>> 469:   .sidebar-header { padding: 0.5rem 0.5rem !important; }
+>> 470:   .sidebar-logo { font-size: 1.25rem !important; }
+>> 471:   .nav-item { padding: 0.38rem 0.65rem !important; font-size: 0.82rem !important; gap: 0.4rem !important; }
+>> 472:   .nav-icon { font-size: 0.9rem !important; width: 20px !important; }
+>> 473:   .sidebar-section-title { padding: 0.25rem 0.65rem !important; font-size: 0.68rem !important; margin: 0.15rem 0.15rem 0.05rem !important; }
+>> 474:   .sidebar-sub-items { margin-left: 0.65rem !important; }
+>> 475:   .sidebar-footer { padding: 0.5rem 0.4rem !important; }
+>> 476:   
+>> 477:   /* Hide promo card to fit basic navigation in extremely short height */
+>> 478:   .sidebar-promo-card { display: none !important; }
+>> 479: }
+>> 480: 
+>> 481: /* 4. Highly Responsive Height Scaling for Mobile Drawer Menu */
+>> 482: @media (max-height: 700px) and (max-width: 1024px) {
+>> 483:   .mobile-overlay .mobile-menu .nav-item { padding: 0.55rem 0.85rem !important; font-size: 0.92rem !important; }
+>> 484:   .mobile-overlay .mobile-menu .sidebar-section-title { padding: 0.45rem 0.85rem !important; }
+>> 485: }
+>> 486: @media (max-height: 550px) and (max-width: 1024px) {
+>> 487:   .mobile-overlay .mobile-menu .nav-item { padding: 0.4rem 0.75rem !important; font-size: 0.85rem !important; }
+>> 488:   .mobile-overlay .mobile-menu .sidebar-section-title { padding: 0.35rem 0.75rem !important; }
+>> 489:   .mobile-overlay .mobile-footer { padding: 0.75rem !important; }
+>> 490: }
+>> 491: 
+>> 492: /* ==========================================
+>> 493:    PREMIUM PRO GOLD BADGE STYLES (WOW EFFECT)
+>> 494:    ========================================== */
+>> 495: body .plan-badge.pro {
+>> 496:   background: linear-gradient(135deg, #FFE885 0%, #E6A100 50%, #B87E00 100%) !important;
+>> 497:   color: #ffffff !important;
+>> 498:   border: 2px solid #D4AF37 !important;
+>> 499:   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+>> 500:   box-shadow: 0 0 12px rgba(230, 161, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
+>> 501:   font-weight: 800 !important;
+>> 502:   text-transform: uppercase !important;
+>> 503:   letter-spacing: 0.05em !important;
+>> 504:   display: inline-flex !important;
+>> 505:   align-items: center !important;
+>> 506:   justify-content: center !important;
+>> 507: }
+>> 508: 
+>> 509: body .plan-badge-inline.pro {
+>> 510:   background: linear-gradient(135deg, #FFE885 0%, #E6A100 50%, #B87E00 100%) !important;
+>> 511:   color: #ffffff !important;
+>> 512:   border: 2px solid #D4AF37 !important;
+>> 513:   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+>> 514:   box-shadow: 0 0 12px rgba(230, 161, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
+>> 515:   font-weight: 800 !important;
+>> 516:   text-transform: uppercase !important;
+>> 517:   letter-spacing: 0.05em !important;
+>> 518: }
+>> 519: 
+>> 520: 
+>> 521: /* Header ¡Hazte PRO! Button */
+>> 522: .btn-upgrade-pro {
+>> 523:   background: linear-gradient(135deg, #FFE885 0%, #E6A100 50%, #B87E00 100%) !important;
+>> 524:   color: #ffffff !important;
+>> 525:   border: 1.5px solid #FFE885 !important;
+>> 526:   padding: 0.48rem 1rem !important;
+>> 527:   border-radius: 99px !important;
+>> 528:   font-weight: 800 !important;
+>> 529:   font-size: 0.85rem !important;
+>> 530:   cursor: pointer !important;
+>> 531:   box-shadow: 0 4px 12px rgba(230, 161, 0, 0.3) !important;
+>> 532:   text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+>> 533:   transition: all 0.25s ease !important;
+>> 534:   display: inline-flex !important;
+>> 535:   align-items: center !important;
+>> 536:   gap: 0.25rem !important;
+>> 537:   font-family: inherit !important;
+>> 538:   line-height: 1 !important;
+>> 539:   animation: goldPulseUpgrade 2.5s infinite !important;
+>> 540: }
+>> 541: 
+>> 542: .btn-upgrade-pro:hover {
+>> 543:   transform: translateY(-2px) scale(1.03) !important;
+>> 544:   box-shadow: 0 8px 18px rgba(230, 161, 0, 0.5) !important;
+>> 545:   filter: brightness(1.05) !important;
+>> 546: }
+>> 547: 
+>> 548: @keyframes goldPulseUpgrade {
+>> 549:   0% { box-shadow: 0 0 0 0 rgba(230, 161, 0, 0.4); }
+>> 550:   70% { box-shadow: 0 0 0 8px rgba(230, 161, 0, 0); }
+>> 551:   100% { box-shadow: 0 0 0 0 rgba(230, 161, 0, 0); }
+>> 552: }
+>> 553: 
+>> 554: /* Sidebar Promo Card */
+>> 555: .sidebar-promo-card {
+>> 556:   margin: 1.5rem 1rem 0.5rem !important;
+>> 557:   padding: 1.25rem !important;
+>> 558:   border-radius: 16px !important;
+>> 559:   background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(184, 126, 0, 0.03) 100%) !important;
+>> 560:   border: 1.5px solid rgba(212, 175, 55, 0.2) !important;
+>> 561:   text-align: center !important;
+>> 562:   cursor: pointer !important;
+>> 563:   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+>> 564:   position: relative !important;
+>> 565:   overflow: hidden !important;
+>> 566:   flex-shrink: 0 !important;
+>> 567: }
+>> 568: 
+>> 569: body .sidebar-sub-items {
+>> 570:   flex-shrink: 0 !important;
+>> 571: }
+>> 572: 
+>> 573: 
+>> 574: .sidebar-promo-card::before {
+>> 575:   content: '' !important;
+>> 576:   position: absolute !important;
+>> 577:   top: -50% !important;
+>> 578:   left: -50% !important;
+>> 579:   width: 200% !important;
+>> 580:   height: 200% !important;
+>> 581:   background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%) !important;
+>> 582:   pointer-events: none !important;
+>> 583:   transition: all 0.5s ease !important;
+>> 584: }
+>> 585: 
+>> 586: .sidebar-promo-card:hover {
+>> 587:   transform: translateY(-3px) !important;
+>> 588:   border-color: rgba(212, 175, 55, 0.4) !important;
+>> 589:   background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(184, 126, 0, 0.06) 100%) !important;
+>> 590:   box-shadow: 0 8px 24px rgba(212, 175, 55, 0.12) !important;
+>> 591: }
+>> 592: 
+>> 593: .sidebar-promo-card:hover::before {
+>> 594:   transform: translate(10%, 10%) !important;
+>> 595: }
+>> 596: 
+>> 597: .promo-crown {
+>> 598:   font-size: 1.75rem !important;
+>> 599:   display: block !important;
+>> 600:   margin-bottom: 0.35rem !important;
+>> 601:   animation: crownMiniBob 2s ease-in-out infinite !important;
+>> 602: }
+>> 603: 
+>> 604: @keyframes crownMiniBob {
+>> 605:   0%, 100% { transform: translateY(0) scale(1); }
+>> 606:   50% { transform: translateY(-3px) scale(1.05); }
+>> 607: }
+>> 608: 
+>> 609: .sidebar-promo-card h4 {
+>> 610:   margin: 0 0 0.25rem !important;
+>> 611:   color: #FFE885 !important;
+>> 612:   font-size: 0.95rem !important;
+>> 613:   font-weight: 800 !important;
+>> 614:   letter-spacing: 0.02em !important;
+>> 615: }
+>> 616: 
+>> 617: .sidebar-promo-card p {
+>> 618:   margin: 0 0 0.85rem !important;
+>> 619:   color: rgba(255, 255, 255, 0.7) !important;
+>> 620:   font-size: 0.76rem !important;
+>> 621:   font-weight: 500 !important;
+>> 622:   line-height: 1.4 !important;
+>> 623:   padding: 0 0.25rem !important;
+>> 624: }
+>> 625: 
+>> 626: .btn-promo-sidebar {
+>> 627:   width: 100% !important;
+>> 628:   padding: 0.45rem !important;
+>> 629:   border: none !important;
+>> 630:   background: linear-gradient(135deg, #FFE885 0%, #E6A100 50%, #B87E00 100%) !important;
+>> 631:   color: #ffffff !important;
+>> 632:   font-weight: 800 !important;
+>> 633:   font-size: 0.78rem !important;
+>> 634:   border-radius: 8px !important;
+>> 635:   cursor: pointer !important;
+>> 636:   box-shadow: 0 3px 8px rgba(230, 161, 0, 0.2) !important;
+>> 637:   transition: all 0.2s ease !important;
+>> 638:   text-shadow: 0 1px 1px rgba(0,0,0,0.15) !important;
+>> 639: }
+>> 640: 
+>> 641: .btn-promo-sidebar:hover {
+>> 642:   filter: brightness(1.08) !important;
+>> 643:   box-shadow: 0 5px 12px rgba(230, 161, 0, 0.35) !important;
+>> 644: }
+>> 645: 
+>> 646: /* Premium Golden Shimmer for PRO Logo and Usernames */
+>> 647: @keyframes goldShimmerText {
+>> 648:   0% {
+>> 649:     background-position: 0% 50% !important;
+>> 650:   }
+>> 651:   50% {
+>> 652:     background-position: 100% 50% !important;
+>> 653:   }
+>> 654:   100% {
+>> 655:     background-position: 0% 50% !important;
+>> 656:   }
+>> 657: }
+>> 658: 
+>> 659: body .pro-logo, body .pro-username {
+>> 660:   background: linear-gradient(90deg, #FFE885 0%, #F1C40F 20%, #F39C12 40%, #E67E22 60%, #F39C12 80%, #FFE885 100%) !important;
+>> 661:   background-size: 200% auto !important;
+>> 662:   -webkit-background-clip: text !important;
+>> 663:   -webkit-text-fill-color: transparent !important;
+>> 664:   background-clip: text !important;
+>> 665:   animation: goldShimmerText 4s ease infinite !important;
+>> 666:   font-weight: 900 !important;
+>> 667:   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25)) !important;
+>> 668:   position: relative !important;
+>> 669: }
+>> 670: 
+>> 671: /* Subtly glowing shadow around the PRO elements */
+>> 672: body .pro-logo {
+>> 673:   filter: drop-shadow(0 2px 8px rgba(241, 196, 15, 0.35)) !important;
+>> 674: }
+>> 675: 
+>> 676: body .pro-username {
+>> 677:   filter: drop-shadow(0 2px 8px rgba(241, 196, 15, 0.25)) !important;
+>> 678: }
+>> 679: 
+>> 680: /* Fix sidebar-logo clash when containing pro-logo child */
+>> 681: body .sidebar-logo:has(.pro-logo) {
+>> 682:   background: none !important;
+>> 683:   -webkit-text-fill-color: initial !important;
+>> 684:   background-clip: initial !important;
+>> 685:   text-shadow: none !important;
+>> 686: }
+>> 687: 
+>> 688: 
+>> 689: >>>>>>> master
+   690: 

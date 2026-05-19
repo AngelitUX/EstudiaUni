@@ -22,13 +22,31 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- SIDEBAR (Consistente con el resto de la app) -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
           <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayo PAES</span></a>
-          <a class="nav-item active" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+          
+          <div class="sidebar-section-title" (click)="toggleHerramientas()">
+            HERRAMIENTAS
+            <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
+          </div>
+          <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
+            <a class="nav-item active" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+          </div>
+          <!-- Sidebar Promo Card -->
+          <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
+            <span class="promo-crown">👑</span>
+            <h4>Pásate a PRO</h4>
+            <p>Explicaciones con IA y Ensayos Ilimitados</p>
+            <button class="btn-promo-sidebar">Ver Planes ⚡</button>
+          </div>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
@@ -45,15 +63,26 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
         <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
             <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayo PAES</span></a>
-            <a class="nav-item active" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            
+            <div class="sidebar-section-title" (click)="toggleHerramientas()">
+              HERRAMIENTAS
+              <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
+            </div>
+            <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
+              <a class="nav-item active" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
@@ -69,7 +98,7 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content">
+      <main class="main-content animate-fade-in">
         <header class="header" style="position: relative;">
           <div class="header-main-row">
             <div class="header-left">
@@ -120,12 +149,12 @@ import { AuthService } from '../../core/services/auth.service';
 
         <!-- AI TUTOR PROMO BANNER -->
         <div class="ai-promo-container" *ngIf="!isAiOpen()">
-          <div class="ai-promo-banner animate-fade-in">
+          <div class="ai-promo-banner">
             <div class="ai-promo-content">
-              <span class="ai-icon">🤖</span>
+              <img src="assets/img/gif.gif" style="width: 32px; height: 32px; object-fit: contain; margin-right: 0.25rem;" alt="Foco" />
               <div class="ai-promo-text">
                 <strong>¿Dudas vocacionales?</strong>
-                <span>Pregúntale a nuestro agente: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
+                <span>Pregúntale a Foco: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
               </div>
             </div>
             <button class="btn btn-primary" (click)="toggleAi()">Abrir</button>
@@ -133,7 +162,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <!-- FILTROS -->
-        <section class="finder-form glass-card animate-fade-in">
+        <section class="finder-form glass-card">
           <div class="form-grid">
             <div class="form-group search-group">
               <label>Busca tu carrera</label>
@@ -227,7 +256,7 @@ import { AuthService } from '../../core/services/auth.service';
         <!-- RESULTADOS -->
         <section class="results-section">
           <!-- WELCOME STATE (When no search yet) -->
-          <div *ngIf="!hasSearched()" class="welcome-search animate-fade-in">
+          <div *ngIf="!hasSearched()" class="welcome-search">
             <div class="welcome-icon">🎓</div>
             <h2>Comienza tu búsqueda</h2>
             <p>Escribe el nombre de una carrera o selecciona tus intereses para ver recomendaciones personalizadas.</p>
@@ -241,7 +270,7 @@ import { AuthService } from '../../core/services/auth.service';
 
           <!-- CAREERS GRID -->
           <div *ngIf="hasSearched()" class="careers-grid">
-            <div *ngFor="let career of visibleCareers()" class="career-card glass-card animate-fade-in">
+            <div *ngFor="let career of visibleCareers()" class="career-card glass-card">
               <div class="card-top">
                 <div class="uni-info">
                   <span class="uni-name">{{ career.universidad }}</span>
@@ -325,9 +354,11 @@ import { AuthService } from '../../core/services/auth.service';
       <aside class="ai-panel" [class.open]="isAiOpen()">
         <div class="ai-header">
           <div class="ai-header-left">
-            <div class="ai-avatar">🤖</div>
+            <div class="ai-avatar">
+              <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
             <div>
-              <h4 class="ai-title">Orientador IA</h4>
+              <h4 class="ai-title">Foco, tu Pulpo Orientador</h4>
               <span class="ai-status">{{ aiLoading ? 'Pensando...' : 'En línea' }}</span>
             </div>
           </div>
@@ -339,22 +370,21 @@ import { AuthService } from '../../core/services/auth.service';
 
         <div class="ai-messages" #chatScrollContainer>
           <div *ngIf="aiMessages().length === 0" class="ai-empty-state">
-            <div class="ai-avatar-lg">🤖</div>
-            <p>¡Hola! Soy tu orientador vocacional. ¿En qué te puedo ayudar hoy? Pregúntame sobre carreras, universidades o empleabilidad.</p>
+            <p>¿Tienes preguntas? Foco está listo para guiarte en tu futuro vocacional. Pregúntame sobre carreras, universidades, ponderaciones o empleabilidad.</p>
           </div>
           <div
             *ngFor="let msg of aiMessages()"
             class="ai-bubble"
             [class.user]="msg.role === 'user'"
             [class.assistant]="msg.role === 'assistant'">
-            <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🤖 Tutor' }}</div>
+            <div class="bubble-role">{{ msg.role === 'user' ? 'Tú' : '🐙 Foco' }}</div>
             <div class="bubble-content" [innerHTML]="formatAiMessage(msg.content)"></div>
             <div class="bubble-time" *ngIf="msg.timestamp">
               {{ msg.timestamp | date:'HH:mm' }}
             </div>
           </div>
           <div *ngIf="aiLoading" class="ai-bubble assistant loading-bubble">
-            <div class="bubble-role">🤖 Tutor</div>
+            <div class="bubble-role">🐙 Foco</div>
             <div class="typing-indicator">
               <span></span><span></span><span></span>
             </div>
@@ -430,11 +460,95 @@ import { AuthService } from '../../core/services/auth.service';
     .sidebar { width: 260px; background: rgba(13, 15, 23, 0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
     .sidebar-logo { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); position: relative; }
-    .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow-y: auto;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255, 255, 255, 0.12); color: #fff; transform: translateX(4px); }
     .nav-item.active { background: rgba(99, 102, 241, 0.25); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-section-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.75rem 1.1rem;
+      margin: 0.75rem 0.5rem 0.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+    }
+    .sidebar-section-title:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+    }
+    .sidebar-section-title .toggle-icon {
+      font-size: 0.65rem;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .sidebar-section-title:hover .toggle-icon {
+      color: #ffffff;
+    }
+    .sidebar-sub-items {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      margin-left: 1.4rem;
+      border-left: 1.5px solid rgba(255, 255, 255, 0.08);
+      padding-left: 0.4rem;
+      gap: 0.25rem;
+    }
+    .sidebar-sub-items.collapsible {
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+    .sidebar-sub-items.expanded {
+      max-height: 260px;
+      opacity: 1;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-sub-items .nav-item {
+      padding: 0.65rem 0.9rem;
+      font-size: 0.95rem;
+      border-radius: 10px;
+    }
+    .sidebar-sub-items .nav-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      transform: translateX(3px);
+    }
+    .sidebar-sub-items .nav-item.active {
+      background: rgba(99, 102, 241, 0.18);
+      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+    }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
     .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
@@ -483,7 +597,7 @@ import { AuthService } from '../../core/services/auth.service';
     
     .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
     .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border-color: #f59e0b; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 0 10px rgba(245,158,11,0.5); border: none; }
+    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
     
     .title { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
     .subtitle { color: var(--text-secondary); font-size: 1.15rem; font-weight: 500; }
@@ -609,7 +723,7 @@ import { AuthService } from '../../core/services/auth.service';
     
     .ai-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #f8fafc; border-bottom: 1px solid var(--glass-border); }
     .ai-header-left { display: flex; align-items: center; gap: 0.75rem; }
-    .ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white;}
+    .ai-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .ai-title { margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b; }
     .ai-status { font-size: 0.75rem; color: #10b981; font-weight: 600; }
     .btn-icon-sm { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #64748b; padding: 0.2rem; transition: color 0.2s; border-radius: 4px;}
@@ -836,6 +950,23 @@ export class CareerFinderComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
 
+  get herramientasExpanded(): boolean {
+    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
+                        this.router.url.includes('/calculadora-nem') || 
+                        this.router.url.includes('/recursos');
+    if (isToolRoute) return true;
+    const val = localStorage.getItem('herramientasExpanded');
+    return val !== 'false';
+  }
+
+  toggleHerramientas() {
+    this.isCollapsible = true;
+    const current = this.herramientasExpanded;
+    localStorage.setItem('herramientasExpanded', String(!current));
+  }
+
+  isCollapsible = false;
+
   @ViewChild('chatScrollContainer') private chatScrollContainer!: ElementRef;
 
   mobileOpen = false;
@@ -1051,13 +1182,21 @@ export class CareerFinderComponent implements OnInit {
     }));
 
     // Generate a context summarizing current state
-    const prompt = `
-Eres un orientador vocacional experto en el sistema universitario chileno. Tu trabajo es ayudar al estudiante a elegir su carrera ideal.
-El usuario está usando una plataforma llamada EstudiaUni.cl en el módulo "Encuentra tu Carrera".
-Debes responder de manera muy concisa, amigable y motivadora. Usa emojis. No escribas respuestas excesivamente largas, ve al grano.
-Si el usuario pregunta por detalles específicos (puntajes, duración) da la mejor estimación si no tienes el dato exacto, pero advierte que debe corroborar en canales oficiales.
-Responde esta consulta del usuario: "${text}"
-    `;
+    const prompt = `Eres Foco, la mascota oficial y orientador vocacional de EstudiaUni.cl. Eres un pulpo súper inteligente, entusiasta y amigable de 8 tentáculos. Tu rol es guiar a los estudiantes en sus dudas vocacionales con calidez, cercanía y mucha motivación.
+
+PERSONALIDAD Y TONO DE FOCO:
+- ¡Eres un pulpo! Usa metáforas marinas u oceanográficas de forma sutil, dinámica y divertida en tus explicaciones (ej. "mar de dudas", "corrientes de ideas", "navegar por tu futuro", "desenredar con mis tentáculos"), pero NUNCA las uses en saludos repetitivos.
+- Sé sumamente empático, motivador y usa un español chileno sutil y cercano, perfecto para estudiantes de enseñanza media (ej. "¡Dale!", "¡Súper!", "¡Excelente!", "¡Vamos con todo!").
+- En lugar de respuestas genéricas de IA, tu personalidad es vibrante, alegre y llena de emojis marinos y de luz (🐙, 💡, 🌊, 🧠, ✨).
+
+REGLAS DE RESOLUCIÓN PEDAGÓGICA (ESTRICTAS):
+- SIN INTRODUCCIONES REPETITIVAS (CRÍTICO): NUNCA incluyas saludos repetitivos, presentaciones o introducciones largas en tus respuestas (ej. evita decir "¡Hola!", "¡Vamos a sumergirnos!", "¡Hola crack!", "mis tentáculos están listos para...", etc.). Ve DIRECTAMENTE al grano, a la pista o a la pregunta en tu primer párrafo, sin rodeos tediosos para que la interacción fluya de forma ágil y rápida.
+- INTERACCIÓN PASO A PASO (CRÍTICO): NUNCA respondas a tus propias preguntas ni simules diálogos interactivos de ida y vuelta contigo mismo en una sola respuesta. Haz una única pregunta de reflexión o entrega una única pista inicial a la vez, deteniendo tu respuesta para esperar a que el estudiante interactúe y responda antes de avanzar al siguiente paso de la resolución.
+- Sé conciso y directo: responde de forma breve (idealmente entre 2 y 4 párrafos cortos) para no abrumar al estudiante, pero asegúrate de terminar SIEMPRE tus oraciones e ideas de forma completa y redonda.
+- FINALIZACIÓN OBLIGATORIA: Bajo ninguna circunstancia dejes una respuesta incompleta, una oración a medias o una explicación truncada. Cada mensaje tuyo debe tener un cierre perfecto y coherente.
+- Si te preguntan por detalles específicos de carreras en Chile (puntajes de corte, ponderaciones, duración, empleabilidad, gratuidad) da la mejor estimación/guía si no tienes el dato exacto, pero advierte con cariño que el estudiante debe corroborar la información en los canales oficiales de DEMRE y del Ministerio de Educación.
+
+Responde esta consulta del usuario: "${text}"`;
 
     try {
       const reply = await this.aiService.askQuestion(prompt, recentMessages);
@@ -1095,8 +1234,12 @@ Responde esta consulta del usuario: "${text}"
 
   formatAiMessage(text: string): string {
     if (!text) return '';
-    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    let html = text;
+    // Negritas: **texto** -> <strong>texto</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Itálicas: *palabra* -> <em>palabra</em> (solo para palabras individuales, evitando multiplicar expresiones matemáticas como 3 * x * y)
+    html = html.replace(/\*([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)\*/g, '<em>$1</em>');
+    // Saltos de línea: \n -> <br>
     html = html.replace(/\n/g, '<br>');
     return html;
   }
