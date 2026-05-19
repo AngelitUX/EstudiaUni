@@ -43,7 +43,7 @@ type ExamMode = 'real' | 'asistido';
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;">
-            <span class="text-gradient">EstudiaUni</span>
+            <span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span>
           </a>
         </div>
         
@@ -87,6 +87,13 @@ type ExamMode = 'real' | 'asistido';
               <span class="nav-icon">📂</span>
               <span class="nav-text">Recursos Adicionales</span>
             </a>
+          </div>
+          <!-- Sidebar Promo Card -->
+          <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
+            <span class="promo-crown">👑</span>
+            <h4>Pásate a PRO</h4>
+            <p>Explicaciones con IA y Ensayos Ilimitados</p>
+            <button class="btn-promo-sidebar">Ver Planes ⚡</button>
           </div>
         </nav>
         

@@ -83,9 +83,14 @@ import { SoundService } from '../../core/services/sound.service';
               <div class="section-block">
                 <div class="section-header"><h3>Plan de Cuenta</h3><p>Estado actual de tu suscripción en EstudiaUni.</p></div>
                 <div class="info-row">
-                  <div class="info-item">
+                  <div class="info-item" style="width: 100%;">
                     <span class="info-label">Suscripción activa</span>
-                    <span class="plan-badge-inline" [class.pro]="isProPlan()">{{ isProPlan() ? 'Premium 🚀' : 'Básico (Gratis)' }}</span>
+                    <div class="subscription-badge-wrap">
+                      <span class="plan-badge-inline" [class.pro]="isProPlan()">{{ isProPlan() ? 'Premium 🚀' : 'Básico (Gratis)' }}</span>
+                      <span class="subscription-time-remaining animate-fade-in" *ngIf="isProPlan() && getSubscriptionInfo()">
+                        {{ getSubscriptionInfo() }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -288,11 +293,13 @@ import { SoundService } from '../../core/services/sound.service';
     .helper-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-muted);font-weight:600}
     .counter{color:var(--accent-primary);font-weight:700}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
-    .info-row{display:flex;align-items:center;gap:1.5rem;margin-bottom:0.5rem}
-    .info-item{display:flex;flex-direction:column;gap:0.25rem}
+    .info-row{display:flex;align-items:center;gap:1.5rem;margin-bottom:0.5rem;width:100%}
+    .info-item{display:flex;flex-direction:column;gap:0.25rem;width:100%}
     .info-label{font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase}
     .plan-badge-inline{font-size:0.95rem;font-weight:800;color:var(--text-secondary);background:var(--bg-secondary);padding:0.4rem 0.8rem;border-radius:8px;width:fit-content}
     .plan-badge-inline.pro{background:rgba(245,158,11,0.1);color:#d97706;border:1px solid rgba(245,158,11,0.3)}
+    .subscription-badge-wrap{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.25rem}
+    .subscription-time-remaining{font-size:0.88rem;font-weight:600;color:var(--text-secondary);border:1.5px solid var(--glass-border);padding:0.4rem 0.8rem;border-radius:8px;background:rgba(255, 255, 255, 0.45);box-shadow:var(--shadow-sm);line-height:1}
     .input-with-icon{position:relative;display:flex;align-items:center}
     .input-icon{position:absolute;left:0.75rem;font-size:1rem;pointer-events:none}
     .input-with-icon input{padding-left:2.4rem}
@@ -444,6 +451,45 @@ export class ProfileModalComponent implements OnInit {
   }
 
   isProPlan = () => this.firestoreService.profileSignal()?.plan === 'premium';
+
+  getSubscriptionInfo(): string {
+    const profile = this.firestoreService.profileSignal();
+    if (!profile || !profile.subscription) return '';
+
+    const sub = profile.subscription;
+    if (sub.tier !== 'premium') return '';
+
+    // Calculate dates
+    let end: Date | null = null;
+    if (sub.endDate) {
+      if (typeof sub.endDate.toDate === 'function') {
+        end = sub.endDate.toDate();
+      } else {
+        end = new Date(sub.endDate);
+      }
+    }
+
+    if (!end) return 'Acceso de por vida ✨';
+
+    // Format date: "Activa hasta el DD/MM/AAAA"
+    const day = String(end.getDate()).padStart(2, '0');
+    const month = String(end.getMonth() + 1).padStart(2, '0');
+    const year = end.getFullYear();
+    
+    // Friendly days remaining
+    const diffTime = end.getTime() - new Date().getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) {
+      return 'Expirada';
+    } else if (diffDays === 1) {
+      return 'Expira mañana ⚠️';
+    } else if (diffDays <= 7) {
+      return `Expira en ${diffDays} días ⏳ (${day}/${month}/${year})`;
+    } else {
+      return `Activa hasta el ${day}/${month}/${year} (${diffDays} días restantes)`;
+    }
+  }
 
   isDirty(): boolean {
     const current = { ...this.profileForm };

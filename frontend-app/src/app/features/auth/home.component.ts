@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { FirestoreService } from '../../core/services/firestore.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-home',
@@ -1104,8 +1105,8 @@ import { FirestoreService } from '../../core/services/firestore.service';
               </li>
             </ul>
             
-            <button class="pricing-btn-action premium-action" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
-              {{ isLoggedIn() ? 'Ir al Panel Premium' : 'Adquirir Premium' }}
+            <button class="pricing-btn-action premium-action" (click)="onPremiumAction()">
+              {{ getPremiumButtonText() }}
             </button>
           </div>
         </div>
@@ -4329,6 +4330,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   public firestoreService = inject(FirestoreService);
+  private paymentService = inject(PaymentService);
   private zone = inject(NgZone);
   
   isLoggedIn$ = this.authService.isLoggedIn$;
@@ -4653,6 +4655,72 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   goTo(path: string) {
     this.router.navigate([path]);
+  }
+
+  getPremiumButtonText(): string {
+    if (!this.isLoggedIn()) {
+      return 'Adquirir Premium';
+    }
+    const profile = this.firestoreService.profileSignal();
+    if (profile?.plan === 'premium') {
+      return 'Ir al Panel Premium';
+    }
+    return 'Adquirir Premium';
+  }
+
+  onPremiumAction() {
+    if (!this.isLoggedIn()) {
+      localStorage.setItem('estudiauni_pending_checkout', JSON.stringify({
+        plan: this.billingPeriod
+      }));
+      this.goTo('/register');
+      return;
+    }
+    const profile = this.firestoreService.profileSignal();
+    if (profile?.plan === 'premium') {
+      this.goTo('/dashboard');
+      return;
+    }
+    this.buyPremium();
+  }
+
+  buyPremium() {
+    const plan = this.billingPeriod; // 'monthly' | 'yearly'
+    const returnUrl = window.location.origin + '/pago-resultado';
+
+    const originalText = this.getPremiumButtonText();
+    const btn = document.querySelector('.premium-action') as HTMLButtonElement;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Redirigiendo a Webpay...';
+    }
+
+    this.paymentService.createWebpayTransaction(plan, returnUrl).subscribe({
+      next: (res) => {
+        // Redirigir a Webpay Plus vía POST con el token
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = res.url;
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'token_ws';
+        input.value = res.token;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      },
+      error: (err) => {
+        console.error('[Payment] Error initiating payment:', err);
+        const errMsg = err.error?.message || err.message || 'Error de conexión';
+        alert('Hubo un problema al iniciar el pago con Webpay: ' + errMsg);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = originalText;
+        }
+      }
+    });
   }
 
   scrollTo(id: string) {

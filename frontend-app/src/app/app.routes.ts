@@ -123,5 +123,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/recursos/recursos.component').then(m => m.RecursosComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
+  {
+    path: 'pago-resultado',
+    loadComponent: () => import('./features/payment/payment-result.component').then(m => m.PaymentResultComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
   { path: '**', redirectTo: '' }
 ];
+

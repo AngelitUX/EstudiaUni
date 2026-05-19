@@ -29,6 +29,12 @@ export interface UserProfile {
   displayName: string;
   photoURL?: string;
   plan: 'free' | 'premium';
+  subscription?: {
+    tier: 'free' | 'premium';
+    status: string;
+    startDate: any;
+    endDate: any;
+  };
   notificationsEnabled?: boolean;
   emailVerified?: boolean;
   theme?: 'auto' | 'dark' | 'light';
@@ -116,11 +122,37 @@ export class FirestoreService {
     });
   }
 
+  private normalizeProfile(data: any): UserProfile | null {
+    if (!data) return null;
+    
+    let isExpired = false;
+    if (data.subscription?.endDate) {
+      let end: Date;
+      if (typeof data.subscription.endDate.toDate === 'function') {
+        end = data.subscription.endDate.toDate();
+      } else {
+        end = new Date(data.subscription.endDate);
+      }
+      if (end < new Date()) {
+        isExpired = true;
+      }
+    }
+
+    const plan = isExpired 
+      ? 'free' 
+      : (data.plan || (data.subscription?.tier === 'premium' ? 'premium' : 'free'));
+
+    return {
+      ...data,
+      plan
+    } as UserProfile;
+  }
+
   getUserProfile(forceRefresh = false, uid?: string): Observable<UserProfile | null> {
     if (uid) {
       const docRef = doc(this.firestore, 'users', uid);
       return from(getDoc(docRef)).pipe(
-        map(snap => snap.exists() ? snap.data() as UserProfile : null)
+        map(snap => snap.exists() ? this.normalizeProfile(snap.data()) : null)
       );
     }
 
@@ -144,7 +176,7 @@ export class FirestoreService {
         const docRef = doc(this.firestore, 'users', user.uid);
         return from(getDoc(docRef)).pipe(
           map(snap => {
-            const p = snap.exists() ? snap.data() as UserProfile : null;
+            const p = snap.exists() ? this.normalizeProfile(snap.data()) : null;
             this.profileSignal.set(p);
             return p;
           })
