@@ -874,6 +874,14 @@ export class PaesContentService {
     this.saveProgressToStorage();
   }
 
+  markSeccionIncomplete(seccionId: string): void {
+    const newMap = new Map(this._progress());
+    newMap.delete(seccionId);
+    this._progress.set(newMap);
+    this.saveProgressToStorage();
+  }
+
+
   // ─── Persistence (localStorage) ───
 
   private saveProgressToStorage(): void {
