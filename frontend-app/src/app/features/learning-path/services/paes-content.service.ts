@@ -493,6 +493,12 @@ export class PaesContentService {
         if (isNewUser) {
           this._progress.set(new Map());
           this.loadProgressFromStorage();
+          // Debug: log loaded progress count for verification
+          console.log(`[PaesContentService] ✅ Progreso cargado para usuario ${user.uid}: ${this._progress().size} secciones completadas`);
+          if (this._progress().size > 0) {
+            const completedCount = Array.from(this._progress().values()).filter(p => p.completed).length;
+            console.log(`[PaesContentService] 📊 De esas, ${completedCount} están marcadas como completadas.`);
+          }
         }
 
         // Cargar datos de Firestore ahora que estamos 100% autenticados
@@ -502,9 +508,16 @@ export class PaesContentService {
       } else {
         this.currentUid = null;
         this._progress.set(new Map());
-        this.loading.set(true); // Reset loading state for subsequent logins
+        // Only reset loading if data hasn't been loaded yet.
+        // This prevents the race condition where auth briefly resolves as null
+        // before the user is authenticated, which would set loading=true
+        // permanently since no subsequent loadDataFromFirestore() call occurs.
+        if (this._materias().length === 0) {
+          this.loading.set(true);
+        }
       }
     });
+
   }
 
   private async loadDataFromLocalMocks() {
