@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { FirestoreService } from './core/services/firestore.service';
 import { PaymentService } from './core/services/payment.service';
 import { PricingModalComponent } from './features/payment/pricing-modal.component';
@@ -16,6 +17,7 @@ export class AppComponent implements OnInit {
   title = 'frontend-app';
   private firestoreService = inject(FirestoreService);
   public readonly paymentService = inject(PaymentService);
+  private router = inject(Router);
 
   @HostListener('document:click', ['$event'])
   onGlobalClick(event: MouseEvent) {
@@ -33,6 +35,19 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Scroll to top on navigation change
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      setTimeout(() => {
+        const scrollables = document.querySelectorAll('.main-content, .review-container, .question-area, .runner-page, .review-page');
+        scrollables.forEach(el => el.scrollTop = 0);
+      }, 50);
+    });
+
     this.firestoreService.getUserProfile().subscribe(profile => {
       if (profile) {
         const classList = document.body.classList;

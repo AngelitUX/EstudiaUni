@@ -9,6 +9,7 @@ import { Materia } from './models/paes.models';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { AdminService } from '../admin/services/admin.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-learning-path',
@@ -95,21 +96,50 @@ import { AdminService } from '../admin/services/admin.service';
       </div>
 
       <!-- MAIN -->
-      <main class="main-content animate-fade-in">
-        <div *ngIf="paes.loading()" class="loading-state">
-          <div class="loader"></div>
-          <p>Cargando materias...</p>
-        </div>
-
-        <ng-container *ngIf="!paes.loading()">
-          <!-- PAGE HEADER -->
-          <div class="page-header">
-            <div>
-              <h1>Mi Ruta de Aprendizaje</h1>
-              <p class="page-subtitle">Elige una materia para empezar tu camino PAES 🚀</p>
+      <main class="main-content animate-fade-in-down">
+        <!-- HEADER -->
+        <header class="dashboard-header">
+          <div class="header-welcome-text">
+            <h1 class="header-greeting"><span class="text-gradient">Ruta de Aprendizaje</span></h1>
+            <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Elige una materia para empezar tu camino PAES 🚀</p>
+          </div>
+          <div class="welcome-actions">
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                </span>
+              </button>
+              <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
             </div>
-            <div class="header-right-actions" style="display:flex; align-items:center; gap:1.5rem;">
-              <div class="overall-stats">
+          </div>
+        </header>
+
+        <div class="dashboard-body">
+          <div *ngIf="paes.loading()" class="loading-state">
+            <div class="loader"></div>
+            <p>Cargando materias...</p>
+          </div>
+
+          <ng-container *ngIf="!paes.loading()">
+            <!-- CONTROLS ROW -->
+            <div class="controls-row">
+              <div class="countdown-row">
+                <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
+                <div class="countdown-timer">
+                  <div class="time-unit"><span>{{ countdown.days }}</span><label>d</label></div>
+                  <div class="time-unit"><span>{{ countdown.hours }}</span><label>h</label></div>
+                  <div class="time-unit"><span>{{ countdown.minutes }}</span><label>m</label></div>
+                </div>
+              </div>
+
+              <!-- Stats Widget -->
+              <div class="overall-stats" style="margin-left: auto; margin-right: auto;">
                 <div class="ov-stat">
                   <span class="ov-val">{{ totalCompleted() }}</span>
                   <span class="ov-label">Completadas</span>
@@ -119,117 +149,92 @@ import { AdminService } from '../admin/services/admin.service';
                   <span class="ov-label">Total</span>
                 </div>
               </div>
-              <div class="welcome-actions">
-                <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
-                <div class="profile-menu-wrap">
-                  <button class="profile-trigger" (click)="showProfileModal = true">
-                    <span class="profile-avatar-wrap">
-                      <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                      <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
-                    </span>
-                  </button>
-                  <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
+
+              <div class="filters-row">
+                <div class="filter-group">
+                  <label for="sortOrder">Ordenar por:</label>
+                  <select id="sortOrder" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
+                    <option value="default">Por Defecto</option>
+                    <option value="progress-desc">Más Avanzado a Menos Avanzado</option>
+                    <option value="progress-asc">Menos Avanzado a Más Avanzado</option>
+                  </select>
                 </div>
               </div>
             </div>
-          </div>
-              
-          <!-- CONTROLS ROW -->
-          <div class="controls-row">
-            <div class="countdown-row">
-              <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
-              <div class="countdown-timer">
-                <div class="time-unit"><span>{{ countdown.days }}</span><label>d</label></div>
-                <div class="time-unit"><span>{{ countdown.hours }}</span><label>h</label></div>
-                <div class="time-unit"><span>{{ countdown.minutes }}</span><label>m</label></div>
-              </div>
-            </div>
 
-            <div class="filters-row">
-              <div class="filter-group">
-                <label for="sortOrder">Ordenar por:</label>
-                <select id="sortOrder" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
-                  <option value="default">Por Defecto</option>
-                  <option value="progress-desc">Más Avanzado a Menos Avanzado</option>
-                  <option value="progress-asc">Menos Avanzado a Más Avanzado</option>
-                </select>
-              </div>
-            </div>
-          </div>
+            <!-- MATERIAS GRID -->
+            <div class="materias-grid">
+              <div *ngFor="let m of filteredAndSortedMaterias()"
+                class="materia-card horizontal-card"
+                [class.has-progress]="getMateriaProgress(m.id).percentage > 0"
+                [class.completed]="getMateriaProgress(m.id).percentage === 100"
+                [style.background-color]="getMateriaInfo(m).bgColor || '#fff'"
+                (click)="goToMateria(m)">
 
-          <!-- MATERIAS GRID -->
-          <div class="materias-grid">
-            <div *ngFor="let m of filteredAndSortedMaterias()"
-              class="materia-card horizontal-card"
-              [class.has-progress]="getMateriaProgress(m.id).percentage > 0"
-              [class.completed]="getMateriaProgress(m.id).percentage === 100"
-              [style.background-color]="getMateriaInfo(m).bgColor || '#fff'"
-              (click)="goToMateria(m)">
+                <!-- Izquierda: Imagen grande -->
+                <div class="card-image-col">
+                  <img [src]="getMateriaInfo(m).img" [alt]="m.title" class="materia-main-img" />
+                </div>
 
-              <!-- Izquierda: Imagen grande -->
-              <div class="card-image-col">
-                <img [src]="getMateriaInfo(m).img" [alt]="m.title" class="materia-main-img" />
-              </div>
-
-              <!-- Derecha: Contenido -->
-              <div class="card-content-col">
-                <!-- Título y Estado -->
-                <div class="card-header-row">
-                  <h2>{{ m.title }}</h2>
-                  <div class="status-badges">
-                    <div class="status-badge"
-                      *ngIf="getMateriaProgress(m.id).percentage > 0"
-                      [class.badge-complete]="getMateriaProgress(m.id).percentage === 100">
-                      {{ getMateriaProgress(m.id).percentage === 100 ? '✓ Completa' : getMateriaProgress(m.id).percentage + '% en curso' }}
+                <!-- Derecha: Contenido -->
+                <div class="card-content-col">
+                  <!-- Título y Estado -->
+                  <div class="card-header-row">
+                    <h2>{{ m.title }}</h2>
+                    <div class="status-badges">
+                      <span class="status-badge" *ngIf="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100">EN CURSO</span>
+                      <span class="status-badge badge-complete" *ngIf="getMateriaProgress(m.id).percentage === 100">COMPLETADA</span>
+                      <span class="status-badge badge-new" *ngIf="getMateriaProgress(m.id).percentage === 0">NUEVO</span>
                     </div>
-                    <div class="status-badge badge-new" *ngIf="getMateriaProgress(m.id).percentage === 0">Nuevo</div>
                   </div>
-                </div>
 
-                <!-- Descripción y Tópicos -->
-                <p class="materia-desc">{{ getMateriaInfo(m).desc }}</p>
-                <div class="materia-topics">
-                  <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m).topics">{{ topic }}</span>
-                </div>
+                  <!-- Descripción -->
+                  <p class="materia-desc">{{ getMateriaInfo(m).desc }}</p>
 
-                <!-- Footer de la tarjeta: Progreso + Botón -->
-                <div class="card-footer-row">
-                  <div class="progress-info-wrap">
-                    <div class="stats-text">
-                      <span class="stat-item"><strong>{{ getCapCount(m.id) }}</strong> Capítulos</span>
-                      <span class="stat-sep">·</span>
-                      <span class="stat-item"><strong>{{ getSectionCount(m.id) }}</strong> Lecciones</span>
-                    </div>
-                    <div class="prog-bar-container">
-                      <div class="prog-bar-track">
-                        <div class="prog-bar-fill"
-                          [class.fill-green]="getMateriaProgress(m.id).percentage === 100"
-                          [style.width.%]="getMateriaProgress(m.id).percentage">
-                        </div>
+                  <!-- Mini lista de temas/capítulos -->
+                  <div class="materia-topics">
+                    <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m).topics | slice:0:3">{{ topic }}</span>
+                    <span class="topic-tag" *ngIf="getMateriaInfo(m).topics.length > 3">+{{ getMateriaInfo(m).topics.length - 3 }} más</span>
+                  </div>
+
+                  <!-- Footer: Progreso y Botón -->
+                  <div class="card-footer-row">
+                    <div class="progress-info-wrap">
+                      <div class="stats-text">
+                        <span class="stat-item"><strong>{{ getCapCount(m.id) }}</strong> Capítulos</span>
+                        <span class="stat-sep">·</span>
+                        <span class="stat-item"><strong>{{ getSectionCount(m.id) }}</strong> Lecciones</span>
                       </div>
-                      <span class="prog-text-small">{{ getMateriaProgress(m.id).completed }}/{{ getMateriaProgress(m.id).total }}</span>
+                      <div class="prog-bar-container">
+                        <div class="prog-bar-track">
+                          <div class="prog-bar-fill"
+                            [class.fill-green]="getMateriaProgress(m.id).percentage === 100"
+                            [style.width.%]="getMateriaProgress(m.id).percentage">
+                          </div>
+                        </div>
+                        <span class="prog-text-small">{{ getMateriaProgress(m.id).completed }}/{{ getMateriaProgress(m.id).total }}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  <!-- Botón -->
-                  <div class="cta-wrap">
-                    <button class="btn-main-action"
-                      [class.btn-start]="getMateriaProgress(m.id).percentage === 0"
-                      [class.btn-continue]="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100"
-                      [class.btn-review]="getMateriaProgress(m.id).percentage === 100">
-                      {{ getMateriaProgress(m.id).percentage === 0 ? 'EMPEZAR' : getMateriaProgress(m.id).percentage === 100 ? 'REPASAR' : 'CONTINUAR' }}
-                    </button>
+                    <!-- Botón -->
+                    <div class="cta-wrap">
+                      <button class="btn-main-action"
+                        [class.btn-start]="getMateriaProgress(m.id).percentage === 0"
+                        [class.btn-continue]="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100"
+                        [class.btn-review]="getMateriaProgress(m.id).percentage === 100">
+                        {{ getMateriaProgress(m.id).percentage === 0 ? 'EMPEZAR' : getMateriaProgress(m.id).percentage === 100 ? 'REPASAR' : 'CONTINUAR' }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-        </ng-container>
+          </ng-container>
+        </div>
       </main>
-    </div>
-    <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsClose()"></app-settings-modal>
-    <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+      <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsClose()"></app-settings-modal>
+      <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
@@ -295,8 +300,23 @@ import { AdminService } from '../admin/services/admin.service';
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .nav-item.active { 
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
+    }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
+    .nav-icon { 
+      font-size: 1.35rem; 
+      width: 32px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
     .sidebar-section-title {
       font-size: 0.78rem;
       font-weight: 800;
@@ -356,9 +376,12 @@ import { AdminService } from '../admin/services/admin.service';
       transform: translateX(3px);
     }
     .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
@@ -367,7 +390,8 @@ import { AdminService } from '../admin/services/admin.service';
     .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
@@ -390,25 +414,7 @@ import { AdminService } from '../admin/services/admin.service';
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN */
-    .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); }
-
-    /* PAGE HEADER */
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
-    .page-header h1 { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem; letter-spacing: -0.03em; }
-    .page-subtitle { color: var(--text-secondary); font-size: 1.15rem; margin: 0; font-weight: 500; }
-    
-    /* PROFILE MENU & PLAN BADGE */
-    .welcome-actions { display: flex; align-items: center; gap: 1rem; }
-    .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; box-shadow: var(--shadow-sm); }
-    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: var(--shadow); }
-    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
-    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: var(--gradient-brand); font-weight: 700; font-size: 0.9rem; color: white; }
-    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
+    .main-content { flex: 1; margin-left: 260px; max-width: calc(100% - 260px); }
 
     .overall-stats { display: flex; gap: 0.75rem; }
     .ov-stat { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; padding: 0.75rem 1.25rem; text-align: center; min-width: 75px; }
@@ -546,7 +552,7 @@ import { AdminService } from '../admin/services/admin.service';
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-header { display: flex; }
-      .main-content { margin-left: 0; padding: 80px 1rem 4rem; max-width: 100%; }
+      .main-content { margin-left: 0; max-width: 100%; }
       .page-header { flex-direction: column; }
       
       .horizontal-card { flex-direction: column; gap: 1.5rem; padding: 1.5rem; }
@@ -564,6 +570,7 @@ export class LearningPathComponent implements OnInit, OnDestroy {
   public paes = inject(PaesContentService);
   private router = inject(Router);
   public adminService = inject(AdminService);
+  public paymentService = inject(PaymentService);
 
   get herramientasExpanded(): boolean {
     const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 

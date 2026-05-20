@@ -46,7 +46,7 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
       </aside>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in">
+      <main class="main-content animate-fade-in-down">
         <header class="admin-header">
           <div class="header-content">
             <h1>Gestión de Recursos Adicionales</h1>
@@ -362,7 +362,16 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
     .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
-    .nav-item.active { background: rgba(239, 68, 68, 0.25); color: #ffffff; border: 1.5px solid rgba(239, 68, 68, 0.4); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-item.active { 
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
+    }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
     .nav-count { margin-left: auto; background: rgba(0,0,0,0.2); padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; }
     
@@ -432,7 +441,8 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
     
     .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
     .modal-header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+    .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-muted); line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     
     .modal-body { padding: 2rem; max-height: calc(100vh - 200px); overflow-y: auto; }
     

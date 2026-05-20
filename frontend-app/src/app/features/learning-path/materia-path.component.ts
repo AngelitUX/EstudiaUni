@@ -7,6 +7,7 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 type PathItem = 
   | { type: 'chapter', capituloId: string, title: string, subtitle: string, isCurrentChapter?: boolean }
@@ -97,22 +98,20 @@ type PathItem =
       </div>
 
       <!-- MAIN -->
-      <main class="main-content animate-fade-in" *ngIf="materia() as m">
+      <main class="main-content animate-fade-in-down" *ngIf="materia() as m">
         <!-- HEADER -->
-        <header class="path-header">
-          <div class="header-left">
-            <button class="btn-back" routerLink="/ruta">
+        <header class="dashboard-header">
+          <div class="header-welcome-text" style="flex-direction: row; align-items: center; gap: 1rem;">
+            <button class="btn-back" routerLink="/ruta" style="background: transparent; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; padding: 0; line-height: 1;">
               <span>←</span>
             </button>
-            <div class="header-info">
-              <h2>{{ m.title }}</h2>
-            </div>
+            <h1 class="header-greeting"><span class="text-gradient">{{ m.title }}</span></h1>
           </div>
-
           <div class="welcome-actions">
-            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">
-              {{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}
-            </span>
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
@@ -125,7 +124,8 @@ type PathItem =
           </div>
         </header>
 
-        <div class="materia-page">
+        <div class="dashboard-body">
+          <div class="materia-page">
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
             <ng-container *ngFor="let item of pathItems()">
@@ -236,6 +236,7 @@ type PathItem =
             </ng-container>
           </div>
         </div>
+        </div>
       </main>
     </div>
     <app-profile-modal *ngIf="showProfileModal" (close)="showProfileModal = false"></app-profile-modal>
@@ -284,7 +285,16 @@ type PathItem =
     .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-item.active { 
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
+    }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
     .sidebar-section-title {
       font-size: 0.78rem;
@@ -351,7 +361,8 @@ type PathItem =
     .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
@@ -378,26 +389,9 @@ type PathItem =
 
     .materia-page { max-width: 600px; margin: 0 auto; padding-bottom: 6rem; position: relative; }
 
-    /* HEADER */
-    .path-header { padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
-    .header-left { display: flex; align-items: center; gap: 1rem; }
-    .btn-back { background: transparent; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.2s; }
-    .btn-back:hover { background: var(--bg-secondary); color: var(--accent-primary); transform: translateX(-4px); }
-    .header-info h2 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
-
-    /* MATCH DASHBOARD WELCOME ACTIONS */
-    .welcome-actions { display: flex; align-items: center; gap: 1rem; }
-    .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; transition: all 0.2s; width: 62px; height: 62px; box-shadow: var(--shadow-sm); }
-    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: var(--shadow); }
-    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
-    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: var(--gradient-brand); font-weight: 700; font-size: 0.9rem; color: white; }
-    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
-    
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; text-transform: uppercase; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
+    /* BACK BUTTON OVERRIDES */
+    .btn-back { background: transparent; border: none; font-size: 1.5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.2s; }
+    .btn-back:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateX(-4px); }
 
     /* PATH CONTAINER */
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
@@ -588,6 +582,7 @@ export class MateriaPathComponent {
   public firestoreService = inject(FirestoreService);
   public adminService = inject(AdminService);
   private auth = inject(AuthService);
+  public paymentService = inject(PaymentService);
 
   mobileOpen = false;
   showSettingsModal = false;

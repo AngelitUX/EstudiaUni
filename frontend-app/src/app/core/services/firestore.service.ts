@@ -49,6 +49,9 @@ export interface UserProfile {
   fontSize?: 'normal' | 'large' | 'xlarge';
   linkedinUrl?: string;
   favoriteCareers?: any[];
+  targetScore?: number;
+  targetCareer?: string;
+  targetUniversity?: string;
   location?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
   notasNem?: {
@@ -152,7 +155,7 @@ export class FirestoreService {
     if (uid) {
       const docRef = doc(this.firestore, 'users', uid);
       return from(getDoc(docRef)).pipe(
-        map(snap => snap.exists() ? this.normalizeProfile(snap.data()) : null)
+        map(snap => snap.exists() ? this.normalizeProfile({ uid, ...snap.data() }) : null)
       );
     }
 
@@ -176,7 +179,7 @@ export class FirestoreService {
         const docRef = doc(this.firestore, 'users', user.uid);
         return from(getDoc(docRef)).pipe(
           map(snap => {
-            const p = snap.exists() ? this.normalizeProfile(snap.data()) : null;
+            const p = snap.exists() ? this.normalizeProfile({ uid: user.uid, ...snap.data() }) : null;
             this.profileSignal.set(p);
             return p;
           })
@@ -213,6 +216,8 @@ export class FirestoreService {
     }
 
     await setDoc(doc(this.firestore, 'users', user.uid), data, { merge: true });
+
+    this.cachedProfile$ = null;
 
     // Update local profile signal immediately to avoid redundant fetches
     const current = this.profileSignal();
@@ -289,6 +294,8 @@ export class FirestoreService {
     if (!user) return;
     await updateDoc(doc(this.firestore, 'users', user.uid), settings);
 
+    this.cachedProfile$ = null;
+
     // Update local profile signal immediately to avoid redundant fetches
     const current = this.profileSignal();
     if (current && current.uid === user.uid) {
@@ -300,6 +307,8 @@ export class FirestoreService {
     const user = this.auth.currentUser;
     if (!user) return;
     await updateDoc(doc(this.firestore, 'users', user.uid), stats);
+
+    this.cachedProfile$ = null;
 
     // Update local profile signal immediately to avoid redundant fetches
     const current = this.profileSignal();
