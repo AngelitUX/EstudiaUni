@@ -133,13 +133,59 @@ export class SubscriptionsService {
    * Upgrade user to premium (placeholder — no Stripe integration yet).
    */
   async upgrade(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
-    const startDate = new Date();
-    const endDate = new Date();
-    
-    if (planType === 'yearly') {
-      endDate.setFullYear(startDate.getFullYear() + 1);
+    const userDoc = await this.firebaseService.firestore
+      .collection('users')
+      .doc(uid)
+      .get();
+
+    if (!userDoc.exists) throw new NotFoundException('User not found');
+    const userData = userDoc.data()!;
+
+    let startDate = new Date();
+    let endDate = new Date();
+
+    const isPremium = userData.subscription?.tier === 'premium';
+    const existingEndDateVal = userData.subscription?.endDate;
+
+    if (isPremium && existingEndDateVal) {
+      let existingEndDate: Date;
+      if (typeof existingEndDateVal.toDate === 'function') {
+        existingEndDate = existingEndDateVal.toDate();
+      } else {
+        existingEndDate = new Date(existingEndDateVal);
+      }
+
+      if (existingEndDate > new Date()) {
+        // Extend existing subscription
+        if (userData.subscription?.startDate) {
+          if (typeof userData.subscription.startDate.toDate === 'function') {
+            startDate = userData.subscription.startDate.toDate();
+          } else {
+            startDate = new Date(userData.subscription.startDate);
+          }
+        }
+        endDate = new Date(existingEndDate);
+        if (planType === 'yearly') {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          endDate.setMonth(endDate.getMonth() + 1);
+        }
+        this.logger.log(`[Subscription] Extending premium for uid=${uid} from ${existingEndDate.toISOString()} to ${endDate.toISOString()}`);
+      } else {
+        // Premium expired, treat as new subscription
+        if (planType === 'yearly') {
+          endDate.setFullYear(startDate.getFullYear() + 1);
+        } else {
+          endDate.setMonth(startDate.getMonth() + 1);
+        }
+      }
     } else {
-      endDate.setMonth(startDate.getMonth() + 1);
+      // New subscription
+      if (planType === 'yearly') {
+        endDate.setFullYear(startDate.getFullYear() + 1);
+      } else {
+        endDate.setMonth(startDate.getMonth() + 1);
+      }
     }
 
     await this.firebaseService.firestore

@@ -13,6 +13,7 @@ export interface WebpayInitResponse {
 export interface WebpayCommitResponse {
   success: boolean;
   message: string;
+  isGift?: boolean;
   amount?: number;
   buyOrder?: string;
   authorizationCode?: string;
@@ -22,27 +23,66 @@ export interface WebpayCommitResponse {
   };
 }
 
+export interface RandomRecipientResponse {
+  uid: string;
+  email: string;
+}
+
+export interface CouponValidationResponse {
+  valid: boolean;
+  message: string;
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: number;
+  discountAmount?: number;
+  finalAmount?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private http = inject(HttpClient);
   
   showPricingModal = signal<boolean>(false);
+  skipPlanStep = signal<boolean>(false);
+  selectedPlanType = signal<'monthly' | 'yearly'>('monthly');
 
-  openPricingModal() {
+  openPricingModal(skipToRecipient = false, planType?: 'monthly' | 'yearly') {
+    if (planType) {
+      this.selectedPlanType.set(planType);
+    }
+    this.skipPlanStep.set(skipToRecipient);
     this.showPricingModal.set(true);
   }
 
   closePricingModal() {
     this.showPricingModal.set(false);
+    this.skipPlanStep.set(false);
   }
 
   /**
-   * Initiate a Webpay transaction
+   * Validate a discount coupon code against the backend.
    */
-  createWebpayTransaction(planType: 'monthly' | 'yearly', returnUrl: string): Observable<WebpayInitResponse> {
+  validateCoupon(code: string, planType: 'monthly' | 'yearly'): Observable<CouponValidationResponse> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<CouponValidationResponse>(`${baseUrl}/api/subscriptions/validate-coupon`, { code, planType });
+  }
+
+  /**
+   * Initiate a Webpay transaction.
+   * If targetUid is provided, premium will be granted to that user after payment (gift flow).
+   * If couponCode is provided, the discount will be applied to the amount.
+   */
+  createWebpayTransaction(
+    planType: 'monthly' | 'yearly',
+    returnUrl: string,
+    targetUid?: string,
+    couponCode?: string,
+  ): Observable<WebpayInitResponse> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     const url = `${baseUrl}/api/subscriptions/webpay/create`;
-    return this.http.post<WebpayInitResponse>(url, { planType, returnUrl });
+    const body: any = { planType, returnUrl };
+    if (targetUid) body.targetUid = targetUid;
+    if (couponCode) body.couponCode = couponCode;
+    return this.http.post<WebpayInitResponse>(url, body);
   }
 
   /**
@@ -52,5 +92,14 @@ export class PaymentService {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     const url = `${baseUrl}/api/subscriptions/webpay/commit`;
     return this.http.post<WebpayCommitResponse>(url, { token });
+  }
+
+  /**
+   * Get a random free-tier user to gift premium to
+   */
+  getRandomFreeUser(): Observable<RandomRecipientResponse> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    const url = `${baseUrl}/api/subscriptions/webpay/random-recipient`;
+    return this.http.get<RandomRecipientResponse>(url);
   }
 }

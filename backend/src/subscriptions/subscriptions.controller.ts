@@ -10,7 +10,7 @@ import {
 import { SubscriptionsService } from './subscriptions.service';
 import { WebpayService } from './webpay.service';
 import { CheckCreditsDto } from './dto/change-plan.dto';
-import { CreateWebpayTransactionDto, CommitWebpayTransactionDto } from './dto/webpay.dto';
+import { CreateWebpayTransactionDto, CommitWebpayTransactionDto, ValidateCouponDto } from './dto/webpay.dto';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import {
   CurrentUser,
@@ -49,13 +49,30 @@ export class SubscriptionsController {
     return this.subscriptionsService.cancel(user.uid);
   }
 
+  @Post('validate-coupon')
+  @HttpCode(HttpStatus.OK)
+  async validateCoupon(@Body() dto: ValidateCouponDto) {
+    return this.webpayService.validateCoupon(dto.code, dto.planType);
+  }
+
+  @Get('webpay/random-recipient')
+  async getRandomFreeUser() {
+    return this.webpayService.getRandomFreeUser();
+  }
+
   @Post('webpay/create')
   @HttpCode(HttpStatus.OK)
   async createWebpayTransaction(
     @CurrentUser() user: CurrentUserData,
     @Body() dto: CreateWebpayTransactionDto,
   ) {
-    return this.webpayService.createTransaction(user.uid, dto.planType, dto.returnUrl);
+    return this.webpayService.createTransaction(
+      user.uid,
+      dto.planType,
+      dto.returnUrl,
+      dto.targetUid,
+      dto.couponCode,
+    );
   }
 
   @Post('webpay/commit')
@@ -67,4 +84,3 @@ export class SubscriptionsController {
     return this.webpayService.commitTransaction(user.uid, dto.token);
   }
 }
-

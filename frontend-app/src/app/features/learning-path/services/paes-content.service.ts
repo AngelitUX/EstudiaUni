@@ -475,7 +475,7 @@ export class PaesContentService {
   readonly poolPreguntas = this._poolPreguntas.asReadonly();
 
   constructor() {
-    this.clearCache(); // Force immediate cache clear once to migrate to the new ID-mapped schema
+    // this.clearCache(); // Commented out to prevent erasing cache on every reload/hot-reload, reducing Firestore reads.
     
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
     const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
