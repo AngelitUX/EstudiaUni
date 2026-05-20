@@ -358,7 +358,7 @@ interface MateriaOption {
     .logout-btn-sidebar { color: #f87171 !important; }
     .logout-btn-sidebar:hover { background: rgba(248, 113, 113, 0.15) !important; }
     
-    .main-content { flex: 1; overflow-y: auto; }
+    .main-content { flex: 1; overflow-y: auto; background: #0F1018; padding: 0; display: flex; flex-direction: column; }
     
     .setup-container { width: 100%; max-width: 900px; padding: 2.5rem; border-radius: 24px; border: 2px solid var(--glass-border); display: flex; flex-direction: column; gap: 2.5rem; }
     
@@ -409,6 +409,27 @@ interface MateriaOption {
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+    /* LOGOUT MODAL */
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; }
+    .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
+    .modal-body { padding: 1.5rem; }
+    .confirm-content { text-align: center; padding: 1rem 0; }
+    .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+    .confirm-content p { color: var(--text-secondary); margin: 0; }
+    .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
+    .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-secondary-modal { padding: 0.85rem; border-radius: 12px; border: 2px solid var(--glass-border); background: transparent; color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary-modal:hover { background: var(--bg-secondary); }
+    .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-danger { background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239,68,68,0.25) !important; }
   `]
 })
 export class MiniEnsayoSetupComponent implements OnInit {
