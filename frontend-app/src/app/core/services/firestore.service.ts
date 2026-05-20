@@ -389,6 +389,69 @@ export class FirestoreService {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
 
+  async getNews(): Promise<any[]> {
+    try {
+      const newsRef = collection(this.firestore, 'news');
+      const q = query(newsRef, orderBy('date', 'desc'));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        await this.seedNews();
+        const newSnap = await getDocs(q);
+        return newSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      return [];
+    }
+  }
+
+  async seedNews(): Promise<void> {
+    const defaultNews = [
+      {
+        title: 'Inscripción PAES 2026: DEMRE lanza dura advertencia por cambio clave',
+        source: 'El Mostrador',
+        date: '2026-05-19',
+        dateText: '19 de mayo, 2026',
+        excerpt: 'El DEMRE advirtió sobre la importancia del cambio de clave del usuario en el portal de inscripción, ya que olvidar o errar en este paso podría dejar a los postulantes fuera del proceso regular.',
+        gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+        icon: '⚠️',
+        tag: '¡Advertencia!',
+        linkUrl: 'https://www.elmostrador.cl/datos-utiles/2026/05/19/inscripcion-paes-2026-demre-lanza-dura-advertencia-por-cambio-clave-que-podria-dejarte-fuera/',
+        imageUrl: 'assets/img/seccion noticias/noticia1.jpeg'
+      },
+      {
+        title: 'Comenzó el periodo de inscripción a la PAES de invierno 2026',
+        source: 'Ministerio de Educación',
+        date: '2026-03-04',
+        dateText: '4 de marzo, 2026',
+        excerpt: 'Hasta el martes 17 de marzo a las 13:00 horas, las y los egresados de enseñanza media podrán inscribirse para rendir la prueba de invierno los días 15, 16 y 17 de junio.',
+        gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+        icon: '❄️',
+        tag: 'PAES Invierno',
+        linkUrl: 'https://www.mineduc.cl/comenzo-el-periodo-de-inscripcion-a-la-paes-de-invierno-2026-admision-2027/',
+        imageUrl: 'assets/img/seccion noticias/noticia2.jpg'
+      },
+      {
+        title: 'PAES Invierno 2026: cuándo es y cómo hacer la inscripción',
+        source: 'Iplacex',
+        date: '2026-03-05',
+        dateText: '5 de marzo, 2026',
+        excerpt: 'La PAES de invierno ya tiene fechas confirmadas. Revisa cuándo es, cómo funciona el proceso de inscripción y los requisitos obligatorios para rendirla con éxito.',
+        gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+        icon: '📝',
+        tag: 'Guía Práctica',
+        linkUrl: 'https://www.iplacex.cl/blogs/paes-invierno-2026-cuando-es-y-como-hacer-la-inscripcion/',
+        imageUrl: 'assets/img/seccion noticias/noticia3.webp'
+      }
+    ];
+
+    for (const item of defaultNews) {
+      const id = item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      await setDoc(doc(this.firestore, 'news', id), item);
+    }
+  }
+
   // SEEDING
   async seedEnsayoToFirestore(id: string) {
     const p = this.getMockPreguntas(id);

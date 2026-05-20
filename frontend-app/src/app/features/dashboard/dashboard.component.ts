@@ -891,28 +891,8 @@ export class DashboardComponent implements OnInit {
         return;
       }
 
-      const returnUrl = window.location.origin + '/pago-resultado';
-      this.paymentService.createWebpayTransaction(intent.plan, returnUrl).subscribe({
-        next: (res: any) => {
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.action = res.url;
-          
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = 'token_ws';
-          input.value = res.token;
-          
-          form.appendChild(input);
-          document.body.appendChild(form);
-          form.submit();
-        },
-        error: (err: any) => {
-          console.error('[Dashboard] Error initiating pending payment:', err);
-          const errMsg = err.error?.message || err.message || 'Error de conexión';
-          alert('Hubo un problema al iniciar el pago pendiente: ' + errMsg);
-        }
-      });
+      // Open the unified payment modal directly to the recipient step
+      this.paymentService.openPricingModal(true, intent.plan);
     } catch (e) {
       console.warn('Error reading pending checkout session:', e);
       localStorage.removeItem('estudiauni_pending_checkout');

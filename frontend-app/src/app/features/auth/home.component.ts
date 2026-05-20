@@ -104,8 +104,7 @@ import { PaymentService } from '../../core/services/payment.service';
           </h1>
           
           <p class="hero-subtitle">
-            La plataforma líder en Chile para tu admisión universitaria.<br>
-            Práctica adaptativa, análisis con IA y simulacros completos.
+            La única plataforma chilena que incluye un tutor con IA en tiempo real para guiarte durante cada ensayo.
           </p>
           
           <div class="hero-actions">
@@ -265,7 +264,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <div class="bento-card glass-card">
               <div class="bento-icon">🎯</div>
               <h3>Práctica Adaptativa</h3>
-              <p>Nuestro algoritmo inteligente ajusta la dificultad de las preguntas a tu nivel.</p>
+              <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
@@ -390,7 +389,7 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
             
             <p class="freemium-tip">
-              * Disponible en el plan Premium para ensayos ilimitados. Crea tu cuenta gratis para probar mini-quizzes básicos.
+              Crea tu cuenta gratis para acceder a una prueba limitada. Actualiza al plan Premium para desbloquear ensayos ilimitados y acceso total a nuestro Tutor IA sin restricciones.
             </p>
           </div>
         </div>
@@ -740,21 +739,21 @@ import { PaymentService } from '../../core/services/payment.service';
         <h2 class="section-title">Lo que dicen nuestros <span class="text-gradient">estudiantes</span></h2>
         
         <div class="testimonials-grid">
-          <!-- Tarjeta 1: Catalina Muñoz -->
+          <!-- Tarjeta 1: Mati -->
           <div class="testimonial-card testimonial-card-1">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="https://i.pravatar.cc/80?img=1" alt="Estudiante Catalina Muñoz">
+                <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante Mati">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
-                  <h4>Catalina Muñoz</h4>
+                  <h4>Mati</h4>
                   <!-- Icono verificado verificado en azul -->
-                  <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificada">
+                  <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificado">
                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
                 </div>
-                <p>Ingeniería Civil - PUC</p>
+                <p>Aspirante a Ing. Civil</p>
               </div>
             </div>
             
@@ -765,92 +764,23 @@ import { PaymentService } from '../../core/services/payment.service';
               </svg>
             </div>
             
-            <p class="testimonial-text">"Subí 120 puntos en Matemáticas gracias a la práctica adaptativa. La IA me ayudó a entender exactamente dónde fallaba."</p>
-            
-            <!-- Dashboard del salto de puntaje premium -->
-            <div class="score-leap-dashboard purple-leap">
-              <div class="score-labels">
-                <div class="score-stat">
-                  <span class="stat-lbl">Antes</span>
-                  <span class="stat-val">680</span>
-                </div>
-                <div class="score-leap-badge">+120 Pts</div>
-                <div class="score-stat text-right">
-                  <span class="stat-lbl">PAES</span>
-                  <span class="stat-val text-glow">800</span>
-                </div>
-              </div>
-              <div class="score-progress-track">
-                <div class="score-progress-fill" style="width: 75%"></div>
-                <div class="score-progress-pointer" style="left: 75%"></div>
-              </div>
-            </div>
+            <p class="testimonial-text">"La página está bacán, de verdad te salva. El tutor IA es brígido porque te explica al toque por qué te equivocaste en medio del ensayo, no tienes que andar buscando en Google o viendo videos largos que burren. Apaña caleta para entender todo."</p>
           </div>
 
-          <!-- Tarjeta 2: Sebastián Rojas (Caso Destacado) -->
+          <!-- Tarjeta 2: ValeRojas -->
           <div class="testimonial-card featured testimonial-card-2">
-            <!-- Insignia brillante del caso de éxito -->
-            <div class="featured-capsule">
-              <span class="capsule-icon">🎯</span> Caso de Éxito Premium
-            </div>
-            
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="https://i.pravatar.cc/80?img=3" alt="Estudiante Sebastián Rojas">
+                <img src="assets/img/seccion opiniones/2.png" alt="Estudiante ValeRojas">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
-                  <h4>Sebastián Rojas</h4>
-                  <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificado">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <p>Medicina - UChile</p>
-              </div>
-            </div>
-            
-            <div class="testimonial-stars">
-              <svg *ngFor="let s of [1,2,3,4,5]" class="star-icon" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#f59e0b"/>
-              </svg>
-            </div>
-            
-            <p class="testimonial-text">"Los simulacros son idénticos a la PAES real. Llegué al examen sintiéndome completamente preparado. El análisis de la IA después de cada ensayo fue clave para mejorar."</p>
-            
-            <!-- Dashboard del salto de puntaje premium -->
-            <div class="score-leap-dashboard pink-leap">
-              <div class="score-labels">
-                <div class="score-stat">
-                  <span class="stat-lbl">Antes</span>
-                  <span class="stat-val">720</span>
-                </div>
-                <div class="score-leap-badge">+130 Pts</div>
-                <div class="score-stat text-right">
-                  <span class="stat-lbl">PAES</span>
-                  <span class="stat-val text-glow">850</span>
-                </div>
-              </div>
-              <div class="score-progress-track">
-                <div class="score-progress-fill" style="width: 88%"></div>
-                <div class="score-progress-pointer" style="left: 88%"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tarjeta 3: Fernanda López -->
-          <div class="testimonial-card testimonial-card-3">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://i.pravatar.cc/80?img=5" alt="Estudiante Fernanda López">
-              </div>
-              <div class="testimonial-info">
-                <div class="name-row">
-                  <h4>Fernanda López</h4>
+                  <h4>ValeRojas</h4>
                   <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificada">
                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
                 </div>
-                <p>Derecho - UDP</p>
+                <p>Futura estudiante de Psicología</p>
               </div>
             </div>
             
@@ -860,26 +790,33 @@ import { PaymentService } from '../../core/services/payment.service';
               </svg>
             </div>
             
-            <p class="testimonial-text">"Lo que más me gustó es que puedo practicar desde el celular. La plataforma es súper intuitiva y moderna."</p>
-            
-            <!-- Dashboard del salto de puntaje premium -->
-            <div class="score-leap-dashboard cyan-leap">
-              <div class="score-labels">
-                <div class="score-stat">
-                  <span class="stat-lbl">Antes</span>
-                  <span class="stat-val">650</span>
-                </div>
-                <div class="score-leap-badge">+130 Pts</div>
-                <div class="score-stat text-right">
-                  <span class="stat-lbl">PAES</span>
-                  <span class="stat-val text-glow">780</span>
-                </div>
+            <p class="testimonial-text">"Me costaba sentarme a estudiar, pero acá con los simulacros interactivos se hace cero pesado. La página cacha altiro lo que te cuesta y te hace repasar eso. Me pasé al premium hace una semana y vale 100% la pena."</p>
+          </div>
+
+          <!-- Tarjeta 3: Seba -->
+          <div class="testimonial-card testimonial-card-3">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante Seba">
               </div>
-              <div class="score-progress-track">
-                <div class="score-progress-fill" style="width: 68%"></div>
-                <div class="score-progress-pointer" style="left: 68%"></div>
+              <div class="testimonial-info">
+                <div class="name-row">
+                  <h4>Seba</h4>
+                  <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificado">
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <p>Aspirante a Derecho</p>
               </div>
             </div>
+            
+            <div class="testimonial-stars">
+              <svg *ngFor="let s of [1,2,3,4,5]" class="star-icon" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#f59e0b"/>
+              </svg>
+            </div>
+            
+            <p class="testimonial-text">"Está filete la plataforma. Lo que más me gusta es que puedo hacer los miniquizzes y configurarlo como yo quiera y los mininjuegos son adictivos, recomiendo la pagina a todos los que les cueste estudiar como yo jaja."</p>
           </div>
         </div>
       </section>
@@ -966,7 +903,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <div class="billing-switch-handle" [style.transform]="billingPeriod === 'yearly' ? 'translateX(32px)' : 'translateX(0px)'"></div>
           </div>
           <button class="billing-btn" [class.active]="billingPeriod === 'yearly'" (click)="billingPeriod = 'yearly'">
-            Anual <span class="discount-pill">¡Ahorra 20%!</span>
+            Anual <span class="discount-pill">¡Ahorra 41%!</span>
           </button>
         </div>
 
@@ -992,7 +929,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>1 Ensayo PAES Diario</strong>
+                  <strong>1 Ensayo PAES cada 48 horas</strong>
                 </div>
               </li>
               <li class="feature-item active">
@@ -1000,7 +937,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>5 Mini-Quizzes al día</strong>
+                  <strong>1 Capítulo de la Ruta de Aprendizaje</strong>
                 </div>
               </li>
               <li class="feature-item active">
@@ -1008,7 +945,15 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>Contenido Oficial DEMRE</strong>
+                  <strong>Acceso limitado al Tutor IA</strong>
+                </div>
+              </li>
+              <li class="feature-item active">
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div class="feature-text">
+                  <strong>1 Mini-Ensayo al día</strong>
                 </div>
               </li>
               <li class="feature-item inactive">
@@ -1017,7 +962,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
                 <div class="feature-text">
-                  <strong>Tutor IA 24/7</strong>
+                  <strong>Acceso al Mejorador de Puntaje</strong>
                 </div>
               </li>
               <li class="feature-item inactive">
@@ -1026,7 +971,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
                 <div class="feature-text">
-                  <strong>Estadísticas Avanzadas</strong>
+                  <strong>Análisis para encontrar tu carrera ideal</strong>
                 </div>
               </li>
             </ul>
@@ -1046,17 +991,17 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
             
             <div class="pricing-header">
-              <span class="plan-tag premium-tag">Preparación VIP</span>
-              <h3>Plan Premium</h3>
+              <span class="plan-tag premium-tag">Preparación Óptima</span>
+              <h3>Plan Pro</h3>
             </div>
             
             <div class="price-container">
               <div class="price price-animate">
-                {{ billingPeriod === 'monthly' ? '$9.990' : '$7.990' }}
+                {{ billingPeriod === 'monthly' ? '$9.990' : '$5.833' }}
                 <span class="period">/mes</span>
               </div>
               <p class="price-sub">
-                {{ billingPeriod === 'monthly' ? 'Facturado mensualmente' : 'Facturado anualmente ($95.880) — ¡Ahorra 20%!' }}
+                {{ billingPeriod === 'monthly' ? 'Facturado mensualmente' : 'Facturado anualmente ($69.990) — ¡Ahorra 41%!' }}
               </p>
             </div>
             
@@ -1068,7 +1013,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>Simulacros PAES Ilimitados</strong>
+                  <strong>Ensayos PAES Ilimitados</strong>
                 </div>
               </li>
               <li class="feature-item active premium-feature">
@@ -1076,7 +1021,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>Quizzes Ilimitados por Tema</strong>
+                  <strong>Ruta de Aprendizaje Completa</strong>
                 </div>
               </li>
               <li class="feature-item active premium-feature">
@@ -1084,7 +1029,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>Tutor IA Activo 24/7</strong>
+                  <strong>Acceso Total al Tutor IA</strong>
                 </div>
               </li>
               <li class="feature-item active premium-feature">
@@ -1092,7 +1037,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>Análisis Estadístico e Historial</strong>
+                  <strong>Acceso completo a Mini-Ensayos y Minijuegos</strong>
                 </div>
               </li>
               <li class="feature-item active premium-feature">
@@ -1100,7 +1045,15 @@ import { PaymentService } from '../../core/services/payment.service';
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <div class="feature-text">
-                  <strong>Soporte Prioritario VIP</strong>
+                  <strong>Mejorador de Puntaje y Análisis Estadístico en tiempo real</strong>
+                </div>
+              </li>
+              <li class="feature-item active premium-feature">
+                <svg class="check-icon premium-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div class="feature-text">
+                  <strong>¡Y muchas cosas más!</strong>
                 </div>
               </li>
             </ul>
@@ -1109,6 +1062,46 @@ import { PaymentService } from '../../core/services/payment.service';
               {{ getPremiumButtonText() }}
             </button>
           </div>
+        </div>
+      </section>
+
+      <!-- NEWS SECTION -->
+      <section id="news" class="news-section section-fade news-fade">
+        <div class="news-bg-decor"></div>
+        <h2 class="section-title">Actualidad y <span class="text-gradient">Noticias PAES</span></h2>
+        <p class="section-subtitle-custom">Mantente al tanto de las últimas novedades oficiales del DEMRE y consejos clave para tu postulación.</p>
+        
+        <div class="news-carousel-container">
+          <button class="carousel-control prev" (click)="scrollNews('left')" aria-label="Noticia anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          
+          <div class="news-track">
+            <div class="news-card glass-card" *ngFor="let item of news">
+              <div class="news-header-img" [style.backgroundImage]="'url(' + (item.imageUrl || '') + ')'">
+                <div class="news-img-overlay" [style.background]="item.gradient"></div>
+                <span class="news-badge">{{ item.tag }}</span>
+                <span class="news-card-icon">{{ item.icon }}</span>
+              </div>
+              <div class="news-body">
+                <div class="news-meta">
+                  <span class="news-source">{{ item.source }}</span>
+                  <span class="news-dot">•</span>
+                  <span class="news-date">{{ item.dateText || item.date }}</span>
+                </div>
+                <h3 class="news-title">{{ item.title }}</h3>
+                <p class="news-excerpt">{{ item.excerpt }}</p>
+                <a [href]="item.linkUrl" target="_blank" class="news-link">
+                  Leer Noticia Completa 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <button class="carousel-control next" (click)="scrollNews('right')" aria-label="Siguiente noticia">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
         </div>
       </section>
 
@@ -3387,6 +3380,238 @@ import { PaymentService } from '../../core/services/payment.service';
       font-size: 1.05rem;
     }
 
+    /* ===== NEWS & ACTUALIDAD SECTION ===== */
+    .news-section {
+      width: 100%;
+      max-width: 100%;
+      padding: 6rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .news-bg-decor {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(133, 92, 214, 0.04) 50%, transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .section-subtitle-custom {
+      max-width: 650px;
+      margin: -2rem auto 4rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 1.15rem;
+      line-height: 1.6;
+      font-weight: 500;
+      position: relative;
+      z-index: 2;
+    }
+    .news-carousel-container {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 3.5rem;
+      display: flex;
+      align-items: center;
+      z-index: 2;
+    }
+    .news-track {
+      display: flex;
+      gap: 2rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 1.5rem 0.5rem;
+      scroll-behavior: smooth;
+      scrollbar-width: none; /* Firefox */
+      width: 100%;
+    }
+    .news-track::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+    .news-card {
+      flex: 0 0 calc(33.333% - 1.34rem);
+      min-width: 320px;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(133, 92, 214, 0.15);
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .news-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 45px rgba(133, 92, 214, 0.16);
+      border-color: rgba(133, 92, 214, 0.4);
+      background: rgba(255, 255, 255, 0.75);
+    }
+    .news-header-img {
+      height: 160px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+    .news-img-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.3;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .news-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(255, 255, 255, 0.95);
+      color: #7c3aed;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.3rem 0.75rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: var(--shadow-sm);
+      z-index: 2;
+    }
+    .news-card-icon {
+      font-size: 4rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+      animation: newsIconFloat 6s ease-in-out infinite alternate;
+      z-index: 2;
+    }
+    @keyframes newsIconFloat {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-6px) scale(1.05); }
+    }
+    .news-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .news-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .news-dot {
+      color: rgba(133, 92, 214, 0.3);
+    }
+    .news-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1.4;
+      color: var(--text-primary);
+      margin: 0 0 0.85rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 3.36rem;
+    }
+    .news-excerpt {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 0 0 1.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+    .news-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #7c3aed;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: gap 0.2s;
+    }
+    .news-link svg {
+      transition: transform 0.2s;
+    }
+    .news-link:hover {
+      color: #6d28d9;
+      gap: 0.75rem;
+    }
+    .news-link:hover svg {
+      transform: translateX(3px);
+    }
+    .carousel-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid rgba(133, 92, 214, 0.15);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+      z-index: 10;
+    }
+    .carousel-control:hover {
+      background: #7c3aed;
+      color: #ffffff;
+      border-color: #7c3aed;
+      transform: translateY(-50%) scale(1.08);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+    }
+    .carousel-control.prev {
+      left: 0.5rem;
+    }
+    .carousel-control.next {
+      right: 0.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .news-card {
+        flex: 0 0 calc(50% - 1rem);
+      }
+    }
+    @media (max-width: 768px) {
+      .news-carousel-container {
+        padding: 0 1rem;
+      }
+      .carousel-control {
+        display: none;
+      }
+      .news-card {
+        flex: 0 0 85%;
+        min-width: 280px;
+      }
+      .section-subtitle-custom {
+        margin: -2rem auto 2rem;
+        font-size: 1rem;
+        padding: 0 1rem;
+      }
+    }
+
     /* ===== ENHANCED DEPTH & HOVER ===== */
     .glass-card {
       border: 1px solid rgba(133, 92, 214, 0.15);
@@ -3888,7 +4113,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
 
     
-    .features-section, .videos-section, .testimonials-section, .pricing-section, .faq-section, .cta-section {
+    .features-section, .videos-section, .testimonials-section, .pricing-section, .faq-section, .cta-section, .news-section {
       background-color: transparent !important;
     }
     
@@ -4332,14 +4557,14 @@ export class HomeComponent implements AfterViewInit, OnInit {
   public firestoreService = inject(FirestoreService);
   private paymentService = inject(PaymentService);
   private zone = inject(NgZone);
-  
+
   isLoggedIn$ = this.authService.isLoggedIn$;
   user$ = this.authService.user$;
-  
+
   // Use toSignal for easy access in template and expressions
   isLoggedIn = toSignal(this.isLoggedIn$, { initialValue: false });
   user = toSignal(this.user$, { initialValue: null });
-  
+
   profileInitial = computed(() => {
     const p = this.firestoreService.profileSignal();
     return p?.displayName?.charAt(0).toUpperCase() || 'U';
@@ -4347,16 +4572,16 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   activeTab = 0;
   billingPeriod: 'monthly' | 'yearly' = 'monthly';
-  
+
   openFaq: number | null = null;
   faqs = [
     {
       q: '¿Es realmente gratis?',
-      a: 'Sí, puedes crear tu cuenta gratis para siempre y sin ingresar tarjeta de crédito. Tendrás acceso a 1 ensayo diario, mini-quizzes y todo el contenido oficial. Si quieres acelerar tu puntaje con ensayos ilimitados y nuestro Tutor IA, puedes cambiarte al plan Premium cuando lo decidas.'
+      a: 'Sí, puedes crear tu cuenta gratis para siempre y sin ingresar tarjeta de crédito. Tendrás acceso a 1 ensayo diario, mini-quizzes y todo el contenido oficial. Si quieres acelerar tu puntaje con ensayos ilimitados, ruta de aprendizaje completa y nuestro Tutor IA, puedes cambiarte al plan Premium cuando lo decidas.'
     },
     {
       q: '¿Cuál es la diferencia entre el plan Básico y el Premium?',
-      a: 'El plan Básico es perfecto para mantener el ritmo con práctica diaria. El plan Premium está diseñado para maximizar tu puntaje: desbloquea simulacros ilimitados, estadísticas avanzadas de tu rendimiento y acceso 24/7 a nuestro Tutor IA para resolver cualquier duda al instante.'
+      a: 'El plan Básico esta diseñado para realizar practicas regularmente y medir tu nivel. El plan Premium está diseñado para maximizar tu puntaje: desbloquea simulacros ilimitados, estadísticas avanzadas de tu rendimiento y acceso 24/7 a nuestro Tutor IA para resolver cualquier duda al instante.'
     },
     {
       q: '¿Puedo cancelar mi plan Premium en cualquier momento?',
@@ -4384,6 +4609,55 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.openFaq = this.openFaq === index ? null : index;
   }
 
+  news = [
+    {
+      title: 'Inscripción PAES 2026: DEMRE lanza dura advertencia por cambio clave',
+      source: 'El Mostrador',
+      date: '2026-05-19',
+      dateText: '19 de mayo, 2026',
+      excerpt: 'El DEMRE advirtió sobre la importancia del cambio de clave del usuario en el portal de inscripción, ya que olvidar o errar en este paso podría dejar a los postulantes fuera del proceso regular.',
+      gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+      icon: '⚠️',
+      tag: '¡Advertencia!',
+      linkUrl: 'https://www.elmostrador.cl/datos-utiles/2026/05/19/inscripcion-paes-2026-demre-lanza-dura-advertencia-por-cambio-clave-que-podria-dejarte-fuera/',
+      imageUrl: 'assets/img/seccion noticias/noticia1.jpeg'
+    },
+    {
+      title: 'Comenzó el periodo de inscripción a la PAES de invierno 2026',
+      source: 'Ministerio de Educación',
+      date: '2026-03-04',
+      dateText: '4 de marzo, 2026',
+      excerpt: 'Hasta el martes 17 de marzo a las 13:00 horas, las y los egresados de enseñanza media podrán inscribirse para rendir la prueba de invierno los días 15, 16 y 17 de junio.',
+      gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+      icon: '❄️',
+      tag: 'PAES Invierno',
+      linkUrl: 'https://www.mineduc.cl/comenzo-el-periodo-de-inscripcion-a-la-paes-de-invierno-2026-admision-2027/',
+      imageUrl: 'assets/img/seccion noticias/noticia2.jpg'
+    },
+    {
+      title: 'PAES Invierno 2026: cuándo es y cómo hacer la inscripción',
+      source: 'Iplacex',
+      date: '2026-03-05',
+      dateText: '5 de marzo, 2026',
+      excerpt: 'La PAES de invierno ya tiene fechas confirmadas. Revisa cuándo es, cómo funciona el proceso de inscripción y los requisitos obligatorios para rendirla con éxito.',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+      icon: '📝',
+      tag: 'Guía Práctica',
+      linkUrl: 'https://www.iplacex.cl/blogs/paes-invierno-2026-cuando-es-y-como-hacer-la-inscripcion/',
+      imageUrl: 'assets/img/seccion noticias/noticia3.webp'
+    }
+  ];
+
+  scrollNews(direction: 'left' | 'right') {
+    const container = document.querySelector('.news-track') as HTMLElement;
+    if (!container) return;
+    const scrollAmount = container.clientWidth * 0.8;
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  }
+
   count1 = 0;
   count2 = 0;
   count3 = 0;
@@ -4395,12 +4669,12 @@ export class HomeComponent implements AfterViewInit, OnInit {
   navbarHidden = false;
   lastScrollY = 0;
   scrollOffset = 0;
-  
+
   showFocoBubble = false;
   focoMessage = '';
   mascotTransform = '';
   hoveredBenefitIndex: number | null = null;
-  
+
   onBenefitHover(index: number) {
     this.hoveredBenefitIndex = index;
     const yOffsets = [-95, 0, 95];
@@ -4411,7 +4685,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
       mascotEl.style.transform = transformStr;
     }
   }
-  
+
   onBenefitLeave() {
     this.hoveredBenefitIndex = null;
     const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
@@ -4419,10 +4693,10 @@ export class HomeComponent implements AfterViewInit, OnInit {
       mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
     }
   }
-  
+
   onFocoClick() {
     if (this.showFocoBubble) return; // Prevent spamming
-    
+
     const messages = [
       "Tengo 3 corazones y los 3 creen que te va a ir increíble en la PAES. 🐙❤️",
       "Si yo puedo coordinar 8 tentáculos a la vez, tú puedes con un sistema de ecuaciones. ¡Vamos! 🧠⚡",
@@ -4527,7 +4801,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     ];
     this.focoMessage = messages[Math.floor(Math.random() * messages.length)];
     this.showFocoBubble = true;
-    
+
     setTimeout(() => {
       this.showFocoBubble = false;
     }, 5000);
@@ -4558,6 +4832,18 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   ngOnInit() {
     this.firestoreService.getUserProfile().subscribe();
+    this.loadFirestoreNews();
+  }
+
+  async loadFirestoreNews() {
+    try {
+      const data = await this.firestoreService.getNews();
+      if (data && data.length > 0) {
+        this.news = data;
+      }
+    } catch (e) {
+      console.error('Error loading news from Firestore:', e);
+    }
   }
 
   ngAfterViewInit() {
@@ -4569,14 +4855,14 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.zone.runOutsideAngular(() => {
       document.addEventListener('mousemove', (e: MouseEvent) => {
         if (this.hoveredBenefitIndex !== null) return;
-        
+
         const sectionEl = document.getElementById('foco-tutor');
         if (!sectionEl) return;
-        
+
         const sectionRect = sectionEl.getBoundingClientRect();
         const isInsideSection = e.clientX >= sectionRect.left && e.clientX <= sectionRect.right &&
-                                e.clientY >= sectionRect.top && e.clientY <= sectionRect.bottom;
-        
+          e.clientY >= sectionRect.top && e.clientY <= sectionRect.bottom;
+
         const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
         if (!mascotEl) return;
 
@@ -4584,26 +4870,26 @@ export class HomeComponent implements AfterViewInit, OnInit {
           mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
           return;
         }
-        
+
         const rect = mascotEl.getBoundingClientRect();
         const mascotCenterX = rect.left + rect.width / 2;
         const mascotCenterY = rect.top + rect.height / 2;
-        
+
         const deltaX = e.clientX - mascotCenterX;
         const deltaY = e.clientY - mascotCenterY;
-        
+
         // Desplazamiento máximo dulce de 22px
-        const maxDisplacement = 22; 
-        const sensitivity = 300; 
-        
+        const maxDisplacement = 22;
+        const sensitivity = 300;
+
         const translateX = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaX / sensitivity) * maxDisplacement));
         const translateY = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaY / sensitivity) * maxDisplacement));
-        
+
         const isHovered = e.clientX >= rect.left && e.clientX <= rect.right &&
-                          e.clientY >= rect.top && e.clientY <= rect.bottom;
-        
+          e.clientY >= rect.top && e.clientY <= rect.bottom;
+
         const scale = isHovered ? 1.06 : 1.0;
-        
+
         mascotEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
       }, { passive: true });
 
@@ -4634,7 +4920,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
       });
     }, observerOptions);
 
-    const animatedElements = document.querySelectorAll('.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .hero-stats, .faq-item');
+    const animatedElements = document.querySelectorAll('.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .hero-stats, .faq-item, .news-card');
     animatedElements.forEach(el => observer.observe(el));
   }
 
@@ -4643,7 +4929,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     const currentScrollY = window.scrollY;
     this.isScrolled = currentScrollY > 50;
     this.scrollOffset = currentScrollY;
-    
+
     // Hide navbar when scrolling down, show when scrolling up
     if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
       this.navbarHidden = true;
@@ -4681,46 +4967,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
       this.goTo('/dashboard');
       return;
     }
-    this.buyPremium();
-  }
-
-  buyPremium() {
-    const plan = this.billingPeriod; // 'monthly' | 'yearly'
-    const returnUrl = window.location.origin + '/pago-resultado';
-
-    const originalText = this.getPremiumButtonText();
-    const btn = document.querySelector('.premium-action') as HTMLButtonElement;
-    if (btn) {
-      btn.disabled = true;
-      btn.innerText = 'Redirigiendo a Webpay...';
-    }
-
-    this.paymentService.createWebpayTransaction(plan, returnUrl).subscribe({
-      next: (res) => {
-        // Redirigir a Webpay Plus vía POST con el token
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = res.url;
-        
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'token_ws';
-        input.value = res.token;
-        
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-      },
-      error: (err) => {
-        console.error('[Payment] Error initiating payment:', err);
-        const errMsg = err.error?.message || err.message || 'Error de conexión';
-        alert('Hubo un problema al iniciar el pago con Webpay: ' + errMsg);
-        if (btn) {
-          btn.disabled = false;
-          btn.innerText = originalText;
-        }
-      }
-    });
+    // Open the pricing modal skipping the plan cards (user already saw pricing on home)
+    this.paymentService.openPricingModal(true, this.billingPeriod);
   }
 
   scrollTo(id: string) {
