@@ -9,6 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 type DifficultyMode = 'normal' | 'hardcore' | 'suddendeath';
 type GameState = 'setup' | 'playing' | 'results';
@@ -105,54 +106,47 @@ interface PlayedQuestion {
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in">
+      <main class="main-content animate-fade-in-down">
         <!-- GLOBAL PAGE HEADER (Visible in Setup and Results states) -->
-        <header class="header" *ngIf="gameState() !== 'playing'">
-          <div class="header-main-row">
-            <div class="header-left">
-              <!-- Setup Header Content -->
-              <div class="header-content" *ngIf="gameState() === 'setup'">
-                <div class="title-row" style="display: flex; align-items: center; gap: 1rem;">
-                  <div class="hero-icon-container-small" style="width: 48px; height: 48px; border-radius: 12px; background: rgba(133, 92, 214, 0.1); border: 2px solid rgba(133, 92, 214, 0.2); display: flex; align-items: center; justify-content: center;">
-                    <span class="hero-icon" style="font-size: 1.8rem; filter: drop-shadow(0 2px 6px rgba(250, 204, 21, 0.4));">⚡</span>
-                  </div>
-                  <h1 class="title text-gradient" style="margin: 0; font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading);">Mente Veloz</h1>
-                </div>
-                <p class="subtitle" style="margin: 0; margin-top: 0.25rem; color: var(--text-secondary); font-size: 1.05rem;">¡El desafío definitivo contrarreloj! Pon a prueba tu rapidez mental respondiendo preguntas del pool oficial.</p>
+        <header class="dashboard-header" *ngIf="gameState() !== 'playing'">
+          <div class="header-welcome-text">
+            <div *ngIf="gameState() === 'setup'">
+              <h1 class="header-greeting"><span class="text-gradient">Mente Veloz</span></h1>
+              <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">¡El desafío definitivo contrarreloj! Pon a prueba tu rapidez mental respondiendo preguntas del pool oficial.</p>
+            </div>
+            <div *ngIf="gameState() === 'results'">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="results-medal-small" style="font-size: 2.2rem;">{{ accuracy() >= 90 ? '🥇' : accuracy() >= 70 ? '🥈' : accuracy() >= 50 ? '🥉' : '🏆' }}</span>
+                <h1 class="header-greeting"><span class="text-gradient">{{ accuracy() >= 90 ? '¡Rendimiento Excepcional!' : accuracy() >= 70 ? '¡Muy Bien Hecho!' : accuracy() >= 50 ? '¡Buen Esfuerzo!' : '¡Sigue Practicando!' }}</span></h1>
               </div>
-              
-              <!-- Results Header Content -->
-              <div class="header-content" *ngIf="gameState() === 'results'">
-                <div class="title-row" style="display: flex; align-items: center; gap: 1rem;">
-                  <span class="results-medal-small" style="font-size: 2.2rem;">{{ accuracy() >= 90 ? '🥇' : accuracy() >= 70 ? '🥈' : accuracy() >= 50 ? '🥉' : '🏆' }}</span>
-                  <h1 class="title text-gradient" style="margin: 0; font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading);">{{ accuracy() >= 90 ? '¡Rendimiento Excepcional!' : accuracy() >= 70 ? '¡Muy Bien Hecho!' : accuracy() >= 50 ? '¡Buen Esfuerzo!' : '¡Sigue Practicando!' }}</h1>
-                </div>
-                <div class="results-config-badges" style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                  <span class="config-badge" style="background: rgba(0,0,0,0.04); padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); border: 2px solid rgba(0,0,0,0.12);">⏱️ {{ formatTime(timeLimit()) }}</span>
-                  <span class="config-badge" [class.normal]="difficulty() === 'normal'" [class.hardcore]="difficulty() === 'hardcore'" [class.suddendeath]="difficulty() === 'suddendeath'" style="background: rgba(0,0,0,0.04); padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; border: 2px solid rgba(0,0,0,0.12);">{{ difficulty() === 'normal' ? '🟢 Normal' : difficulty() === 'hardcore' ? '🔥 Hardcore' : '💀 Muerte Súbita' }}</span>
-                  <span class="config-badge" style="background: rgba(0,0,0,0.04); padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); border: 2px solid rgba(0,0,0,0.12);">📚 {{ selectedMaterias.size }} materias</span>
-                </div>
+              <div class="results-config-badges" style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <span class="config-badge" style="background: rgba(255,255,255,0.1); padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; color: #fff; border: 2px solid rgba(255,255,255,0.2);">⏱️ {{ formatTime(timeLimit()) }}</span>
+                <span class="config-badge" [class.normal]="difficulty() === 'normal'" [class.hardcore]="difficulty() === 'hardcore'" [class.suddendeath]="difficulty() === 'suddendeath'" style="background: rgba(255,255,255,0.1); padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; color: #fff; border: 2px solid rgba(255,255,255,0.2);">{{ difficulty() === 'normal' ? '🟢 Normal' : difficulty() === 'hardcore' ? '🔥 Hardcore' : '💀 Muerte Súbita' }}</span>
+                <span class="config-badge" style="background: rgba(255,255,255,0.1); padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; color: #fff; border: 2px solid rgba(255,255,255,0.2);">📚 {{ selectedMaterias.size }} materias</span>
               </div>
             </div>
-            
-            <div class="welcome-actions">
-              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
-              <div class="profile-menu-wrap">
-                <button class="profile-trigger" (click)="showProfileModal = true">
-                  <span class="profile-avatar-wrap">
-                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
-                  </span>
-                </button>
-                <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
-              </div>
+          </div>
+          <div class="welcome-actions">
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                </span>
+              </button>
+              <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
             </div>
           </div>
         </header>
 
         <!-- SETUP STATE -->
-        <div class="state-container" *ngIf="gameState() === 'setup'">
-          <div class="setup-card glass-card">
+        <div class="dashboard-body" *ngIf="gameState() === 'setup'">
+          <div class="state-container">
+            <div class="setup-card glass-card">
             <div class="setup-section-title">
               <span class="section-badge">1</span>
               <h3>Selecciona las Materias</h3>
@@ -248,9 +242,11 @@ interface PlayedQuestion {
             </button>
           </div>
         </div>
+        </div>
 
         <!-- PLAYING STATE -->
-        <div class="state-container playing-state" *ngIf="gameState() === 'playing'">
+        <div class="dashboard-body playing-body" *ngIf="gameState() === 'playing'">
+          <div class="state-container playing-state">
           <!-- Sticky HUD wrapper -->
           <div class="hud-sticky-wrapper">
             <!-- Top HUD -->
@@ -365,9 +361,11 @@ interface PlayedQuestion {
             </div>
           </div>
         </div>
+        </div>
 
         <!-- RESULTS STATE -->
-        <div class="state-container results-state" *ngIf="gameState() === 'results'">
+        <div class="dashboard-body" *ngIf="gameState() === 'results'">
+          <div class="state-container results-state">
           <!-- VOLVER/REPETIR ACTIONS (Moved to the top before all details) -->
           <div class="results-actions" style="margin-bottom: 2rem; display: flex; justify-content: center; gap: 1rem; width: 100%;">
             <button class="btn-primary-lg" (click)="resetGame()">
@@ -459,6 +457,7 @@ interface PlayedQuestion {
             </div>
           </div>
         </div>
+        </div>
       </main>
     </div>
     
@@ -513,6 +512,7 @@ interface PlayedQuestion {
       font-family: var(--font-body); 
     }
     .mv-layout { display: flex; min-height: 100vh; }
+    .playing-body { border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; box-shadow: none !important; padding-top: 1.5rem !important; background: var(--bg-color) !important; min-height: 100vh !important; }
     
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
@@ -542,7 +542,16 @@ interface PlayedQuestion {
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-item.active { 
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
+    }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; text-align: center; }
     .sidebar-section-title {
       font-size: 0.78rem;
@@ -603,9 +612,12 @@ interface PlayedQuestion {
       transform: translateX(3px);
     }
     .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #f87171 !important; }
@@ -619,30 +631,8 @@ interface PlayedQuestion {
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN CONTENT */
-    .main-content { flex: 1; margin-left: 260px; padding: 1.25rem 2.5rem 2.5rem; max-width: calc(100% - 260px); display: flex; flex-direction: column; align-items: center; }
-    .state-container { width: 100%; max-width: 960px; }
-
-    /* SETUP HEADER & WELCOME ACTIONS */
-    .header { width: 100%; max-width: 960px; margin-bottom: 1.5rem; border-bottom: 2px solid var(--glass-border); padding-bottom: 1rem; }
-    .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1.5rem; }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; flex: 1; text-align: left; }
-    .hero-icon-container { width: 80px; height: 80px; border-radius: 24px; background: rgba(133, 92, 214, 0.1); border: 2.5px solid rgba(133, 92, 214, 0.28); display: flex; align-items: center; justify-content: center; margin-bottom: 0; box-shadow: 0 8px 24px rgba(133, 92, 214, 0.15); animation: pulseFloat 3s infinite ease-in-out; flex-shrink: 0; }
-    .hero-icon { font-size: 3rem; filter: drop-shadow(0 4px 12px rgba(250, 204, 21, 0.4)); }
-    @keyframes pulseFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.04); } }
-    .title { font-size: 3rem; font-weight: 800; margin: 0 0 0.5rem; letter-spacing: -0.04em; font-family: var(--font-heading); }
-    .subtitle { color: var(--text-secondary); font-size: 1.15rem; font-weight: 500; max-width: 600px; }
-
-    .welcome-actions { display: flex; align-items: center; gap: 1rem; }
-    .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2.5px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; box-shadow: var(--shadow-sm); }
-    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: var(--shadow); }
-    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
-    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: var(--gradient-brand); font-weight: 700; font-size: 0.9rem; color: white; }
-    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2.5px solid var(--glass-border); line-height: 1; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
+    .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); }
+    .state-container { width: 100%; max-width: 960px; margin: 0 auto; }
 
     .setup-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(24px); border: 2.5px solid var(--glass-border); border-radius: var(--border-radius); padding: 2.5rem; box-shadow: var(--shadow-lg); }
     .setup-section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
@@ -1132,6 +1122,7 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
   private authService = inject(AuthService);
   private dashSvc = inject(DashboardService);
+  public paymentService = inject(PaymentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 

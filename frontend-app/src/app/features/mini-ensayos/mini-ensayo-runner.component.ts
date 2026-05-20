@@ -14,81 +14,9 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink, SettingsModalComponent, ProfileModalComponent],
   template: `
-    <div class="dashboard-layout" *ngIf="session() as sess">
-      
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
-        </div>
-        <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-          <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item active" routerLink="/mini-ensayo"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
-          
-          <div class="sidebar-section-title" (click)="toggleHerramientas()">
-            HERRAMIENTAS
-            <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
-          </div>
-          <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
-          </div>
-        </nav>
-        <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
-          <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-text">Configuración</span>
-          </a>
-          <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
-            <span class="nav-text">Cerrar Sesión</span>
-          </a>
-        </div>
-      </aside>
-
-      <!-- MOBILE HEADER -->
-      <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
-      </div>
-      <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
-        <div class="mobile-menu" (click)="$event.stopPropagation()">
-          <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item active" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
-            
-            <div class="sidebar-section-title" (click)="toggleHerramientas()">
-              HERRAMIENTAS
-              <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
-            </div>
-            <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
-            </div>
-          </nav>
-          <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
-            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <span class="nav-icon">⚙️</span>
-              <span class="nav-text">Configuración</span>
-            </a>
-            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <span class="nav-icon">🚪</span>
-              <span class="nav-text">Cerrar Sesión</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
+    <div class="runner-layout-wrap" *ngIf="session() as sess">
       <!-- MAIN CONTENT -->
-      <main class="main-content runner-page animate-fade-in" style="margin-left: 260px; max-width: calc(100% - 260px);">
+      <main class="main-content runner-page animate-fade-in-down">
 <header class="top-bar">
           <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
           <div class="top-title">Mini Ensayo Personalizado</div>
@@ -116,7 +44,7 @@ import { AuthService } from '../../core/services/auth.service';
 
           <!-- QUESTION AREA -->
           <div class="question-area">
-            <div class="question-card" *ngIf="currentQuestion() as q">
+            <div class="question-card glass-card" *ngIf="currentQuestion() as q">
               <div class="q-header">
                 <span class="q-number">Pregunta {{ currentIndex() + 1 }}</span>
                 <span class="q-topic">{{ q.tema }}</span>
@@ -217,98 +145,14 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [`
     :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     
-    .dashboard-layout { display: flex; min-height: 100vh; }
-    
-    .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
-    .sidebar::-webkit-scrollbar { width: 4px; }
-    .sidebar::-webkit-scrollbar-track { background: transparent; }
-    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; transition: background 0.2s; }
-    .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
-    .sidebar-logo { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); font-family: var(--font-heading); }
-    .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .sidebar-nav {
-      padding: 1rem 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; border: none; background: transparent; width: 100%; text-align: left; }
-    .nav-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .nav-icon { font-size: 1.35rem; width: 32px; text-align: center; display: flex; align-items: center; justify-content: center; }
-    .sidebar-section-title {
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: rgba(255, 255, 255, 0.95);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 0.75rem 1.1rem;
-      margin: 0.75rem 0.5rem 0.25rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 8px;
-    }
-    .sidebar-section-title:hover {
-      background: rgba(255, 255, 255, 0.07);
-      color: #ffffff;
-    }
-    .sidebar-section-title .toggle-icon {
-      font-size: 0.65rem;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      color: rgba(255, 255, 255, 0.6);
-    }
-    .sidebar-section-title:hover .toggle-icon {
-      color: #ffffff;
-    }
-    .sidebar-sub-items {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      max-height: 0;
-      opacity: 0;
-      margin-left: 1.4rem;
-      border-left: 1.5px solid rgba(255, 255, 255, 0.08);
-      padding-left: 0.4rem;
-      gap: 0.25rem;
-    }
-    .sidebar-sub-items.collapsible {
-      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
-    }
-    .sidebar-sub-items.expanded {
-      max-height: 260px;
-      opacity: 1;
-      margin-top: 0.25rem;
-      margin-bottom: 0.5rem;
-    }
-    .sidebar-sub-items .nav-item {
-      padding: 0.65rem 0.9rem;
-      font-size: 0.95rem;
-      border-radius: 10px;
-    }
-    .sidebar-sub-items .nav-item:hover {
-      background: rgba(255, 255, 255, 0.07);
-      transform: translateX(3px);
-    }
-    .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
-    }
-    .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
-    .logout-btn-sidebar { color: #f87171 !important; }
-    .logout-btn-sidebar:hover { background: rgba(248, 113, 113, 0.15) !important; }
-    
-    .main-content { flex: 1; display: flex; flex-direction: column; background: #f8f9fa; overflow: hidden; }
+    .runner-layout-wrap { display: flex; min-height: 100vh; }
+    .main-content { flex: 1; display: flex; flex-direction: column; background: #f8f9fa !important; margin-left: 0 !important; max-width: 100% !important; overflow: hidden; }
     
     .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); flex-shrink: 0; }
-    .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-weight: 800; }
-    .btn-close:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.05); transform: scale(1.05); }
+    .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-secondary); cursor: pointer; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, border-color 0.2s ease, background 0.2s ease; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+    .btn-close:hover { border-color: #ef4444; color: #ef4444 !important; background: rgba(239,68,68,0.05); transform: rotate(90deg) scale(1.1); }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .top-title { font-weight: 700; font-family: var(--font-heading); color: var(--text-secondary); font-size: 1.1rem; }
     .top-timer { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); background: rgba(0,0,0,0.05); padding: 0.3rem 0.8rem; border-radius: 8px; }
     .top-timer.urgent { color: #ef4444; background: rgba(239,68,68,0.1); animation: urgentPulse 1s infinite; }

@@ -134,6 +134,27 @@ import { SoundService } from '../../core/services/sound.service';
                   </div>
                 </ng-template>
               </div>
+              <div class="section-block paes-goal-section">
+                <div class="section-header">
+                  <h3>🎯 Meta PAES</h3>
+                  <p>Configura tu puntaje objetivo y mide tu progreso en el dashboard.</p>
+                </div>
+                <div class="goal-fields">
+                  <label>Carrera a la que aspiras
+                    <input [(ngModel)]="profileForm.targetCareer" type="text" placeholder="Ej: Ingeniería Civil"/>
+                  </label>
+                  <label>Universidad
+                    <input [(ngModel)]="profileForm.targetUniversity" type="text" placeholder="Ej: Universidad de Chile"/>
+                  </label>
+                  <label>Puntaje de corte (100-1000)
+                    <input [(ngModel)]="profileForm.targetScore" type="number" min="100" max="1000" step="1" placeholder="Ej: 700"/>
+                  </label>
+                </div>
+                <div class="goal-preview" *ngIf="profileForm.targetScore && profileForm.targetCareer">
+                  <span class="goal-preview-icon">🏆</span>
+                  <span class="goal-preview-text">Tu meta: <strong>{{ profileForm.targetCareer }}</strong> — {{ profileForm.targetScore }} pts</span>
+                </div>
+              </div>
               <div class="bottom-spacer"></div>
             </div>
           </div>
@@ -260,7 +281,8 @@ import { SoundService } from '../../core/services/sound.service';
     .logout-confirm-modal { width: min(420px, 90vw); background: #ffffff; border-radius: 24px; border: 2px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.25); animation: slideUp .3s cubic-bezier(.16,1,.3,1); overflow: hidden; }
     .confirm-header { padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .confirm-header h2 { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+    .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .confirm-body { padding: 2rem 1.5rem; }
     .confirm-content { text-align: center; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
@@ -349,6 +371,15 @@ import { SoundService } from '../../core/services/sound.service';
       .grid{grid-template-columns:1fr}
     }
 
+    /* PAES GOAL SECTION */
+    .paes-goal-section { border-color: rgba(133,92,214,0.25) !important; background: linear-gradient(135deg, rgba(133,92,214,0.03), rgba(99,102,241,0.05)) !important; }
+    .goal-fields { display: flex; flex-direction: column; gap: 0.5rem; }
+    .goal-fields label { font-size: 0.88rem; }
+    .goal-preview { display: flex; align-items: center; gap: 0.75rem; background: rgba(133,92,214,0.08); border: 1.5px solid rgba(133,92,214,0.2); border-radius: 12px; padding: 0.85rem 1rem; margin-top: 0.5rem; }
+    .goal-preview-icon { font-size: 1.5rem; }
+    .goal-preview-text { font-size: 0.9rem; color: var(--text-primary); font-weight: 600; }
+    .goal-preview-text strong { color: var(--accent-primary); }
+
     /* IMAGE EDITOR STYLES */
     .image-editor-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9600}
     .editor-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)}
@@ -432,7 +463,10 @@ export class ProfileModalComponent implements OnInit {
     profileEmoji: '✨', 
     linkedinUrl: '',
     location: '',
-    selectedSubjects: [] as string[]
+    selectedSubjects: [] as string[],
+    targetScore: null as number | null,
+    targetCareer: '',
+    targetUniversity: ''
   };
   initialProfileForm = ''; // JSON string to compare
   subjectsList = [
@@ -518,6 +552,9 @@ export class ProfileModalComponent implements OnInit {
           this.profileForm.linkedinUrl = profile.linkedinUrl || '';
           this.profileForm.location = profile.location || '';
           this.profileForm.selectedSubjects = profile.selectedSubjects || this.subjectsList.map(s => s.id);
+          this.profileForm.targetScore = profile.targetScore || null;
+          this.profileForm.targetCareer = profile.targetCareer || '';
+          this.profileForm.targetUniversity = profile.targetUniversity || '';
           this.initialProfileForm = JSON.stringify(this.profileForm);
         }
         this.loading = false;
@@ -757,7 +794,10 @@ export class ProfileModalComponent implements OnInit {
         profileEmoji: selectedEmoji,
         linkedinUrl: this.profileForm.linkedinUrl.trim(),
         location: this.profileForm.location.trim(),
-        selectedSubjects: this.profileForm.selectedSubjects
+        selectedSubjects: this.profileForm.selectedSubjects,
+        targetScore: this.profileForm.targetScore ? Number(this.profileForm.targetScore) : null,
+        targetCareer: this.profileForm.targetCareer?.trim() || null,
+        targetUniversity: this.profileForm.targetUniversity?.trim() || null
       });
       if (this.auth.currentUser) {
         const updatePayload: { displayName: string; photoURL?: string | null } = { displayName };

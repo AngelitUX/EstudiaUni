@@ -10,6 +10,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 
 @Component({
@@ -22,7 +23,7 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -39,6 +40,13 @@ import { AuthService } from '../../core/services/auth.service';
             <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
             <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
             <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+          </div>
+          <!-- Sidebar Promo Card -->
+          <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
+            <span class="promo-crown">👑</span>
+            <h4>Pásate a PRO</h4>
+            <p>Explicaciones con IA y Ensayos Ilimitados</p>
+            <button class="btn-promo-sidebar">Ver Planes ⚡</button>
           </div>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
@@ -91,39 +99,37 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content review-page animate-fade-in" *ngIf="result() as res" style="flex: 1; margin-left: 260px; padding: 1.25rem 2.5rem 2.5rem; max-width: calc(100% - 260px); display: flex; flex-direction: column; align-items: center;">
-        <header class="header" style="width: 100%; max-width: 900px; margin-bottom: 1.5rem; border-bottom: 2px solid var(--glass-border); padding-bottom: 1rem;">
-          <div class="header-main-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1.5rem;">
-            <div class="header-left" style="display: flex; align-items: center; gap: 1.5rem; flex: 1; text-align: left;">
-              <button class="btn-back" routerLink="/mini-ensayo" style="background: #f1f5f9; border: 2px solid var(--glass-border); color: #475569; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; font-weight: 600; flex-shrink: 0; margin-right: 0.5rem;">← Volver</button>
-              <div class="header-content">
-                <div class="title-row" style="display: flex; align-items: center; gap: 1rem;">
-                  <div class="hero-icon-container-small" style="width: 48px; height: 48px; border-radius: 12px; background: rgba(133, 92, 214, 0.1); border: 2px solid rgba(133, 92, 214, 0.2); display: flex; align-items: center; justify-content: center;">
-                    <span class="hero-icon" style="font-size: 1.8rem; filter: drop-shadow(0 2px 6px rgba(250, 204, 21, 0.4));">📊</span>
-                  </div>
-                  <h1 class="title text-gradient" style="margin: 0; font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading);">Resumen de Mini Ensayo</h1>
-                </div>
-                <p class="subtitle" style="margin: 0; margin-top: 0.25rem; color: var(--text-secondary); font-size: 1.05rem;">{{ materiaTitle() }} • {{ res.totalQuestions }} preguntas</p>
-              </div>
+      <main class="main-content review-page animate-fade-in-down" *ngIf="result() as res">
+        <!-- HEADER -->
+        <header class="dashboard-header">
+          <div class="header-welcome-text" style="display: flex; align-items: center; gap: 1rem;">
+            <button class="btn-back" routerLink="/mini-ensayo" style="background: transparent; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; padding: 0; line-height: 1;">
+              <span>←</span>
+            </button>
+            <div>
+              <h1 class="header-greeting"><span class="text-gradient">Resumen de Mini Ensayo</span></h1>
+              <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">{{ materiaTitle() }} • {{ res.totalQuestions }} preguntas</p>
             </div>
-            
-            <div class="welcome-actions" style="display: flex; align-items: center; gap: 1rem;">
-              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
-              <div class="profile-menu-wrap" style="position: relative;">
-                <button class="profile-trigger" (click)="showProfileModal = true" style="display: flex; align-items: center; justify-content: center; border: 2.5px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; box-shadow: var(--shadow-sm);">
-                  <span class="profile-avatar-wrap" style="position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0;">
-                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover;"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback" style="display: grid; place-items: center; background: var(--gradient-brand); font-weight: 700; font-size: 0.9rem; color: white; width: 52px; height: 52px; border-radius: 50%;">{{ profileInitial() }}</span></ng-template>
-                  </span>
-                </button>
-                <span class="profile-emoji-badge" style="position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none;">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
-              </div>
+          </div>
+          <div class="welcome-actions">
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                </span>
+              </button>
+              <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
             </div>
           </div>
         </header>
 
-
-      <div class="review-container">
+        <div class="dashboard-body" style="display: flex; flex-direction: column; align-items: center;">
+          <div class="review-container" style="width: 100%; max-width: 900px;">
         <!-- SCORE OVERVIEW -->
         <section class="overview-section">
           <div class="score-card glass-card main-score">
@@ -292,6 +298,7 @@ import { AuthService } from '../../core/services/auth.service';
 
         <!-- ACTIONS REMOVED AS REQUESTED -->
       </div>
+      </div>
       </main>
     </div>
 
@@ -330,8 +337,17 @@ import { AuthService } from '../../core/services/auth.service';
     .sidebar::-webkit-scrollbar-track { background: transparent; }
     .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; transition: background 0.2s; }
     .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
-    .sidebar-logo { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); font-family: var(--font-heading); }
+    .sidebar-logo { 
+      font-family: var(--font-heading); 
+      font-size: 2.2rem; 
+      font-weight: 900; 
+      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em; 
+      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      position: relative;
+    }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .sidebar-nav {
       padding: 1rem 0.75rem;
@@ -341,7 +357,9 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; border: none; background: transparent; width: 100%; text-align: left; }
     .nav-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-item.active { background: rgba(139,92,246,0.18); color: #c4b5fd; border: none; border-left: 3.5px solid #a78bfa; box-shadow: 0 4px 12px rgba(139,92,246,0.12); font-weight: 700; }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; text-align: center; display: flex; align-items: center; justify-content: center; }
     .sidebar-section-title {
       font-size: 0.78rem;
@@ -402,27 +420,18 @@ import { AuthService } from '../../core/services/auth.service';
       transform: translateX(3px);
     }
     .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #f87171 !important; }
     .logout-btn-sidebar:hover { background: rgba(248, 113, 113, 0.15) !important; }
     
-    .main-content { flex: 1; overflow-y: auto; padding: 2rem; background: var(--bg-color); }
-    
-    .review-page { max-width: 900px; margin: 0 auto; width: 100%; }
-    
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
-    
-    .review-header { text-align: center; margin-bottom: 2.5rem; }
-    .back-link { display: inline-block; color: var(--text-secondary); text-decoration: none; margin-bottom: 1rem; font-weight: 600; transition: color 0.2s; }
-    .back-link:hover { color: var(--accent-primary); }
-    .review-header h1 { font-family: var(--font-heading); font-size: 2.5rem; margin: 0 0 0.5rem; }
-    .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin: 0; font-weight: 500; }
+    .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); }
     
     .review-container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 2.5rem; }
     
@@ -539,6 +548,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class MiniEnsayoReviewComponent {
   public firestoreService = inject(FirestoreService);
   public adminService = inject(AdminService);
+  public paymentService = inject(PaymentService);
   private auth = inject(AuthService);
 
   mobileOpen = false;

@@ -61,7 +61,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       </aside>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in">
+      <main class="main-content animate-fade-in-down">
         <!-- HEADER -->
         <header class="content-header">
           <div class="header-left">
@@ -337,11 +337,15 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       transform: translateX(4px);
     }
     .nav-item.active { 
-      background: rgba(99, 102, 241, 0.25); 
-      color: #ffffff; 
-      border: 1.5px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
     }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { 
       font-size: 1.35rem; 
       width: 32px; 

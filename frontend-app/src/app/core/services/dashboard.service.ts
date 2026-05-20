@@ -536,6 +536,64 @@ export class DashboardService {
 
   // ─── Helpers ───
 
+  /** Returns an array of 7 booleans (Mon-Sun) indicating if the user studied that day this week */
+  getWeeklyActivity(): boolean[] {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...6=Sat
+    // Adjust to Monday-start week
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    const result: boolean[] = [false, false, false, false, false, false, false];
+    const activities = this._activities();
+
+    for (const act of activities) {
+      let actDate: Date;
+      if (typeof act.timestamp === 'string') {
+        actDate = new Date(act.timestamp);
+      } else if (act.timestamp && typeof act.timestamp.toDate === 'function') {
+        actDate = act.timestamp.toDate();
+      } else if (act.timestamp && act.timestamp.seconds) {
+        actDate = new Date(act.timestamp.seconds * 1000);
+      } else {
+        continue;
+      }
+
+      if (isNaN(actDate.getTime())) continue;
+
+      const diffDays = Math.floor((actDate.getTime() - monday.getTime()) / 86400000);
+      if (diffDays >= 0 && diffDays < 7) {
+        result[diffDays] = true;
+      }
+    }
+
+    return result;
+  }
+
+  /** Returns the last N ensayo scores (percentage) for trend display */
+  getRecentScores(count: number = 5): { score: number; total: number; correct: number; date: string }[] {
+    const records = this._paesRecords().filter(r => r.mode === 'real');
+    return records
+      .slice(0, count)
+      .map(r => ({
+        score: r.score,
+        total: r.totalQuestions,
+        correct: r.correctAnswers,
+        date: typeof r.timestamp === 'string' ? r.timestamp : new Date().toISOString()
+      }))
+      .reverse(); // oldest first for chart
+  }
+
+  /** Returns average PAES score from real ensayos */
+  getAverageScore(): number {
+    const records = this._paesRecords().filter(r => r.mode === 'real');
+    if (records.length === 0) return 0;
+    const sum = records.reduce((acc, r) => acc + r.score, 0);
+    return Math.round(sum / records.length);
+  }
+
   getRelativeTime(timestamp: any): string {
     if (!timestamp) return '---';
     

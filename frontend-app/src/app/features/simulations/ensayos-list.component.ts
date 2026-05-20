@@ -7,6 +7,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 interface Prueba {
   id: string;
@@ -110,66 +111,65 @@ type ExamMode = 'real' | 'asistido';
       </aside>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in">
+      <main class="main-content animate-fade-in-down">
         <!-- HEADER -->
-        <header class="header">
-          <div class="header-main-row">
-            <div class="header-left">
-              <div class="header-content">
-                <div class="title-row">
-                  <h1 class="title">Ensayos PAES</h1>
-                  <div class="status-pill">
-                    <span class="status-dot"></span>
-                    Temarios 2026 Actualizados
-                  </div>
-                </div>
-                <p class="subtitle">Realiza ensayos completos y simulacros bajo condiciones reales</p>
-                
-                <!-- COUNTDOWN WIDGET -->
-                <div class="countdown-row">
-                  <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
-                  <div class="countdown-timer">
-                    <div class="time-unit"><span>{{ countdown.days }}</span><label>d</label></div>
-                    <div class="time-unit"><span>{{ countdown.hours }}</span><label>h</label></div>
-                    <div class="time-unit"><span>{{ countdown.minutes }}</span><label>m</label></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ACTIVE EXAM WIDGET -->
-            <div class="header-center" *ngIf="activeProgress">
-              <div class="active-exam-widget glass-card">
-                <div class="widget-info">
-                  <span class="widget-label">PENDIENTE</span>
-                  <h4 class="widget-title">{{ activeProgress.examName.startsWith('Ensayo') ? activeProgress.examName : 'Ensayo ' + activeProgress.examName }}</h4>
-                </div>
-                <button class="btn-resume" (click)="resumeActiveIntento()">
-                  Continuar →
-                </button>
-                <button class="btn-widget-discard" (click)="discardActiveProgress()" title="Eliminar progreso guardado">
-                  ×
-                </button>
-              </div>
-            </div>
-            
-            <div class="header-actions">
-              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
-              <div class="profile-menu-wrap">
-                <button class="profile-trigger" (click)="showProfileModal = true">
-                  <span class="profile-avatar-wrap">
-                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
-                  </span>
-                </button>
-                <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
-              </div>
+        <header class="dashboard-header">
+          <div class="header-welcome-text">
+            <h1 class="header-greeting"><span class="text-gradient">Ensayos PAES</span></h1>
+            <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Realiza ensayos completos y simulacros bajo condiciones reales</p>
+          </div>
+          <div class="welcome-actions">
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                </span>
+              </button>
+              <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
             </div>
           </div>
         </header>
 
-        <!-- PRUEBAS -->
-        <div class="pruebas-section">
+        <div class="dashboard-body">
+          <!-- TOP ROW: COUNTDOWN & ACTIVE EXAM WIDGET -->
+          <div class="sim-top-row" style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 2rem;">
+            <!-- COUNTDOWN WIDGET -->
+            <div class="countdown-row" style="background: #fff; padding: 0.6rem 1.25rem; border-radius: 12px; width: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid rgba(133,92,214,0.3); display: flex; align-items: center; gap: 1rem;">
+              <span class="countdown-label" style="font-size: 0.85rem; font-weight: 700; color: #64748b;">⏳ {{ nextExamLabel }}:</span>
+              <div class="countdown-timer" style="display: flex; gap: 0.75rem;">
+                <div class="time-unit" style="display: flex; align-items: baseline; gap: 2px;"><span style="font-size: 1rem; font-weight: 800; color: var(--accent-primary); min-width: 20px; text-align: center;">{{ countdown.days }}</span><label style="font-size: 0.75rem; font-weight: 600; color: #94a3b8;">d</label></div>
+                <div class="time-unit" style="display: flex; align-items: baseline; gap: 2px;"><span style="font-size: 1rem; font-weight: 800; color: var(--accent-primary); min-width: 20px; text-align: center;">{{ countdown.hours }}</span><label style="font-size: 0.75rem; font-weight: 600; color: #94a3b8;">h</label></div>
+                <div class="time-unit" style="display: flex; align-items: baseline; gap: 2px;"><span style="font-size: 1rem; font-weight: 800; color: var(--accent-primary); min-width: 20px; text-align: center;">{{ countdown.minutes }}</span><label style="font-size: 0.75rem; font-weight: 600; color: #94a3b8;">m</label></div>
+              </div>
+            </div>
+
+            <!-- TEMARIO BADGE -->
+            <div class="temario-badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 0.4rem 1rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-right: auto;">
+              <span>✨</span> Actualizado con temario PAES oficial 2026
+            </div>
+
+            <!-- ACTIVE EXAM WIDGET -->
+            <div class="active-exam-widget glass-card" *ngIf="activeProgress" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; border-radius: 12px; border: 2px solid var(--accent-primary); background: rgba(133,92,214,0.05);">
+              <div class="widget-info">
+                <span class="widget-label" style="font-size: 0.7rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase;">PENDIENTE</span>
+                <h4 class="widget-title" style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">{{ activeProgress.examName.startsWith('Ensayo') ? activeProgress.examName : 'Ensayo ' + activeProgress.examName }}</h4>
+              </div>
+              <button class="btn-resume" (click)="resumeActiveIntento()" style="background: var(--accent-primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                Continuar →
+              </button>
+              <button class="btn-widget-discard" (click)="discardActiveProgress()" title="Eliminar progreso guardado" style="background: transparent; border: none; color: #ef4444; font-size: 1.25rem; cursor: pointer; padding: 0 0.25rem;">
+                ×
+              </button>
+            </div>
+          </div>
+
+          <!-- PRUEBAS -->
+          <div class="pruebas-section">
           <div class="pruebas-grid">
             <button
               *ngFor="let prueba of pruebas"
@@ -314,6 +314,7 @@ type ExamMode = 'real' | 'asistido';
             </div>
           </div>
         </div>
+        </div>
       </main>
     </div>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
@@ -436,11 +437,15 @@ type ExamMode = 'real' | 'asistido';
       transform: translateX(4px);
     }
     .nav-item.active { 
-      background: rgba(99, 102, 241, 0.25); 
-      color: #ffffff; 
-      border: 1.5px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
     }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { 
       font-size: 1.35rem; 
       width: 32px; 
@@ -507,9 +512,12 @@ type ExamMode = 'real' | 'asistido';
       transform: translateX(3px);
     }
     .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
@@ -518,7 +526,8 @@ type ExamMode = 'real' | 'asistido';
     .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
@@ -537,39 +546,7 @@ type ExamMode = 'real' | 'asistido';
     .main-content { 
       flex: 1; 
       margin-left: 260px; 
-      padding: 2.5rem; 
     }
-
-    /* HEADER */
-    .header {
-      margin-bottom: 3rem;
-    }
-    .header-main-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 1.5rem;
-    }
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-    }
-    .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
-    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
-    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
-    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
-    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
     .header-back {
       margin-bottom: 0;
     }
@@ -1537,6 +1514,7 @@ export class EnsayosListComponent implements OnInit {
   public firestoreService = inject(FirestoreService);
   public adminService = inject(AdminService);
   public dashSvc = inject(DashboardService);
+  public paymentService = inject(PaymentService);
   showProfileModal = false;
   showSettingsModal = false;
   showLogoutConfirm = false;

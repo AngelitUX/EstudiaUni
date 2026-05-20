@@ -98,6 +98,27 @@ import { AdminService } from '../admin/services/admin.service';
               </div>
             </div>
 
+            <div class="section-block">
+              <div class="section-header">
+                <h3>🎯 Meta PAES</h3>
+                <p>Configura tu objetivo académico de puntaje y carrera.</p>
+              </div>
+              <div class="grid">
+                <label>
+                  Carrera a la que aspiras
+                  <input [(ngModel)]="profileForm.targetCareer" type="text" placeholder="Ej: Ingeniería Civil" />
+                </label>
+                <label>
+                  Universidad
+                  <input [(ngModel)]="profileForm.targetUniversity" type="text" placeholder="Ej: Universidad de Chile" />
+                </label>
+              </div>
+              <label>
+                Puntaje de corte (100-1000)
+                <input [(ngModel)]="profileForm.targetScore" type="number" min="100" max="1000" step="1" placeholder="Ej: 700" />
+              </label>
+            </div>
+
             <div class="action-bar">
               <button class="primary" (click)="saveProfile()" [disabled]="saving || loading">
                 {{ saving ? 'Guardando...' : 'Guardar perfil' }}
@@ -706,6 +727,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     photoURL: '',
     bio: '',
     profileEmoji: '✨',
+    targetScore: null as number | null,
+    targetCareer: '',
+    targetUniversity: '',
   };
   emojiOptions = [
     '✨', '🔥', '🎯', '🚀', '📚', '🧠', '😎', '🌟', '🎓', '⚡',
@@ -742,8 +766,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         if (profile) {
           this.profileForm.displayName = profile.displayName || '';
           this.profileForm.photoURL = profile.photoURL || '';
-          this.profileForm.bio = profile.bio || '';
+           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
+          this.profileForm.targetScore = profile.targetScore || null;
+          this.profileForm.targetCareer = profile.targetCareer || '';
+          this.profileForm.targetUniversity = profile.targetUniversity || '';
 
           this.settingsForm.studyGoalMinutesPerDay = profile.studyGoalMinutesPerDay || 45;
           this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
@@ -783,6 +810,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         photoURL,
         bio: this.profileForm.bio.trim(),
         profileEmoji: selectedEmoji,
+        targetScore: this.profileForm.targetScore ? Number(this.profileForm.targetScore) : null,
+        targetCareer: this.profileForm.targetCareer?.trim() || null,
+        targetUniversity: this.profileForm.targetUniversity?.trim() || null,
       });
 
       let authSyncFailed = false;

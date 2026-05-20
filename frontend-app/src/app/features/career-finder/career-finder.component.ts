@@ -9,6 +9,7 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-career-finder',
@@ -98,56 +99,57 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in">
-        <header class="header" style="position: relative;">
-          <div class="header-main-row">
-            <div class="header-left">
-              <div class="header-content">
-                <h1 class="title">Encuentra tu Carrera 🎓</h1>
-                <p class="subtitle">Descubre tu futuro académico basado en tus intereses y ubicación.</p>
-              </div>
-            </div>
+      <main class="main-content animate-fade-in-down">
+        <!-- HEADER -->
+        <header class="dashboard-header">
+          <div class="header-welcome-text">
+            <h1 class="header-greeting"><span class="text-gradient">Encuentra tu Carrera</span></h1>
+            <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Descubre tu futuro académico basado en tus intereses y ubicación.</p>
+          </div>
           
-            <div class="header-actions">
-              <!-- BOTÓN DESPLEGABLE FAVORITOS -->
-              <div class="favorites-dropdown-container" *ngIf="favorites().length > 0">
-                <button class="btn btn-outline fav-toggle-btn" (click)="showFavorites.set(!showFavorites())" [class.active]="showFavorites()">
-                  ❤️ Favoritos ({{ favorites().length }})
-                </button>
-                
-                <div class="favorites-wrapper" *ngIf="showFavorites()">
-                  <h4>Tus Favoritos <span>{{favorites().length}}/5</span></h4>
-                  <div class="fav-list">
-                    <div class="fav-item animate-fade-in" *ngFor="let fav of favorites()">
-                      <div class="fav-text">
-                        <strong>{{ fav.nombre }}</strong>
-                        <span>{{ fav.abreviatura }} • {{ fav.puntajeCorte2025 }} pts</span>
-                      </div>
-                      <button class="btn-remove-fav" (click)="toggleFavorite(fav)" title="Quitar">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      </button>
+          <div class="welcome-actions">
+            <!-- BOTÓN DESPLEGABLE FAVORITOS -->
+            <div class="favorites-dropdown-container" *ngIf="favorites().length > 0">
+              <button class="btn btn-outline fav-toggle-btn" (click)="showFavorites.set(!showFavorites())" [class.active]="showFavorites()">
+                ❤️ Favoritos ({{ favorites().length }})
+              </button>
+              
+              <div class="favorites-wrapper" *ngIf="showFavorites()">
+                <h4>Tus Favoritos <span>{{favorites().length}}/5</span></h4>
+                <div class="fav-list">
+                  <div class="fav-item animate-fade-in" *ngFor="let fav of favorites()">
+                    <div class="fav-text">
+                      <strong>{{ fav.nombre }}</strong>
+                      <span>{{ fav.abreviatura }} • {{ fav.puntajeCorte2025 }} pts</span>
                     </div>
+                    <button class="btn-remove-fav" (click)="toggleFavorite(fav)" title="Quitar">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">
-                {{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}
-              </span>
-              <div class="profile-menu-wrap">
-                <button class="profile-trigger" (click)="showProfileModal = true">
-                  <span class="profile-avatar-wrap">
-                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" class="profile-avatar"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
-                  </span>
-                </button>
-                <span class="profile-emoji-badge" *ngIf="firestoreService.profileSignal()?.profileEmoji">{{ firestoreService.profileSignal()?.profileEmoji }}</span>
-              </div>
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">
+              {{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}
+            </span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                </span>
+              </button>
+              <span class="profile-emoji-badge" *ngIf="firestoreService.profileSignal()?.profileEmoji">{{ firestoreService.profileSignal()?.profileEmoji }}</span>
             </div>
           </div>
         </header>
 
-        <!-- AI TUTOR PROMO BANNER -->
+        <div class="dashboard-body">
+          <!-- AI TUTOR PROMO BANNER -->
         <div class="ai-promo-container" *ngIf="!isAiOpen()">
           <div class="ai-promo-banner">
             <div class="ai-promo-content">
@@ -348,6 +350,7 @@ import { AuthService } from '../../core/services/auth.service';
           <span class="toast-icon">⚠️</span>
           {{ toastMessage() }}
         </div>
+        </div>
       </main>
 
       <!-- AI CHAT PANEL -->
@@ -484,7 +487,16 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255, 255, 255, 0.12); color: #fff; transform: translateX(4px); }
-    .nav-item.active { background: rgba(99, 102, 241, 0.25); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-item.active { 
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
+    }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
     .sidebar-section-title {
       font-size: 0.78rem;
@@ -545,9 +557,12 @@ import { AuthService } from '../../core/services/auth.service';
       transform: translateX(3px);
     }
     .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
@@ -556,7 +571,8 @@ import { AuthService } from '../../core/services/auth.service';
     .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
+    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
@@ -579,28 +595,7 @@ import { AuthService } from '../../core/services/auth.service';
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN CONTENT */
-    .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); }
-    
-    /* HEADER */
-    .header { margin-bottom: 3rem; }
-    .header-main-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
-    .header-left { display: flex; flex-direction: column; gap: 1rem; }
-    .header-actions { display: flex; align-items: center; gap: 1.25rem; }
-    
-    .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; text-decoration: none; transition: all 0.2s; width: 62px; height: 62px; }
-    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
-    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
-    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
-    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
-    
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
-    
-    .title { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
-    .subtitle { color: var(--text-secondary); font-size: 1.15rem; font-weight: 500; }
+    .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); }
 
     /* FINDER FORM */
     .finder-form { padding: 2rem; margin-bottom: 2.5rem; }
@@ -949,6 +944,7 @@ export class CareerFinderComponent implements OnInit {
   private aiService = inject(AiAssistService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  public paymentService = inject(PaymentService);
 
   get herramientasExpanded(): boolean {
     const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 

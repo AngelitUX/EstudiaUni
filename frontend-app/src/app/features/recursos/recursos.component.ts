@@ -9,6 +9,7 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { AdminService } from '../admin/services/admin.service';
 import { RecursosService, Recurso } from './recursos.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-recursos',
@@ -95,36 +96,32 @@ import { RecursosService, Recurso } from './recursos.service';
       </div>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in">
+      <main class="main-content animate-fade-in-down">
         <!-- HEADER -->
-        <header class="header">
-          <div class="header-main-row">
-            <div class="header-left">
-              <div class="header-content">
-                <div class="title-row" style="display: flex; align-items: center; gap: 1rem;">
-                  <div class="hero-icon-container-small" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(28, 176, 246, 0.1); border: 2px solid rgba(28, 176, 246, 0.2); display: flex; align-items: center; justify-content: center;">
-                    <span class="hero-icon" style="font-size: 1.8rem; filter: drop-shadow(0 2px 6px rgba(28, 176, 246, 0.4));">📂</span>
-                  </div>
-                  <h1 class="title">Recursos Adicionales</h1>
-                </div>
-                <p class="subtitle">Explora material de estudio, guías, videos y más para complementar tu preparación.</p>
-              </div>
-            </div>
-            
-            <div class="header-actions">
-              <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
-              <div class="profile-menu-wrap">
-                <button class="profile-trigger" (click)="showProfileModal = true">
-                  <span class="profile-avatar-wrap">
-                    <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
-                    <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
-                  </span>
-                </button>
-                <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
-              </div>
+        <header class="dashboard-header">
+          <div class="header-welcome-text">
+            <h1 class="header-greeting"><span class="text-gradient">Recursos Adicionales</span></h1>
+            <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Explora material de estudio, guías, videos y más para complementar tu preparación.</p>
+          </div>
+          
+          <div class="welcome-actions">
+            <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
+              Mejorar a PRO ⚡
+            </button>
+            <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
+            <div class="profile-menu-wrap">
+              <button class="profile-trigger" (click)="showProfileModal = true">
+                <span class="profile-avatar-wrap">
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
+                </span>
+              </button>
+              <span class="profile-emoji-badge">{{ firestoreService.profileSignal()?.profileEmoji || '✨' }}</span>
             </div>
           </div>
         </header>
+
+        <div class="dashboard-body">
 
         <!-- FILTERS -->
         <div class="filters-container glass-card">
@@ -289,6 +286,7 @@ import { RecursosService, Recurso } from './recursos.service';
               </div>
             </div>
           </div>
+        </div>
         </div>
       </main>
     </div>
@@ -619,7 +617,16 @@ import { RecursosService, Recurso } from './recursos.service';
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
-    .nav-item.active { background: rgba(99,102,241,0.25); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nav-item.active { 
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700; 
+    }
+    .nav-item.active .nav-icon { filter: brightness(1.3); }
+    .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
     .sidebar-section-title {
       font-size: 0.78rem;
@@ -680,9 +687,12 @@ import { RecursosService, Recurso } from './recursos.service';
       transform: translateX(3px);
     }
     .sidebar-sub-items .nav-item.active {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+      background: rgba(139,92,246,0.18); 
+      color: #c4b5fd; 
+      border: none; 
+      border-left: 3.5px solid #a78bfa; 
+      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
+      font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
@@ -696,25 +706,7 @@ import { RecursosService, Recurso } from './recursos.service';
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN CONTENT */
-    .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); }
-    
-    .header { margin-bottom: 2rem; }
-    .header-main-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
-    .header-left { display: flex; flex-direction: column; gap: 1rem; }
-    .title { font-family: var(--font-heading); font-size: 2.5rem; font-weight: 800; margin: 0; letter-spacing: -0.03em; color: var(--text-primary); }
-    .subtitle { color: var(--text-secondary); font-size: 1.15rem; font-weight: 500; margin: 0.5rem 0 0 0; }
-    
-    .header-actions { display: flex; align-items: center; gap: 1.25rem; }
-    .profile-menu-wrap { position: relative; }
-    .profile-trigger { display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-primary); border-radius: 50%; padding: 0.35rem; cursor: pointer; transition: all 0.2s; width: 62px; height: 62px; }
-    .profile-trigger:hover { border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.1); }
-    .profile-avatar-wrap { position: relative; width: 52px; height: 52px; display: inline-block; flex-shrink: 0; }
-    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-    .profile-avatar.fallback { display: grid; place-items: center; background: linear-gradient(135deg, #855cd6, #6b46b8); font-weight: 700; font-size: 0.9rem; border-radius: 50%; width: 100%; height: 100%; color: white; }
-    .profile-emoji-badge { position: absolute; right: 0; bottom: 0; background: #111827; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; z-index: 10; pointer-events: none; }
-    .plan-badge { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 800; background: var(--bg-secondary); color: var(--text-secondary); border: 2px solid var(--glass-border); line-height: 1; }
-    .plan-badge.pro { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
-    .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
+    .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); }
 
     /* FILTERS */
     .filters-container { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; padding: 1.25rem 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
@@ -1133,13 +1125,13 @@ import { RecursosService, Recurso } from './recursos.service';
       font-size: 1.25rem;
       color: var(--text-secondary);
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, background 0.2s ease;
       flex-shrink: 0;
     }
     .close-btn:hover {
       background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-      transform: rotate(90deg);
+      color: #ef4444 !important;
+      transform: rotate(90deg) scale(1.1);
     }
     
     /* PREMIUM DETAILED PREVIEW MODAL Styles */
@@ -2014,6 +2006,7 @@ export class RecursosComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
   public recursosService = inject(RecursosService);
   private sanitizer = inject(DomSanitizer);
+  public paymentService = inject(PaymentService);
 
   mobileOpen = false;
   showSettingsModal = false;
