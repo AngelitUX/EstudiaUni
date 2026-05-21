@@ -115,7 +115,7 @@ import { AdminService } from '../admin/services/admin.service';
               </div>
               <label>
                 Puntaje de corte (100-1000)
-                <input [(ngModel)]="profileForm.targetScore" type="number" min="100" max="1000" step="1" placeholder="Ej: 700" />
+                <input [(ngModel)]="profileForm.targetScore" (blur)="onTargetScoreBlur()" (change)="onTargetScoreBlur()" type="number" min="100" max="1000" step="1" placeholder="Ej: 700" />
               </label>
             </div>
 
@@ -768,7 +768,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
           this.profileForm.photoURL = profile.photoURL || '';
            this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
-          this.profileForm.targetScore = profile.targetScore || null;
+          this.profileForm.targetScore = this.clampTargetScore(profile.targetScore);
           this.profileForm.targetCareer = profile.targetCareer || '';
           this.profileForm.targetUniversity = profile.targetUniversity || '';
 
@@ -810,7 +810,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         photoURL,
         bio: this.profileForm.bio.trim(),
         profileEmoji: selectedEmoji,
-        targetScore: this.profileForm.targetScore ? Number(this.profileForm.targetScore) : null,
+        targetScore: this.clampTargetScore(this.profileForm.targetScore),
         targetCareer: this.profileForm.targetCareer?.trim() || null,
         targetUniversity: this.profileForm.targetUniversity?.trim() || null,
       });
@@ -875,6 +875,17 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const normalized = value.trim();
     const emojiMatch = normalized.match(/\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*/u);
     return emojiMatch ? emojiMatch[0] : '✨';
+  }
+
+  onTargetScoreBlur(): void {
+    this.profileForm.targetScore = this.clampTargetScore(this.profileForm.targetScore);
+  }
+
+  private clampTargetScore(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    if (Number.isNaN(n)) return null;
+    return Math.min(1000, Math.max(100, Math.round(n)));
   }
 
   private shouldSyncAuthPhoto(photoURL: string | null): boolean {

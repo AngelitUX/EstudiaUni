@@ -11,6 +11,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { HistoryModalComponent } from './history-modal.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { ToastService } from '../../core/services/toast.service';
 import { AdminService } from '../admin/services/admin.service';
 import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
 import { PaymentService } from '../../core/services/payment.service';
@@ -286,18 +287,31 @@ import { PaymentService } from '../../core/services/payment.service';
                   </div>
                 </div>
                 <div class="goal-footer-actions" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; border-top: 1.5px solid var(--glass-border); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
-                  <span class="goal-hint" style="margin-top: 0;" *ngIf="getRoundedAverageScore() > 0 && getRoundedAverageScore() < target">
-                    Te faltan {{ target - getRoundedAverageScore() }} puntos.
-                  </span>
-                  <span class="goal-hint on-track" style="margin-top: 0;" *ngIf="getRoundedAverageScore() >= target">
-                    🎉 ¡Superada!
-                  </span>
-                  <span class="goal-hint" style="margin-top: 0;" *ngIf="getRoundedAverageScore() === 0">
-                    Haz un ensayo.
-                  </span>
-                  <a routerLink="/encuentra-tu-carrera" class="btn-buscar-carreras">
-                    🔍 Buscar carreras
-                  </a>
+                  <div style="display: flex; flex-direction: column; gap: 0.35rem; flex: 1; min-width: 180px;">
+                    <span class="goal-hint" style="margin-top: 0;" *ngIf="getRoundedAverageScore() > 0 && getRoundedAverageScore() < target">
+                      Te faltan {{ target - getRoundedAverageScore() }} puntos.
+                    </span>
+                    <span class="goal-hint on-track" style="margin-top: 0;" *ngIf="getRoundedAverageScore() >= target">
+                      🎉 ¡Superada!
+                    </span>
+                    <span class="goal-hint" style="margin-top: 0;" *ngIf="getRoundedAverageScore() === 0 && getMetaPaesMateriasList().length === 0">
+                      Haz un ensayo PAES en modo real.
+                    </span>
+                    <span class="goal-hint" style="margin-top: 0; color: #f59e0b;" *ngIf="getRoundedAverageScore() === 0 && getMetaPaesMateriasList().length > 0 && getMetaPaesIncludedCount() === 0">
+                      Todas las materias están excluidas. Agrega al menos una en «Materias del promedio».
+                    </span>
+                    <span class="goal-hint" style="margin-top: 0; font-size: 0.78rem; color: var(--text-muted); font-weight: 600;" *ngIf="getMetaPaesIncludedCount() > 0">
+                      Promedio de {{ getMetaPaesIncludedCount() }} materia(s) · {{ getMetaPaesTotalEnsayosIncluded() }} ensayo(s) real(es)
+                    </span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <button type="button" class="btn-meta-materias" (click)="showMetaPaesMateriasModal = true">
+                      📋 Materias del promedio
+                    </button>
+                    <a routerLink="/encuentra-tu-carrera" class="btn-buscar-carreras">
+                      🔍 Buscar carreras
+                    </a>
+                  </div>
                 </div>
               </ng-container>
               <ng-template #noGoal>
@@ -513,7 +527,7 @@ import { PaymentService } from '../../core/services/payment.service';
       <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Cerrar Sesión</h2>
-          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
         </div>
         <div class="modal-body">
           <div class="confirm-content">
@@ -530,6 +544,44 @@ import { PaymentService } from '../../core/services/payment.service';
     </div>
 
     <!-- STREAK EXPLANATION MODAL -->
+    <!-- META PAES MATERIAS MODAL -->
+    <div class="modal-overlay" *ngIf="showMetaPaesMateriasModal" (click)="showMetaPaesMateriasModal = false">
+      <div class="modal-container glass-card meta-paes-materias-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--glass-border);">
+          <h2 style="margin: 0; font-size: 1.2rem;">Materias en Meta PAES</h2>
+          <button type="button" class="close-btn" (click)="showMetaPaesMateriasModal = false">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 1.25rem 1.5rem;">
+          <p style="margin: 0 0 1rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
+            El <strong>promedio actual</strong> usa ensayos PAES en <strong>modo real</strong>. Puedes quitar materias del cálculo y volver a agregarlas cuando quieras.
+          </p>
+          <div *ngIf="getMetaPaesMateriasList().length === 0" class="meta-paes-empty">
+            <span>📝</span>
+            <p>Aún no tienes ensayos PAES en modo real. Completa uno en <a routerLink="/ensayos" (click)="showMetaPaesMateriasModal = false">Ensayos PAES</a>.</p>
+          </div>
+          <ul class="meta-paes-materias-list" *ngIf="getMetaPaesMateriasList().length > 0">
+            <li *ngFor="let m of getMetaPaesMateriasList()" [class.excluded]="isMetaPaesSubjectExcluded(m.id)">
+              <div class="meta-materia-info">
+                <span class="meta-materia-name">{{ m.name }}</span>
+                <span class="meta-materia-detail">{{ m.count }} ensayo(s) · promedio {{ m.avgScore }} pts</span>
+              </div>
+              <button
+                type="button"
+                class="btn-toggle-materia"
+                [class.is-excluded]="isMetaPaesSubjectExcluded(m.id)"
+                [disabled]="savingMetaPaesMaterias"
+                (click)="toggleMetaPaesSubject(m.id)">
+                {{ isMetaPaesSubjectExcluded(m.id) ? '+ Agregar al promedio' : 'Quitar del promedio' }}
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end;">
+          <button type="button" class="btn-primary-modal" (click)="showMetaPaesMateriasModal = false">Listo</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay" *ngIf="showStreakInfo" (click)="showStreakInfo = false">
       <div class="modal-container glass streak-info-modal animate-scale-up" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -1172,6 +1224,38 @@ import { PaymentService } from '../../core/services/payment.service';
     .goal-marker-label { font-size: 0.65rem; font-weight: 800; color: var(--accent-primary); background: rgba(133,92,214,0.1); padding: 0.1rem 0.4rem; border-radius: 4px; }
     .goal-hint { font-size: 0.82rem; color: #374151; font-weight: 700; }
     .goal-hint.on-track { color: #10b981; }
+    .btn-meta-materias {
+      background: rgba(133, 92, 214, 0.12);
+      border: 1.5px solid rgba(133, 92, 214, 0.35);
+      color: var(--accent-primary);
+      padding: 0.45rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-meta-materias:hover { background: rgba(133, 92, 214, 0.2); transform: translateY(-1px); }
+    .meta-paes-materias-modal { max-width: 520px; width: 100%; border-radius: 20px; overflow: hidden; }
+    .meta-paes-materias-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
+    .meta-paes-materias-list li {
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+      padding: 0.85rem 1rem; border-radius: 12px; border: 1.5px solid var(--glass-border); background: #fff;
+    }
+    .meta-paes-materias-list li.excluded { opacity: 0.65; background: var(--bg-secondary); }
+    .meta-materia-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .meta-materia-name { font-weight: 800; font-size: 0.95rem; color: var(--text-primary); }
+    .meta-materia-detail { font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; }
+    .btn-toggle-materia {
+      flex-shrink: 0; padding: 0.45rem 0.75rem; border-radius: 8px; border: 1.5px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.08); color: #dc2626; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-toggle-materia.is-excluded {
+      border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1); color: #059669;
+    }
+    .btn-toggle-materia:disabled { opacity: 0.6; cursor: not-allowed; }
+    .meta-paes-empty { text-align: center; padding: 1.5rem 0.5rem; color: var(--text-secondary); }
+    .meta-paes-empty span { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
  
     /* BLURRED CHART EMPTY STATE */
     .empty-state-mastery { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.75rem; min-height: 110px; border-radius: 12px; overflow: hidden; border: 2px dashed rgba(133, 92, 214, 0.35); background: rgba(0, 0, 0, 0.01); }
@@ -1416,6 +1500,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   nextExamLabel = '';
   private countdownInterval: any;
   public notificationService = inject(NotificationService);
+  private toast = inject(ToastService);
   public adminService = inject(AdminService);
   public miniEnsayoSvc = inject(MiniEnsayoService);
   public paymentService = inject(PaymentService);
@@ -1443,6 +1528,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   showSettingsModal = false;
   showHistoryModal = false;
   showStreakInfo = false;
+  showMetaPaesMateriasModal = false;
+  savingMetaPaesMaterias = false;
   showLogoutConfirm = false;
   currentDate = (() => {
     const formatted = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
@@ -1812,15 +1899,55 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.trendDirection = scores[scores.length - 1] - scores[0];
   }
 
+  getMetaPaesExcluded(): string[] {
+    return this.firestoreService.profileSignal()?.metaPaesExcludedSubjects ?? [];
+  }
+
+  getMetaPaesMateriasList() {
+    return this.dashSvc.getPaesSubjectsSummary();
+  }
+
+  isMetaPaesSubjectExcluded(subjectId: string): boolean {
+    return this.dashSvc.isSubjectExcludedFromMeta(subjectId, this.getMetaPaesExcluded());
+  }
+
+  getMetaPaesIncludedCount(): number {
+    const all = this.getMetaPaesMateriasList();
+    return all.filter(m => !this.isMetaPaesSubjectExcluded(m.id)).length;
+  }
+
+  getMetaPaesTotalEnsayosIncluded(): number {
+    const excluded = this.getMetaPaesExcluded();
+    return this.dashSvc.paesRecords().filter(
+      r => r.mode === 'real' && !this.dashSvc.isSubjectExcludedFromMeta(r.subject, excluded)
+    ).length;
+  }
+
+  async toggleMetaPaesSubject(subjectId: string): Promise<void> {
+    const current = [...this.getMetaPaesExcluded()];
+    const isExcluded = this.isMetaPaesSubjectExcluded(subjectId);
+    const next = isExcluded
+      ? current.filter(ex => !this.dashSvc.subjectsMatch(subjectId, ex))
+      : [...current, subjectId];
+    this.savingMetaPaesMaterias = true;
+    try {
+      await this.firestoreService.updateProfileSettings({ metaPaesExcludedSubjects: next });
+    } catch {
+      this.toast.error('No se pudo actualizar las materias.');
+    } finally {
+      this.savingMetaPaesMaterias = false;
+    }
+  }
+
   getRoundedAverageScore(): number {
-    const avg = this.dashSvc.getAverageScore();
+    const avg = this.dashSvc.getAverageScore(this.getMetaPaesExcluded());
     return avg ? Math.round(avg) : 0;
   }
 
   getGoalProgress(): number {
     const target = this.firestoreService.profileSignal()?.targetScore;
     if (!target) return 0;
-    const avg = this.dashSvc.getAverageScore();
+    const avg = this.dashSvc.getAverageScore(this.getMetaPaesExcluded());
     if (avg === 0) return 0;
     return Math.min(100, Math.round((avg / target) * 100));
   }
