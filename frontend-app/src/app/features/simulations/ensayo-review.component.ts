@@ -220,9 +220,9 @@ interface ReviewQuestion {
     .btn-cancel { transition: all 0.25s; }
     .btn-cancel:hover { background: #cbd5e1 !important; color: #0f172a !important; }
     
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    .animate-scale-up { animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+    .animate-fade-in { animation: none; opacity: 1; }
+    .animate-scale-up { animation: none; opacity: 1; transform: none; }
+    .animate-slide-up { animation: none; opacity: 1; transform: none; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

@@ -60,10 +60,10 @@ import { SoundService } from '../../core/services/sound.service';
                     <option *ngFor="let region of chileanRegions" [value]="region">{{ region }}</option>
                   </select>
                 </label>
-                <label class="sidebar-field">LinkedIn / Red Social
+                <label class="sidebar-field">Colegio / Liceo
                   <div class="input-with-icon">
-                    <span class="input-icon">🔗</span>
-                    <input [(ngModel)]="profileForm.linkedinUrl" type="url" placeholder="URL de tu perfil"/>
+                    <span class="input-icon">🏫</span>
+                    <input [(ngModel)]="profileForm.school" type="text" placeholder="Tu colegio actual"/>
                   </div>
                 </label>
               </div>
@@ -91,6 +91,9 @@ import { SoundService } from '../../core/services/sound.service';
                         {{ getSubscriptionInfo() }}
                       </span>
                     </div>
+                    <button *ngIf="isProPlan()" class="btn-cancel-subscription" (click)="openCancelSubscription()" id="btn-cancel-suscripcion">
+                      ⚠️ Cancelar Suscripción
+                    </button>
                   </div>
                 </div>
               </div>
@@ -209,7 +212,7 @@ import { SoundService } from '../../core/services/sound.service';
       <div class="logout-confirm-modal glass" (click)="$event.stopPropagation()">
         <div class="confirm-header">
           <h2>Cerrar Sesión</h2>
-          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
         </div>
         <div class="confirm-body">
           <div class="confirm-content">
@@ -221,6 +224,78 @@ import { SoundService } from '../../core/services/sound.service';
         <div class="confirm-footer">
           <button class="btn-cancel" (click)="showLogoutConfirm = false">Cancelar</button>
           <button class="btn-logout-final" (click)="executeLogout()">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM UNDO CONFIRMATION -->
+    <div class="logout-confirm-overlay" *ngIf="showUndoConfirm" (click)="showUndoConfirm = false">
+      <div class="logout-confirm-modal glass" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h2>Deshacer Cambios</h2>
+          <button class="close-btn" (click)="showUndoConfirm = false">&times;</button>
+        </div>
+        <div class="confirm-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">↺</div>
+            <h3>¿Deshacer todos los cambios?</h3>
+            <p>Se descartarán todas las modificaciones que no hayas guardado.</p>
+          </div>
+        </div>
+        <div class="confirm-footer">
+          <button class="btn-cancel" (click)="showUndoConfirm = false">Cancelar</button>
+          <button class="btn-confirm-final" (click)="executeUndoChanges()">Deshacer</button>
+        </div>
+      </div>
+    </div>
+    <!-- CANCEL SUBSCRIPTION - STEP 1 -->
+    <div class="logout-confirm-overlay" *ngIf="showCancelSubStep1" (click)="showCancelSubStep1 = false">
+      <div class="logout-confirm-modal glass" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h2>Cancelar Suscripción</h2>
+          <button class="close-btn" (click)="showCancelSubStep1 = false">&times;</button>
+        </div>
+        <div class="confirm-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">📄</div>
+            <h3>¿Seguro que quieres cancelar?</h3>
+            <p>Perderás todos los beneficios <strong>Premium</strong> al término del período pagado. Ensayos ilimitados, Tutor IA y más.</p>
+            <div class="cancel-sub-warning">⚠️ Esta acción es irreversible.</div>
+          </div>
+        </div>
+        <div class="confirm-footer">
+          <button class="btn-cancel" (click)="showCancelSubStep1 = false">No, mantener Premium</button>
+          <button class="btn-cancel-sub-next" (click)="goToCancelStep2()">Sí, continuar →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CANCEL SUBSCRIPTION - STEP 2 (double confirm) -->
+    <div class="logout-confirm-overlay" *ngIf="showCancelSubStep2" (click)="showCancelSubStep2 = false">
+      <div class="logout-confirm-modal glass cancel-step2-modal" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h2>Confirmación Final</h2>
+          <button class="close-btn" (click)="showCancelSubStep2 = false">&times;</button>
+        </div>
+        <div class="confirm-body">
+          <div class="confirm-content">
+            <div class="confirm-icon">🚫</div>
+            <h3>Úlltima oportunidad</h3>
+            <p>¿Estás completamente seguro? Deja de tener acceso Premium al finalizar tu ciclo de facturación.</p>
+            <div class="cancel-countdown" *ngIf="cancelCountdown &gt; 0">
+              El botón se activará en <strong>{{ cancelCountdown }}s</strong>
+            </div>
+          </div>
+        </div>
+        <div class="confirm-footer">
+          <button class="btn-cancel" (click)="showCancelSubStep2 = false">No, quiero mantenerla</button>
+          <button
+            class="btn-cancel-sub-final"
+            [disabled]="cancelCountdown &gt; 0"
+            (click)="executeCancelSubscription()"
+          >
+            {{ cancelCountdown &gt; 0 ? 'Espera ' + cancelCountdown + 's...' : '🚫 Cancelar definitivamente' }}
+          </button>
         </div>
       </div>
     </div>
@@ -293,8 +368,22 @@ import { SoundService } from '../../core/services/sound.service';
     .btn-cancel:hover { background: var(--bg-secondary); }
     .btn-logout-final { padding: 0.85rem; border-radius: 12px; border: none; background: #ef4444; color: #ffffff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239,68,68,0.25); }
     .btn-logout-final:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-confirm-final { padding: 0.85rem; border-radius: 12px; border: none; background: var(--accent-primary); color: #ffffff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(133,92,214,0.25); }
+    .btn-confirm-final:hover { filter: brightness(1.1); transform: translateY(-2px); }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* CANCEL SUBSCRIPTION */
+    .btn-cancel-subscription { margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: #ef4444; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel-subscription:hover { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.6); transform: translateY(-1px); }
+    .cancel-sub-warning { margin-top: 1rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; font-weight: 600; color: #ef4444; text-align: center; }
+    .btn-cancel-sub-next { padding: 0.85rem; border-radius: 12px; border: none; background: #f59e0b; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(245,158,11,0.25); }
+    .btn-cancel-sub-next:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .cancel-step2-modal { border-color: rgba(239,68,68,0.3) !important; }
+    .cancel-countdown { margin-top: 1rem; font-size: 0.88rem; color: var(--text-secondary); background: var(--bg-secondary); border-radius: 8px; padding: 0.5rem 0.75rem; text-align: center; }
+    .btn-cancel-sub-final { padding: 0.85rem; border-radius: 12px; border: none; background: #ef4444; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239,68,68,0.25); }
+    .btn-cancel-sub-final:hover:not([disabled]) { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-cancel-sub-final[disabled] { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
     .logout-profile-btn .icon{font-size:1.1rem}
     .profile-main{display:flex;flex-direction:column;gap:1.2rem}
@@ -419,11 +508,16 @@ export class ProfileModalComponent implements OnInit {
   saving = false;
   showEmojiPicker = false;
   showLogoutConfirm = false;
+  showUndoConfirm = false;
+  showCancelSubStep1 = false;
+  showCancelSubStep2 = false;
+  cancelCountdown = 5;
+  private cancelCountdownInterval: any = null;
   showImageEditor = false;
   shakeSaveButton = false;
   isEditingName = false;
   imageToEdit = '';
-  
+
   chileanRegions = [
     'Arica y Parinacota',
     'Tarapacá',
@@ -447,7 +541,7 @@ export class ProfileModalComponent implements OnInit {
   cropX = 50;
   cropY = 50;
   cropSize = 150;
-  
+
   isDragging = false;
   isResizing = false;
   startX = 0;
@@ -456,12 +550,12 @@ export class ProfileModalComponent implements OnInit {
   initialY = 0;
   initialSize = 0;
 
-  profileForm = { 
-    displayName: '', 
-    photoURL: '', 
-    bio: '', 
-    profileEmoji: '✨', 
-    linkedinUrl: '',
+  profileForm = {
+    displayName: '',
+    photoURL: '',
+    bio: '',
+    profileEmoji: '✨',
+    school: '',
     location: '',
     selectedSubjects: [] as string[],
     targetScore: null as number | null,
@@ -472,14 +566,15 @@ export class ProfileModalComponent implements OnInit {
   subjectsList = [
     { id: 'comp-lectora', name: 'Competencia Lectora' },
     { id: 'mat1', name: 'Matemática M1' },
+    { id: 'mat2', name: 'Matemática M2' },
     { id: 'historia', name: 'Historia y Cs. Sociales' },
     { id: 'ciencias-tp', name: 'Ciencias T.P.' },
     { id: 'ciencias-biologia', name: 'Biología' },
     { id: 'ciencias-fisica', name: 'Física' },
     { id: 'ciencias-quimica', name: 'Química' }
   ];
-  emojiOptions = ['✨','🔥','🎯','🚀','📚','🧠','😎','🌟','🎓','⚡','💪','🦊','🐼','🦄','😄','🤓','🥳','😺','🌈','🍀','🪐','🌙','☀️','🎵','🎮','🏆','💎','🧩','🫶','🛡️'];
-  
+  emojiOptions = ['✨', '🔥', '🎯', '🚀', '📚', '🧠', '😎', '🌟', '🎓', '⚡', '💪', '🦊', '🐼', '🦄', '😄', '🤓', '🥳', '😺', '🌈', '🍀', '🪐', '🌙', '☀️', '🎵', '🎮', '🏆', '💎', '🧩', '🫶', '🛡️'];
+
   public get firestoreServiceSignal() {
     return this.firestoreService;
   }
@@ -509,13 +604,18 @@ export class ProfileModalComponent implements OnInit {
     const day = String(end.getDate()).padStart(2, '0');
     const month = String(end.getMonth() + 1).padStart(2, '0');
     const year = end.getFullYear();
-    
-    // Friendly days remaining
-    const diffTime = end.getTime() - new Date().getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 0) {
+
+    // Friendly days remaining (comparing normalized local midnights)
+    const today = new Date();
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endMidnight = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    const diffTime = endMidnight.getTime() - todayMidnight.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
       return 'Expirada';
+    } else if (diffDays === 0) {
+      return 'Expira hoy ⚠️';
     } else if (diffDays === 1) {
       return 'Expira mañana ⚠️';
     } else if (diffDays <= 7) {
@@ -528,11 +628,11 @@ export class ProfileModalComponent implements OnInit {
   isDirty(): boolean {
     const current = { ...this.profileForm };
     const initial = JSON.parse(this.initialProfileForm);
-    
+
     // Sort arrays for comparison to ignore order
     if (current.selectedSubjects) current.selectedSubjects = [...current.selectedSubjects].sort();
     if (initial.selectedSubjects) initial.selectedSubjects = [...initial.selectedSubjects].sort();
-    
+
     return JSON.stringify(initial) !== JSON.stringify(current);
   }
 
@@ -549,9 +649,11 @@ export class ProfileModalComponent implements OnInit {
           this.profileForm.photoURL = profile.photoURL || '';
           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
-          this.profileForm.linkedinUrl = profile.linkedinUrl || '';
+          this.profileForm.school = profile.school || '';
           this.profileForm.location = profile.location || '';
-          this.profileForm.selectedSubjects = profile.selectedSubjects || this.subjectsList.map(s => s.id);
+          this.profileForm.selectedSubjects = Array.isArray(profile.selectedSubjects)
+            ? [...profile.selectedSubjects]
+            : this.subjectsList.map(s => s.id);
           this.profileForm.targetScore = this.clampTargetScore(profile.targetScore);
           this.profileForm.targetCareer = profile.targetCareer || '';
           this.profileForm.targetUniversity = profile.targetUniversity || '';
@@ -579,10 +681,42 @@ export class ProfileModalComponent implements OnInit {
   }
 
   undoChanges() {
-    if (confirm('¿Estás seguro de que quieres deshacer todos los cambios?')) {
-      const original = JSON.parse(this.initialProfileForm);
-      this.profileForm = { ...original };
-      this.toast.info('Cambios deshechos.');
+    this.showUndoConfirm = true;
+  }
+
+  executeUndoChanges() {
+    const original = JSON.parse(this.initialProfileForm);
+    this.profileForm = { ...original };
+    this.toast.info('Cambios deshechos.');
+    this.showUndoConfirm = false;
+  }
+
+  openCancelSubscription() {
+    this.showCancelSubStep1 = true;
+  }
+
+  goToCancelStep2() {
+    this.showCancelSubStep1 = false;
+    this.showCancelSubStep2 = true;
+    this.cancelCountdown = 5;
+    if (this.cancelCountdownInterval) clearInterval(this.cancelCountdownInterval);
+    this.cancelCountdownInterval = setInterval(() => {
+      this.cancelCountdown--;
+      if (this.cancelCountdown <= 0) {
+        clearInterval(this.cancelCountdownInterval);
+        this.cancelCountdownInterval = null;
+      }
+    }, 1000);
+  }
+
+  async executeCancelSubscription() {
+    this.showCancelSubStep2 = false;
+    if (this.cancelCountdownInterval) clearInterval(this.cancelCountdownInterval);
+    try {
+      await this.firestoreService.cancelSubscription();
+      this.toast.info('Tu suscripción ha sido cancelada. Mantendrás el acceso Premium hasta el fin de tu período pagado.');
+    } catch {
+      this.toast.error('No se pudo cancelar la suscripción. Contacta a soporte.');
     }
   }
 
@@ -606,7 +740,7 @@ export class ProfileModalComponent implements OnInit {
     if (this.isSubjectSelected(id)) {
       this.profileForm.selectedSubjects = this.profileForm.selectedSubjects.filter(s => s !== id);
     } else {
-      this.profileForm.selectedSubjects.push(id);
+      this.profileForm.selectedSubjects = [...this.profileForm.selectedSubjects, id];
     }
   }
 
@@ -628,7 +762,7 @@ export class ProfileModalComponent implements OnInit {
     if (!file) return;
     if (!file.type.startsWith('image/')) { this.toast.error('Selecciona una imagen valida.'); input.value = ''; return; }
     if (file.size > 2 * 1024 * 1024) { this.toast.error('La imagen debe ser menor a 2MB.'); input.value = ''; return; }
-    
+
     const reader = new FileReader();
     reader.onload = () => {
       this.imageToEdit = reader.result as string;
@@ -651,7 +785,7 @@ export class ProfileModalComponent implements OnInit {
     this.startY = pos.y;
     this.initialX = this.cropX;
     this.initialY = this.cropY;
-    
+
     const moveSub = (e: MouseEvent | TouchEvent) => this.onMove(e);
     const endSub = () => {
       this.isDragging = false;
@@ -693,7 +827,7 @@ export class ProfileModalComponent implements OnInit {
     const pos = this.getEventPos(event);
     const dx = pos.x - this.startX;
     const dy = pos.y - this.startY;
-    
+
     // Limits
     const containerSize = 340;
     this.cropX = Math.max(0, Math.min(containerSize - this.cropSize, this.initialX + dx));
@@ -705,7 +839,7 @@ export class ProfileModalComponent implements OnInit {
     event.preventDefault();
     const pos = this.getEventPos(event);
     const dx = pos.x - this.startX;
-    
+
     const containerSize = 340;
     const newSize = Math.max(50, Math.min(containerSize - this.cropX, containerSize - this.cropY, this.initialSize + dx));
     this.cropSize = newSize;
@@ -729,7 +863,7 @@ export class ProfileModalComponent implements OnInit {
     const canvas = document.createElement('canvas');
     const img = new Image();
     img.src = this.imageToEdit;
-    
+
     img.onload = () => {
       const exportSize = 400;
       canvas.width = exportSize;
@@ -739,7 +873,7 @@ export class ProfileModalComponent implements OnInit {
 
       // Calcular proporciones
       const containerSize = 340;
-      
+
       // La imagen se ajusta al contenedor (object-fit: contain)
       const aspect = img.width / img.height;
       let displayW, displayH;
@@ -761,17 +895,17 @@ export class ProfileModalComponent implements OnInit {
 
       // Dibujar en canvas
       ctx.clearRect(0, 0, exportSize, exportSize);
-      
+
       // Aplicar rotación (opcional si queremos que la imagen rote pero el crop no)
       // Por simplicidad, si rotamos, rotamos la imagen base antes de sacar el crop
       // Pero aquí implementaremos el crop sobre la imagen tal cual se ve
-      
+
       const sourceX = relX * img.width;
       const sourceY = relY * img.height;
       const sourceSize = (this.cropSize / displayW) * img.width;
 
       ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, exportSize, exportSize);
-      
+
       this.profileForm.photoURL = canvas.toDataURL('image/webp', 0.8);
       this.showImageEditor = false;
       this.imageToEdit = '';
@@ -787,12 +921,12 @@ export class ProfileModalComponent implements OnInit {
     const photoURL = rawPhoto || null;
     this.saving = true;
     try {
-      await this.firestoreService.updateProfileSettings({ 
-        displayName, 
-        photoURL, 
-        bio: this.profileForm.bio.trim(), 
+      await this.firestoreService.updateProfileSettings({
+        displayName,
+        photoURL,
+        bio: this.profileForm.bio.trim(),
         profileEmoji: selectedEmoji,
-        linkedinUrl: this.profileForm.linkedinUrl.trim(),
+        school: this.profileForm.school.trim(),
         location: this.profileForm.location.trim(),
         selectedSubjects: this.profileForm.selectedSubjects,
         targetScore: this.clampTargetScore(this.profileForm.targetScore),
@@ -802,7 +936,7 @@ export class ProfileModalComponent implements OnInit {
       if (this.auth.currentUser) {
         const updatePayload: { displayName: string; photoURL?: string | null } = { displayName };
         if (!photoURL || /^https?:\/\//i.test(photoURL)) updatePayload.photoURL = photoURL;
-        try { await updateProfile(this.auth.currentUser, updatePayload); } catch {}
+        try { await updateProfile(this.auth.currentUser, updatePayload); } catch { }
       }
       this.profileForm.profileEmoji = selectedEmoji;
       this.toast.success('Perfil guardado.');
