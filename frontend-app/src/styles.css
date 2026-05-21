@@ -21,6 +21,8 @@
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --sidebar-width: 260px;
+  --header-height: 110px;
 }
 
 * {
@@ -200,6 +202,26 @@ a {
   }
 }
 
+@keyframes logoutOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes logoutModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .animate-fade-in {
   opacity: 0;
   animation: fadeIn 0.2s ease-out forwards;
@@ -369,15 +391,11 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
   background: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* 1. Intermediate Width Scaling (1025px to 1240px)
-   Shrinks sidebar width to 220px to prevent overlapping/clipping of main content under zoom */
-@media (min-width: 1025px) and (max-width: 1240px) {
-  .sidebar {
-    width: 220px !important;
-  }
-  .main-content {
-    margin-left: 220px !important;
-    max-width: calc(100% - 220px) !important;
+/* 1. Intermediate Width Scaling (1025px to 1400px)
+   Shrinks sidebar + header layout to prevent overlapping/clipping under zoom */
+@media (min-width: 1025px) and (max-width: 1400px) {
+  :root {
+    --sidebar-width: 220px;
   }
   .sidebar-logo {
     font-size: 2.1rem !important;
@@ -398,6 +416,41 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
   .sidebar-sub-items {
     margin-left: 1rem !important;
   }
+  body .dashboard-header {
+    height: var(--header-height) !important;
+    padding: 0 1.5rem !important;
+  }
+  body .header-greeting {
+    font-size: 2rem !important;
+  }
+  body .welcome-actions {
+    flex-wrap: nowrap !important;
+    gap: 0.75rem !important;
+  }
+  body .btn-upgrade-pro {
+    padding: 0.55rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+  body .plan-badge {
+    padding: 0.45rem 0.9rem !important;
+    font-size: 0.8rem !important;
+  }
+  body .profile-trigger {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  body .profile-avatar-wrap,
+  body .profile-avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  body .profile-emoji-badge {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.8rem !important;
+    right: -2px !important;
+    bottom: -2px !important;
+  }
 }
 
 /* 2. Width Breakpoint Upgrade: Switch to mobile layout at 1024px instead of 768px */
@@ -406,20 +459,54 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
     display: none !important;
   }
   .mobile-header {
-    display: flex !important;
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  .mobile-overlay {
+    display: none !important;
+  }
+  .mobile-overlay.open {
+    display: none !important;
   }
   .main-content {
     margin-left: 0 !important;
-    padding: 80px 1rem 2rem !important;
+    padding: 1.5rem 1rem 2rem !important;
+    max-width: 100% !important;
+  }
+}
+
+/* 2b. Portrait screens: force mobile layout to avoid sidebar overlap */
+@media (orientation: portrait) and (min-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+  .mobile-header {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  .mobile-overlay {
+    display: none !important;
+  }
+  .mobile-overlay.open {
+    display: none !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    padding: 1.5rem 1rem 2rem !important;
     max-width: 100% !important;
   }
 }
 
 /* 3. Detailed Height-Based Responsiveness (Desktop/Tablet)
-   Dynamically scales all elements as screen height decreases due to browser zoom or screen size */
+   Scales --header-height so sidebar-header and dashboard-header borders stay aligned under zoom */
 @media (max-height: 960px) and (min-width: 1025px) {
-  .sidebar-header { padding: 1.75rem 1rem 1.25rem !important; }
-  .sidebar-logo { font-size: 2.25rem !important; }
+  :root { --header-height: 96px; }
+  body .sidebar-logo { font-size: 2.25rem !important; }
+  body .header-greeting { font-size: 2.1rem !important; }
   .nav-item { padding: 0.75rem 0.95rem !important; font-size: 0.98rem !important; gap: 0.75rem !important; }
   
   /* Shrink promo card slightly */
@@ -431,8 +518,9 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
 }
 
 @media (max-height: 820px) and (min-width: 1025px) {
-  .sidebar-header { padding: 1.25rem 1rem 1rem !important; }
-  .sidebar-logo { font-size: 2.0rem !important; }
+  :root { --header-height: 88px; }
+  body .sidebar-logo { font-size: 2.0rem !important; }
+  body .header-greeting { font-size: 1.95rem !important; }
   .nav-item { padding: 0.6rem 0.8rem !important; font-size: 0.92rem !important; gap: 0.6rem !important; }
   .nav-icon { font-size: 1.1rem !important; width: 28px !important; }
   .sidebar-section-title { padding: 0.45rem 0.8rem !important; margin: 0.4rem 0.4rem 0.1rem !important; }
@@ -446,8 +534,9 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
 }
 
 @media (max-height: 700px) and (min-width: 1025px) {
-  .sidebar-header { padding: 0.85rem 0.75rem !important; }
-  .sidebar-logo { font-size: 1.75rem !important; }
+  :root { --header-height: 80px; }
+  body .sidebar-logo { font-size: 1.75rem !important; }
+  body .header-greeting { font-size: 1.8rem !important; }
   .nav-item { padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important; gap: 0.5rem !important; }
   .nav-icon { font-size: 1rem !important; width: 24px !important; }
   .sidebar-section-title { padding: 0.35rem 0.75rem !important; font-size: 0.72rem !important; margin: 0.25rem 0.25rem 0.05rem !important; }
@@ -462,8 +551,9 @@ body.font-xlarge .nav-item { font-size: 1.35rem !important; }
 }
 
 @media (max-height: 580px) and (min-width: 1025px) {
-  .sidebar-header { padding: 0.5rem 0.5rem !important; }
-  .sidebar-logo { font-size: 1.5rem !important; }
+  :root { --header-height: 72px; }
+  body .sidebar-logo { font-size: 1.5rem !important; }
+  body .header-greeting { font-size: 1.6rem !important; }
   .nav-item { padding: 0.38rem 0.65rem !important; font-size: 0.82rem !important; gap: 0.4rem !important; }
   .nav-icon { font-size: 0.9rem !important; width: 20px !important; }
   .sidebar-section-title { padding: 0.25rem 0.65rem !important; font-size: 0.68rem !important; margin: 0.15rem 0.15rem 0.05rem !important; }
@@ -703,7 +793,7 @@ body .sidebar-logo:has(.pro-logo) {
    GLOBAL SIDEBAR STYLES - ELIMINATE ANGULAR COMPONENT TRANSITION FLICKER
    ========================================== */
 body .sidebar {
-  width: 260px !important;
+  width: var(--sidebar-width) !important;
   background: #0F1018 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
   display: flex !important;
@@ -716,13 +806,16 @@ body .sidebar {
   overflow-y: auto !important;
 }
 body .sidebar-header {
-  height: 110px !important;
+  height: var(--header-height) !important;
+  min-height: var(--header-height) !important;
+  max-height: var(--header-height) !important;
   padding: 0 1.5rem !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box !important;
+  flex-shrink: 0 !important;
 }
 body .sidebar-logo {
   font-family: var(--font-heading) !important;
@@ -875,6 +968,127 @@ body .logout-btn-sidebar:hover {
   opacity: 1 !important;
 }
 
+/* Logout modal close button (matches profile close style) */
+.logout-close-btn {
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.logout-close-btn:hover {
+  background: rgba(239,68,68,0.2);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* Unified logout confirmation modal (dashboard style) */
+body .logout-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 10, 18, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1.5rem;
+  animation: logoutOverlayIn 0.25s ease both !important;
+}
+body .logout-confirm-modal {
+  max-width: 420px;
+  background: rgba(255,255,255,0.95);
+  border: 2px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  width: 100%;
+  overflow: hidden;
+  animation: logoutModalIn 0.25s ease both !important;
+}
+body .logout-confirm-modal .modal-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border);
+}
+body .logout-confirm-modal .modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+body .logout-confirm-modal .modal-body {
+  padding: 1.5rem;
+}
+body .logout-confirm-modal .modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+}
+body .logout-confirm-modal .confirm-content {
+  text-align: center;
+  padding: 1rem 0;
+}
+body .logout-confirm-modal .confirm-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+body .logout-confirm-modal .confirm-content h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+}
+body .logout-confirm-modal .confirm-content p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+body .logout-confirm-modal .confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+body .logout-confirm-modal .btn-secondary-modal {
+  padding: 0.85rem;
+  border-radius: 12px;
+  border: 2px solid var(--glass-border);
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+body .logout-confirm-modal .btn-secondary-modal:hover {
+  background: var(--bg-secondary);
+}
+body .logout-confirm-modal .btn-primary-modal {
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+body .logout-confirm-modal .btn-primary-modal:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+body .logout-confirm-modal .btn-danger {
+  background: #ef4444;
+  box-shadow: 0 4px 12px rgba(239,68,68,0.25);
+}
+
 /* ==========================================
    STANDARD DASHBOARD HEADER STYLES (GLOBAL)
    ========================================== */
@@ -884,8 +1098,74 @@ body .logout-btn-sidebar:hover {
   display: flex !important;
   flex-direction: column !important;
   min-height: 100vh !important;
-  margin-left: 260px !important;
-  max-width: calc(100% - 260px) !important;
+  margin-left: var(--sidebar-width) !important;
+  max-width: calc(100% - var(--sidebar-width)) !important;
+  width: calc(100% - var(--sidebar-width)) !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile header: oculto en desktop (sin esto aparece como 2ª columna en flex) */
+@media (min-width: 1025px) {
+  .dashboard-layout .mobile-header,
+  .dashboard-layout .mobile-overlay,
+  .ensayos-container .mobile-header,
+  .ensayos-container .mobile-overlay,
+  .app-layout .mobile-header,
+  .app-layout .mobile-overlay,
+  .lp-layout .mobile-header,
+  .lp-layout .mobile-overlay {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+  }
+}
+
+/* Flex row layout: sidebar + main sin hueco (margin-left deja ver el fondo claro del body) */
+@media (min-width: 1025px) {
+  .dashboard-layout,
+  .ensayos-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+    background: #0F1018 !important;
+  }
+
+  body .dashboard-layout > .sidebar,
+  body .dashboard-layout > aside.sidebar,
+  body .ensayos-container > .sidebar,
+  body .ensayos-container > aside.sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    left: auto !important;
+    flex: 0 0 var(--sidebar-width) !important;
+    width: var(--sidebar-width) !important;
+    max-width: var(--sidebar-width) !important;
+    min-width: var(--sidebar-width) !important;
+    height: 100vh !important;
+    z-index: 100 !important;
+  }
+
+  body .dashboard-layout > .main-content,
+  body .ensayos-container > .main-content {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  body .sidebar,
+  body aside.sidebar {
+    width: var(--sidebar-width) !important;
+    flex-shrink: 0 !important;
+  }
 }
 @media (max-width: 1024px) {
   .main-content {
@@ -894,7 +1174,9 @@ body .logout-btn-sidebar:hover {
   }
 }
 .dashboard-header {
-  height: 110px;
+  height: var(--header-height) !important;
+  min-height: var(--header-height) !important;
+  max-height: var(--header-height) !important;
   background: #0F1018;
   border-bottom: 1px solid rgba(255,255,255,0.15);
   display: flex;
@@ -903,6 +1185,13 @@ body .logout-btn-sidebar:hover {
   padding: 0 2.5rem;
   box-sizing: border-box;
   width: 100%;
+  flex-shrink: 0;
+}
+.dashboard-layout,
+.ensayos-container {
+  display: flex;
+  min-height: 100vh;
+  background: #0F1018;
 }
 .header-welcome-text {
   display: flex;

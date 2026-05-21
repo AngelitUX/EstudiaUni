@@ -469,7 +469,7 @@ interface PlayedQuestion {
       <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Cerrar Sesión</h2>
-          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
         </div>
         <div class="modal-body">
           <div class="confirm-content">
@@ -896,7 +896,7 @@ interface PlayedQuestion {
 
     /* LOGOUT & OTHER CONFIRMATION MODALS */
     .logout-confirm-overlay { z-index: 11000; }
-    .logout-confirm-modal { max-width: 420px !important; }
+    .logout-confirm-modal { max-width: 420px !important; padding: 0 !important; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
@@ -928,8 +928,8 @@ interface PlayedQuestion {
     .stat-box.good { border-color: var(--accent-secondary); border-width: 3px; background: linear-gradient(180deg, #ffffff, rgba(28, 176, 246, 0.03)); }
 
     /* MODAL GENERAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-container { background: #ffffff; padding: 2rem; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
+    .modal-overlay:not(.logout-confirm-overlay) { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-container:not(.logout-confirm-modal) { background: #ffffff; padding: 2rem; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
     .confirm-icon { font-size: 3rem; margin-bottom: 1rem; }
 
     /* PODIUM & ERRORS */

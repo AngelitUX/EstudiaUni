@@ -44,49 +44,51 @@ import { AuthService } from '../../core/services/auth.service';
 
           <!-- QUESTION AREA -->
           <div class="question-area">
-            <div class="question-card glass-card" *ngIf="currentQuestion() as q">
-              <div class="q-header">
-                <span class="q-number">Pregunta {{ currentIndex() + 1 }}</span>
-                <span class="q-topic">{{ q.tema }}</span>
-              </div>
-
-              @if (q.preambulo_texto) {
-                <div class="q-preambulo"><p>{{ q.preambulo_texto }}</p></div>
-              }
-
-              @if (q.preambulo_imagen_url) {
-                <div class="q-image-wrap">
-                  <img [src]="q.preambulo_imagen_url" alt="Imagen de contexto" class="q-image">
+            <div class="question-scroll">
+              <div class="question-card glass-card" *ngIf="currentQuestion() as q">
+                <div class="q-header">
+                  <span class="q-number">Pregunta {{ currentIndex() + 1 }}</span>
+                  <span class="q-topic">{{ q.tema }}</span>
                 </div>
-              }
 
-              <p class="q-text">{{ q.enunciado }}</p>
-
-              @if (q.formula_latex) {
-                <div class="q-formula" [innerHTML]="renderLatex(q.formula_latex)"></div>
-              }
-
-              <div class="options-grid">
-                @for (key of optionKeys; track key) {
-                  <button class="option-btn" 
-                          [class.selected]="answers()[q.id] === key"
-                          (click)="selectAnswer(q.id, key)">
-                    <span class="opt-letter" [class.sel]="answers()[q.id] === key">{{ key }}</span>
-                    <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'">{{ q.alternativas[key] }}</span>
-                    <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]" alt="Opción {{ key }}" class="opt-img" />
-                  </button>
+                @if (q.preambulo_texto) {
+                  <div class="q-preambulo"><p>{{ q.preambulo_texto }}</p></div>
                 }
+
+                @if (q.preambulo_imagen_url) {
+                  <div class="q-image-wrap">
+                    <img [src]="q.preambulo_imagen_url" alt="Imagen de contexto" class="q-image">
+                  </div>
+                }
+
+                <p class="q-text">{{ q.enunciado }}</p>
+
+                @if (q.formula_latex) {
+                  <div class="q-formula" [innerHTML]="renderLatex(q.formula_latex)"></div>
+                }
+
+                <div class="options-grid">
+                  @for (key of optionKeys; track key) {
+                    <button class="option-btn" 
+                            [class.selected]="answers()[q.id] === key"
+                            (click)="selectAnswer(q.id, key)">
+                      <span class="opt-letter" [class.sel]="answers()[q.id] === key">{{ key }}</span>
+                      <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'">{{ q.alternativas[key] }}</span>
+                      <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]" alt="Opción {{ key }}" class="opt-img" />
+                    </button>
+                  }
+                </div>
               </div>
             </div>
+
+            <!-- BOTTOM NAV -->
+            <footer class="bottom-bar">
+              <button class="btn-nav" [disabled]="currentIndex() === 0" (click)="prevQuestion()">← Anterior</button>
+              <button class="btn-nav btn-primary" *ngIf="!isLastQuestion()" (click)="nextQuestion()">Siguiente →</button>
+              <button class="btn-nav btn-primary" *ngIf="isLastQuestion()" (click)="submitEnsayo()">Terminar</button>
+            </footer>
           </div>
         </div>
-
-        <!-- BOTTOM NAV -->
-        <footer class="bottom-bar">
-          <button class="btn-nav" [disabled]="currentIndex() === 0" (click)="prevQuestion()">← Anterior</button>
-          <button class="btn-nav btn-primary" *ngIf="!isLastQuestion()" (click)="nextQuestion()">Siguiente →</button>
-          <button class="btn-nav btn-primary" *ngIf="isLastQuestion()" (click)="submitEnsayo()">Terminar</button>
-        </footer>
       </main>
     </div>
 
@@ -125,7 +127,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Cerrar Sesión</h2>
-          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
         </div>
         <div class="modal-body">
           <div class="confirm-content">
@@ -151,8 +153,6 @@ import { AuthService } from '../../core/services/auth.service';
     .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); flex-shrink: 0; }
     .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-secondary); cursor: pointer; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, border-color 0.2s ease, background 0.2s ease; display: flex; align-items: center; justify-content: center; font-weight: 800; }
     .btn-close:hover { border-color: #ef4444; color: #ef4444 !important; background: rgba(239,68,68,0.05); transform: rotate(90deg) scale(1.1); }
-    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
-    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
     .top-title { font-weight: 700; font-family: var(--font-heading); color: var(--text-secondary); font-size: 1.1rem; }
     .top-timer { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); background: rgba(0,0,0,0.05); padding: 0.3rem 0.8rem; border-radius: 8px; }
     .top-timer.urgent { color: #ef4444; background: rgba(239,68,68,0.1); animation: urgentPulse 1s infinite; }
@@ -169,7 +169,8 @@ import { AuthService } from '../../core/services/auth.service';
     .btn-finish { width: 100%; padding: 0.85rem; border-radius: 12px; border: none; background: #ef4444; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
     .btn-finish:hover { background: #dc2626; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
     
-    .question-area { flex: 1; overflow-y: auto; padding: 2.5rem; display: flex; justify-content: center; scroll-behavior: smooth; }
+    .question-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .question-scroll { flex: 1; overflow-y: auto; padding: 2.5rem; display: flex; justify-content: center; align-items: flex-start; scroll-behavior: smooth; }
     .question-card { max-width: 800px; width: 100%; animation: fadeIn 0.3s ease-out; }
     
     .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
@@ -226,7 +227,7 @@ import { AuthService } from '../../core/services/auth.service';
       .runner-sidebar { width: 100%; border-right: none; border-bottom: 2px solid rgba(0,0,0,0.06); max-height: 200px; padding: 1rem; }
       .grid-nav { grid-template-columns: repeat(8, 1fr); margin-bottom: 1rem; }
       .runner-sidebar-footer { display: none; }
-      .question-area { padding: 1.5rem 1rem; }
+      .question-scroll { padding: 1.5rem 1rem; }
       .q-text { font-size: 1.05rem; }
     }
   `]

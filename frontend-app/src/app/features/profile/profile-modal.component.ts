@@ -147,7 +147,7 @@ import { SoundService } from '../../core/services/sound.service';
                     <input [(ngModel)]="profileForm.targetUniversity" type="text" placeholder="Ej: Universidad de Chile"/>
                   </label>
                   <label>Puntaje de corte (100-1000)
-                    <input [(ngModel)]="profileForm.targetScore" type="number" min="100" max="1000" step="1" placeholder="Ej: 700"/>
+                    <input [(ngModel)]="profileForm.targetScore" (blur)="onTargetScoreBlur()" (change)="onTargetScoreBlur()" type="number" min="100" max="1000" step="1" placeholder="Ej: 700"/>
                   </label>
                 </div>
                 <div class="goal-preview" *ngIf="profileForm.targetScore && profileForm.targetCareer">
@@ -209,7 +209,7 @@ import { SoundService } from '../../core/services/sound.service';
       <div class="logout-confirm-modal glass" (click)="$event.stopPropagation()">
         <div class="confirm-header">
           <h2>Cerrar Sesión</h2>
-          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
         </div>
         <div class="confirm-body">
           <div class="confirm-content">
@@ -552,7 +552,7 @@ export class ProfileModalComponent implements OnInit {
           this.profileForm.linkedinUrl = profile.linkedinUrl || '';
           this.profileForm.location = profile.location || '';
           this.profileForm.selectedSubjects = profile.selectedSubjects || this.subjectsList.map(s => s.id);
-          this.profileForm.targetScore = profile.targetScore || null;
+          this.profileForm.targetScore = this.clampTargetScore(profile.targetScore);
           this.profileForm.targetCareer = profile.targetCareer || '';
           this.profileForm.targetUniversity = profile.targetUniversity || '';
           this.initialProfileForm = JSON.stringify(this.profileForm);
@@ -795,7 +795,7 @@ export class ProfileModalComponent implements OnInit {
         linkedinUrl: this.profileForm.linkedinUrl.trim(),
         location: this.profileForm.location.trim(),
         selectedSubjects: this.profileForm.selectedSubjects,
-        targetScore: this.profileForm.targetScore ? Number(this.profileForm.targetScore) : null,
+        targetScore: this.clampTargetScore(this.profileForm.targetScore),
         targetCareer: this.profileForm.targetCareer?.trim() || null,
         targetUniversity: this.profileForm.targetUniversity?.trim() || null
       });
@@ -813,5 +813,16 @@ export class ProfileModalComponent implements OnInit {
   private normalizeEmoji(value?: string | null): string {
     if (!value) return '✨';
     return value.trim() || '✨';
+  }
+
+  onTargetScoreBlur(): void {
+    this.profileForm.targetScore = this.clampTargetScore(this.profileForm.targetScore);
+  }
+
+  private clampTargetScore(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    if (Number.isNaN(n)) return null;
+    return Math.min(1000, Math.max(100, Math.round(n)));
   }
 }

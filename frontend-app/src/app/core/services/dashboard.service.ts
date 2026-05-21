@@ -586,12 +586,68 @@ export class DashboardService {
       .reverse(); // oldest first for chart
   }
 
-  /** Returns average PAES score from real ensayos */
-  getAverageScore(): number {
+  /** Materias con al menos un ensayo PAES en modo real */
+  getPaesSubjectsSummary(): { id: string; name: string; count: number; avgScore: number }[] {
     const records = this._paesRecords().filter(r => r.mode === 'real');
+    const groups = new Map<string, number[]>();
+    for (const r of records) {
+      const key = r.subject || 'general';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(r.score);
+    }
+    return Array.from(groups.entries())
+      .map(([id, scores]) => ({
+        id,
+        name: this.getSubjectDisplayName(id),
+        count: scores.length,
+        avgScore: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  isSubjectExcludedFromMeta(subjectId: string, excluded: string[]): boolean {
+    if (!excluded.length) return false;
+    return excluded.some(ex => this.subjectsMatch(subjectId, ex));
+  }
+
+  /** Returns average PAES score from real ensayos, optionally excluding materias */
+  getAverageScore(excludedSubjects: string[] = []): number {
+    const records = this._paesRecords().filter(
+      r => r.mode === 'real' && !this.isSubjectExcludedFromMeta(r.subject, excludedSubjects)
+    );
     if (records.length === 0) return 0;
     const sum = records.reduce((acc, r) => acc + r.score, 0);
     return Math.round(sum / records.length);
+  }
+
+  getSubjectDisplayName(subjectId: string): string {
+    const labels: Record<string, string> = {
+      'comp-lectora': 'Competencia Lectora',
+      lenguaje: 'Competencia Lectora',
+      mat1: 'Matemática M1',
+      matematica1: 'Matemática M1',
+      'matematicas-m1': 'Matemática M1',
+      mat2: 'Matemática M2',
+      'matematicas-m2': 'Matemática M2',
+      historia: 'Historia y Cs. Sociales',
+      'ciencias-biologia': 'Biología',
+      biologia: 'Biología',
+      'ciencias-fisica': 'Física',
+      fisica: 'Física',
+      'ciencias-quimica': 'Química',
+      quimica: 'Química',
+      'ciencias-tp': 'Ciencias T.P.',
+      ciencias: 'Ciencias',
+      general: 'General',
+    };
+    return labels[subjectId] || subjectId;
+  }
+
+  subjectsMatch(a: string, b: string): boolean {
+    if (a === b) return true;
+    const na = a.replace(/^ciencias-/, '');
+    const nb = b.replace(/^ciencias-/, '');
+    return na === b || a === nb || na === nb;
   }
 
   getRelativeTime(timestamp: any): string {

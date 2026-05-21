@@ -52,6 +52,8 @@ export interface UserProfile {
   targetScore?: number;
   targetCareer?: string;
   targetUniversity?: string;
+  /** Materias excluidas del promedio Meta PAES (ids de subject en paesRecords) */
+  metaPaesExcludedSubjects?: string[];
   location?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
   notasNem?: {

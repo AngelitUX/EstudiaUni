@@ -325,7 +325,7 @@ type ExamMode = 'real' | 'asistido';
       <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Cerrar Sesión</h2>
-          <button class="close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
         </div>
         <div class="modal-body">
           <div class="confirm-content">
