@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -9,7 +10,7 @@ import { SoundService } from '../../core/services/sound.service';
 @Component({
   selector: 'app-settings-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="modal-overlay" (click)="closeModal()">
       <div class="modal-container glass" (click)="$event.stopPropagation()">
@@ -75,6 +76,12 @@ import { SoundService } from '../../core/services/sound.service';
               </label>
             </div>
           </div>
+          <div class="section-block">
+            <div class="section-header"><h3>Soporte</h3><p>¿Necesitas ayuda? Escríbenos desde el centro de soporte.</p></div>
+            <div class="support-actions">
+              <a routerLink="/soporte" class="support-link" (click)="closeModal()">🎧 Ir a Soporte</a>
+            </div>
+          </div>
           <div class="action-bar">
             <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>
@@ -114,6 +121,9 @@ import { SoundService } from '../../core/services/sound.service';
     .status-dot.denied{background:#f59e0b}
     .btn-request-perm{border:none;background:var(--accent-primary);color:#ffffff;border-radius:8px;padding:.4rem .9rem;font-size:.85rem;font-weight:700;cursor:pointer;margin-left:auto;transition:all .2s;box-shadow:0 2px 8px rgba(133,92,214,0.25)}
     .btn-request-perm:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(133,92,214,0.35)}
+    .support-actions{display:flex;align-items:center;justify-content:flex-start}
+    .support-link{display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;border-radius:10px;border:2px solid var(--accent-primary);color:var(--accent-primary);padding:.55rem .9rem;font-weight:700;background:rgba(133,92,214,0.08);transition:all .2s}
+    .support-link:hover{background:var(--accent-primary);color:#ffffff;transform:translateY(-1px)}
     @media(max-width:720px){.grid{grid-template-columns:1fr}}
   `]
 })

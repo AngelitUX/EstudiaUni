@@ -63,7 +63,7 @@ interface FaqItem {
               <div class="qa-icon">📧</div>
               <div class="qa-text">
                 <h3>Email</h3>
-                <p>soporte&#64;estudiauni.cl</p>
+                <p><span class="email-user">soporte&#64;</span><span class="email-domain">estudiauni.cl</span></p>
               </div>
               <span class="qa-arrow">↗</span>
             </a>
@@ -261,8 +261,8 @@ interface FaqItem {
       position: relative;
       overflow: hidden;
       padding: 2rem 1.5rem 3.5rem;
-      background: #0F1018;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: linear-gradient(180deg, rgba(133,92,214,0.12) 0%, rgba(133,92,214,0.05) 60%, var(--bg-color, #f8f9fc) 100%);
+      border-bottom: 1px solid var(--glass-border, #e5e7eb);
     }
     .soporte-header-bg {
       position: absolute;
@@ -287,14 +287,14 @@ interface FaqItem {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      color: rgba(255,255,255,0.55);
+      color: var(--text-secondary, #6b7280);
       text-decoration: none;
       font-size: 0.9rem;
       font-weight: 500;
       transition: color 0.2s;
       margin-bottom: 2rem;
     }
-    .back-btn:hover { color: #c4b5fd; }
+    .back-btn:hover { color: #855cd6; }
 
     .soporte-hero { text-align: center; }
     .soporte-icon-wrap {
@@ -313,12 +313,12 @@ interface FaqItem {
       letter-spacing: -0.04em;
       margin: 0 0 0.75rem;
       line-height: 1.1;
-      color: #ffffff;
+      color: var(--text-primary, #111827);
       font-family: var(--font-heading, 'Inter', sans-serif);
     }
     .soporte-hero-sub {
       font-size: 1.1rem;
-      color: rgba(255,255,255,0.55);
+      color: var(--text-secondary, #6b7280);
       max-width: 520px;
       margin: 0 auto 2rem;
       line-height: 1.6;
@@ -336,23 +336,24 @@ interface FaqItem {
       top: 50%;
       transform: translateY(-50%);
       font-size: 1.1rem;
+      color: var(--text-muted, #9ca3af);
       pointer-events: none;
     }
     .search-bar {
       width: 100%;
       padding: 0.95rem 1.5rem 0.95rem 3rem;
-      background: rgba(255,255,255,0.06);
-      border: 1.5px solid rgba(167,139,250,0.2);
+      background: #ffffff;
+      border: 1.5px solid var(--glass-border, #e5e7eb);
       border-radius: 14px;
-      color: #ffffff;
+      color: var(--text-primary, #111827);
       font-size: 1rem;
       font-family: var(--font-body, 'Inter', sans-serif);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
       box-sizing: border-box;
     }
-    .search-bar:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,0.15); }
-    .search-bar::placeholder { color: rgba(255,255,255,0.3); }
+    .search-bar:focus { border-color: #855cd6; box-shadow: 0 0 0 3px rgba(133,92,214,0.15); }
+    .search-bar::placeholder { color: var(--text-muted, #9ca3af); }
 
     /* ── BODY ── */
     .soporte-body { max-width: 1100px; margin: 0 auto; padding: 3rem 1.5rem; }
@@ -371,7 +372,8 @@ interface FaqItem {
       background: var(--bg-secondary, #f1f5f9);
       border: 1.5px solid var(--glass-border, #e5e7eb);
       border-radius: 16px;
-      padding: 1.4rem 1.5rem;
+      padding: 1.6rem 1.5rem;
+      min-height: 120px;
       text-decoration: none;
       color: var(--text-primary, #111827);
       transition: all 0.25s;
@@ -380,15 +382,20 @@ interface FaqItem {
     /* Clickable cards (Email, WhatsApp) — stand out with accent border + glow + pointer */
     .quick-action-card.clickable {
       cursor: pointer;
-      border-color: rgba(139,92,246,0.35);
-      background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(99,102,241,0.04));
+      border: 2px solid rgba(133,92,214,0.45);
+      background: linear-gradient(135deg, rgba(133,92,214,0.08), rgba(255,255,255,0.95));
       position: relative;
+      box-shadow: 0 6px 16px rgba(133,92,214,0.12);
     }
     .quick-action-card.clickable:hover {
-      border-color: rgba(139,92,246,0.65);
-      background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(99,102,241,0.08));
+      border-color: rgba(133,92,214,0.7);
+      background: linear-gradient(135deg, rgba(133,92,214,0.12), rgba(255,255,255,1));
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(139,92,246,0.18);
+    }
+    .quick-action-card.clickable:focus-visible {
+      outline: 3px solid rgba(133,92,214,0.35);
+      outline-offset: 2px;
     }
     .qa-arrow {
       margin-left: auto;
@@ -398,14 +405,31 @@ interface FaqItem {
       opacity: 0.7;
       transition: transform 0.2s, opacity 0.2s;
       flex-shrink: 0;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
     }
-    .quick-action-card.clickable:hover .qa-arrow {
-      transform: translate(3px, -3px);
+    .quick-action-card.clickable .qa-arrow {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: rgba(133,92,214,0.15);
+      box-shadow: 0 3px 10px rgba(133,92,214,0.18);
+      font-size: 0.95rem;
       opacity: 1;
     }
+    .quick-action-card.clickable:hover .qa-arrow {
+      transform: translate(2px, -2px);
+      background: rgba(133,92,214,0.25);
+    }
     .qa-icon { font-size: 2rem; flex-shrink: 0; }
+    .qa-text { flex: 1; min-width: 80px; }
     .qa-text h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary, #111827); margin: 0 0 0.2rem; }
-    .qa-text p { font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin: 0; }
+    .qa-text p { font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin: 0; overflow-wrap: anywhere; }
+    .email-user,
+    .email-domain { display: block; }
 
     /* ── SECTION TITLES ── */
     .section-title-soporte {
