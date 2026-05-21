@@ -171,8 +171,6 @@ import { PaymentService } from '../../core/services/payment.service';
               
               <div class="input-error" *ngIf="inputError">{{ inputError }}</div>
 
-              <div class="input-error" *ngIf="inputError">{{ inputError }}</div>
-
               <!-- TARGET CALCULATOR -->
               <div class="target-section">
                 <div class="divider"></div>
@@ -182,7 +180,7 @@ import { PaymentService } from '../../core/services/payment.service';
                 <div class="target-inputs">
                   <div class="input-group">
                     <label>Puntaje NEM Meta</label>
-                    <input type="number" [(ngModel)]="targetPuntaje" min="100" max="1000" placeholder="Ej: 800">
+                    <input type="number" [(ngModel)]="targetPuntaje" min="100" max="1000" placeholder="Ej: 800" (blur)="validateTargetPuntaje()" (change)="validateTargetPuntaje()">
                   </div>
                   <div class="target-result" *ngIf="requiredNota !== null">
                     <span class="res-label">Necesitas promediar:</span>
@@ -676,10 +674,10 @@ export class NemCalculatorComponent {
     
     let sum = 0;
     let count = 0;
-    if (this.nota1) { sum += this.nota1; count++; }
-    if (this.nota2) { sum += this.nota2; count++; }
-    if (this.nota3) { sum += this.nota3; count++; }
-    if (this.nota4) { sum += this.nota4; count++; }
+    if (this.nota1 && this.nota1 >= 4.0 && this.nota1 <= 7.0) { sum += this.nota1; count++; }
+    if (this.nota2 && this.nota2 >= 4.0 && this.nota2 <= 7.0) { sum += this.nota2; count++; }
+    if (this.nota3 && this.nota3 >= 4.0 && this.nota3 <= 7.0) { sum += this.nota3; count++; }
+    if (this.nota4 && this.nota4 >= 4.0 && this.nota4 <= 7.0) { sum += this.nota4; count++; }
 
     const faltantes = 4 - count;
     if (faltantes === 0) return null; 
@@ -689,6 +687,18 @@ export class NemCalculatorComponent {
     
     if (req < 4.0) return 4.0;
     return req;
+  }
+
+  validateTargetPuntaje() {
+    if (this.targetPuntaje !== null && this.targetPuntaje !== undefined) {
+      if (this.targetPuntaje < 100) {
+        this.targetPuntaje = 100;
+      } else if (this.targetPuntaje > 1000) {
+        this.targetPuntaje = 1000;
+      } else {
+        this.targetPuntaje = Math.round(this.targetPuntaje);
+      }
+    }
   }
 
   async saveToProfile() {

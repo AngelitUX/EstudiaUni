@@ -153,13 +153,15 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="ai-promo-container" *ngIf="!isAiOpen()">
           <div class="ai-promo-banner">
             <div class="ai-promo-content">
-              <img src="assets/img/gif.gif" style="width: 32px; height: 32px; object-fit: contain; margin-right: 0.25rem;" alt="Foco" />
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.15); flex-shrink: 0;">
+                <img src="assets/img/gif.gif" style="width: 100%; height: 100%; object-fit: contain;" alt="Foco" />
+              </div>
               <div class="ai-promo-text">
                 <strong>¿Dudas vocacionales?</strong>
                 <span>Pregúntale a Foco: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
               </div>
             </div>
-            <button class="btn btn-primary" (click)="toggleAi()">Abrir</button>
+            <button class="btn btn-primary" (click)="toggleAi()">Abrir 🐙</button>
           </div>
         </div>
 
@@ -248,6 +250,7 @@ import { PaymentService } from '../../core/services/payment.service';
               <button *ngFor="let interest of availableInterests" 
                       class="interest-pill" 
                       [class.active]="isSelected(interest)"
+                      [disabled]="!enabledInterests().has(interest)"
                       (click)="toggleInterest(interest)">
                 {{ interest }}
               </button>
@@ -655,6 +658,20 @@ import { PaymentService } from '../../core/services/payment.service';
     .interest-pill { padding: 0.6rem 1.25rem; border-radius: 999px; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 600; font-size: 0.9rem; }
     .interest-pill:hover { border-color: var(--accent-primary); background: rgba(133,92,214,0.05); transform: translateY(-2px); }
     .interest-pill.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.3); }
+    .interest-pill:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: var(--glass-border);
+      background: #f1f5f9;
+      color: var(--text-muted);
+      box-shadow: none;
+      transform: none;
+    }
+    .interest-pill:disabled:hover {
+      background: #f1f5f9;
+      border-color: var(--glass-border);
+      transform: none;
+    }
 
     .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .results-header h3 { font-size: 1.2rem; font-weight: 700; }
@@ -698,14 +715,67 @@ import { PaymentService } from '../../core/services/payment.service';
     .load-more .btn { padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: 14px; }
 
     /* AI PROMO BANNER */
-    .ai-promo-container { display: flex; margin-bottom: 1.5rem; }
-    .ai-promo-banner { display: inline-flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem 0.4rem 1rem; border-radius: 999px; background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08)); border: 1px solid rgba(99,102,241,0.2); gap: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-    .ai-promo-content { display: flex; align-items: center; gap: 0.5rem; }
-    .ai-icon { font-size: 1.25rem; }
-    .ai-promo-text { display: flex; align-items: center; gap: 0.35rem; }
-    .ai-promo-text strong { font-size: 0.85rem; color: var(--text-primary); font-weight: 700; }
-    .ai-promo-text span { color: var(--text-secondary); font-size: 0.85rem; }
-    .ai-promo-banner .btn { padding: 0.35rem 1rem; font-size: 0.8rem; border-radius: 999px; font-weight: 700; }
+    .ai-promo-container { display: flex; margin-bottom: 2rem; }
+    .ai-promo-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
+      border: 1.5px solid rgba(99, 102, 241, 0.25);
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 950px;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ai-promo-banner:hover {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 15px 35px rgba(99, 102, 241, 0.15);
+      transform: translateY(-2px);
+    }
+    .ai-promo-banner::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, #6366f1, #a855f7);
+    }
+    .ai-promo-content { display: flex; align-items: center; gap: 1.25rem; flex: 1; }
+    .ai-promo-text { display: flex; flex-direction: row; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .ai-promo-text strong {
+      font-size: 1.15rem;
+      font-weight: 850;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      white-space: nowrap;
+    }
+    .ai-promo-text span { color: var(--text-secondary); font-size: 0.95rem; font-weight: 500; }
+    .ai-promo-banner .btn {
+      padding: 0.55rem 1.4rem;
+      font-size: 0.95rem;
+      border-radius: 999px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .ai-promo-banner .btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+      filter: brightness(1.05);
+    }
 
     /* AI PANEL (Floating Sidebar) */
     .ai-panel {
@@ -971,6 +1041,7 @@ export class CareerFinderComponent implements OnInit {
   showLogoutConfirm = false;
 
   careers = signal<Career[]>([]);
+  selectedInterests = signal<string[]>([]);
   ubicaciones = signal<string[]>([]);
   universidades = signal<string[]>([]);
   areas = signal<string[]>([]);
@@ -1024,6 +1095,42 @@ export class CareerFinderComponent implements OnInit {
     return this.universidades().filter(u => this.normalize(u).includes(query));
   });
 
+  enabledInterests = computed(() => {
+    const selected = this.selectedInterests();
+    const allCareers = this.careers();
+    
+    if (selected.length === 0) {
+      return new Set(this.availableInterests);
+    }
+    
+    const enabled = new Set<string>();
+    
+    // Always enable currently selected interests so they can be deselected
+    for (const interest of selected) {
+      enabled.add(interest);
+    }
+    
+    const normSelected = selected.map(s => this.normalize(s));
+    
+    for (const career of allCareers) {
+      const normCareerInterests = career.intereses.map(i => this.normalize(i));
+      const matchesAll = normSelected.every(sel => normCareerInterests.includes(sel));
+      
+      if (matchesAll) {
+        for (const interest of career.intereses) {
+          const matched = this.availableInterests.find(
+            ai => this.normalize(ai) === this.normalize(interest)
+          );
+          if (matched) {
+            enabled.add(matched);
+          }
+        }
+      }
+    }
+    
+    return enabled;
+  });
+
   visibleCareers = computed(() => this.filteredCareers().slice(0, this.displayLimit()));
   remainingCount = computed(() => Math.max(0, this.filteredCareers().length - this.displayLimit()));
 
@@ -1055,6 +1162,7 @@ export class CareerFinderComponent implements OnInit {
       } catch (e) {}
     }
 
+    this.careerService.getCareers().subscribe(data => this.careers.set(data));
     this.careerService.getUbicaciones().subscribe(data => this.ubicaciones.set(data));
     this.careerService.getUniversidades().subscribe(data => this.universidades.set(data));
     this.careerService.getAreas().subscribe(data => this.areas.set(data));
@@ -1111,6 +1219,7 @@ export class CareerFinderComponent implements OnInit {
     } else {
       this.filters.intereses.push(interest);
     }
+    this.selectedInterests.set([...this.filters.intereses]);
     this.search();
   }
 
@@ -1126,6 +1235,7 @@ export class CareerFinderComponent implements OnInit {
       area: '',
       intereses: []
     };
+    this.selectedInterests.set([]);
     this.hasSearched.set(false);
     this.filteredCareers.set([]);
     this.displayLimit.set(8);

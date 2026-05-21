@@ -82,10 +82,10 @@ export class CareerService {
           }
           
           if (filters.intereses && filters.intereses.length > 0) {
-            const hasCommonInterest = filters.intereses.some(interest => 
+            const hasAllSelected = filters.intereses.every(interest => 
               c.intereses.some(cInterest => this.normalize(cInterest) === this.normalize(interest))
             );
-            if (!hasCommonInterest) matches = false;
+            if (!hasAllSelected) matches = false;
           }
 
           if (filters.query) {

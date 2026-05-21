@@ -48,6 +48,7 @@ export interface UserProfile {
   highContrast?: boolean;
   fontSize?: 'normal' | 'large' | 'xlarge';
   linkedinUrl?: string;
+  school?: string;
   favoriteCareers?: any[];
   targetScore?: number;
   targetCareer?: string;
@@ -494,5 +495,22 @@ export class FirestoreService {
     if (normalized === 'm1-2024') return m1QuestionsData as any || [];
     if (normalized === 'm1-invierno-2024') return m1InviernoQuestionsData as any || [];
     return [];
+  }
+
+  async cancelSubscription(): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No auth');
+    const docRef = doc(this.firestore, 'users', user.uid);
+    await updateDoc(docRef, {
+      'subscription.status': 'cancelled'
+    });
+    this.cachedProfile$ = null;
+    const current = this.profileSignal();
+    if (current?.subscription) {
+      this.profileSignal.set({
+        ...current,
+        subscription: { ...current.subscription, status: 'cancelled' }
+      });
+    }
   }
 }

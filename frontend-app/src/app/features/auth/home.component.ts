@@ -1224,6 +1224,9 @@ import { PaymentService } from '../../core/services/payment.service';
             
             <div class="footer-col">
               <h4>Soporte y Legal</h4>
+              <a routerLink="/soporte" class="footer-soporte-btn" id="footer-soporte-link">
+                🎧 Soporte de Usuario
+              </a>
               <a href="#">Preguntas Frecuentes</a>
               <a href="#">Términos de Servicio</a>
               <a href="#">Política de Privacidad</a>
@@ -1239,6 +1242,8 @@ import { PaymentService } from '../../core/services/payment.service';
               <a href="#">Inicio</a>
               <span class="separator">•</span>
               <a href="#">Planes</a>
+              <span class="separator">•</span>
+              <a routerLink="/soporte">Soporte</a>
             </div>
           </div>
         </div>
@@ -2232,9 +2237,12 @@ import { PaymentService } from '../../core/services/payment.service';
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
-      border: 2px solid var(--glass-border);
+      border: 2px solid #cbd5e1;
       background: #ffffff; /* Fondo sólido blanco que oculta las pistas detrás de la tarjeta */
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.01);
+    }
+    .bento-card.glass-card {
+      border: 2px solid #cbd5e1;
     }
     /* Eliminado efecto before con gradiente */
     .bento-card:hover {
@@ -3238,6 +3246,28 @@ import { PaymentService } from '../../core/services/payment.service';
       font-size: 0.85rem;
     }
 
+    .footer-soporte-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(99,102,241,0.12));
+      border: 1.5px solid rgba(139,92,246,0.35);
+      border-radius: 10px;
+      padding: 0.5rem 0.9rem;
+      color: #7c3aed !important;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none !important;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s;
+    }
+    .footer-soporte-btn:hover {
+      background: linear-gradient(135deg, rgba(139,92,246,0.22), rgba(99,102,241,0.22));
+      border-color: rgba(139,92,246,0.6);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(124,58,237,0.2);
+    }
+
     
     
     
@@ -3328,9 +3358,12 @@ import { PaymentService } from '../../core/services/payment.service';
     .faq-item {
       overflow: hidden;
       background: white;
-      border: 1px solid rgba(133, 92, 214, 0.15);
+      border: 2px solid #cbd5e1;
       border-radius: var(--border-radius);
       transition: all 0.3s ease;
+    }
+    .faq-item.glass-card {
+      border: 2px solid #cbd5e1;
     }
     .faq-item:hover {
       border-color: rgba(133, 92, 214, 0.4);
@@ -3443,8 +3476,11 @@ import { PaymentService } from '../../core/services/payment.service';
       background: rgba(255, 255, 255, 0.55);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(133, 92, 214, 0.15);
+      border: 2px solid #cbd5e1;
       transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .news-card.glass-card {
+      border: 2px solid #cbd5e1;
     }
     .news-card:hover {
       transform: translateY(-8px);
@@ -3796,7 +3832,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .tab-btn {
       background: rgba(255, 255, 255, 0.55);
       backdrop-filter: blur(8px);
-      border: 1.5px solid rgba(133, 92, 214, 0.08);
+      border: 2px solid #cbd5e1;
       border-radius: 20px;
       padding: 1.6rem;
       text-align: left;

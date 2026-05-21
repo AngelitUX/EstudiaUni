@@ -128,7 +128,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
           <ng-container *ngIf="!paes.loading()">
             <!-- CONTROLS ROW -->
-            <div class="controls-row">
+            <div class="controls-row" *ngIf="filteredAndSortedMaterias().length > 0">
               <div class="countdown-row">
                 <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
                 <div class="countdown-timer">
@@ -163,7 +163,7 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
 
             <!-- MATERIAS GRID -->
-            <div class="materias-grid">
+            <div class="materias-grid" *ngIf="filteredAndSortedMaterias().length > 0">
               <div *ngFor="let m of filteredAndSortedMaterias()"
                 class="materia-card horizontal-card"
                 [class.has-progress]="getMateriaProgress(m.id).percentage > 0"
@@ -230,6 +230,19 @@ import { PaymentService } from '../../core/services/payment.service';
               </div>
             </div>
 
+            <!-- EMPTY STATE MESSAGE -->
+            <div *ngIf="filteredAndSortedMaterias().length === 0" class="empty-path-container animate-fade-in">
+              <div class="empty-path-card glass">
+                <div class="empty-icon-wrap">
+                  <span class="empty-icon">🗺️</span>
+                </div>
+                <h2>Tu Ruta está vacía</h2>
+                <p>Por favor, elige las materias de tu interés en tu perfil para armar tu ruta de aprendizaje.</p>
+                <button class="btn-profile-redirect" (click)="showProfileModal = true">
+                  Configurar materias en mi perfil ⚙️
+                </button>
+              </div>
+            </div>
           </ng-container>
         </div>
       </main>
@@ -549,6 +562,85 @@ import { PaymentService } from '../../core/services/payment.service';
     .loader { width: 40px; height: 40px; border: 4px solid rgba(133,92,214,0.2); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* EMPTY STATE */
+    .empty-path-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 45vh;
+      padding: 2rem;
+    }
+    .empty-path-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .empty-icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(133, 92, 214, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      box-shadow: inset 0 2px 8px rgba(133, 92, 214, 0.05);
+    }
+    .empty-icon {
+      font-size: 2.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+    .empty-path-card h2 {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .empty-path-card p {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+    .btn-profile-redirect {
+      margin-top: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, #a78bfa 100%);
+      color: #fff;
+      border: none;
+      padding: 0.95rem 2rem;
+      border-radius: 16px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(133, 92, 214, 0.3), 0 2px 0 #6b46b8;
+      transition: all 0.2s ease;
+    }
+    .btn-profile-redirect:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(133, 92, 214, 0.4), 0 2px 0 #6b46b8;
+    }
+    .btn-profile-redirect:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(133, 92, 214, 0.2), 0 0px 0 #6b46b8;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-header { display: flex; }
@@ -607,7 +699,15 @@ export class LearningPathComponent implements OnInit, OnDestroy {
   nextExamLabel = '';
   private countdownInterval: any;
 
-  userSelectedSubjects = computed(() => this.firestoreService.profileSignal()?.selectedSubjects || ['comp-lectora', 'mat1', 'historia', 'ciencias-tp', 'ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica']);
+  userSelectedSubjects = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    if (!p) return [];
+    if (Array.isArray(p.selectedSubjects)) {
+      return p.selectedSubjects;
+    }
+    // Default to all subjects if never configured
+    return ['comp-lectora', 'mat1', 'mat2', 'historia', 'ciencias-tp', 'ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica'];
+  });
   sortOrder = signal<string>('default');
 
   filteredAndSortedMaterias = computed(() => {
@@ -615,7 +715,7 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     
     // Filter
     const selected = this.userSelectedSubjects();
-    if (selected && selected.length > 0) {
+    if (selected) {
       // Auto-include specific science branches if the legacy 'ciencias' is selected
       let effectiveSelected = [...selected];
       if (effectiveSelected.includes('ciencias')) {
@@ -623,8 +723,7 @@ export class LearningPathComponent implements OnInit, OnDestroy {
         // Remove the legacy 'ciencias' so they don't click the empty generic card
         effectiveSelected = effectiveSelected.filter(id => id !== 'ciencias');
       }
-      // Para testeo local robusto, nos aseguramos de que 'mat1' y 'mat2' siempre sean visibles en la ruta
-      list = list.filter(m => effectiveSelected.includes(m.id) || m.id === 'mat1' || m.id === 'mat2');
+      list = list.filter(m => effectiveSelected.includes(m.id));
     }
     
     // Sort

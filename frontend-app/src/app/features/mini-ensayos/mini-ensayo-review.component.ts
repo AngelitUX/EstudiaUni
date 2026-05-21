@@ -401,10 +401,9 @@ import { PaymentService } from '../../core/services/payment.service';
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(133,92,214,0.4); }
     .btn-secondary { background: #fff; color: var(--accent-primary); border: 2px solid var(--accent-primary); }
     .btn-secondary:hover { background: rgba(133,92,214,0.05); }
-    
     /* ANIMATIONS */
-    .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .animate-fade-in { animation: none; opacity: 1; transform: none; }
+    .animate-slide-up { animation: none; opacity: 1; transform: none; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     

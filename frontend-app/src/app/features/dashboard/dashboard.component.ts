@@ -77,6 +77,10 @@ import { PaymentService } from '../../core/services/payment.service';
           </div>
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
+          <a class="nav-item" routerLink="/soporte" title="Soporte de Usuario">
+            <span class="nav-icon">🎧</span>
+            <span class="nav-text">Soporte</span>
+          </a>
           <a class="nav-item" (click)="showSettingsModal = true">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Configuración</span>
@@ -146,6 +150,10 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
+            <a class="nav-item" routerLink="/soporte" (click)="mobileMenuOpen = false">
+              <span class="nav-icon">🎧</span>
+              <span class="nav-text">Soporte</span>
+            </a>
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
               <span class="nav-icon">⚙️</span>
               <span class="nav-text">Configuración</span>
@@ -225,7 +233,8 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- 1. PROFILE COMPLETION PROGRESS BAR -->
             <div class="profile-completion-card glass-card" *ngIf="getProfileCompletion() < 100" style="margin-bottom: 0;">
               <div class="profile-completion-info">
-                <span class="profile-completion-pct">Tu perfil está al {{ getProfileCompletion() }}%</span>
+                <span class="alert-icon-pulse">⚠️</span>
+                <span class="completion-pill-badge">{{ getProfileCompletion() }}% completado</span>
                 <span class="profile-completion-text">— {{ getProfileCompletionMessage() }}</span>
               </div>
               <div class="profile-completion-progress-wrapper">
@@ -242,7 +251,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <section class="ai-hero glass-card" id="ai-hero-section" style="margin-bottom: 0;">
               <div class="ai-hero-left">
                 <div class="ai-hero-badge">🤖 Recomendación IA · <span>Personalizado</span></div>
-                <div class="ai-hero-rec" *ngIf="dashSvc.recommendations()[activeRecIdx] as rec">
+                <div class="ai-hero-rec" [class.anim-even]="activeRecIdx % 2 === 0" [class.anim-odd]="activeRecIdx % 2 !== 0" *ngIf="dashSvc.recommendations()[activeRecIdx] as rec">
                   <div class="ai-hero-icon">{{ rec.icon }}</div>
                   <div class="ai-hero-text">
                     <h3>{{ rec.title }}</h3>
@@ -254,15 +263,14 @@ import { PaymentService } from '../../core/services/payment.service';
                   </div>
                 </div>
                 <div class="ai-hero-nav" *ngIf="dashSvc.recommendations().length > 1">
+                  <button type="button" class="nav-arrow-rec" (click)="prevRecommendation()">‹</button>
                   <button *ngFor="let r of dashSvc.recommendations(); let i = index" class="rec-dot" [class.active]="i === activeRecIdx" (click)="setActiveRec(i)"></button>
+                  <button type="button" class="nav-arrow-rec" (click)="nextRecommendation()">›</button>
                 </div>
               </div>
               <div class="ai-hero-actions">
                 <button class="btn-cta-primary btn-hero" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
                   🚀 {{ dashSvc.recommendations()[activeRecIdx].type === 'repaso' ? 'Retomar estudio' : 'Comenzar ahora' }}
-                </button>
-                <button class="btn-hero-secondary" *ngIf="dashSvc.recommendations().length > 1" (click)="nextRecommendation()">
-                  Otra sugerencia →
                 </button>
               </div>
             </section>
@@ -333,9 +341,14 @@ import { PaymentService } from '../../core/services/payment.service';
 
             <!-- 5. SUBJECT MASTERY -->
             <div class="metric-card glass-card mastery-card">
-              <div class="metric-header">
-                <span class="metric-label">Nivel de Dominio por Tema</span>
-                <span class="metric-icon">🎯</span>
+              <div class="metric-header" style="flex-direction: column; align-items: flex-start; gap: 0.15rem; margin-bottom: 0.65rem; width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <span class="metric-label">Nivel de Dominio por Tema</span>
+                  <span class="metric-icon">🎯</span>
+                </div>
+                <span *ngIf="dashSvc.subjectMasteries().length > 0" class="scroll-hint-text" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-top: 0.1rem;">
+                  💡 Si no ves tu materia, usa la rueda del mouse para bajar
+                </span>
               </div>
               <div class="metric-body mastery-body">
                 <ng-container *ngIf="dashSvc.subjectMasteries().length > 0; else noMastery">
@@ -345,8 +358,12 @@ import { PaymentService } from '../../core/services/payment.service';
                       <span class="mastery-name">{{ m.subjectName }}</span>
                       <span class="mastery-pct">{{ m.mastery }}%</span>
                     </div>
-                    <div class="mastery-bar-bg">
-                      <div class="mastery-bar-fill" [style.width.%]="m.mastery" [style.background]="getMasteryColor(m.mastery)"></div>
+                    <div class="mastery-bar-container">
+                      <div class="mastery-bar-bg" [class.free-user-bar]="!isProPlan() && !adminService.isAdmin()">
+                        <div class="mastery-bar-fill" [style.width.%]="(!isProPlan() && !adminService.isAdmin()) ? (m.mastery > 25 ? 25 : m.mastery) : m.mastery" [style.background]="getMasteryColor(m.mastery)"></div>
+                        <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="golden-locked-overlay"></div>
+                      </div>
+                      <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="mastery-padlock">🔒</div>
                     </div>
                     <span class="mastery-sub">{{ m.lessonsCompleted }}/{{ m.totalLessons }} lecciones</span>
                   </div>
@@ -617,6 +634,93 @@ import { PaymentService } from '../../core/services/payment.service';
         </div>
       </div>
     </div>
+
+    <!-- FLOATING HELP BUTTON -->
+    <button class="help-fab" (click)="showHelpModal = true" title="Guía del Dashboard">
+      💡
+    </button>
+
+    <!-- HELP EXPLANATION MODAL -->
+    <div class="modal-overlay" *ngIf="showHelpModal" (click)="showHelpModal = false">
+      <div class="modal-container glass help-modal-container animate-scale-up" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>💡 Guía Rápida del Dashboard</h2>
+          <button class="logout-close-btn" (click)="showHelpModal = false">&times;</button>
+        </div>
+        <div class="modal-body help-modal-body">
+          <p class="help-intro-text">Aquí tienes una explicación de cada sección para que aproveches al máximo EstudiaUni:</p>
+          
+          <div class="help-sections-grid">
+            <div class="help-section-card">
+              <div class="help-card-icon">⚡</div>
+              <div class="help-card-info">
+                <h4>Recomendación de la IA</h4>
+                <p>Análisis de tu nivel para sugerirte qué estudiar o repasar hoy mismo.</p>
+              </div>
+            </div>
+
+            <div class="help-section-card">
+              <div class="help-card-icon">🎯</div>
+              <div class="help-card-info">
+                <h4>Meta PAES</h4>
+                <p>Compara tu promedio proyectado con el puntaje meta de la carrera que quieres.</p>
+              </div>
+            </div>
+
+            <div class="help-section-card">
+              <div class="help-card-icon">📊</div>
+              <div class="help-card-info">
+                <h4>Dominio por Tema</h4>
+                <p>Muestra tu progreso y porcentaje de dominio en cada materia evaluada.</p>
+              </div>
+            </div>
+
+            <div class="help-section-card">
+              <div class="help-card-icon">🏆</div>
+              <div class="help-card-info">
+                <h4>Récord de Puntaje</h4>
+                <p>Tu puntaje PAES proyectado más alto y el cambio respecto a tu ensayo anterior. Además, te muestra el puntaje más reciente y el más alto para cada materia individual.</p>
+              </div>
+            </div>
+
+            <div class="help-section-card">
+              <div class="help-card-icon">🔥</div>
+              <div class="help-card-info">
+                <h4>Rachas de Estudio</h4>
+                <p>Días seguidos de estudio (Racha normal) y de lecciones en todas las materias (Súper Racha).</p>
+              </div>
+            </div>
+
+            <div class="help-section-card">
+              <div class="help-card-icon">⏱️</div>
+              <div class="help-card-info">
+                <h4>Horas Semanales</h4>
+                <p>Registro del tiempo dedicado a lecciones, ensayos y mente veloz esta semana.</p>
+              </div>
+            </div>
+            
+            <div class="help-section-card">
+              <div class="help-card-icon">🛠️</div>
+              <div class="help-card-info">
+                <h4>Herramientas</h4>
+                <p>Calculadora NEM, Encuentra tu Carrera y Recursos Adicionales en el menú lateral.</p>
+              </div>
+            </div>
+
+            <div class="help-section-card">
+              <div class="help-card-icon">👤</div>
+              <div class="help-card-info">
+                <h4>Tu Perfil</h4>
+                <p>Configura tu meta de puntaje y carrera para que la IA personalice tu ruta.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary-modal" (click)="showHelpModal = false">¡Entendido!</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
@@ -723,6 +827,7 @@ import { PaymentService } from '../../core/services/payment.service';
       font-weight: 700;
     }
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-footer .nav-item { font-size: 0.88rem; padding: 0.72rem 1.1rem; }
     .logout-btn-sidebar {
       color: #fca5a5 !important;
       opacity: 0.8;
@@ -862,7 +967,19 @@ import { PaymentService } from '../../core/services/payment.service';
 
     /* MASTERY */
     .mastery-card { }
-    .mastery-body { display: grid; grid-template-columns: 1fr; gap: 0.75rem !important; }
+    .mastery-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem !important;
+      max-height: 165px;
+      overflow-y: auto;
+      padding-right: 4px;
+      align-items: stretch;
+      justify-content: flex-start;
+      margin: auto 0;
+    }
+    .mastery-body::-webkit-scrollbar { width: 4px; }
+    .mastery-body::-webkit-scrollbar-thumb { background: rgba(133, 92, 214, 0.45); border-radius: 99px; }
     .mastery-item { display: flex; flex-direction: column; gap: 0.35rem; }
     .mastery-top { display: flex; align-items: center; gap: 0.5rem; }
     .mastery-icon { font-size: 1.1rem; }
@@ -1005,6 +1122,51 @@ import { PaymentService } from '../../core/services/payment.service';
     .mastery-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .mastery-sub { font-size: 0.72rem; color: #6b7280; font-weight: 600; }
 
+    /* Estilos del candado y la barra de progreso dorada animada para usuarios gratis (BASICO) */
+    .mastery-bar-container {
+      position: relative;
+      width: 100%;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+    .mastery-bar-container .mastery-bar-bg {
+      margin-bottom: 0;
+    }
+    .mastery-bar-bg.free-user-bar {
+      overflow: hidden;
+    }
+    .golden-locked-overlay {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 25%;
+      right: 0;
+      background: linear-gradient(90deg, #d4af37 0%, #ffd700 25%, #f39c12 50%, #ffd700 75%, #d4af37 100%);
+      background-size: 200% 100%;
+      animation: goldShimmer 8s infinite linear;
+      opacity: 0.95;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .mastery-padlock {
+      position: absolute;
+      left: 25%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.85rem;
+      line-height: 1;
+      z-index: 10;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @keyframes goldShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
     /* COMBINED STREAK CARD */
     .combined-streak-card .metric-body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 0.75rem; padding-top: 0.2rem; }
     .streak-item { display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 0.8rem; border-radius: 12px; background: rgba(0,0,0,0.02); border: 1.5px solid var(--glass-border); transition: all 0.2s; }
@@ -1038,7 +1200,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .info-content li { margin-bottom: 0.4rem; }
     .info-tip { display: block; font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); background: rgba(133,92,214,0.08); padding: 0.6rem 0.85rem; border-radius: 8px; border-left: 3px solid var(--accent-primary); }
     .info-divider { height: 1.5px; background: var(--glass-border); margin: 1.25rem 0; opacity: 0.6; }
-    .btn-primary-modal { width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary-modal { font-family: inherit; width: 100%; padding: 0.85rem; border-radius: 12px; background: var(--accent-primary); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-primary-modal:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 10, 18, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 99999 !important; padding: 1.5rem; animation: fadeIn 0.25s ease both; }
@@ -1065,12 +1227,13 @@ import { PaymentService } from '../../core/services/payment.service';
     .glass-card { background: #ffffff; border: 1.5px solid var(--glass-border); box-shadow: var(--shadow); }
 
     /* UNIFIED CTA BUTTONS */
-    .btn-cta-primary { padding: 0.9rem 2rem; background: var(--gradient-brand); color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(133,92,214,0.3); white-space: nowrap; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 0.4rem; letter-spacing: -0.01em; }
+    .btn-cta-primary { font-family: inherit; padding: 0.9rem 2rem; background: var(--gradient-brand); color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(133,92,214,0.3); white-space: nowrap; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 0.4rem; letter-spacing: -0.01em; }
     .btn-cta-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(133,92,214,0.4); filter: brightness(1.05); }
     .btn-cta-primary:active { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(133,92,214,0.3); }
     .btn-cta-primary.btn-sm { padding: 0.6rem 1.2rem; font-size: 0.9rem; border-radius: 10px; }
 
     .btn-cta-secondary {
+      font-family: inherit;
       padding: 0.9rem 2rem;
       background: rgba(133,92,214,0.06);
       color: var(--accent-primary);
@@ -1171,14 +1334,48 @@ import { PaymentService } from '../../core/services/payment.service';
     .ai-hero-badge { font-size: 0.78rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.04em; }
     .ai-hero-badge span { background: rgba(133,92,214,0.1); padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.7rem; }
     .ai-hero-rec { display: flex; gap: 1rem; align-items: flex-start; }
+    .ai-hero-rec.anim-even { animation: fadeInSlideRec1 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .ai-hero-rec.anim-odd { animation: fadeInSlideRec2 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes fadeInSlideRec1 {
+      0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeInSlideRec2 {
+      0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
     .ai-hero-icon { font-size: 2.2rem; background: rgba(133,92,214,0.1); padding: 0.65rem; border-radius: 14px; line-height: 1; flex-shrink: 0; }
     .ai-hero-text { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
     .ai-hero-text h3 { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0; }
     .ai-hero-text p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
     .ai-hero-stats { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-top: 0.25rem; }
-    .ai-hero-nav { display: flex; gap: 0.4rem; margin-top: 0.25rem; }
+    .ai-hero-nav { display: flex; gap: 0.5rem; margin-top: 0.35rem; align-items: center; }
+    .nav-arrow-rec {
+      background: rgba(133, 92, 214, 0.08);
+      border: 1.5px solid rgba(133, 92, 214, 0.15);
+      color: var(--accent-primary);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 1.15rem;
+      line-height: 1;
+      padding: 0;
+      padding-bottom: 2px;
+      user-select: none;
+    }
+    .nav-arrow-rec:hover {
+      background: var(--accent-primary);
+      color: #fff;
+      transform: scale(1.1);
+    }
     .ai-hero-actions { display: flex; flex-direction: column; align-items: center; gap: 0.65rem; flex-shrink: 0; }
     .btn-hero {
+      font-family: inherit;
       padding: 0.6rem 1.35rem;
       font-size: 0.92rem;
       border-radius: 11px;
@@ -1299,24 +1496,77 @@ import { PaymentService } from '../../core/services/payment.service';
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-heading); line-height: 1.1; }
     .kpi-label { font-size: 0.76rem; color: #4b5563; font-weight: 700; line-height: 1.1; }
 
-    /* PROFILE COMPLETION CARD */
+    /* PROFILE COMPLETION CARD WITH SHINE GLOW EFFECT */
     .profile-completion-card {
+      position: relative;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.85rem 1.25rem;
-      border-radius: 14px;
+      padding: 0.95rem 1.35rem;
+      border-radius: 16px;
       margin-bottom: 1.5rem;
       margin-top: 1.25rem;
-      background: linear-gradient(135deg, rgba(133, 92, 214, 0.03), rgba(133, 92, 214, 0.08));
-      border: 2px solid var(--glass-border) !important;
+      background: linear-gradient(135deg, rgba(133, 92, 214, 0.08) 0%, rgba(99, 102, 241, 0.15) 100%);
+      border: 2px solid rgba(133, 92, 214, 0.5) !important;
       gap: 1.5rem;
       flex-wrap: wrap;
+      animation: profile-glow-pulse 2.5s infinite ease-in-out;
     }
+    
+    @keyframes profile-glow-pulse {
+      0% {
+        box-shadow: 0 0 8px rgba(133, 92, 214, 0.2), var(--shadow);
+        border-color: rgba(133, 92, 214, 0.5) !important;
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(133, 92, 214, 0.55), var(--shadow);
+        border-color: rgba(133, 92, 214, 0.8) !important;
+      }
+      100% {
+        box-shadow: 0 0 8px rgba(133, 92, 214, 0.2), var(--shadow);
+        border-color: rgba(133, 92, 214, 0.5) !important;
+      }
+    }
+
+    .profile-completion-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 80px;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.35) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: skewX(-25deg);
+      animation: shimmer-sweep 6s infinite ease-in-out;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer-sweep {
+      0% { left: -150%; }
+      20% { left: 150%; }
+      100% { left: 150%; }
+    }
+
+    .alert-icon-pulse {
+      font-size: 1.15rem;
+      animation: icon-bounce 1.5s infinite ease-in-out;
+      display: inline-block;
+    }
+    @keyframes icon-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
     .profile-completion-info {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.65rem;
       font-size: 0.88rem;
       font-weight: 700;
     }
@@ -1350,20 +1600,157 @@ import { PaymentService } from '../../core/services/payment.service';
       transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-complete-profile {
-      background: none;
-      border: none;
-      color: var(--accent-primary);
+      font-family: inherit;
+      background: var(--gradient-brand);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
       font-weight: 800;
       font-size: 0.85rem;
       cursor: pointer;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      transition: all 0.2s;
+      padding: 0.5rem 1.1rem;
+      border-radius: 10px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
     .btn-complete-profile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(133, 92, 214, 0.45);
+      filter: brightness(1.1);
+      text-decoration: none;
+    }
+    .btn-complete-profile:active {
+      transform: translateY(0);
+    }
+    .completion-pill-badge {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: white;
+      padding: 0.25rem 0.65rem;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+      display: inline-flex;
+      align-items: center;
+      text-transform: uppercase;
+    }
+
+    /* FLOATING HELP FAB & MODAL */
+    .help-fab {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--gradient-brand);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 15px rgba(133, 92, 214, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 999;
+    }
+    .help-fab:hover {
+      transform: scale(1.1) rotate(15deg);
+      box-shadow: 0 8px 25px rgba(133, 92, 214, 0.6);
+      filter: brightness(1.1);
+    }
+    .help-fab:active {
+      transform: scale(0.95);
+    }
+    .help-modal-container {
+      max-width: 720px !important;
+      width: 90% !important;
+      margin: auto !important;
+    }
+    .help-modal-body {
+      max-height: 65vh;
+      overflow-y: auto;
+      padding: 1rem 1.5rem 1.5rem;
+    }
+    .help-intro-text {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+    .help-sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 768px) {
+      .help-fab {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 44px;
+        height: 44px;
+        font-size: 1.3rem;
+      }
+    }
+    @media (max-width: 600px) {
+      .help-sections-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .help-modal-body {
+        padding: 0.75rem 1rem 1.25rem;
+      }
+    }
+    .help-section-card {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1rem;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.02);
+      border: 1.5px solid var(--glass-border);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .help-section-card:hover {
+      transform: translateY(-2px);
+      background: #ffffff;
+      border-color: rgba(133, 92, 214, 0.35);
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.08);
+    }
+    .help-card-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       background: rgba(133, 92, 214, 0.08);
-      text-decoration: underline;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent-primary);
+    }
+    .help-card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .help-card-info h4 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .help-card-info p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
     }
     .btn-buscar-carreras {
       font-size: 0.82rem;
@@ -1499,6 +1886,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   countdown = { days: 0, hours: 0, minutes: 0 };
   nextExamLabel = '';
   private countdownInterval: any;
+  private autoPlayInterval: any;
   public notificationService = inject(NotificationService);
   private toast = inject(ToastService);
   public adminService = inject(AdminService);
@@ -1531,6 +1919,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   showMetaPaesMateriasModal = false;
   savingMetaPaesMaterias = false;
   showLogoutConfirm = false;
+  showHelpModal = false;
   currentDate = (() => {
     const formatted = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
@@ -1589,6 +1978,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.updateRecordDisplay();
       this.weeklyActivity = this.dashSvc.getWeeklyActivity();
       this.updateTrendChart();
+      const recs = this.dashSvc.recommendations();
+      if (recs && this.activeRecIdx >= recs.length) {
+        this.activeRecIdx = 0;
+      }
     });
   }
 
@@ -1685,10 +2078,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
     this.checkPendingCheckout();
     this.startCountdown();
+    this.startAutoPlay();
   }
 
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.stopAutoPlay();
+  }
+
+  startAutoPlay() {
+    this.stopAutoPlay();
+    this.autoPlayInterval = setInterval(() => {
+      const recs = this.dashSvc.recommendations();
+      if (recs && recs.length > 1) {
+        this.activeRecIdx = (this.activeRecIdx + 1) % recs.length;
+      }
+    }, 5000);
+  }
+
+  stopAutoPlay() {
+    if (this.autoPlayInterval) {
+      clearInterval(this.autoPlayInterval);
+      this.autoPlayInterval = null;
+    }
   }
 
   private startCountdown() {
@@ -1797,12 +2209,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   nextRecommendation() {
     const len = this.dashSvc.recommendations().length;
-    this.activeRecIdx = (this.activeRecIdx + 1) % len;
+    if (len > 0) {
+      this.activeRecIdx = (this.activeRecIdx + 1) % len;
+      this.startAutoPlay();
+    }
   }
 
   prevRecommendation() {
     const len = this.dashSvc.recommendations().length;
-    this.activeRecIdx = (this.activeRecIdx - 1 + len) % len;
+    if (len > 0) {
+      this.activeRecIdx = (this.activeRecIdx - 1 + len) % len;
+      this.startAutoPlay();
+    }
   }
 
   setRecordSubject(idx: number) {
@@ -2025,6 +2443,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   /** Set active recommendation index for hero card */
   setActiveRec(idx: number) {
     this.activeRecIdx = idx;
+    this.startAutoPlay();
   }
 
 }
