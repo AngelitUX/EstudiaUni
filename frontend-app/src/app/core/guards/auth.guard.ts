@@ -1,19 +1,22 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
-import { AuthService } from '../services/auth.service';
-import { map, take } from 'rxjs/operators';
+import { Auth } from '@angular/fire/auth';
 
 export const authGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
+  const auth = inject(Auth);
   const router = inject(Router);
 
-  return authService.isLoggedIn$.pipe(
-    take(1),
-    map(isLoggedIn => {
-      if (isLoggedIn) {
-        return true;
+  // Use a Promise with onAuthStateChanged so we wait for Firebase to restore
+  // the session from persistence (avoids the initial null emission race condition
+  // that occurs on hard refresh with take(1) on authState).
+  return new Promise<boolean | any>((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      unsubscribe();
+      if (user) {
+        resolve(true);
+      } else {
+        resolve(router.createUrlTree(['/login']));
       }
-      return router.createUrlTree(['/login']);
-    })
-  );
+    });
+  });
 };

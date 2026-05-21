@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Intento, Pregunta } from '../../core/services/firestore.service';
-import { from, map, forkJoin, of } from 'rxjs';
+import { from, map, forkJoin, of, catchError } from 'rxjs';
 
 interface ReviewQuestion {
   id: number;
@@ -45,9 +45,6 @@ interface ReviewQuestion {
             </div>
             
             <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
-            <button class="btn btn-secondary btn-sm" (click)="mostrarModalMejorador = true" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">
-              📈 Mejorador de Puntaje
-            </button>
             <button class="btn btn-primary btn-sm" routerLink="/ensayos" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">
               Finalizar
             </button>
@@ -223,9 +220,9 @@ interface ReviewQuestion {
     .btn-cancel { transition: all 0.25s; }
     .btn-cancel:hover { background: #cbd5e1 !important; color: #0f172a !important; }
     
-    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-    .animate-scale-up { animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .animate-slide-up { animation: slideUp 0.4s ease-out backwards; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    .animate-scale-up { animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -569,75 +566,97 @@ export class EnsayoReviewComponent implements OnInit {
 
   private loadIntentoData(intentoId: string) {
     this.loading = true;
-    
+
     forkJoin({
-      intento: this.firestoreService.getIntento(intentoId),
-      preguntas: this.firestoreService.getPreguntas(this.examId),
-      ensayo: this.firestoreService.getEnsayo(this.examId)
+      intento: this.firestoreService.getIntento(intentoId).pipe(catchError(() => of(null))),
+      preguntas: this.firestoreService.getPreguntas(this.examId).pipe(catchError(() => of([]))),
+      ensayo: this.firestoreService.getEnsayo(this.examId).pipe(catchError(() => of(null)))
     }).subscribe({
       next: (data: any) => {
-        if (data.intento && data.preguntas) {
-          this.score = data.intento.score || 0;
-          this.examTitle = data.ensayo?.title || this.getGenericTitle(this.examId);
-          this.totalQuestions = data.preguntas.length;
-          
-          this.questions = data.preguntas.map((p: any) => {
-            const userAnsObj = data.intento?.answers.find((a: any) => a.preguntaId === p.id);
-            
-            // Map topic with fallbacks for official exams
-            let topic = p.tema || p.topic || p.subtema;
-            if (!topic) {
-              const lowerId = this.examId.toLowerCase();
-              const order = p.order || 1;
-              if (lowerId.includes('m1') || lowerId.includes('matematica')) {
-                if (order <= 15) topic = 'Números';
-                else if (order <= 35) topic = 'Álgebra';
-                else if (order <= 50) topic = 'Geometría';
-                else topic = 'Probabilidad';
-              } else if (lowerId.includes('lectora') || lowerId.includes('l-')) {
-                if (order <= 20) topic = 'Localizar';
-                else if (order <= 45) topic = 'Interpretar';
-                else topic = 'Evaluar';
-              } else if (lowerId.includes('ciencias') || lowerId.includes('biologia')) {
-                if (order <= 20) topic = 'Biología Celular';
-                else if (order <= 45) topic = 'Fisiología';
-                else topic = 'Ecosistemas';
-              } else if (lowerId.includes('fisica')) {
-                topic = 'Física';
-              } else if (lowerId.includes('quimica')) {
-                topic = 'Química';
-              } else if (lowerId.includes('historia')) {
-                if (order <= 22) topic = 'Época del Salitre';
-                else if (order <= 44) topic = 'Cuestión Social';
-                else topic = 'Constitución';
-              } else {
-                topic = 'General';
-              }
-            }
+        const preguntas: any[] = data.preguntas || [];
+        const intento: any = data.intento || null;
+        const answersList: any[] = Array.isArray(intento?.answers) ? intento.answers : [];
 
-            return {
-              id: p.order,
-              stem: p.text,
-              imageUrl: p.imageUrl ? (p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl) : undefined,
-              options: [
-                { id: 'A', text: p.options.A },
-                { id: 'B', text: p.options.B },
-                { id: 'C', text: p.options.C },
-                { id: 'D', text: p.options.D },
-                ...(p.options.E !== undefined ? [{ id: 'E', text: p.options.E }] : [])
-              ],
-              userAnswer: userAnsObj?.selectedAnswer || null,
-              correctAnswer: p.correctAnswer,
-              isCorrect: userAnsObj?.isCorrect || false,
-              explanation: {
-                whyWrong: userAnsObj && !userAnsObj.isCorrect ? (p as any).whyWrong || 'La respuesta elegida no cumple con las condiciones del problema.' : undefined,
-                correctSolution: p.explanation || 'Consultar material de estudio para el desarrollo detallado.',
-                tip: (p as any).tip || 'Lee siempre bien el enunciado y las unidades antes de responder.'
-              },
-              tema: topic
-            };
-          });
+        this.examTitle = data.ensayo?.title || this.getGenericTitle(this.examId);
+        this.totalQuestions = preguntas.length;
+
+        this.questions = preguntas.map((p: any) => {
+          const userAnsObj = answersList.find((a: any) => a.preguntaId === p.id) || null;
+
+          // Map topic with fallbacks for official exams
+          let topic = p.tema || p.topic || p.subtema;
+          if (!topic) {
+            const lowerId = this.examId.toLowerCase();
+            const order = p.order || 1;
+            if (lowerId.includes('m1') || lowerId.includes('matematica')) {
+              if (order <= 15) topic = 'Números';
+              else if (order <= 35) topic = 'Álgebra';
+              else if (order <= 50) topic = 'Geometría';
+              else topic = 'Probabilidad';
+            } else if (lowerId.includes('lectora') || lowerId.includes('l-')) {
+              if (order <= 20) topic = 'Localizar';
+              else if (order <= 45) topic = 'Interpretar';
+              else topic = 'Evaluar';
+            } else if (lowerId.includes('ciencias') || lowerId.includes('biologia')) {
+              if (order <= 20) topic = 'Biología Celular';
+              else if (order <= 45) topic = 'Fisiología';
+              else topic = 'Ecosistemas';
+            } else if (lowerId.includes('fisica')) {
+              topic = 'Física';
+            } else if (lowerId.includes('quimica')) {
+              topic = 'Química';
+            } else if (lowerId.includes('historia')) {
+              if (order <= 22) topic = 'Época del Salitre';
+              else if (order <= 44) topic = 'Cuestión Social';
+              else topic = 'Constitución';
+            } else {
+              topic = 'General';
+            }
+          }
+
+          const pOpts = p.options || {};
+          const options: { id: string; text: string }[] = [
+            { id: 'A', text: pOpts.A || '' },
+            { id: 'B', text: pOpts.B || '' },
+            { id: 'C', text: pOpts.C || '' },
+            { id: 'D', text: pOpts.D || '' },
+          ];
+          if (pOpts.E !== undefined && pOpts.E !== null) {
+            options.push({ id: 'E', text: pOpts.E });
+          }
+
+          const isCorrect = userAnsObj?.isCorrect === true ||
+            (userAnsObj?.selectedAnswer && userAnsObj.selectedAnswer === p.correctAnswer);
+
+          return {
+            id: p.order,
+            stem: p.text || '',
+            imageUrl: p.imageUrl ? (p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl) : undefined,
+            options,
+            userAnswer: userAnsObj?.selectedAnswer || null,
+            correctAnswer: p.correctAnswer || '',
+            isCorrect,
+            explanation: {
+              whyWrong: userAnsObj && !isCorrect
+                ? (p as any).whyWrong || 'La respuesta elegida no cumple con las condiciones del problema.'
+                : undefined,
+              correctSolution: p.explanation || 'Consultar material de estudio para el desarrollo detallado.',
+              tip: (p as any).tip || 'Lee siempre bien el enunciado y las unidades antes de responder.'
+            },
+            tema: topic
+          };
+        });
+
+        // Compute score: use stored score, or compute from mapped questions
+        if (intento?.score) {
+          this.score = intento.score;
+        } else {
+          const correct = this.questions.filter(q => q.isCorrect).length;
+          this.score = this.totalQuestions > 0
+            ? Math.round(100 + (correct / this.totalQuestions) * 900)
+            : 0;
         }
+
         this.loading = false;
       },
       error: () => {
