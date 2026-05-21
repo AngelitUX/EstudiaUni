@@ -20,6 +20,11 @@ service cloud.firestore {
       // Los usuarios autenticados pueden leer perfiles, pero sólo el propietario o un admin pueden escribir
       allow read: if isAuthenticated();
       allow write: if isOwner(userId) || isAdmin();
+
+      // Subcolección de actividades de estudio
+      match /actividad/{actividadId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
     }
     
     // ============ ENSAYOS ============
@@ -102,6 +107,14 @@ service cloud.firestore {
     match /admins/{adminId} {
       allow read: if isAuthenticated();
       allow write: if false; // Solo se puede agregar admins manualmente
+    }
+
+    // ============ NOTICIAS ============
+    match /news/{newsId} {
+      // Todo el público puede leer noticias (necesario para el landing page sin autenticar)
+      allow read: if true;
+      // Solo admins pueden crear/editar noticias
+      allow write: if isAdmin();
     }
   }
 }

@@ -330,14 +330,15 @@ export class FirestoreService {
   }
 
   getEnsayo(ensayoId: string): Observable<Ensayo | null> {
-    const finalId = ensayoId === 'm1' ? 'm1-2024' : ensayoId;
+    const finalId = this.normalizeEnsayoId(ensayoId);
     return from(getDoc(doc(this.firestore, 'ensayos', finalId))).pipe(
-      map(snap => snap.exists() ? { id: snap.id, ...snap.data() } as Ensayo : null)
+      map(snap => snap.exists() ? { id: snap.id, ...snap.data() } as Ensayo : null),
+      catchError(() => of(null))
     );
   }
 
   getPreguntas(ensayoId: string): Observable<Pregunta[]> {
-    const finalId = ensayoId === 'm1' ? 'm1-2024' : ensayoId;
+    const finalId = this.normalizeEnsayoId(ensayoId);
     const q = query(collection(this.firestore, 'preguntas'), where('ensayoId', '==', finalId));
     return from(getDocs(q)).pipe(
       map(snap => {
@@ -481,10 +482,17 @@ export class FirestoreService {
     });
   }
 
+  /** Normalize exam ID variants to canonical DB IDs */
+  private normalizeEnsayoId(id: string): string {
+    if (id === 'm1' || id === 'm1-2024') return 'm1-2024';
+    if (id === 'm1-invierno' || id === 'm1-invierno-2024') return 'm1-invierno-2024';
+    return id;
+  }
+
   private getMockPreguntas(id: string): Pregunta[] {
-    const targetId = (id === 'm1' || id === 'm1-2024') ? 'm1-2024' : id;
-    if (targetId === 'm1-2024') return m1QuestionsData as any || [];
-    if (id === 'm1-invierno-2024') return m1InviernoQuestionsData as any || [];
+    const normalized = this.normalizeEnsayoId(id);
+    if (normalized === 'm1-2024') return m1QuestionsData as any || [];
+    if (normalized === 'm1-invierno-2024') return m1InviernoQuestionsData as any || [];
     return [];
   }
 }

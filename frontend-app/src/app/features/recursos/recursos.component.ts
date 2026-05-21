@@ -121,8 +121,17 @@ import { PaymentService } from '../../core/services/payment.service';
           </div>
         </header>
 
-        <div class="dashboard-body">
-
+        <div class="dashboard-body" style="position: relative; min-height: 500px;">
+          <!-- COMING SOON OVERLAY -->
+          <div class="coming-soon-overlay" style="position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); background: rgba(248, 250, 252, 0.5); border-radius: 12px; margin: 0 -1rem;">
+            <div class="glass-card" style="text-align: center; max-width: 400px; padding: 2.5rem; border: 1px solid rgba(139, 92, 246, 0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); background: rgba(255, 255, 255, 0.9);">
+              <span style="font-size: 3rem; display: block; margin-bottom: 1rem; animation: scaleUp 0.5s ease-out;">🚧</span>
+              <h2 style="font-size: 1.8rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">¡Próximamente!</h2>
+              <p style="color: #475569; font-size: 1rem; line-height: 1.5; margin: 0;">Estamos recolectando y preparando el mejor material de estudio. ¡Vuelve muy pronto!</p>
+            </div>
+          </div>
+          
+          <div style="opacity: 0.4; pointer-events: none; user-select: none;">
         <!-- FILTERS -->
         <div class="filters-container glass-card">
           <div class="search-box">
@@ -287,6 +296,7 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
           </div>
         </div>
+          </div> <!-- close pointer events wrapper -->
         </div>
       </main>
     </div>

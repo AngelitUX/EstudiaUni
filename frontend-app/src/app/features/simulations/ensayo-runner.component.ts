@@ -1658,7 +1658,8 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     }
     
     this.router.navigate(['/ensayo', this.examId, 'review'], {
-      queryParams: { intento: this.intentoId }
+      queryParams: { intento: this.intentoId },
+      replaceUrl: true
     });
   }
 

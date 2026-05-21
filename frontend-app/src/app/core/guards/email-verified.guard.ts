@@ -9,27 +9,31 @@ export const emailVerifiedGuard = () => {
   return new Promise<boolean>((resolve) => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       unsubscribe();
-      
+
       if (!user) {
-        // No hay usuario, redirigir a login
         router.navigate(['/login']);
         resolve(false);
         return;
       }
 
-      // Recargar el usuario para obtener el estado más actualizado
+      // Si el email ya está verificado en el objeto local, no hace falta recargar
+      if (user.emailVerified) {
+        resolve(true);
+        return;
+      }
+
+      // Solo recargar si NO está verificado localmente (cuentas de correo/contraseña pendientes)
       user.reload().then(() => {
         if (user.emailVerified) {
-          // Email verificado, permitir acceso
           resolve(true);
         } else {
-          // Email NO verificado, redirigir a página de verificación
           router.navigate(['/verify-email']);
           resolve(false);
         }
       }).catch(() => {
-        router.navigate(['/verify-email']);
-        resolve(false);
+        // Si el reload falla (COOP, red, etc.), dejar pasar si el usuario existe
+        // para no bloquear a usuarios válidos por problemas de red
+        resolve(true);
       });
     });
   });
