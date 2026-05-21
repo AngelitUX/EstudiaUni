@@ -83,19 +83,22 @@ import { SoundService } from '../../core/services/sound.service';
               <div class="section-block">
                 <div class="section-header"><h3>Plan de Cuenta</h3><p>Estado actual de tu suscripción en EstudiaUni.</p></div>
                 <div class="info-row">
-                  <div class="info-item" style="width: 100%;">
-                    <span class="info-label">Suscripción activa</span>
-                    <div class="subscription-badge-wrap">
-                      <span class="plan-badge-inline" [class.pro]="isProPlan()">{{ isProPlan() ? 'Premium 🚀' : 'Básico (Gratis)' }}</span>
-                      <span class="subscription-time-remaining animate-fade-in" *ngIf="isProPlan() && getSubscriptionInfo()">
+                <div class="info-item" style="width: 100%;">
+                  <span class="info-label">Suscripción activa</span>
+                  <div class="subscription-badge-wrap">
+                    <span class="plan-badge-inline" [class.pro]="isProPlan()">{{ isProPlan() ? 'Premium 🚀' : 'Básico (Gratis)' }}</span>
+                    <div class="subscription-status" *ngIf="isProPlan() && getSubscriptionInfo()">
+                      <span class="subscription-cancelled" *ngIf="isSubscriptionCancelled()">(Cancelado)</span>
+                      <span class="subscription-time-remaining animate-fade-in">
                         {{ getSubscriptionInfo() }}
                       </span>
                     </div>
-                    <button *ngIf="isProPlan()" class="btn-cancel-subscription" (click)="openCancelSubscription()" id="btn-cancel-suscripcion">
-                      ⚠️ Cancelar Suscripción
-                    </button>
                   </div>
+                  <button *ngIf="isProPlan() && !isSubscriptionCancelled()" class="btn-cancel-subscription" (click)="openCancelSubscription()" id="btn-cancel-suscripcion">
+                    ⚠️ Cancelar Suscripción
+                  </button>
                 </div>
+              </div>
               </div>
               <div class="section-block">
                 <div class="section-header"><h3>Sobre ti</h3><p>Una frase rápida para mostrar en tu perfil.</p></div>
@@ -410,6 +413,8 @@ import { SoundService } from '../../core/services/sound.service';
     .plan-badge-inline{font-size:0.95rem;font-weight:800;color:var(--text-secondary);background:var(--bg-secondary);padding:0.4rem 0.8rem;border-radius:8px;width:fit-content}
     .plan-badge-inline.pro{background:rgba(245,158,11,0.1);color:#d97706;border:1px solid rgba(245,158,11,0.3)}
     .subscription-badge-wrap{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.25rem}
+    .subscription-status{display:flex;flex-direction:column;gap:0.25rem}
+    .subscription-cancelled{font-size:0.75rem;font-weight:700;color:#ef4444}
     .subscription-time-remaining{font-size:0.88rem;font-weight:600;color:var(--text-secondary);border:1.5px solid var(--glass-border);padding:0.4rem 0.8rem;border-radius:8px;background:rgba(255, 255, 255, 0.45);box-shadow:var(--shadow-sm);line-height:1}
     .input-with-icon{position:relative;display:flex;align-items:center}
     .input-icon{position:absolute;left:0.75rem;font-size:1rem;pointer-events:none}
@@ -580,6 +585,10 @@ export class ProfileModalComponent implements OnInit {
   }
 
   isProPlan = () => this.firestoreService.profileSignal()?.plan === 'premium';
+
+  isSubscriptionCancelled(): boolean {
+    return this.firestoreService.profileSignal()?.subscription?.status === 'cancelled';
+  }
 
   getSubscriptionInfo(): string {
     const profile = this.firestoreService.profileSignal();
