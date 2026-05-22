@@ -1078,10 +1078,11 @@ import { PaymentService } from '../../core/services/payment.service';
           
           <div class="news-track">
             <div class="news-card glass-card" *ngFor="let item of news">
-              <div class="news-header-img" [style.backgroundImage]="'url(' + (item.imageUrl || '') + ')'">
+              <div class="news-header-img">
+                <div class="news-img-skeleton" *ngIf="!item.isLoaded"></div>
+                <img [src]="item.imageUrl" (load)="item.isLoaded = true" [class.loaded]="item.isLoaded" alt="Portada de la noticia" class="news-cover-img" />
                 <div class="news-img-overlay" [style.background]="item.gradient"></div>
                 <span class="news-badge">{{ item.tag }}</span>
-                <span class="news-card-icon">{{ item.icon }}</span>
               </div>
               <div class="news-body">
                 <div class="news-meta">
@@ -3523,15 +3524,23 @@ import { PaymentService } from '../../core/services/payment.service';
       box-shadow: var(--shadow-sm);
       z-index: 2;
     }
-    .news-card-icon {
-      font-size: 4rem;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
-      animation: newsIconFloat 6s ease-in-out infinite alternate;
-      z-index: 2;
+    .news-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
-    @keyframes newsIconFloat {
-      0% { transform: translateY(0) scale(1); }
-      100% { transform: translateY(-6px) scale(1.05); }
+    .news-cover-img.loaded {
+      opacity: 1;
+    }
+    .news-img-skeleton {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      z-index: 0;
     }
     .news-body {
       padding: 1.5rem;
@@ -4645,7 +4654,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.openFaq = this.openFaq === index ? null : index;
   }
 
-  news = [
+  news: any[] = [
     {
       title: 'Inscripción PAES 2026: DEMRE lanza dura advertencia por cambio clave',
       source: 'El Mostrador',

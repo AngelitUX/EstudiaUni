@@ -43,6 +43,7 @@ export interface UserProfile {
   bio?: string;
   profileEmoji?: string;
   studyGoalMinutesPerDay?: number;
+  hasSeenTutorial?: boolean;
   selectedSubjects?: string[];
   dyslexiaFont?: boolean;
   highContrast?: boolean;
@@ -226,6 +227,18 @@ export class FirestoreService {
     const current = this.profileSignal();
     if (current && current.uid === user.uid) {
       this.profileSignal.set({ ...current, ...data });
+    }
+  }
+
+  async markTutorialAsSeen(uid: string): Promise<void> {
+    try {
+      await setDoc(doc(this.firestore, 'users', uid), { hasSeenTutorial: true }, { merge: true });
+      const current = this.profileSignal();
+      if (current && current.uid === uid) {
+        this.profileSignal.set({ ...current, hasSeenTutorial: true });
+      }
+    } catch (e) {
+      console.error('Error marking tutorial as seen:', e);
     }
   }
 

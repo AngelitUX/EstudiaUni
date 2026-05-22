@@ -197,9 +197,16 @@ interface AiMessage {
 
               <div class="question-stem">
                 <div class="question-image-container">
+                  <!-- Skeleton Loader while image is loading -->
+                  <div class="image-skeleton" *ngIf="currentQuestion.imageUrl && isImageLoading">
+                    <div class="skeleton-pulse">Cargando pregunta...</div>
+                  </div>
+                  
                   <img *ngIf="currentQuestion.imageUrl" 
                        [src]="ensureLeadingSlash(currentQuestion.imageUrl)" 
+                       (load)="isImageLoading = false"
                        (error)="handleImageError($event)"
+                       [class.hidden]="isImageLoading"
                        alt="Imagen de la pregunta" 
                        class="question-image" />
                 </div>
@@ -1251,6 +1258,38 @@ interface AiMessage {
     .fraction-den {
       padding-top: 1px;
     }
+
+    /* ===== LOADING SKELETON ===== */
+    .image-skeleton {
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border: 1px dashed #cbd5e1;
+    }
+    .skeleton-pulse {
+      color: #64748b;
+      font-weight: 500;
+      font-size: 1.1rem;
+      animation: pulse-text 1.5s infinite;
+    }
+    @keyframes loading-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @keyframes pulse-text {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .hidden {
+      display: none !important;
+    }
   `]
 })
 export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecked {
@@ -1298,6 +1337,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   // UI State
   isNavCollapsed = false;
   isAiCollapsed = false;
+  isImageLoading = true;
   focusedPanel: 'both' | 'reading' | 'question' = 'both';
 
   toggleFocus(panel: 'reading' | 'question') {
@@ -1454,7 +1494,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         ...(pregunta.options.E !== undefined ? [{ id: 'E', text: pregunta.options.E }] : [])
       ],
       correctAnswer: pregunta.correctAnswer,
-      imageUrl: pregunta.imageUrl ? (pregunta.imageUrl.startsWith('/') ? pregunta.imageUrl : '/' + pregunta.imageUrl) : null,
+      imageUrl: pregunta.imageUrl ? (pregunta.imageUrl.startsWith('http') || pregunta.imageUrl.startsWith('/') ? pregunta.imageUrl : '/' + pregunta.imageUrl) : null,
       readingText: (pregunta as any).readingText ? (pregunta as any).readingText.map((t: string) => t.startsWith('/') ? t : '/' + t) : null
     };
   }
@@ -1515,6 +1555,9 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   }
 
   goToQuestion(index: number) {
+    if (this.currentIndex === index) return;
+    
+    this.isImageLoading = true;
     this.currentIndex = index;
     if (this.isAssisted) {
       this.saveProgress();
@@ -1525,6 +1568,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   prevQuestion() {
     if (this.currentIndex > 0) {
+      this.isImageLoading = true;
       this.currentIndex--;
       if (this.isAssisted) {
         this.saveProgress();
@@ -1536,6 +1580,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   nextQuestion() {
     if (this.currentIndex < this.totalQuestions - 1) {
+      this.isImageLoading = true;
       this.currentIndex++;
       if (this.isAssisted) {
         this.saveProgress();

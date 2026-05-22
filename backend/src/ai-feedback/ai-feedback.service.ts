@@ -198,6 +198,7 @@ export class AiFeedbackService {
     options: Array<{ id: string; text: string }>;
     userAnswer?: string | null;
     subject?: string;
+    imageUrl?: string;
   }) {
     if (!this.openai) {
       return {
@@ -207,11 +208,26 @@ export class AiFeedbackService {
     }
 
     try {
-      const reply = await this.callOpenAIText(
-        ASSIST_SYSTEM_PROMPT,
-        buildAssistUserPrompt(input),
-      );
-      return { reply };
+      const userContent: any[] = [{ type: 'text', text: buildAssistUserPrompt(input) }];
+      
+      if (input.imageUrl && input.imageUrl.startsWith('http')) {
+        userContent.push({
+          type: 'image_url',
+          image_url: { url: input.imageUrl },
+        });
+      }
+
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: ASSIST_SYSTEM_PROMPT },
+          { role: 'user', content: userContent as any },
+        ],
+        max_tokens: 3000,
+        temperature: 0.7,
+      });
+
+      return { reply: response.choices[0]?.message?.content || '' };
     } catch (error) {
       this.logger.error(`Assist failed: ${error.message}`);
       throw new InternalServerErrorException('AI assist failed');
@@ -248,11 +264,22 @@ IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles
     // Build messages array from history
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
-      ...input.history.map((msg) => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-      })),
     ];
+
+    if (input.imageUrl && input.imageUrl.startsWith('http')) {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Esta es la imagen asociada a la pregunta (úsala para guiar tu explicación si es necesario):' },
+          { type: 'image_url', image_url: { url: input.imageUrl } }
+        ]
+      } as any);
+    }
+
+    messages.push(...input.history.map((msg) => ({
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content,
+    })));
 
     try {
       const response = await this.openai.chat.completions.create({

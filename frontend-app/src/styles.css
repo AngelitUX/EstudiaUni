@@ -1362,3 +1362,48 @@ body .logout-confirm-modal .btn-danger {
 .nav-item {
   transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s, border-left-color 0.2s !important;
 }
+
+/* Driver.js Custom Styling for Dark Theme / Glassmorphism */
+div.driver-popover {
+  background: rgba(30, 41, 59, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  color: #f8fafc !important;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5) !important;
+  font-family: var(--font-body) !important;
+}
+div.driver-popover .driver-popover-title {
+  color: #fff !important;
+  font-weight: 800 !important;
+  font-size: 1.15rem !important;
+  font-family: var(--font-heading) !important;
+}
+div.driver-popover .driver-popover-description {
+  color: #cbd5e1 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+}
+div.driver-popover .driver-popover-footer button {
+  background: rgba(133, 92, 214, 0.2) !important;
+  border: 1px solid rgba(133, 92, 214, 0.5) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+  padding: 0.4rem 0.8rem !important;
+}
+div.driver-popover .driver-popover-footer button:hover {
+  background: rgba(133, 92, 214, 0.5) !important;
+}
+div.driver-popover .driver-popover-progress-text {
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+}
+div.driver-popover .driver-popover-arrow {
+  display: none !important; /* Hide arrows since they are hard to color match with glassmorphism */
+}
+.driver-active-element {
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 4px rgba(133, 92, 214, 0.6) !important;
+}
