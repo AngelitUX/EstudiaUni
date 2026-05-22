@@ -25,4 +25,8 @@ export class AssistQuestionDto {
   @IsOptional()
   @IsString()
   subject?: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }

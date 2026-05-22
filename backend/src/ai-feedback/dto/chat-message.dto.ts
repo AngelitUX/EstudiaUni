@@ -34,6 +34,10 @@ export class ChatRequestDto {
   @IsString()
   subject?: string;
 
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ChatMessageItemDto)

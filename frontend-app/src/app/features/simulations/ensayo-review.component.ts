@@ -631,7 +631,7 @@ export class EnsayoReviewComponent implements OnInit {
           return {
             id: p.order,
             stem: p.text || '',
-            imageUrl: p.imageUrl ? (p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl) : undefined,
+            imageUrl: p.imageUrl ? (p.imageUrl.startsWith('http') || p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl) : undefined,
             options,
             userAnswer: userAnsObj?.selectedAnswer || null,
             correctAnswer: p.correctAnswer || '',
