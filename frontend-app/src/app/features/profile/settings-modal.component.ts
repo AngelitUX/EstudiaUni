@@ -76,6 +76,18 @@ import { NotificationService } from '../../core/services/notification.service';
               <a routerLink="/soporte" class="support-link" (click)="closeModal()">🎧 Ir a Soporte</a>
             </div>
           </div>
+          <div class="section-block">
+            <div class="section-header"><h3>Origen de datos (Mocks)</h3><p>Alterna entre la base de datos de Firebase y datos locales simulados (Mocks).</p></div>
+            <div class="grid" style="grid-template-columns: 1fr;">
+              <label class="switch">
+                <input [(ngModel)]="useLocalMocks" type="checkbox" (change)="toggleLocalMocks()"/>
+                <span>Usar Mocks Locales (Offline)</span>
+              </label>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: -0.25rem; font-weight: 500;">
+                Ideal para desarrollo rápido. Carga capítulos y lecciones directamente de archivos locales sin consumir lecturas de Firestore. Requiere recargar.
+              </div>
+            </div>
+          </div>
           <div class="action-bar">
             <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>
@@ -132,6 +144,7 @@ export class SettingsModalComponent implements OnInit {
   loading = true;
   saving = false;
   notifPermissionGranted = false;
+  useLocalMocks = false;
 
   settingsForm = {
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche' | 'ninguno',
@@ -144,6 +157,7 @@ export class SettingsModalComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.useLocalMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
     this.notifPermissionGranted = this.notificationService.isNotificationPermissionGranted();
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
@@ -159,6 +173,18 @@ export class SettingsModalComponent implements OnInit {
       },
       error: () => { this.loading = false; this.toast.error('No se pudo cargar la información.'); }
     });
+  }
+
+  toggleLocalMocks(): void {
+    localStorage.setItem('USE_LOCAL_MOCKS', String(this.useLocalMocks));
+    if (this.useLocalMocks) {
+      this.toast.info('Cargando mocks locales... Reiniciando en breve 🔄');
+    } else {
+      this.toast.info('Cambiando a base de datos de Firebase... Reiniciando en breve 🔄');
+    }
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   }
 
   closeModal() { this.close.emit(); }

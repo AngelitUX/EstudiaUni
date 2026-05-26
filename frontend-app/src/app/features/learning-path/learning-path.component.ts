@@ -810,10 +810,11 @@ export class LearningPathComponent implements OnInit, OnDestroy {
       topics: ['Historia de Chile', 'Historia Universal', 'Formación Ciudadana'],
       img: 'assets/images/historia.png'
     },
-    'ciencias': {
-      desc: 'Prepárate integralmente en los ejes de Biología, Física y Química, comprendiendo los fenómenos naturales y sus leyes.',
-      topics: ['Biología', 'Física', 'Química'],
-      img: 'assets/images/ciencias.png'
+    'ciencias-fisica': {
+      desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',
+      topics: ['Ondas', 'Mecánica', 'Electricidad'],
+      img: 'assets/images/subjects/fisica.png',
+      bgColor: '#DCCEF9'
     },
     'ciencias-tp': {
       desc: 'Prepárate para la prueba de Ciencias Técnico Profesional con enfoque en fenómenos aplicados al ámbito laboral.',
@@ -826,12 +827,6 @@ export class LearningPathComponent implements OnInit, OnDestroy {
       topics: ['Organización Celular', 'Herencia', 'Ecosistemas'],
       img: 'assets/images/subjects/biologia.png',
       bgColor: '#D0D9AC'
-    },
-    'ciencias-fisica': {
-      desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',
-      topics: ['Ondas', 'Mecánica', 'Electricidad'],
-      img: 'assets/images/subjects/fisica.png',
-      bgColor: '#DCCEF9'
     },
     'ciencias-quimica': {
       desc: 'Estudia la estructura de la materia, enlaces, química orgánica y reacciones estequiométricas fundamentales.',

@@ -1,0 +1,253 @@
+[
+  {
+    "capId": "cap-fisica-1-ondas",
+    "title": "Eje Temático: Ondas",
+    "sectionsCount": 8,
+    "totalQuestions": 80,
+    "anomalies": [],
+    "distribution": {
+      "sec-fis-1-1": {
+        "A": 4,
+        "B": 2,
+        "C": 3,
+        "D": 1,
+        "consecutivePattern": [
+          "Triple consecutiva de 'A' en el índice de pregunta 5"
+        ]
+      },
+      "sec-fis-1-2": {
+        "A": 4,
+        "B": 3,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": []
+      },
+      "sec-fis-1-3": {
+        "A": 1,
+        "B": 5,
+        "C": 4,
+        "D": 0,
+        "consecutivePattern": []
+      },
+      "sec-fis-1-4": {
+        "A": 0,
+        "B": 5,
+        "C": 4,
+        "D": 1,
+        "consecutivePattern": []
+      },
+      "sec-fis-1-5": {
+        "A": 1,
+        "B": 3,
+        "C": 4,
+        "D": 2,
+        "consecutivePattern": []
+      },
+      "sec-fis-1-6": {
+        "A": 3,
+        "B": 4,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": []
+      },
+      "sec-fis-1-7": {
+        "A": 2,
+        "B": 6,
+        "C": 2,
+        "D": 0,
+        "consecutivePattern": []
+      },
+      "sec-fis-1-8": {
+        "A": 1,
+        "B": 6,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 7"
+        ]
+      }
+    }
+  },
+  {
+    "capId": "cap-fisica-2-mecanica",
+    "title": "Eje Temático: Mecánica",
+    "sectionsCount": 9,
+    "totalQuestions": 90,
+    "anomalies": [],
+    "distribution": {
+      "sec-fis-2-1": {
+        "A": 1,
+        "B": 4,
+        "C": 4,
+        "D": 1,
+        "consecutivePattern": []
+      },
+      "sec-fis-2-2": {
+        "A": 4,
+        "B": 3,
+        "C": 1,
+        "D": 2,
+        "consecutivePattern": []
+      },
+      "sec-fis-2-3": {
+        "A": 0,
+        "B": 6,
+        "C": 3,
+        "D": 1,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 8"
+        ]
+      },
+      "sec-fis-2-4": {
+        "A": 1,
+        "B": 4,
+        "C": 5,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'C' en el índice de pregunta 9"
+        ]
+      },
+      "sec-fis-2-5": {
+        "A": 3,
+        "B": 3,
+        "C": 4,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 4",
+          "Triple consecutiva de 'C' en el índice de pregunta 7"
+        ]
+      },
+      "sec-fis-2-6": {
+        "A": 0,
+        "B": 3,
+        "C": 7,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'C' en el índice de pregunta 3",
+          "Triple consecutiva de 'C' en el índice de pregunta 4",
+          "Triple consecutiva de 'C' en el índice de pregunta 5",
+          "Triple consecutiva de 'C' en el índice de pregunta 6",
+          "Triple consecutiva de 'C' en el índice de pregunta 7"
+        ]
+      },
+      "sec-fis-2-7": {
+        "A": 1,
+        "B": 6,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 2",
+          "Triple consecutiva de 'B' en el índice de pregunta 3"
+        ]
+      },
+      "sec-fis-2-8": {
+        "A": 1,
+        "B": 6,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 4"
+        ]
+      },
+      "sec-fis-2-9": {
+        "A": 1,
+        "B": 6,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": []
+      }
+    }
+  },
+  {
+    "capId": "cap-fisica-3-energia-tierra",
+    "title": "Eje Temático: Energía - Tierra",
+    "sectionsCount": 3,
+    "totalQuestions": 60,
+    "anomalies": [],
+    "distribution": {
+      "sec-fis-3-1": {
+        "A": 1,
+        "B": 10,
+        "C": 9,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 2"
+        ]
+      },
+      "sec-fis-3-2": {
+        "A": 0,
+        "B": 13,
+        "C": 6,
+        "D": 1,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 2",
+          "Triple consecutiva de 'B' en el índice de pregunta 3",
+          "Triple consecutiva de 'B' en el índice de pregunta 12",
+          "Triple consecutiva de 'B' en el índice de pregunta 19"
+        ]
+      },
+      "sec-fis-3-3": {
+        "A": 1,
+        "B": 12,
+        "C": 7,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 15",
+          "Triple consecutiva de 'B' en el índice de pregunta 16"
+        ]
+      }
+    }
+  },
+  {
+    "capId": "cap-fisica-4-electricidad",
+    "title": "Eje Temático: Electricidad",
+    "sectionsCount": 5,
+    "totalQuestions": 50,
+    "anomalies": [],
+    "distribution": {
+      "sec-fis-4-1": {
+        "A": 1,
+        "B": 6,
+        "C": 2,
+        "D": 1,
+        "consecutivePattern": [
+          "Triple consecutiva de 'B' en el índice de pregunta 6",
+          "Triple consecutiva de 'B' en el índice de pregunta 7",
+          "Triple consecutiva de 'B' en el índice de pregunta 8"
+        ]
+      },
+      "sec-fis-4-2": {
+        "A": 2,
+        "B": 5,
+        "C": 2,
+        "D": 1,
+        "consecutivePattern": []
+      },
+      "sec-fis-4-3": {
+        "A": 4,
+        "B": 3,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'A' en el índice de pregunta 3"
+        ]
+      },
+      "sec-fis-4-4": {
+        "A": 3,
+        "B": 3,
+        "C": 3,
+        "D": 1,
+        "consecutivePattern": []
+      },
+      "sec-fis-4-5": {
+        "A": 2,
+        "B": 5,
+        "C": 3,
+        "D": 0,
+        "consecutivePattern": [
+          "Triple consecutiva de 'C' en el índice de pregunta 7"
+        ]
+      }
+    }
+  }
+]

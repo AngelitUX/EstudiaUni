@@ -535,12 +535,12 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     if (!test || !test.contexto_base) return '';
     const q = this.currentQuestion();
     const activeTextIndex = q?.texto_index ?? 0;
-    
+
     if (test.contexto_base.includes('--- DIVISION_TEXTOS ---')) {
       const textos = test.contexto_base.split('--- DIVISION_TEXTOS ---').map((t: string) => t.trim());
       return textos[activeTextIndex] || textos[0] || '';
     }
-    
+
     return test.contexto_base;
   }
 
@@ -549,7 +549,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const rawParagraphs = text.split('\n\n')
       .map(p => p.trim())
       .filter(p => p !== '' && p !== '--- DIVISION_TEXTOS ---');
-      
+
     let paragraphCount = 0;
     return rawParagraphs.map(p => {
       const isTitle = p.startsWith('📖') || p.startsWith('TEXTO') || p.includes('TEXTO I') || p.includes('TEXTO II');
@@ -577,44 +577,43 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     if (!text) return '';
     const renderedSafe = this.katex.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
-    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
-
   /*
-  // =========================================================================
-  // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
-  // =========================================================================
-  @HostListener('window:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    const key = event.key.toLowerCase();
-
-    // Select alternative
-    if (key === 'z') this.selectAnswerForCurrent('A');
-    if (key === 'x') this.selectAnswerForCurrent('B');
-    if (key === 'c') this.selectAnswerForCurrent('C');
-    if (key === 'v') this.selectAnswerForCurrent('D');
-
-    // Check answer or go to next (Enter or Right Arrow)
-    if (key === 'arrowright' || key === 'enter') {
-      if (!this.showFeedback() && this.hasCurrentAnswer()) {
-        this.checkAnswer();
-      } else if (this.showFeedback()) {
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
+    // =========================================================================
+    // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
+    // =========================================================================
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+      const key = event.key.toLowerCase();
+  
+      // Select alternative
+      if (key === 'z') this.selectAnswerForCurrent('A');
+      if (key === 'x') this.selectAnswerForCurrent('B');
+      if (key === 'c') this.selectAnswerForCurrent('C');
+      if (key === 'v') this.selectAnswerForCurrent('D');
+  
+      // Check answer or go to next (Enter or Right Arrow)
+      if (key === 'arrowright' || key === 'enter') {
+        if (!this.showFeedback() && this.hasCurrentAnswer()) {
+          this.checkAnswer();
+        } else if (this.showFeedback()) {
+          if (!this.isLastQuestion()) {
+            this.nextQuestion();
+          } else {
+            this.submitTest();
+          }
         }
       }
     }
-  }
-
-  private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
-    const q = this.currentQuestion();
-    if (q) {
-      this.selectAnswer(q.id, option);
+  
+    private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
+      const q = this.currentQuestion();
+      if (q) {
+        this.selectAnswer(q.id, option);
+      }
     }
-  }
-  */
+      */
 }

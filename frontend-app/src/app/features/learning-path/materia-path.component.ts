@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
@@ -9,7 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
-type PathItem = 
+type PathItem =
   | { type: 'chapter', capituloId: string, title: string, subtitle: string, isCurrentChapter?: boolean }
   | { type: 'node', id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
 
@@ -108,6 +108,10 @@ type PathItem =
             <h1 class="header-greeting"><span class="text-gradient">{{ m.title }}</span></h1>
           </div>
           <div class="welcome-actions">
+            <!-- Botón de Test para desbloquear todo 
+            <button class="btn-upgrade-pro" style="background: linear-gradient(135deg, #e11d48, #be123c); font-size: 0.8rem; border-radius: 99px; margin-right: 0.5rem;" (click)="toggleUnlockAllSteps()">
+              {{ isUnlockedAll() ? '🔒 Bloquear Ruta' : '🔓 Desbloquear todo' }}
+            </button> -->
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
@@ -590,9 +594,9 @@ export class MateriaPathComponent {
   showLogoutConfirm = false;
 
   get herramientasExpanded(): boolean {
-    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
-                        this.router.url.includes('/calculadora-nem') || 
-                        this.router.url.includes('/recursos');
+    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') ||
+      this.router.url.includes('/calculadora-nem') ||
+      this.router.url.includes('/recursos');
     if (isToolRoute) return true;
     const val = localStorage.getItem('herramientasExpanded');
     return val !== 'false';
@@ -659,7 +663,8 @@ export class MateriaPathComponent {
 
       const guideProg = this.paes.getSeccionProgress('guide_' + cap.id);
       const isGuideCompleted = guideProg?.completed || false;
-      const blockChapter = !isGuideCompleted;
+      const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
+      const blockChapter = unlockAll ? false : !isGuideCompleted;
 
       // 2. Add Sections as nodes
       cap.secciones.forEach((sec) => {
@@ -670,6 +675,8 @@ export class MateriaPathComponent {
 
         if (completed) {
           status = 'completed';
+        } else if (unlockAll) {
+          status = 'active';
         } else if (!foundActive && !blockChapter) {
           status = 'active';
           foundActive = true;
@@ -695,7 +702,8 @@ export class MateriaPathComponent {
   });
 
   handleNodeClick(item: any) {
-    if (item.status === 'locked' && !this.adminService.isAdmin()) return;
+    const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
+    if (item.status === 'locked' && !this.adminService.isAdmin() && !unlockAll) return;
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
   }
 
@@ -753,6 +761,24 @@ export class MateriaPathComponent {
     this.showLogoutConfirm = false;
     await this.auth.logout().toPromise();
     this.router.navigate(['/']);
+  }
+
+  isUnlockedAll(): boolean {
+    return localStorage.getItem('unlockAllSteps') === 'true';
+  }
+
+  toggleUnlockAllSteps() {
+    const current = this.isUnlockedAll();
+    localStorage.setItem('unlockAllSteps', String(!current));
+    window.location.reload();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Tecla rápida Alt + U para alternar desbloqueo de todos los pasos
+    if (event.altKey && event.key.toLowerCase() === 'u') {
+      this.toggleUnlockAllSteps();
+    }
   }
 
 }

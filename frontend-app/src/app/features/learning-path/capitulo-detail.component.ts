@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
+import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data';
 
 @Component({
   selector: 'app-capitulo-detail',
@@ -26,7 +27,7 @@ import { GuideSlidesComponent } from './guide-slides.component';
       </div>
 
       <!-- Hero only for generic chapters -->
-      <header class="guide-hero" *ngIf="cap.id !== 'cap-localizar'">
+      <header class="guide-hero" *ngIf="!hasSlides(cap)">
         <div class="hero-icon">📖</div>
         <h1>Guía de Estudio: {{ cap.title }}</h1>
         <p class="hero-intro">{{ cap.introduccion }}</p>
@@ -35,13 +36,17 @@ import { GuideSlidesComponent } from './guide-slides.component';
       <!-- CONTENT BODY -->
       <main class="guide-content">
         
-        <!-- INTERACTIVE SLIDES for Localizar -->
-        <ng-container *ngIf="cap.id === 'cap-localizar'">
-          <app-guide-slides (onFinish)="finishGuide()"></app-guide-slides>
+        <!-- INTERACTIVE SLIDES -->
+        <ng-container *ngIf="hasSlides(cap)">
+          <app-guide-slides 
+            [slides]="getSlides(cap)" 
+            [quizzes]="getQuizzes(cap)" 
+            (onFinish)="finishGuide()">
+          </app-guide-slides>
         </ng-container>
 
         <!-- GENERIC SECTIONS for other chapters -->
-        <ng-container *ngIf="cap.id !== 'cap-localizar'">
+        <ng-container *ngIf="!hasSlides(cap)">
           <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
             <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
             <div class="sec-intro">
@@ -61,7 +66,7 @@ import { GuideSlidesComponent } from './guide-slides.component';
         </ng-container>
 
         <!-- CTA TO PRACTICE (only for non-slide guides) -->
-        <div class="cta-bottom" *ngIf="cap.id !== 'cap-localizar'">
+        <div class="cta-bottom" *ngIf="!hasSlides(cap)">
           <p>¿Terminaste de repasar la teoría?</p>
           <button class="btn-primary-lg" (click)="finishGuide()">¡Empezar a Practicar!</button>
         </div>
@@ -158,7 +163,7 @@ export class CapituloDetailComponent {
     const renderedSafe = this.katexSvc.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
     // Luego procesamos las negritas (**texto**)
-    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
     // Lo marcamos como HTML seguro
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
@@ -175,6 +180,79 @@ export class CapituloDetailComponent {
   }
 
   highlightBold(text: string): string {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return text.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
+  }
+
+  // --- SLIDE HELPERS ---
+  hasSlides(cap: any): boolean {
+    return cap.id === 'cap-localizar'
+      || (cap.slides && cap.slides.length > 0)
+      || (cap.secciones && cap.secciones.length > 0);
+  }
+
+  getSlides(cap: any): any[] {
+    if (cap.id === 'cap-localizar') return LOCALIZAR_SLIDES;
+    if (cap.slides && cap.slides.length > 0) return cap.slides;
+    if (cap.secciones && cap.secciones.length > 0) return this.buildDynamicSlides(cap);
+    return [];
+  }
+
+  getQuizzes(cap: any): any {
+    if (cap.id === 'cap-localizar') {
+      return { quiz1: SLIDE5_QUIZ, quiz2: SLIDE_QUIZ2 };
+    }
+    return cap.quizzes || {};
+  }
+
+  private buildDynamicSlides(cap: any): any[] {
+    if (!cap?.secciones || cap.secciones.length === 0) return [];
+    return cap.secciones.map((sec: any, index: number) => {
+      const theme = this.getSlideTheme(index);
+      return {
+        icon: this.getSlideIcon(index),
+        title: sec.title,
+        bgGradient: theme.bgGradient,
+        iconBg: theme.iconBg,
+        content: this.buildDynamicSlideContent(sec)
+      };
+    });
+  }
+
+  private buildDynamicSlideContent(sec: any): string {
+    const intro = sec.introduccion ? `<p>${sec.introduccion}</p>` : '';
+    const bullets = (sec.datos_claves || [])
+      .map((dato: string) => `<li>${dato}</li>`)
+      .join('');
+    const tips = bullets
+      ? `<div class="callout-gold"><strong>Conceptos clave:</strong><ul>${bullets}</ul></div>`
+      : '';
+    return `${intro}${tips}`;
+  }
+
+  private getSlideIcon(index: number): string {
+    const icons = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+    return icons[index] || '📘';
+  }
+
+  private getSlideTheme(index: number): { bgGradient: string; iconBg: string } {
+    const themes = [
+      {
+        bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.06), rgba(133,92,214,0.02))',
+        iconBg: 'linear-gradient(135deg, #855cd6, #6b46b8)'
+      },
+      {
+        bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+        iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)'
+      },
+      {
+        bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.06), rgba(28,176,246,0.02))',
+        iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)'
+      },
+      {
+        bgGradient: 'linear-gradient(135deg, rgba(88,204,2,0.06), rgba(88,204,2,0.02))',
+        iconBg: 'linear-gradient(135deg, #58cc02, #46a302)'
+      }
+    ];
+    return themes[index % themes.length];
   }
 }

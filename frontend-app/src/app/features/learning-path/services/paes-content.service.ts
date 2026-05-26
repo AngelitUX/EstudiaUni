@@ -464,6 +464,8 @@ export class PaesContentService {
   private _progress = signal<Map<string, SeccionProgress>>(new Map());
   private _lastTestResult = signal<TestResult | null>(null);
   private _poolPreguntas = signal<any[]>([]);
+
+  private useMocksMode = false;
   
   // Signal para estado de carga
   loading = signal(true);
@@ -478,14 +480,16 @@ export class PaesContentService {
     // this.clearCache(); // Commented out to prevent erasing cache on every reload/hot-reload, reducing Firestore reads.
     
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
-    const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
-    if (useMocks) {
+      const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
+      this.useMocksMode = useMocks;
+      if (useMocks) {
       this.loadDataFromLocalMocks();
     } else {
       this.loadDataFromFirestore();
     }
     // Subscribe to auth state changes to load user-specific progress and fetch fresh firestore data
     this.auth.onAuthStateChanged((user) => {
+        if (this.useMocksMode) return;
       if (user) {
         const isNewUser = user.uid !== this.currentUid;
         this.currentUid = user.uid;

@@ -4,15 +4,24 @@ const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const serviceAccountPath = path.join(__dirname, '../firebase-admin-key.json');
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: privateKey,
-    }),
-  });
+  if (fs.existsSync(serviceAccountPath)) {
+    console.log('🔑 Usando archivo de credenciales local firebase-admin-key.json...');
+    admin.initializeApp({
+      credential: admin.credential.cert(require(serviceAccountPath))
+    });
+  } else {
+    console.log('🔑 Usando credenciales de variables de entorno...');
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKey,
+      }),
+    });
+  }
 }
 
 const db = admin.firestore();
