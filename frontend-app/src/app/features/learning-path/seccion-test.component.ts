@@ -4,7 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
-import { SoundService } from '../../core/services/sound.service';
+import { ToastService } from '../../core/services/toast.service';
+
 
 @Component({
   selector: 'app-seccion-test',
@@ -44,6 +45,21 @@ import { SoundService } from '../../core/services/sound.service';
         </div>
 
         <div class="question-card" *ngIf="currentQuestion() as q">
+          
+          <!-- VOICE CONTROLS (Collapsible) -->
+          <div class="voice-dropdown-container" *ngIf="!isMathModule()">
+            <button class="btn-voice-toggle" (click)="voiceMenuOpen = !voiceMenuOpen">
+              🎧 Audio descriptivo <span class="arrow" [class.open]="voiceMenuOpen">▼</span>
+            </button>
+            <div class="voice-dropdown-menu" [class.open]="voiceMenuOpen">
+              <button class="btn-voice" *ngIf="t.contexto_base" (click)="readContext()" title="Texto de referencia (Tecla 1)">🔊 1. Texto referencia</button>
+              <button class="btn-voice" (click)="readQuestion()" title="Leer enunciado (Tecla 2)">🔊 2. Enunciado</button>
+              <button class="btn-voice" (click)="readOptions()" *ngIf="q.tipo_alternativas !== 'imagen'" title="Leer alternativas (Tecla 3)">🔊 3. Alternativas</button>
+              <button class="btn-voice" (click)="readFeedback()" *ngIf="showFeedback()" title="Leer explicación (Tecla 5)">🔊 5. Explicación</button>
+              <button class="btn-voice btn-stop" (click)="stopReading()" title="Detener lectura (Tecla 4)">⏹️ 4. Detener</button>
+            </div>
+          </div>
+
           <!-- Preámbulo texto (Historia/Ciencias) -->
           <div class="q-preambulo" *ngIf="q.preambulo_texto">
             <span class="preambulo-icon">💬</span>
@@ -117,6 +133,18 @@ import { SoundService } from '../../core/services/sound.service';
             Ver Resultados 🎉
           </button>
         </ng-container>
+      </div>
+
+      <!-- EXIT CONFIRM MODAL -->
+      <div class="modal-overlay" *ngIf="showExitConfirm" (click)="showExitConfirm = false">
+        <div class="modal-container glass" (click)="$event.stopPropagation()">
+          <h3>¿Seguro que quieres salir?</h3>
+          <p>Si sales ahora, perderás todo el progreso de esta prueba y tendrás que empezar de nuevo.</p>
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="showExitConfirm = false">Cancelar</button>
+            <button class="btn-confirm-exit" (click)="executeExit()">Sí, salir</button>
+          </div>
+        </div>
       </div>
     </div>
   `,
@@ -211,6 +239,33 @@ import { SoundService } from '../../core/services/sound.service';
     .btn-finish { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #cc7a00; transition: all 0.2s; }
     .btn-finish:hover { transform: translateY(2px); box-shadow: 0 2px 0 #cc7a00; }
 
+    /* VOICE CONTROLS */
+    .voice-dropdown-container { margin-bottom: 1.5rem; }
+    .btn-voice-toggle { display: flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-voice-toggle:hover { background: rgba(133,92,214,0.15); }
+    .btn-voice-toggle .arrow { font-size: 0.7rem; transition: transform 0.2s; }
+    .btn-voice-toggle .arrow.open { transform: rotate(180deg); }
+    .voice-dropdown-menu { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; }
+    .voice-dropdown-menu.open { max-height: 100px; opacity: 1; }
+    .btn-voice { background: #fff; border: 1px solid rgba(133,92,214,0.3); color: var(--accent-primary); border-radius: 8px; padding: 0.4rem 0.7rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn-voice:hover { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(133,92,214,0.2); }
+    .btn-stop { background: #fff; border-color: rgba(239,68,68,0.3); color: #ef4444; }
+    .btn-stop:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+    /* MODAL EXIT */
+    .modal-overlay { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); animation: fadeOverlay 0.2s ease; }
+    .modal-container { width: min(400px, 90vw); background: #fff; border-radius: 16px; padding: 1.5rem; text-align: center; border: 2px solid rgba(0,0,0,0.08); box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+    .modal-container h3 { margin: 0 0 0.5rem; font-size: 1.25rem; color: var(--text-primary); font-family: var(--font-heading); }
+    .modal-container p { margin: 0 0 1.5rem; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: stretch; }
+    .modal-actions button { flex: 1; padding: 0.75rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-cancel { background: rgba(0,0,0,0.06); color: var(--text-primary); }
+    .btn-cancel:hover { background: rgba(0,0,0,0.1); }
+    .btn-confirm-exit { background: #ef4444; color: #fff; box-shadow: 0 4px 0 #b91c1c; }
+    .btn-confirm-exit:hover { transform: translateY(2px); box-shadow: 0 2px 0 #b91c1c; }
+
+    @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
@@ -229,7 +284,8 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private katex = inject(KatexService);
   private sanitizer = inject(DomSanitizer);
-  private soundSvc = inject(SoundService);
+  private toastSvc = inject(ToastService);
+
 
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
@@ -243,6 +299,13 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   currentIndex = signal(0);
   showFeedback = signal(false);
   contextCollapsed = false;
+  voiceMenuOpen = false;
+  showExitConfirm = false;
+
+  isMathModule = computed(() => {
+    const mId = this.seccion()?.materiaId;
+    return mId ? mId.toLowerCase().includes('mat') : false;
+  });
 
   currentQuestion = computed(() => {
     const t = this.test();
@@ -265,6 +328,138 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.intervalId) clearInterval(this.intervalId);
+    this.stopReading();
+  }
+
+  // ==========================================
+  // TEXT TO SPEECH (ACCESSIBILITY)
+  // ==========================================
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Solo si no estamos escribiendo en un input (por si acaso)
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    
+    const key = event.key.toLowerCase();
+    
+    if (!this.isMathModule()) {
+      if (key === '1') this.readContext();
+      if (key === '2') this.readQuestion();
+      if (key === '3') this.readOptions();
+      if (key === '5') this.readFeedback();
+      if (key === '4' || key === 'escape' || key === 's') this.stopReading();
+    }
+
+    // Siguiente pregunta con espacio
+    if (key === ' ' || key === 'spacebar') {
+      if (this.showFeedback()) {
+        event.preventDefault(); // Evitar scroll
+        if (!this.isLastQuestion()) {
+          this.nextQuestion();
+        } else {
+          this.submitTest();
+        }
+      }
+    }
+  }
+
+  private cleanHtml(html: string): string {
+    if (!html) return '';
+    // Elimina las comillas y caracteres extraños
+    let text = html.replace(/&quot;/g, '"');
+    // Reemplaza los saltos de línea HTML por puntos para que el lector haga pausas
+    text = text.replace(/<br\s*\/?>/gi, '. ');
+    // Elimina todas las etiquetas HTML
+    text = text.replace(/<[^>]*>?/gm, '');
+    // Elimina emojis (para que el lector no diga sus nombres)
+    text = text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
+    // Elimina asteriscos de markdown (**negrita**)
+    text = text.replace(/\*/g, '');
+    return text.trim();
+  }
+
+  private getBestVoice(): SpeechSynthesisVoice | null {
+    const voices = window.speechSynthesis.getVoices();
+    // Prefer Google's neural Spanish voices (Android/Chrome)
+    let voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
+    // Fallback to Microsoft voices (Windows)
+    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo')));
+    // Fallback to any Spanish voice
+    if (!voice) voice = voices.find(v => v.lang.startsWith('es-') || v.lang === 'es');
+    return voice || null;
+  }
+
+  private speak(text: string) {
+    if (!('speechSynthesis' in window)) {
+      this.toastSvc.error('Tu navegador no soporta lectura de voz.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    
+    // Si el texto es muy largo, algunos navegadores fallan. Lo ideal sería partirlo, 
+    // pero para las alternativas/enunciados esto funciona bien.
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Mejoras para que suene más natural
+    utterance.lang = 'es-ES'; // Default fallback
+    utterance.rate = 0.95; // Un poco más lento para mejor dicción
+    utterance.pitch = 1.05; // Tono ligeramente más alto suele ser más claro
+    
+    const voice = this.getBestVoice();
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  readContext() {
+    const t = this.test();
+    if (!t || !t.contexto_base) return;
+    const activeContext = this.getActiveContexto(t);
+    const text = this.cleanHtml(activeContext);
+    this.speak(text);
+  }
+
+  readQuestion() {
+    const q = this.currentQuestion();
+    if (!q) return;
+    let text = this.cleanHtml(q.enunciado);
+    if (q.preambulo_texto) {
+      text = q.preambulo_texto + '. ' + text;
+    }
+    this.speak(text);
+  }
+
+  readOptions() {
+    const q = this.currentQuestion();
+    if (!q || q.tipo_alternativas === 'imagen') return;
+    
+    let text = '';
+    for (const key of this.optionKeys) {
+      if (q.alternativas[key]) {
+        text += `Opción ${key}: ${this.cleanHtml(q.alternativas[key])}. `;
+      }
+    }
+    this.speak(text);
+  }
+
+  readFeedback() {
+    if (!this.showFeedback()) return;
+    const q = this.currentQuestion();
+    if (!q) return;
+    
+    const isCorrect = this.isCurrentCorrect();
+    const intro = isCorrect ? '¡Correcto! ' : 'Incorrecto. ';
+    const text = this.cleanHtml(isCorrect ? q.feedback_acierto : q.feedback_error);
+    
+    this.speak(intro + text);
+  }
+
+  stopReading() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
   }
 
   selectAnswer(preguntaId: number, option: 'A' | 'B' | 'C' | 'D') {
@@ -286,10 +481,11 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   checkAnswer() {
+    this.stopReading();
     if (this.isCurrentCorrect()) {
-      this.soundSvc.playCorrect();
+      this.toastSvc.success('¡Respuesta correcta!');
     } else {
-      this.soundSvc.playWrong();
+      this.toastSvc.error('Respuesta incorrecta');
     }
     this.showFeedback.set(true);
   }
@@ -320,10 +516,13 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   confirmExit() {
-    if (confirm('¿Seguro que quieres salir? Perderás tu progreso.')) {
-      if (this.intervalId) clearInterval(this.intervalId);
-      window.history.back();
-    }
+    this.showExitConfirm = true;
+  }
+
+  executeExit() {
+    this.showExitConfirm = false;
+    if (this.intervalId) clearInterval(this.intervalId);
+    this.router.navigate(['/ruta']);
   }
 
   formatTime(seconds: number): string {

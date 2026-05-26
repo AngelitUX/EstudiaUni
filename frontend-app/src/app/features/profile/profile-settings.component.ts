@@ -173,22 +173,14 @@ import { AdminService } from '../admin/services/admin.service';
             <h3>Preferencias</h3>
             <p>Configura tu ritmo ideal de estudio.</p>
           </div>
-          <div class="grid">
+          <div class="grid" style="grid-template-columns: 1fr;">
             <label>
               Horario preferido
               <select [(ngModel)]="settingsForm.preferredStudyTime">
                 <option value="manana">Mañana (7:00 - 11:00)</option>
                 <option value="tarde">Tarde (14:00 - 18:00)</option>
                 <option value="noche">Noche (20:00 - 23:00)</option>
-              </select>
-            </label>
-            
-            <label>
-              Tema visual
-              <select [(ngModel)]="settingsForm.theme">
-                <option value="dark">Oscuro</option>
-                <option value="light">Claro</option>
-                <option value="auto">Automático</option>
+                <option value="ninguno">No tengo horario específico</option>
               </select>
             </label>
           </div>
@@ -739,7 +731,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   settingsForm = {
     studyGoalMinutesPerDay: 45,
-    preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
+    preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche' | 'ninguno',
     notificationsEnabled: true,
     theme: 'dark' as 'dark' | 'light' | 'auto',
     notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',

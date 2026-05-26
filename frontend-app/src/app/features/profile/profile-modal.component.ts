@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { SoundService } from '../../core/services/sound.service';
+
 
 @Component({
   selector: 'app-profile-modal',
@@ -505,7 +505,7 @@ export class ProfileModalComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   public readonly adminService = inject(AdminService);
-  private readonly soundSvc = inject(SoundService);
+
 
   @Output() close = new EventEmitter<void>();
 
@@ -745,7 +745,7 @@ export class ProfileModalComponent implements OnInit {
   }
 
   toggleSubject(id: string) {
-    this.soundSvc.playToggle();
+
     if (this.isSubjectSelected(id)) {
       this.profileForm.selectedSubjects = this.profileForm.selectedSubjects.filter(s => s !== id);
     } else {

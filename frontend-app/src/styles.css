@@ -277,39 +277,45 @@ body.high-contrast .text-gradient {
   color: #ffffff !important;
 }
 
-body.font-large {
+body.font-large,
+body.font-large p,
+body.font-large a:not(.nav-icon):not(.close-btn),
+body.font-large span:not(.emoji-badge):not(.status-dot):not(.icon):not(.material-icons),
+body.font-large li,
+body.font-large label,
+body.font-large input,
+body.font-large select,
+body.font-large textarea,
+body.font-large button,
+body.font-large .btn,
+body.font-large .nav-item {
   font-size: 1.15rem !important;
 }
 
-body.font-large h1 {
-  font-size: 3.2rem !important;
-}
+body.font-large h1 { font-size: 3.2rem !important; }
+body.font-large h2 { font-size: 1.8rem !important; }
+body.font-large h3 { font-size: 1.5rem !important; }
+body.font-large h4 { font-size: 1.25rem !important; }
 
-body.font-large h2 {
-  font-size: 1.8rem !important;
-}
-
-body.font-large h3 {
-  font-size: 1.5rem !important;
-}
-
-body.font-large p {
-  font-size: 1.25rem !important;
-}
-
-body.font-large .nav-item {
-  font-size: 1.2rem !important;
-}
-
-body.font-xlarge {
-  font-size: 1.3rem !important;
+body.font-xlarge,
+body.font-xlarge p,
+body.font-xlarge a:not(.nav-icon):not(.close-btn),
+body.font-xlarge span:not(.emoji-badge):not(.status-dot):not(.icon):not(.material-icons),
+body.font-xlarge li,
+body.font-xlarge label,
+body.font-xlarge input,
+body.font-xlarge select,
+body.font-xlarge textarea,
+body.font-xlarge button,
+body.font-xlarge .btn,
+body.font-xlarge .nav-item {
+  font-size: 1.35rem !important;
 }
 
 body.font-xlarge h1 { font-size: 3.5rem !important; }
 body.font-xlarge h2 { font-size: 2rem !important; }
 body.font-xlarge h3 { font-size: 1.6rem !important; }
-body.font-xlarge p { font-size: 1.4rem !important; }
-body.font-xlarge .nav-item { font-size: 1.35rem !important; }
+body.font-xlarge h4 { font-size: 1.45rem !important; }
 
 
 /* ==========================================

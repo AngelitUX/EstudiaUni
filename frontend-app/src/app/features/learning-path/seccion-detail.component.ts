@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -33,9 +33,24 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
       </nav>
 
       <!-- LESSON HEADER -->
-      <div class="lesson-header">
-        <span class="lesson-badge">{{ capitulo()?.title }}</span>
-        <h1>{{ sec.title }}</h1>
+      <div class="lesson-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <span class="lesson-badge">{{ capitulo()?.title }}</span>
+          <h1>{{ sec.title }}</h1>
+        </div>
+
+        <!-- VOICE CONTROLS (Collapsible) -->
+        <div class="voice-dropdown-container" *ngIf="!isMathModule()">
+          <button class="btn-voice-toggle" (click)="voiceMenuOpen = !voiceMenuOpen">
+            🎧 Audio descriptivo <span class="arrow" [class.open]="voiceMenuOpen">▼</span>
+          </button>
+          <div class="voice-dropdown-menu" [class.open]="voiceMenuOpen">
+            <button class="btn-voice" (click)="readGuide()" title="Leer guía (Tecla 1)">🔊 1. Qué aprenderás</button>
+            <button class="btn-voice" *ngIf="sec.test?.contexto_base" (click)="readContext()" title="Leer texto (Tecla 2)">🔊 2. Texto práctica</button>
+            <button class="btn-voice" *ngIf="sec.datos_claves?.length" (click)="readTips()" title="Leer tips (Tecla 3)">🔊 3. Tips clave</button>
+            <button class="btn-voice btn-stop" (click)="stopReading()" title="Detener (Tecla 4)">⏹️ 4. Detener</button>
+          </div>
+        </div>
       </div>
 
       <!-- PRACTICE MODE (Synonym Game etc.) -->
@@ -166,10 +181,23 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
     .btn-next { background: #58cc02; box-shadow: 0 5px 0 #4caf00; }
     .btn-next:hover { box-shadow: 0 2px 0 #4caf00; }
 
+    /* VOICE CONTROLS */
+    .voice-dropdown-container { position: relative; z-index: 100; }
+    .btn-voice-toggle { display: flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-voice-toggle:hover { background: rgba(133,92,214,0.15); }
+    .btn-voice-toggle .arrow { font-size: 0.7rem; transition: transform 0.2s; }
+    .btn-voice-toggle .arrow.open { transform: rotate(180deg); }
+    .voice-dropdown-menu { display: flex; flex-direction: column; gap: 0.25rem; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; background: #fff; padding: 0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid rgba(133,92,214,0.1); }
+    .voice-dropdown-menu.open { max-height: 250px; opacity: 1; padding: 0.5rem; }
+    .btn-voice { background: transparent; border: none; text-align: left; color: var(--text-primary); border-radius: 6px; padding: 0.6rem 0.8rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn-voice:hover { background: rgba(133,92,214,0.08); color: var(--accent-primary); }
+    .btn-stop { color: #ef4444; border-top: 1px dashed rgba(239,68,68,0.2); margin-top: 0.25rem; border-radius: 0 0 6px 6px; }
+    .btn-stop:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
+
     @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes ctaBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     @keyframes testPulse { 0%, 100% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 10px rgba(133,92,214,0); } }
-    @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } }
+    @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } .voice-dropdown-menu { right: auto; left: 0; } }
   `]
 })
 export class SeccionDetailComponent {
@@ -185,6 +213,9 @@ export class SeccionDetailComponent {
   capituloId = signal('');
   seccionId = signal('');
   practiceCompleted = signal(false);
+  voiceMenuOpen = false;
+
+  isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
   materiaProgress = computed(() => {
@@ -261,6 +292,91 @@ export class SeccionDetailComponent {
       this.router.navigate(nextUrl);
     } else {
       this.router.navigate(['/ruta', this.materiaId()]);
+    }
+  }
+
+  // ==========================================
+  // TEXT TO SPEECH (ACCESSIBILITY)
+  // ==========================================
+  ngOnDestroy() {
+    this.stopReading();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (this.isMathModule()) return;
+
+    const key = event.key.toLowerCase();
+    if (key === '1') this.readGuide();
+    if (key === '2') this.readContext();
+    if (key === '3') this.readTips();
+    if (key === '4' || key === 'escape' || key === 's') this.stopReading();
+  }
+
+  private cleanHtml(html: string): string {
+    if (!html) return '';
+    let text = html.replace(/&quot;/g, '"');
+    text = text.replace(/<br\s*\/?>/gi, '. ');
+    text = text.replace(/<[^>]*>?/gm, '');
+    text = text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
+    text = text.replace(/\*/g, '');
+    return text.trim();
+  }
+
+  private getBestVoice(): SpeechSynthesisVoice | null {
+    const voices = window.speechSynthesis.getVoices();
+    let voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
+    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo')));
+    if (!voice) voice = voices.find(v => v.lang.startsWith('es-') || v.lang === 'es');
+    return voice || null;
+  }
+
+  private speak(text: string) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.rate = 0.95;
+    utterance.pitch = 1.05;
+    
+    const voice = this.getBestVoice();
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  readGuide() {
+    const sec = this.seccion();
+    if (!sec) return;
+    const text = this.cleanHtml(sec.guia_titulo || 'Qué aprenderás') + '. ' + this.cleanHtml(sec.guia_contenido || sec.introduccion);
+    this.speak(text);
+  }
+
+  readContext() {
+    const sec = this.seccion();
+    if (!sec?.test?.contexto_base) return;
+    const text = 'Texto de práctica. ' + this.cleanHtml(sec.test.contexto_base);
+    this.speak(text);
+  }
+
+  readTips() {
+    const sec = this.seccion();
+    if (!sec?.datos_claves?.length) return;
+    let text = 'Tips clave: ';
+    sec.datos_claves.forEach((tip, idx) => {
+      text += `Tip número ${idx + 1}: ${this.cleanHtml(tip)}. `;
+    });
+    this.speak(text);
+  }
+
+  stopReading() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
   }
 }
