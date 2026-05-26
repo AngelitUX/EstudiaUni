@@ -79,11 +79,11 @@ import { PaymentService } from '../../core/services/payment.service';
         <!-- Premium Tech Grid & Parallax Background -->
         <div class="hero-tech-background">
           <!-- Cyber Grid Overlay -->
-          <div class="hero-grid-overlay" [style.transform]="'translateY(' + (scrollOffset * 0.22) + 'px)'"></div>
+          <div class="hero-grid-overlay"></div>
 
           <!-- Ambient glows moving organically with scroll -->
-          <div class="hero-glow-blob hero-blob-purple" [style.transform]="'translateY(' + (scrollOffset * 0.26) + 'px) scale(' + (1 + scrollOffset * 0.00015) + ')'"></div>
-          <div class="hero-glow-blob hero-blob-blue" [style.transform]="'translateY(' + (scrollOffset * 0.2) + 'px) scale(' + (1 - scrollOffset * 0.0001) + ')'"></div>
+          <div class="hero-glow-blob hero-blob-purple"></div>
+          <div class="hero-glow-blob hero-blob-blue"></div>
           
           <!-- Floating Science & Math outline symbols (strictly background decor, static on scroll) -->
           <div class="floating-symbol sym-1">√x</div>
@@ -1209,29 +1209,28 @@ import { PaymentService } from '../../core/services/payment.service';
             
             <div class="footer-col">
               <h4>Plataforma</h4>
-              <a href="#">Simulacros PAES</a>
-              <a href="#">Práctica Adaptativa</a>
-              <a href="#">Estadísticas de Rendimiento</a>
-              <a href="#">Tutor IA (Foco)</a>
+              <a class="non-clickable">Simulacros PAES</a>
+              <a class="non-clickable">Práctica Adaptativa</a>
+              <a class="non-clickable">Estadísticas de Rendimiento</a>
+              <a class="non-clickable">Tutor IA (Foco)</a>
             </div>
             
             <div class="footer-col">
               <h4>Recursos</h4>
-              <a href="#">Blog Estudiantil</a>
-              <a href="#">Temarios DEMRE</a>
-              <a href="#">Calculadora de Puntajes</a>
-              <a href="#">Guía de Universidades</a>
+              <a class="non-clickable">Blog Estudiantil</a>
+              <a class="non-clickable">Temarios DEMRE</a>
+              <a class="non-clickable">Calculadora de Puntajes</a>
+              <a class="non-clickable">Guía de Universidades</a>
             </div>
             
             <div class="footer-col">
               <h4>Soporte y Legal</h4>
               <a routerLink="/soporte" class="footer-soporte-btn" id="footer-soporte-link">
-                🎧 Soporte de Usuario
+                🎧 Soporte de Usuario y Contacto →
               </a>
-              <a href="#">Preguntas Frecuentes</a>
-              <a href="#">Términos de Servicio</a>
-              <a href="#">Política de Privacidad</a>
-              <a href="#">Contáctanos</a>
+              <a style="cursor: pointer;" (click)="scrollTo('faq')">Preguntas Frecuentes →</a>
+              <a style="cursor: pointer;" (click)="showLegalModal = true; legalModalType = 'terms'">Términos de Servicio →</a>
+              <a style="cursor: pointer;" (click)="showLegalModal = true; legalModalType = 'privacy'">Política de Privacidad →</a>
             </div>
           </div>
           
@@ -1240,15 +1239,49 @@ import { PaymentService } from '../../core/services/payment.service';
               <p>© 2026 EstudiaUni. Todos los derechos reservados.</p>
             </div>
             <div class="footer-bottom-right">
-              <a href="#">Inicio</a>
+              <a style="cursor: pointer;" (click)="scrollToTop()">Inicio →</a>
               <span class="separator">•</span>
-              <a href="#">Planes</a>
+              <a style="cursor: pointer;" (click)="scrollTo('pricing')">Planes →</a>
               <span class="separator">•</span>
-              <a routerLink="/soporte">Soporte</a>
+              <a routerLink="/soporte">Soporte →</a>
             </div>
           </div>
         </div>
       </footer>
+
+      <!-- LEGAL MODAL -->
+      <div class="legal-modal-overlay" *ngIf="showLegalModal" (click)="showLegalModal = false">
+        <div class="legal-modal-content" (click)="$event.stopPropagation()">
+          <div class="legal-modal-header">
+            <h3>{{ legalModalType === 'terms' ? 'Términos de Servicio' : 'Política de Privacidad' }}</h3>
+            <button class="close-btn" (click)="showLegalModal = false">✕</button>
+          </div>
+          <div class="legal-modal-body" *ngIf="legalModalType === 'terms'">
+            <h4>1. Aceptación de los Términos</h4>
+            <p>Al acceder y utilizar EstudiaUni, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo, por favor no utilices nuestra plataforma.</p>
+            <h4>2. Descripción del Servicio</h4>
+            <p>EstudiaUni proporciona herramientas educativas, ensayos y un Tutor IA para preparar la PAES. El servicio Premium incluye características adicionales sujetas a pago.</p>
+            <h4>3. Cuentas de Usuario</h4>
+            <p>Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. EstudiaUni no se hace responsable por accesos no autorizados a tu cuenta.</p>
+            <h4>4. Uso del Tutor IA (Foco)</h4>
+            <p>El Tutor IA es una herramienta de apoyo educativo. Aunque nos esforzamos por mantener su precisión, las respuestas deben ser contrastadas con material oficial del DEMRE.</p>
+            <h4>5. Pagos y Suscripciones</h4>
+            <p>Las suscripciones Premium se facturan según el período seleccionado. Puedes cancelar en cualquier momento, manteniendo el acceso hasta el final del período pagado.</p>
+          </div>
+          <div class="legal-modal-body" *ngIf="legalModalType === 'privacy'">
+            <h4>1. Información que Recopilamos</h4>
+            <p>Recopilamos tu nombre, correo electrónico y datos de progreso en la plataforma para personalizar tu experiencia de aprendizaje.</p>
+            <h4>2. Uso de la Información</h4>
+            <p>Tus datos se utilizan exclusivamente para mejorar tu experiencia en EstudiaUni, generar estadísticas de rendimiento y personalizar las sugerencias del Tutor IA.</p>
+            <h4>3. Protección de Datos</h4>
+            <p>Implementamos medidas de seguridad para proteger tu información personal contra acceso no autorizado, alteración o destrucción.</p>
+            <h4>4. Compartir Información</h4>
+            <p>No vendemos, intercambiamos ni transferimos tu información personal a terceros bajo ninguna circunstancia.</p>
+            <h4>5. Cookies</h4>
+            <p>Utilizamos cookies esenciales para mantener tu sesión activa y guardar tus preferencias dentro de la plataforma.</p>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -4594,6 +4627,36 @@ import { PaymentService } from '../../core/services/payment.service';
         animation: none !important;
       }
     }
+    
+    .non-clickable {
+      pointer-events: none;
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    /* ===== LEGAL MODAL ===== */
+    .legal-modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000;
+    }
+    .legal-modal-content {
+      background: var(--bg-primary, #ffffff); border-radius: 16px;
+      width: 90%; max-width: 600px; max-height: 80vh;
+      overflow-y: auto; padding: 2rem;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+      border: 1px solid var(--glass-border, rgba(133, 92, 214, 0.15));
+    }
+    .legal-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--glass-border, rgba(133, 92, 214, 0.15));
+      padding-bottom: 1rem; margin-bottom: 1.5rem;
+    }
+    .legal-modal-header h3 { margin: 0; font-size: 1.5rem; background: var(--gradient-primary, linear-gradient(135deg, #855cd6 0%, #3b82f6 100%)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .legal-modal-header .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted, #9ca3af); cursor: pointer; }
+    .legal-modal-body h4 { color: var(--text-primary, #111827); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    .legal-modal-body p { color: var(--text-secondary, #4b5563); line-height: 1.6; font-size: 0.95rem; }
   `]
 })
 export class HomeComponent implements AfterViewInit, OnInit {
@@ -4714,6 +4777,9 @@ export class HomeComponent implements AfterViewInit, OnInit {
   navbarHidden = false;
   lastScrollY = 0;
   scrollOffset = 0;
+
+  showLegalModal = false;
+  legalModalType: 'terms' | 'privacy' = 'terms';
 
   showFocoBubble = false;
   focoMessage = '';
@@ -4944,6 +5010,45 @@ export class HomeComponent implements AfterViewInit, OnInit {
           mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
         }
       }, { passive: true });
+
+      // Optimized scroll listener outside Angular zone to fix lag
+      const gridOverlay = document.querySelector('.hero-grid-overlay') as HTMLElement;
+      const blobPurple = document.querySelector('.hero-blob-purple') as HTMLElement;
+      const blobBlue = document.querySelector('.hero-blob-blue') as HTMLElement;
+      
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            // Parallax updates
+            if (gridOverlay) {
+              gridOverlay.style.transform = `translateY(${currentScrollY * 0.22}px)`;
+            }
+            if (blobPurple) {
+              blobPurple.style.transform = `translateY(${currentScrollY * 0.26}px) scale(${1 + currentScrollY * 0.00015})`;
+            }
+            if (blobBlue) {
+              blobBlue.style.transform = `translateY(${currentScrollY * 0.2}px) scale(${1 - currentScrollY * 0.0001})`;
+            }
+            
+            // Navbar state updates (only trigger Angular zone if state changes)
+            const newIsScrolled = currentScrollY > 50;
+            const newNavbarHidden = currentScrollY > this.lastScrollY && currentScrollY > 100;
+            
+            if (newIsScrolled !== this.isScrolled || newNavbarHidden !== this.navbarHidden) {
+              this.zone.run(() => {
+                this.isScrolled = newIsScrolled;
+                this.navbarHidden = newNavbarHidden;
+              });
+            }
+            this.lastScrollY = currentScrollY;
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
     });
 
     // Scroll Reveal Animation Logic
@@ -4969,20 +5074,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
     animatedElements.forEach(el => observer.observe(el));
   }
 
-  @HostListener('window:scroll')
-  onScroll() {
-    const currentScrollY = window.scrollY;
-    this.isScrolled = currentScrollY > 50;
-    this.scrollOffset = currentScrollY;
-
-    // Hide navbar when scrolling down, show when scrolling up
-    if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
-      this.navbarHidden = true;
-    } else {
-      this.navbarHidden = false;
-    }
-    this.lastScrollY = currentScrollY;
-  }
+  // Removed @HostListener('window:scroll') to fix scroll lag.
+  // Scroll logic is now handled in ngAfterViewInit inside runOutsideAngular.
 
   goTo(path: string) {
     this.router.navigate([path]);

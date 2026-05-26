@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { SoundService } from '../../core/services/sound.service';
+
 
 @Component({
   selector: 'app-settings-modal',
@@ -28,13 +28,7 @@ import { SoundService } from '../../core/services/sound.service';
                   <option value="manana">Mañana (7:00 - 11:00)</option>
                   <option value="tarde">Tarde (14:00 - 18:00)</option>
                   <option value="noche">Noche (20:00 - 23:00)</option>
-                </select>
-              </label>
-              <label>Tema visual
-                <select [(ngModel)]="settingsForm.theme">
-                  <option value="dark">Oscuro</option>
-                  <option value="light">Claro</option>
-                  <option value="auto">Automático</option>
+                  <option value="ninguno">No tengo horario específico</option>
                 </select>
               </label>
             </div>
@@ -131,7 +125,7 @@ export class SettingsModalComponent implements OnInit {
   private readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly notificationService = inject(NotificationService);
-  private readonly soundSvc = inject(SoundService);
+
 
   @Output() close = new EventEmitter<void>();
 
@@ -140,12 +134,12 @@ export class SettingsModalComponent implements OnInit {
   notifPermissionGranted = false;
 
   settingsForm = {
-    preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche',
+    preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche' | 'ninguno',
     notificationsEnabled: true,
     theme: 'dark' as 'dark' | 'light' | 'auto',
     notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
     dyslexiaFont: false,
-    fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
+    fontSize: 'normal' as 'normal' | 'large' | 'xlarge'
   };
 
 
@@ -158,7 +152,7 @@ export class SettingsModalComponent implements OnInit {
           this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
           this.settingsForm.theme = profile.theme || 'dark';
           this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
-          this.settingsForm.dyslexiaFont = profile.dyslexiaFont || false;
+          this.settingsForm.dyslexiaFont = !!profile.dyslexiaFont;
           this.settingsForm.fontSize = profile.fontSize || 'normal';
         }
         this.loading = false;
@@ -186,7 +180,6 @@ export class SettingsModalComponent implements OnInit {
   }
 
   applyAccessibility() {
-    this.soundSvc.playToggle();
     const classList = document.body.classList;
     if (this.settingsForm.dyslexiaFont) classList.add('dyslexia-font'); else classList.remove('dyslexia-font');
     classList.remove('font-large', 'font-xlarge');
@@ -195,7 +188,6 @@ export class SettingsModalComponent implements OnInit {
   }
 
   onNotificationsToggle(): void {
-    this.soundSvc.playToggle();
     if (this.settingsForm.notificationsEnabled) {
       this.notificationService.startReminders({
         preferredStudyTime: this.settingsForm.preferredStudyTime,
@@ -218,7 +210,7 @@ export class SettingsModalComponent implements OnInit {
         theme: this.settingsForm.theme,
         notificationIntensity: this.settingsForm.notificationIntensity,
         dyslexiaFont: this.settingsForm.dyslexiaFont,
-        fontSize: this.settingsForm.fontSize,
+        fontSize: this.settingsForm.fontSize
       });
       // Restart reminders with new config after saving
       if (this.settingsForm.notificationsEnabled) {

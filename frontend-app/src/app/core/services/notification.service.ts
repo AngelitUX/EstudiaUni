@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, interval, Subscription } from 'rxjs';
+import { Auth } from '@angular/fire/auth';
 
 export interface NotificationConfig {
-  preferredStudyTime: 'manana' | 'tarde' | 'noche';
+  preferredStudyTime: 'manana' | 'tarde' | 'noche' | 'ninguno';
   notificationIntensity: 'baja' | 'normal' | 'alta';
   notificationsEnabled: boolean;
 }
@@ -13,6 +14,7 @@ export interface NotificationConfig {
 export class NotificationService {
   private notificationSubscription?: Subscription;
   private notificationPermissionGranted$ = new BehaviorSubject<boolean>(false);
+  private auth = inject(Auth);
 
   constructor() {
     this.checkNotificationPermission();
@@ -119,7 +121,8 @@ export class NotificationService {
     const timeWindows: Record<NotificationConfig['preferredStudyTime'], [number, number]> = {
       manana: [7, 11],
       tarde: [14, 18],
-      noche: [20, 23]
+      noche: [20, 23],
+      ninguno: [8, 22]
     };
 
     const [startHour, endHour] = timeWindows[config.preferredStudyTime];
@@ -131,6 +134,21 @@ export class NotificationService {
 
     if (!shouldNotify) {
       return;
+    }
+
+    const user = this.auth.currentUser;
+    if (user) {
+      const streakRaw = localStorage.getItem(`estudiauni_streak_${user.uid}`);
+      if (streakRaw) {
+        try {
+          const streak = JSON.parse(streakRaw);
+          const d = new Date();
+          const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          if (streak.lastDate === todayStr) {
+            return; // El usuario ya estudió hoy, no notificar
+          }
+        } catch(e) {}
+      }
     }
 
     // Calcular frecuencia según intensidad

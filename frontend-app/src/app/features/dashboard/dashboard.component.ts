@@ -557,7 +557,7 @@ import 'driver.js/dist/driver.css';
       <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Cerrar Sesión</h2>
-          <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
+          <button class="close-btn" (click)="showLogoutConfirm = false">✕</button>
         </div>
         <div class="modal-body">
           <div class="confirm-content">
@@ -579,7 +579,7 @@ import 'driver.js/dist/driver.css';
       <div class="modal-container glass-card meta-paes-materias-modal" (click)="$event.stopPropagation()">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--glass-border);">
           <h2 style="margin: 0; font-size: 1.2rem;">Materias en Meta PAES</h2>
-          <button type="button" class="close-btn" (click)="showMetaPaesMateriasModal = false">&times;</button>
+          <button type="button" class="close-btn" (click)="showMetaPaesMateriasModal = false">✕</button>
         </div>
         <div class="modal-body" style="padding: 1.25rem 1.5rem;">
           <p style="margin: 0 0 1rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
@@ -616,7 +616,7 @@ import 'driver.js/dist/driver.css';
       <div class="modal-container glass streak-info-modal animate-scale-up" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>¿Cómo funcionan las Rachas?</h2>
-          <button class="close-btn" (click)="showStreakInfo = false">&times;</button>
+          <button class="close-btn" (click)="showStreakInfo = false">✕</button>
         </div>
         <div class="modal-body">
           <div class="info-section">
@@ -658,7 +658,7 @@ import 'driver.js/dist/driver.css';
       <div class="modal-container glass help-modal-container animate-scale-up" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>💡 Guía Rápida del Dashboard</h2>
-          <button class="logout-close-btn" (click)="showHelpModal = false">&times;</button>
+          <button class="close-btn" (click)="showHelpModal = false">✕</button>
         </div>
         <div class="modal-body help-modal-body">
           <p class="help-intro-text">Aquí tienes una explicación de cada sección para que aproveches al máximo EstudiaUni:</p>
@@ -1220,8 +1220,8 @@ import 'driver.js/dist/driver.css';
     .modal-container.glass { background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
-    .close-btn { background: none; border: none; font-size: 1.75rem; color: var(--text-muted); cursor: pointer; line-height: 1; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease; }
-    .close-btn:hover { transform: rotate(90deg) scale(1.1); color: #ef4444 !important; }
+    .close-btn { border: none; background: var(--bg-secondary); color: var(--text-secondary); width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: grid; place-items: center; transition: all 0.2s; line-height: 1; }
+    .close-btn:hover { background: rgba(239,68,68,0.25); color: #fca5a5 !important; }
     .modal-body { padding: 1.5rem; }
     .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

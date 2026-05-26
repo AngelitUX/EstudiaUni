@@ -39,7 +39,7 @@ export interface UserProfile {
   emailVerified?: boolean;
   theme?: 'auto' | 'dark' | 'light';
   notificationIntensity?: 'baja' | 'normal' | 'alta';
-  preferredStudyTime?: 'manana' | 'tarde' | 'noche';
+  preferredStudyTime?: 'manana' | 'tarde' | 'noche' | 'ninguno';
   bio?: string;
   profileEmoji?: string;
   studyGoalMinutesPerDay?: number;
