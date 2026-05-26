@@ -221,7 +221,7 @@ export class SeccionDetailComponent {
     if (!text) return '';
     const renderedSafe = this.katexSvc.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
-    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>');
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong style="color:var(--accent-primary)">$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }

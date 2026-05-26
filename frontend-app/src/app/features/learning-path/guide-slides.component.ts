@@ -1,13 +1,16 @@
-import { Component, Output, EventEmitter, signal, computed, HostListener } from '@angular/core';
+import { Component, Output, EventEmitter, signal, computed, HostListener, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, GuideSlide, QuizAlt } from './guide-slides-data';
+import { GuideSlide, QuizAlt } from './models/paes.models';
+import { KatexService } from '../../core/services/katex.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { SoundService } from '../../core/services/sound.service';
 
 @Component({
   selector: 'app-guide-slides',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="slides-container">
+    <div class="slides-container" *ngIf="slides && slides.length > 0">
       <!-- PROGRESS -->
       <div class="progress-bar-wrap">
         <div class="progress-dots">
@@ -29,8 +32,8 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, GuideSlide, QuizAlt } from 
             [class.active]="i === current()" [class.stagger]="i === current()">
 
             <div class="slide-icon-wrap" [style.background]="slide.iconBg">{{ slide.icon }}</div>
-            <h2 class="slide-title s-anim s-d1">{{ slide.title }}</h2>
-            <div class="slide-body s-anim s-d2" [innerHTML]="slide.content"></div>
+            <h2 class="slide-title s-anim s-d1" [innerHTML]="parseMixed(slide.title)"></h2>
+            <div class="slide-body s-anim s-d2" [innerHTML]="parseMixed(slide.content)"></div>
 
             <!-- INTERACTIVE QUIZ -->
             <div *ngIf="slide.interactive" class="quiz-section s-anim s-d3">
@@ -39,8 +42,8 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, GuideSlide, QuizAlt } from 
                 [class.correct]="getQuizState(slide.quizId!).revealed && alt.correct"
                 [class.wrong]="getQuizState(slide.quizId!).revealed && !alt.correct"
                 (click)="selectAlt(slide.quizId!, alt)">
-                <span class="alt-label">{{ alt.key }})</span> {{ alt.text }}
-                <div class="alt-feedback" *ngIf="getQuizState(slide.quizId!).revealed">{{ alt.explain }}</div>
+                <span class="alt-label">{{ alt.key }})</span> <span [innerHTML]="parseMixed(alt.text)"></span>
+                <div class="alt-feedback" *ngIf="getQuizState(slide.quizId!).revealed" [innerHTML]="parseMixed(alt.explain)"></div>
               </div>
             </div>
 
@@ -206,16 +209,40 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, GuideSlide, QuizAlt } from 
     }
   `]
 })
-export class GuideSlidesComponent {
+export class GuideSlidesComponent implements OnChanges {
   @Output() onFinish = new EventEmitter<void>();
+  @Input() slides: GuideSlide[] = [];
+  @Input() quizzes: Record<string, QuizAlt[]> = {};
 
-  slides = LOCALIZAR_SLIDES;
+  private katexSvc = inject(KatexService);
+  private sanitizer = inject(DomSanitizer);
+  private soundSvc = inject(SoundService);
 
-  private quizzes: Record<string, QuizAlt[]> = { quiz1: SLIDE5_QUIZ, quiz2: SLIDE_QUIZ2 };
-  private quizStates: Record<string, { selected: string | null; revealed: boolean }> = {
-    quiz1: { selected: null, revealed: false },
-    quiz2: { selected: null, revealed: false },
-  };
+  quizStates: Record<string, { selected: string | null; revealed: boolean }> = {};
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['quizzes'] || changes['slides']) && this.quizzes) {
+      this.quizStates = {};
+      Object.keys(this.quizzes).forEach(id => {
+        this.quizStates[id] = { selected: null, revealed: false };
+      });
+    }
+  }
+
+  parseMixed(text: string | undefined): SafeHtml {
+    if (!text) return '';
+    const renderedSafe = this.katexSvc.renderMixedText(text);
+    const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
+    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    const unescaped = withBreaks
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&');
+    return this.sanitizer.bypassSecurityTrustHtml(unescaped);
+  }
 
   current = signal(0);
   progressPct = computed(() => (this.current() / (this.slides.length - 1)) * 100);
@@ -242,12 +269,19 @@ export class GuideSlidesComponent {
 
   next() {
     if (this.current() < this.slides.length - 1) {
+      this.soundSvc.playToggle();
       this.current.update(v => v + 1);
       if (this.current() === this.slides.length - 1) this.triggerConfetti();
     }
   }
 
-  prev() { if (this.current() > 0) this.current.update(v => v - 1); }
+  prev() { 
+    if (this.current() > 0) {
+      this.soundSvc.playToggle();
+      this.current.update(v => v - 1);
+    }
+  }
+
   goTo(i: number) { this.current.set(i); if (i === this.slides.length - 1) this.triggerConfetti(); }
 
   getQuiz(id: string): QuizAlt[] { return this.quizzes[id] || []; }
@@ -257,6 +291,13 @@ export class GuideSlidesComponent {
     const state = this.quizStates[quizId];
     if (!state || state.revealed) return;
     state.selected = alt.key;
+    
+    if (alt.correct) {
+      this.soundSvc.playCorrect();
+    } else {
+      this.soundSvc.playWrong();
+    }
+
     setTimeout(() => { state.revealed = true; }, 400);
   }
 

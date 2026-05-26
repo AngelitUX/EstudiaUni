@@ -342,7 +342,7 @@ export class SeccionTestReviewComponent {
     if (!text) return '';
     const renderedSafe = this.katexSvc.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
-    const bolded = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }

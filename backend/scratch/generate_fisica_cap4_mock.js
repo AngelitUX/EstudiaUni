@@ -1,0 +1,797 @@
+const fs = require('fs');
+const path = require('path');
+
+// -------------------------------------------------------------
+// DEFINICIÓN DE LA TEORÍA Y LAS PREGUNTAS DEL CAPÍTULO 4 DE FÍSICA (ELECTRICIDAD)
+// -------------------------------------------------------------
+
+const capElectricidad = {
+  id: 'cap-fisica-4-electricidad',
+  materiaId: 'ciencias-fisica',
+  title: 'Eje Temático: Electricidad',
+  introduccion: 'Adéntrate en los fundamentos de la electrodinámica. Aprenderás sobre la ley de Ohm, la resistencia eléctrica, los circuitos de corriente continua, la potencia, la eficiencia energética y los mecanismos de seguridad en las instalaciones domiciliarias.',
+  order: 4,
+  secciones: []
+};
+
+const dataSeccionesTeoria = [
+  {
+    id: 'sec-fis-4-1',
+    title: '1. Ley de Ohm y resistores',
+    introduccion: 'La electrodinámica estudia el movimiento continuo de las cargas eléctricas a través de un conductor. Las tres magnitudes fundamentales son el Voltaje (diferencia de potencial), la Intensidad de Corriente (tasa de flujo de carga) y la Resistencia (oposición al movimiento de los electrones).',
+    datos_claves: [
+      '**Corriente Eléctrica ($I$)**: Cantidad de carga eléctrica ($q$) que cruza la sección transversal de un cable por unidad de tiempo: $I = q / \\Delta t$. Se mide en Amperes ($1 \\text{ A} = 1 \\text{ C/s}$).',
+      '**Ley de Ohm**: En materiales óhmicos (a temperatura constante), la corriente es directamente proporcional al voltaje aplicado e inversamente proporcional a la resistencia del cable: $V = I \\cdot R$ (o $R = V/I$).',
+      '**Resistores y Ley de Pouillet**: La resistencia de un conductor cilíndrico depende de la resistividad del material ($\\rho$), de su longitud ($L$) y de su área de sección transversal ($A$): $R = \\rho \\frac{L}{A}$.',
+      '**Conductores vs Aisladores**: Los metales conducen excelente por tener electrones libres en su banda de conducción; los plásticos y maderas carecen de ellos y oponen una resistencia inmensa.'
+    ]
+  },
+  {
+    id: 'sec-fis-4-2',
+    title: '2. Potencia y energía eléctrica',
+    introduccion: 'La corriente eléctrica realiza trabajo al desplazar cargas, lo que disipa energía en los componentes. La rapidez con la que un dispositivo transforma la energía eléctrica en otra forma de energía (calor, movimiento, luz) se denomina Potencia Eléctrica.',
+    datos_claves: [
+      '**Potencia Eléctrica ($P$)**: Energía disipada por unidad de tiempo ($P = E / t$), medida en Watts ($1 \\text{ W} = 1 \\text{ J/s}$).',
+      '**Fórmulas de Potencia**: Se calcula combinando voltaje y corriente: $P = V \\cdot I$. Aplicando la Ley de Ohm, también se expresa como $P = I^2 \\cdot R$ (útil para resistores en serie) y $P = V^2 / R$ (útil en paralelo).',
+      '**Efecto Joule**: Fenómeno por el cual los electrones chocan contra los átomos del conductor, transformando energía eléctrica en energía térmica (calor).',
+      '**Energía Eléctrica ($E$)**: Cantidad total de trabajo realizado en un tiempo dado: $E = P \\cdot t$. En el SI se mide en Joules ($J$), pero comercialmente se usa el kilowatt-hora ($kWh$).'
+    ]
+  },
+  {
+    id: 'sec-fis-4-3',
+    title: '3. Corriente eléctrica en CC',
+    introduccion: 'Los circuitos de Corriente Continua (CC) son caminos cerrados por donde fluye corriente en un solo sentido constante. Los componentes se pueden asociar en serie o en paralelo, cambiando la corriente y el voltaje de forma predecible.',
+    datos_claves: [
+      '**Conexión en Serie**: Los resistores están en la misma línea. La corriente es idéntica en todos ($I_{tot} = I_1 = I_2$). El voltaje total es la suma de los voltajes ($V_{tot} = V_1 + V_2$). La resistencia equivalente aumenta: $R_{eq} = R_1 + R_2 + \\dots$',
+      '**Conexión en Paralelo**: Los resistores están conectados a los mismos nodos. El voltaje es idéntico en todos ($V_{tot} = V_1 = V_2$). La corriente total se divide en las ramas ($I_{tot} = I_1 + I_2$). La resistencia equivalente disminuye: $\\frac{1}{R_{eq}} = \\frac{1}{R_1} + \\frac{1}{R_2} + \\dots$',
+      '**Amperímetro**: Instrumento para medir la corriente. Se conecta **en serie** con el componente y posee una **resistencia interna casi nula** (para no alterar la corriente real).',
+      '**Voltímetro**: Instrumento para medir la diferencia de potencial. Se conecta **en paralelo** al componente y posee una **resistencia interna casi infinita** (para que no fluya corriente por él).'
+    ]
+  },
+  {
+    id: 'sec-fis-4-4',
+    title: '4. Consumo y eficiencia energética',
+    introduccion: 'El consumo eléctrico en los hogares se factura en kilowatt-hora ($kWh$), una unidad de energía comercial. Además, los artefactos poseen un rendimiento o eficiencia energética que mide qué fracción de la energía total consumida se aprovecha realmente.',
+    datos_claves: [
+      '**Kilowatt-hora ($kWh$)**: Unidad de energía equivalente a consumir $1000 \\text{ W}$ de potencia constante durante $1 \\text{ hora}$: $1 \\text{ kWh} = 1000 \\text{ W} \\times 3600 \\text{ s} = 3,6 \\times 10^6 \\text{ J}$.',
+      '**Cálculo de Consumo**: La energía en $kWh$ se obtiene multiplicando la potencia del artefacto en kilowatts ($kW$) por las horas de uso: $E(kWh) = P(kW) \\cdot t(h)$.',
+      '**Eficiencia Energética ($\\eta$)**: Proporción porcentual entre la energía útil aprovechada y la energía total consumida por el artefacto: $\\eta = \\frac{E_{\\text{útil}}}{E_{\\text{total}}} \\times 100\\%$.',
+      '**Pérdidas de Energía**: Ningún motor o ampolleta es $100\\%$ eficiente. En una ampolleta incandescente tradicional, el $95\\%$ de la energía se pierde en calor (Efecto Joule) y solo el $5\\%$ se convierte en luz útil, mientras que los focos LED logran una eficiencia lumínica superior al $80\\%$.'
+    ]
+  },
+  {
+    id: 'sec-fis-4-5',
+    title: '5. Instalación eléctrica domiciliaria',
+    introduccion: 'La red eléctrica doméstica chilena opera a un voltaje estándar de $220 \\text{ V}$ en corriente alterna. Para que los electrodomésticos funcionen de forma independiente con este voltaje fijo, se deben conectar todos de forma paralela en el circuito.',
+    datos_claves: [
+      '**Conexión en Paralelo**: Asegura que todos los enchufes de la casa reciban $220 \\text{ V}$ exactos y que, si una ampolleta se quema o apaga, los demás artefactos sigan funcionando sin interrupción.',
+      '**Sobrecarga del Circuito**: Al encender muchos artefactos en paralelo, la resistencia equivalente de la casa disminuye continuamente, lo que provoca que la corriente total aumente ($I_{total} = \\sum I_{ramas}$) de manera peligrosa, pudiendo sobrecalentar los cables.',
+      '**Interruptor Automático (Disyuntor)**: Dispositivo de seguridad conectado en serie con la fase. Corta el flujo si la corriente total supera un límite seguro (debido a sobrecargas o cortocircuitos), evitando incendios.',
+      '**Disyuntor Diferencial**: Compara la corriente que entra por el cable fase y la que sale por el neutro. Si hay una diferencia mínima (fuga de corriente), se corta al instante, protegiendo a las personas de electrocuciones.',
+      '**Toma de Tierra**: Cable de cobre (verde/amarillo) que conecta las carcasas metálicas de los artefactos directamente al suelo, canalizando de forma segura cualquier corriente de fuga.'
+    ]
+  }
+];
+
+const poolPreguntas = [];
+
+// ==========================================
+// PREGUNTAS SECCIÓN 1 (1 a 10)
+// ==========================================
+poolPreguntas.push(
+  {
+    id: 'q-fis-4-1-1',
+    enunciado: 'Un alambre conductor es cruzado por una cantidad neta de carga eléctrica de $120 \\text{ Coulombs}$ en un intervalo de tiempo de exactamente $1 \\text{ minuto}$. ¿Cuál es la intensidad de corriente eléctrica ($I$) promedio que fluye por el conductor?',
+    alternativas: {
+      A: '2 A',
+      B: '60 A',
+      C: '120 A',
+      D: '7200 A'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Excelente! La corriente se define como carga dividida entre tiempo en segundos ($I = q / \\Delta t$). Convertimos el tiempo a segundos: $1 \\text{ minuto} = 60 \\text{ s}$. Así: $I = 120 \\text{ C} / 60 \\text{ s} = 2 \\text{ Amperes}$.',
+    feedback_error: '¡Atención al tiempo! La unidad de corriente en el Sistema Internacional es el Ampere ($C/s$). Debes convertir el tiempo de 1 minuto a 60 segundos antes de realizar la división de la carga.'
+  },
+  {
+    id: 'q-fis-4-1-2',
+    enunciado: 'Se aplica una diferencia de potencial de $12 \\text{ V}$ en los extremos de un resistor óhmico. Si la corriente medida a través de él es de $3 \\text{ A}$, ¿cuál es el valor de su resistencia eléctrica?',
+    alternativas: {
+      A: '$0,25 \\text{ } \\Omega$',
+      B: '$4,0 \\text{ } \\Omega$',
+      C: '$9,0 \\text{ } \\Omega$',
+      D: '$36,0 \\text{ } \\Omega$'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Correcto! Usando la ecuación fundamental de la Ley de Ohm: $V = I \\cdot R$. Despejamos la resistencia: $R = V / I \\implies R = 12 \\text{ V} / 3 \\text{ A} = 4 \\text{ Ohms } (\\Omega)$.',
+    feedback_error: 'Aplica la Ley de Ohm: $R = V / I$. Divide el voltaje aplicado entre la intensidad de corriente medida para hallar la resistencia.'
+  },
+  {
+    id: 'q-fis-4-1-3',
+    enunciado: 'Un conductor de cobre cilíndrico de longitud $L$ y área de sección transversal $A$ posee una resistencia eléctrica $R$. Si este conductor se estira uniformemente hasta duplicar su longitud ($2L$) manteniendo constante su volumen y densidad, ¿qué ocurrirá con el valor de su resistencia eléctrica?',
+    alternativas: {
+      A: 'La resistencia disminuye a la mitad ($R/2$).',
+      B: 'La resistencia permanece constante.',
+      C: 'La resistencia aumenta al doble ($2R$).',
+      D: 'La resistencia aumenta al cuádruple ($4R$).'
+    },
+    respuesta_correcta: 'D',
+    feedback_acierto: '¡Excelente deducción! De acuerdo con la Ley de Pouillet, $R = \\rho L / A$. Si duplicamos la longitud del conductor manteniendo constante su volumen ($V = A \\cdot L$), el área transversal se reduce a la mitad ($A/2$). Reemplazando los nuevos valores: $R\' = \\rho \\frac{2L}{A/2} = 4 \\left(\\rho \\frac{L}{A}\\right) = 4R$. La resistencia aumenta al cuádruple.',
+    feedback_error: 'Ten cuidado con la conservación del volumen de la materia. Al estirar un cable de metal para duplicar su longitud, este también se hace más delgado (el área transversal cae a la mitad). Ambos efectos (longitud doble y área mitad) multiplican la resistencia por 4.'
+  },
+  {
+    id: 'q-fis-4-1-4',
+    enunciado: '¿Cuál de los siguientes gráficos representa físicamente el comportamiento de un **conductor óhmico** ideal cuando se grafican el Voltaje ($V$) en el eje vertical contra la Intensidad de corriente ($I$) en el eje horizontal?',
+    alternativas: {
+      A: 'Una línea horizontal constante paralela al eje horizontal.',
+      B: 'Una línea curva parábola que asciende de forma exponencial.',
+      C: 'Una línea recta oblicua inclinada que pasa estrictamente por el origen $(0,0)$, cuya pendiente constante representa la resistencia.',
+      D: 'Una línea vertical infinita paralela al eje vertical.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Perfecto! Un conductor es óhmico si su resistencia es estrictamente constante frente a variaciones de voltaje. Esto se traduce en una relación de proporcionalidad directa lineal entre $V$ e $I$ ($V = R \\cdot I$), cuyo gráfico es una recta inclinada que nace del origen y donde la pendiente de la recta equivale a la resistencia $R$.',
+    feedback_error: 'En un material óhmico, duplicar el voltaje resulta en el doble de corriente de manera lineal. Por lo tanto, la gráfica de voltaje contra corriente debe ser una recta diagonal perfecta desde el origen.'
+  },
+  {
+    id: 'q-fis-4-1-5',
+    enunciado: 'Se tienen dos cables del mismo material (igual resistividad $\\rho$). El cable A tiene longitud $L$ y diámetro $D$. El cable B tiene longitud $2L$ y diámetro $2D$. ¿Cuál es la relación entre la resistencia del cable A ($R_A$) y la del cable B ($R_B$)?',
+    alternativas: {
+      A: '$R_A = R_B$',
+      B: '$R_A = 2 R_B$',
+      C: '$R_A = 0,5 R_B$',
+      D: '$R_A = 4 R_B$'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! El área de la sección transversal de un cable cilíndrico de diámetro $D$ es proporcional al cuadrado del diámetro ($A \\propto D^2$). Así, el cable B tiene un área transversal 4 veces mayor que el cable A ($A_B = 4A_A$) por tener el doble de diámetro. Usando Pouillet: $R_B = \\rho \\frac{2L}{4A} = 0,5 \\left(\\rho \\frac{L}{A}\\right) = 0,5 R_A \\implies R_A = 2 R_B$.',
+    feedback_error: 'Recuerda que el área transversal de un círculo depende del radio o diámetro al cuadrado. Si el diámetro se duplica, el área transversal aumenta 4 veces. Aplica luego la Ley de Pouillet y compara las ecuaciones.'
+  },
+  {
+    id: 'q-fis-4-1-6',
+    enunciado: '¿Cuál es la causa física microscópica por la cual un material sólido conductor de metal opone una resistencia eléctrica al paso de la corriente?',
+    alternativas: {
+      A: 'Debido a la ausencia de protones en los núcleos atómicos.',
+      B: 'A las colisiones y choques continuos de los electrones libres contra los iones de la red cristalina rígida del metal a medida que intentan fluir.',
+      C: 'A la fricción aerodinámica de los electrones contra el aire ambiental.',
+      D: 'A que los electrones son demasiado pesados para moverse por el cable.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Correcto! En un conductor metálico ideal, los electrones libres aceleran bajo el campo eléctrico aplicado, pero chocan de forma constante contra las vibraciones térmicas de los átomos metálicos fijos de la red. Estos choques frenan el avance de la corriente, disipando energía en forma de calor (Efecto Joule).',
+    feedback_error: 'La resistencia no es una fuerza magnética vacía ni rozamiento con el aire externo. Es la colisión física interna a nivel cuántico y microscópico entre los electrones en movimiento y la estructura atómica del conductor.'
+  },
+  {
+    id: 'q-fis-4-1-7',
+    enunciado: 'Si en un resistor de carbón óhmico se reduce el voltaje en sus extremos a la tercera parte ($V/3$), ¿qué ocurrirá con el valor de la intensidad de corriente que fluye a través de él?',
+    alternativas: {
+      A: 'Permanece idéntica.',
+      B: 'Se reduce a la tercera parte ($I/3$).',
+      C: 'Se triplica ($3I$).',
+      D: 'Se reduce a la novena parte ($I/9$).'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Perfecto! En un material óhmico, la corriente es directamente proporcional al voltaje aplicado de forma estricta ($I \\propto V$). Por ende, si el voltaje se divide entre 3, la corriente resultante también se dividirá exactamente entre 3.',
+    feedback_error: 'Aplica la relación de proporcionalidad directa de la Ley de Ohm. Si la resistencia es constante, la corriente sigue linealmente el cambio experimentado por el voltaje.'
+  },
+  {
+    id: 'q-fis-4-1-8',
+    enunciado: 'Un resistor de nicromio posee una resistencia de $10 \\text{ } \\Omega$. Si se le aplica un voltaje de $50 \\text{ V}$, ¿cuánta carga eléctrica total cruza por el resistor en un intervalo de tiempo de $10 \\text{ segundos}$?',
+    alternativas: {
+      A: '5 Coulombs',
+      B: '50 Coulombs',
+      C: '100 Coulombs',
+      D: '500 Coulombs'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! Primero, calculamos la corriente usando la Ley de Ohm: $I = V / R = 50 \\text{ V} / 10 \\text{ } \\Omega = 5 \\text{ A}$. Luego, usando la definición de corriente: $I = q / \\Delta t \\implies q = I \\cdot \\Delta t = 5 \\text{ A} \\times 10 \\text{ s} = 50 \\text{ Coulombs}$.',
+    feedback_error: 'Primero halla la corriente eléctrica dividiendo el voltaje entre la resistencia. Una vez que tengas los Amperes (Amperes = Coulombs/segundo), multiplícalos por el tiempo en segundos para obtener la carga.'
+  },
+  {
+    id: 'q-fis-4-1-9',
+    enunciado: 'Se tienen dos conductores del mismo material y longitud. El conductor A posee el doble de área transversal que el conductor B ($A_A = 2A_B$). ¿Cuál de los conductores presentará mayor oposición al paso de la corriente y por qué?',
+    alternativas: {
+      A: 'El conductor A, porque al ser más ancho ofrece más colisiones.',
+      B: 'El conductor B, porque al tener menor área transversal ofrece mayor resistencia de acuerdo con la Ley de Pouillet.',
+      C: 'Ambos presentan la misma oposición por tener el mismo material y longitud.',
+      D: 'El conductor A, porque posee mayor resistividad eléctrica.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Muy bien! Según $R = \\rho L / A$, la resistencia es inversamente proporcional al área de sección transversal. Un cable con un área transversal más pequeña (delgado) ofrece un camino más angosto para el flujo de electrones, lo que eleva la resistencia física, haciéndolo peor conductor.',
+    feedback_error: 'Piensa en una tubería de agua. Una tubería estrecha (menor área) opone mucha más resistencia al paso del agua que una tubería ancha. Con los cables eléctricos ocurre exactamente lo mismo.'
+  },
+  {
+    id: 'q-fis-4-1-10',
+    enunciado: 'Un filamento metálico aumenta significativamente su temperatura debido al calor generado al encenderse. ¿Cómo varía de forma real la resistencia eléctrica de un metal conductor ordinario cuando su temperatura aumenta?',
+    alternativas: {
+      A: 'Disminuye progresivamente al facilitarse la vibración atómica.',
+      B: 'Permanece estrictamente constante en cualquier temperatura.',
+      C: 'Aumenta de forma progresiva, ya que el aumento de temperatura provoca que los átomos de la red vibren con mayor energía, incrementando la probabilidad de colisiones mecánicas de los electrones libres.',
+      D: 'Cae a cero de golpe, volviéndose un superconductor absoluto.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Soberbio! En los metales ordinarios, un aumento de temperatura excita térmicamente los iones de la red cristalina, haciéndolos oscilar con mayor amplitud alrededor de sus posiciones de equilibrio. Esto entorpece físicamente el paso de los electrones que intentan cruzar el cable, elevando la resistividad ($\\rho$) y la resistencia total ($R$).',
+    feedback_error: 'La vibración de los átomos a altas temperaturas hace que el camino del electrón esté más congestionado y lleno de choques. Por ende, la resistencia de un cable metálico aumenta al calentarse.'
+  }
+);
+
+// ==========================================
+// PREGUNTAS SECCIÓN 2 (11 a 20)
+// ==========================================
+poolPreguntas.push(
+  {
+    id: 'q-fis-4-2-1',
+    enunciado: 'Una ampolleta LED de potencia nominal $10 \\text{ W}$ está conectada a la red de corriente continua de $220 \\text{ V}$. ¿Cuál es la intensidad de corriente eléctrica que fluye a través de la ampolleta?',
+    alternativas: {
+      A: '0,045 A',
+      B: '2,2 A',
+      C: '22 A',
+      D: '2200 A'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Correcto! Usando la relación de potencia: $P = V \\cdot I$. Despejamos la intensidad de corriente: $I = P / V \\implies I = 10 \\text{ W} / 220 \\text{ V} \\approx 0,045 \\text{ Amperes}$ (o $45 \\text{ mA}$).',
+    feedback_error: 'Aplica la fórmula de potencia eléctrica: $P = V \\cdot I$. Despeja la corriente dividiendo la potencia dada entre el voltaje de conexión.'
+  },
+  {
+    id: 'q-fis-4-2-2',
+    enunciado: 'Un calefactor eléctrico posee una resistencia interna de $44 \\text{ } \\Omega$. Si se le conecta a un enchufe de $220 \\text{ V}$, ¿cuánta potencia eléctrica ($P$) disipa en forma de calor por Efecto Joule?',
+    alternativas: {
+      A: '5 W',
+      B: '1100 W',
+      C: '2200 W',
+      D: '9680 W'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! Usando la fórmula de potencia en función de voltaje y resistencia: $P = V^2 / R$. Reemplazamos: $P = 220^2 / 44 = 48400 / 44 = 1100 \\text{ Watts}$ (o $1,1 \\text{ kW}$).',
+    feedback_error: 'Puedes usar la fórmula $P = V^2 / R$. Eleva el voltaje de $220$ al cuadrado y divide el resultado entre la resistencia de $44$ Ohms.'
+  },
+  {
+    id: 'q-fis-4-2-3',
+    enunciado: 'Un televisor de $150 \\text{ W}$ permanece encendido de forma ininterrumpida durante $4 \\text{ horas}$. ¿Cuánta energía eléctrica total ha consumido el televisor expresada en Joules ($J$)?',
+    alternativas: {
+      A: '600 J',
+      B: '36.000 J',
+      C: '600.000 J',
+      D: '2.160.000 J'
+    },
+    respuesta_correcta: 'D',
+    feedback_acierto: '¡Perfecto! La energía es potencia por tiempo ($E = P \\cdot t$) en el SI. Convertimos el tiempo a segundos: $4 \\text{ horas} = 4 \\times 3600 = 14.400 \\text{ s}$. Así: $E = 150 \\text{ W} \\times 14.400 \\text{ s} = 2.160.000 \\text{ Joules}$ (o $2,16 \\text{ MJ}$).',
+    feedback_error: '¡Cuidado con el tiempo! Para obtener la energía en Joules (Sistema Internacional), el tiempo debe estar obligatoriamente expresado en segundos. Multiplica las 4 horas por 3600 para pasarlo a segundos y luego multiplícalo por la potencia.'
+  },
+  {
+    id: 'q-fis-4-2-4',
+    enunciado: 'Un resistor de resistencia constante $R$ es recorrido por una corriente de intensidad $I$ disipando una potencia $P$. Si la corriente que fluye por el resistor se duplica ($2I$), ¿cómo variará la potencia disipada por el componente?',
+    alternativas: {
+      A: 'Permanece idéntica.',
+      B: 'Aumenta al doble ($2P$).',
+      C: 'Aumenta al cuádruple ($4P$).',
+      D: 'Disminuye a la cuarta parte ($P/4$).'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente deducción! De la ecuación de potencia $P = I^2 \\cdot R$, observamos que la potencia es proporcional al cuadrado de la corriente. Si la corriente se duplica, la potencia disipada se multiplica por el cuadrado del factor de aumento: $2^2 = 4$. Por ende, la potencia aumenta a $4P$.',
+    feedback_error: 'Utiliza la ecuación de potencia para resistores: $P = I^2 \\cdot R$. Como la corriente está elevada al cuadrado, cualquier variación en su intensidad se magnificará de forma cuadrática en la potencia.'
+  },
+  {
+    id: 'q-fis-4-2-5',
+    enunciado: 'Se tienen dos ampolletas conectadas en paralelo a una fuente de voltaje constante. La ampolleta A tiene una resistencia mayor que la B ($R_A > R_B$). ¿Cuál de las dos ampolletas brillará con mayor intensidad?',
+    alternativas: {
+      A: 'La ampolleta A, porque a mayor resistencia siempre hay más luz.',
+      B: 'La ampolleta B, porque al estar en paralelo y tener menor resistencia, circula más corriente disipando mayor potencia ($P = V^2/R$).',
+      C: 'Ambas brillarán con idéntica intensidad por tener el mismo voltaje.',
+      D: 'Ninguna brillará debido a la diferencia de resistencias.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Soberbio! En una conexión en paralelo, el voltaje en ambas ampolletas es el mismo. Usando $P = V^2 / R$, vemos que la potencia disipada es inversamente proporcional a la resistencia. La ampolleta con menor resistencia ($R_B$) disipará mayor potencia y, por lo tanto, brillará con mayor intensidad en el circuito.',
+    feedback_error: '¡Ojo con la conexión! En paralelo el voltaje es constante. Por ende, la potencia se analiza mejor con $P = V^2/R$. A menor resistencia, mayor potencia disipada y mayor brillo.'
+  },
+  {
+    id: 'q-fis-4-2-6',
+    enunciado: 'Un secador de pelo está conectado a un enchufe de $220 \\text{ V}$ y consume una corriente de $5 \\text{ A}$. ¿Cuánta potencia eléctrica en kilowatts ($kW$) consume este artefacto?',
+    alternativas: {
+      A: '1,1 kW',
+      B: '11 kW',
+      C: '110 kW',
+      D: '1100 kW'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Correcto! Calculamos la potencia nominal en Watts: $P = V \\cdot I = 220 \\text{ V} \\times 5 \\text{ A} = 1100 \\text{ W}$. Para convertir a kilowatts, dividimos entre 1000: $1100 / 1000 = 1,1 \\text{ kW}$.',
+    feedback_error: 'Aplica $P = V \\cdot I$ para obtener el valor en Watts. Una vez hallado el resultado ($1100 \\text{ W}$), transfórmalo a kilowatts dividiéndolo por 1000.'
+  },
+  {
+    id: 'q-fis-4-2-7',
+    enunciado: 'Un resistor de $10 \\text{ } \\Omega$ se conecta a una fuente de $12 \\text{ V}$ constante. ¿Cuál es el valor de la potencia disipada por este resistor?',
+    alternativas: {
+      A: '1,2 W',
+      B: '14,4 W',
+      C: '120 W',
+      D: '144 W'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Perfecto! Usando la relación de potencia: $P = V^2 / R \\implies P = 12^2 / 10 = 144 / 10 = 14,4 \\text{ Watts}$.',
+    feedback_error: 'Aplica la ecuación $P = V^2 / R$. Eleva el voltaje de $12$ al cuadrado y divide el resultado entre la resistencia de $10$ Ohms.'
+  },
+  {
+    id: 'q-fis-4-2-8',
+    enunciado: '¿Qué magnitud física representa la cantidad de calor liberada por segundo en un conductor de resistencia constante cuando es atravesado por una corriente constante?',
+    alternativas: {
+      A: 'La energía eléctrica residual.',
+      B: 'La potencia eléctrica disipada.',
+      C: 'La carga total transportada.',
+      D: 'El voltaje magnético de Coulomb.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! La potencia mide la tasa temporal con la que la energía cambia de forma ($P = E/t$). En un conductor, el calor generado por segundo por Efecto Joule es exactamente igual a la potencia eléctrica disipada por el componente.',
+    feedback_error: 'La palabra clave es "por segundo". Cualquier magnitud de energía dividida entre el tiempo por segundo representa una potencia, medida en Watts.'
+  },
+  {
+    id: 'q-fis-4-2-9',
+    enunciado: 'Un calentador eléctrico sumergible de agua funciona con una potencia de $500 \\text{ W}$. Si tarda $100 \\text{ segundos}$ en elevar la temperatura de una taza de agua, ¿cuánta energía térmica útil aproximada ha transferido al agua si asumimos una eficiencia térmica del $100\\%$?',
+    alternativas: {
+      A: '5 J',
+      B: '5.000 J',
+      C: '50.000 J',
+      D: '500.000 J'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente! Usando $E = P \\cdot t$, multiplicamos directamente: $E = 500 \\text{ W} \\times 100 \\text{ s} = 50.000 \\text{ Joules}$ (o $50 \\text{ kJ}$).',
+    feedback_error: 'En el Sistema Internacional, la energía disipada es la potencia multiplicada por el tiempo empleado en segundos. Multiplica 500 por 100.'
+  },
+  {
+    id: 'q-fis-4-2-10',
+    enunciado: 'Se tienen dos resistores de constantes $R_1 = 50 \\text{ } \\Omega$ y $R_2 = 100 \\text{ } \\Omega$ conectados en serie a una batería. ¿Cuál de los resistores disipará una potencia mayor y por qué?',
+    alternativas: {
+      A: 'El resistor $R_1$, porque a menor resistencia pasa más corriente.',
+      B: 'El resistor $R_2$, porque en serie la corriente es idéntica en ambos y por la ecuación $P = I^2 \\cdot R$, la potencia es directamente proporcional a la resistencia.',
+      C: 'Ambos disipan la misma potencia por estar en el mismo cable en serie.',
+      D: 'El resistor $R_1$, por calentamiento inductivo dipolar.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Soberbio! En una conexión en serie, la intensidad de corriente es exactamente la misma para todos los componentes. Al usar la fórmula de potencia para corriente constante: $P = I^2 R$, observamos que a mayor resistencia mayor es la potencia disipada. Por ende, el de $100 \\text{ } \\Omega$ disipa el doble de energía por segundo en forma de calor.',
+    feedback_error: '¡Presta atención al tipo de circuito! En serie la corriente no cambia. La ecuación que mejor analiza la potencia aquí es $P = I^2 \\cdot R$. A mayor resistencia, mayor caída de voltaje local y mayor potencia disipada.'
+  }
+);
+
+// ==========================================
+// PREGUNTAS SECCIÓN 3 (21 a 30)
+// ==========================================
+poolPreguntas.push(
+  {
+    id: 'q-fis-4-3-1',
+    enunciado: 'Tres resistores de resistencias $2 \\text{ } \\Omega$, $4 \\text{ } \\Omega$ y $6 \\text{ } \\Omega$ se conectan en **serie** a una fuente de poder. ¿Cuál es el valor de la resistencia equivalente ($R_{eq}$) de esta asociación?',
+    alternativas: {
+      A: '$1,09 \\text{ } \\Omega$',
+      B: '$6,0 \\text{ } \\Omega$',
+      C: '$12,0 \\text{ } \\Omega$',
+      D: '$48,0 \\text{ } \\Omega$'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Correcto! En una asociación en serie, las resistencias equivalentes se obtienen directamente sumando algebraicamente las resistencias individuales de los componentes: $R_{eq} = 2 + 4 + 6 = 12 \\text{ Ohms}$.',
+    feedback_error: 'En un circuito serie, las resistencias se acoplan una detrás de la otra obstruyendo conjuntamente la corriente. Simplemente suma los tres valores.'
+  },
+  {
+    id: 'q-fis-4-3-2',
+    enunciado: 'Dos resistores idénticos de resistencia $10 \\text{ } \\Omega$ cada uno se conectan en **paralelo** a una batería de $12 \\text{ V}$. ¿Cuál es el valor de la resistencia equivalente del circuito?',
+    alternativas: {
+      A: '$5 \\text{ } \\Omega$',
+      B: '$10 \\text{ } \\Omega$',
+      C: '$20 \\text{ } \\Omega$',
+      D: '$100 \\text{ } \\Omega$'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Excelente! En una asociación en paralelo de dos resistores idénticos de valor $R$, la resistencia equivalente es exactamente la mitad de dicho valor: $R_{eq} = R / 2 = 10 / 2 = 5 \\text{ Ohms}$. De forma general: $1/R_{eq} = 1/10 + 1/10 = 2/10 \\implies R_{eq} = 10/2 = 5 \\text{ } \\Omega$.',
+    feedback_error: 'En una conexión en paralelo de dos componentes iguales, la resistencia equivalente se calcula como el valor de uno de ellos dividido entre el número de ramas (dos). Por lo tanto, el circuito equivalente ofrece menos resistencia que cualquiera de las ramas por separado.'
+  },
+  {
+    id: 'q-fis-4-3-3',
+    enunciado: 'En un circuito serie compuesto por una batería de $24 \\text{ V}$ y dos resistores de $4 \\text{ } \\Omega$ y $8 \\text{ } \\Omega$, ¿cuál es el valor de la intensidad de corriente que fluye por el circuito?',
+    alternativas: {
+      A: '2 A',
+      B: '3 A',
+      C: '6 A',
+      D: '8 A'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Perfecto! Primero calculamos la resistencia equivalente en serie: $R_{eq} = 4 + 8 = 12 \\text{ } \\Omega$. Luego, aplicamos la Ley de Ohm al circuito equivalente: $I = V / R_{eq} = 24 \\text{ V} / 12 \\text{ } \\Omega = 2 \\text{ Amperes}$.',
+    feedback_error: 'Primero suma los resistores en serie para hallar la resistencia equivalente total del circuito. Luego divide el voltaje total de la fuente de poder por esa resistencia equivalente.'
+  },
+  {
+    id: 'q-fis-4-3-4',
+    enunciado: 'Se conectan dos resistores de $3 \\text{ } \\Omega$ y $6 \\text{ } \\Omega$ en **paralelo** a una fuente. ¿Cuál es el valor de la resistencia equivalente del conjunto?',
+    alternativas: {
+      A: '$2 \\text{ } \\Omega$',
+      B: '$4,5 \\text{ } \\Omega$',
+      C: '$9 \\text{ } \\Omega$',
+      D: '$18 \\text{ } \\Omega$'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Excelente! Usando la fórmula para dos resistores en paralelo: $R_{eq} = \\frac{R_1 \\cdot R_2}{R_1 + R_2}$. Reemplazamos: $R_{eq} = \\frac{3 \\times 6}{3 + 6} = \\frac{18}{9} = 2 \\text{ Ohms}$.',
+    feedback_error: 'Para dos resistores en paralelo puedes emplear el método abreviado de "producto dividido por la suma": $(R_1 \\cdot R_2)/(R_1 + R_2)$. Reemplaza los valores de 3 y 6 en la fórmula.'
+  },
+  {
+    id: 'q-fis-4-3-5',
+    enunciado: '¿Cuál de las siguientes opciones describe el comportamiento correcto del **Voltaje** y la **Corriente** en una conexión de resistores en **paralelo**?',
+    alternativas: {
+      A: 'El voltaje se divide entre los componentes y la corriente es idéntica en todos.',
+      B: 'El voltaje es idéntico en todos los componentes y la corriente se divide en cada rama.',
+      C: 'Tanto la corriente como el voltaje se duplican por inducción electromagnética.',
+      D: 'El voltaje se reduce a cero de golpe y la corriente fluye al infinito.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Correcto! En paralelo, los extremos de todos los resistores están unidos de forma directa a los mismos bornes de la fuente de poder, recibiendo el mismo voltaje exacto. En cambio, los electrones al llegar a la bifurcación (nodo) se dividen por las ramas en proporción inversa a las resistencias.',
+    feedback_error: 'En una conexión paralela (enchufes de casa), el voltaje no se reparte, es constante. Lo que se reparte o divide en las ramas es la intensidad de corriente.'
+  },
+  {
+    id: 'q-fis-4-3-6',
+    enunciado: '¿Cómo debe conectarse físicamente un **Amperímetro** en un circuito para medir la corriente que fluye por un componente y qué propiedad de resistencia interna debe poseer?',
+    alternativas: {
+      A: 'En paralelo con el componente; resistencia interna infinita.',
+      B: 'En serie con el componente; resistencia interna infinita.',
+      C: 'En serie con el componente; resistencia interna idealmente nula ($0 \\text{ } \\Omega$).',
+      D: 'En paralelo con el componente; resistencia interna idealmente nula.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente! Para que el amperímetro mida cuántos electrones cruzan por el componente por segundo, la corriente debe cruzar físicamente por el amperímetro, exigiéndose una conexión **en serie**. Además, para que el instrumento no obstruya la corriente y altere el circuito, su resistencia interna debe ser prácticamente cero.',
+    feedback_error: 'El amperímetro mide corriente. Debe estar integrado en el mismo conducto (en serie). Para que actúe como un trozo de cable liso que no interfiera en la corriente, su resistencia debe ser nula.'
+  },
+  {
+    id: 'q-fis-4-3-7',
+    enunciado: '¿Cómo debe conectarse físicamente un **Voltímetro** para medir la diferencia de potencial a través de una ampolleta y qué propiedad de resistencia interna debe poseer?',
+    alternativas: {
+      A: 'En paralelo con la ampolleta; resistencia interna idealmente infinita.',
+      B: 'En serie con la ampolleta; resistencia interna idealmente nula.',
+      C: 'En paralelo con la ampolleta; resistencia interna idealmente nula.',
+      D: 'En serie con la ampolleta; resistencia interna idealmente infinita.'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Soberbio! El voltímetro mide la diferencia de tensión entre dos puntos independientes del circuito, debiéndose conectar **en paralelo** puenteando el componente. Para que no actúe como un desvío de corriente que altere la lectura, su resistencia interna debe ser infinitamente grande, impidiendo el flujo de electrones a través de él.',
+    feedback_error: 'El voltímetro mide la diferencia de voltaje. Debe conectarse a los lados de la ampolleta (en paralelo). Para evitar que la corriente elija pasar por el voltímetro en lugar del circuito original, el instrumento debe ofrecer una resistencia casi infinita.'
+  },
+  {
+    id: 'q-fis-4-3-8',
+    enunciado: 'Se tienen tres resistores conectados en serie. Si de pronto el segundo resistor se corta y quema abriendo la línea del circuito, ¿qué ocurrirá con el funcionamiento de los resistores restantes?',
+    alternativas: {
+      A: 'Los resistores restantes seguirán funcionando con mayor brillo.',
+      B: 'Los resistores restantes dejarán de funcionar de inmediato por interrumpirse el flujo continuo de corriente en el lazo cerrado.',
+      C: 'Únicamente el tercer resistor seguirá funcionando de forma parcial.',
+      D: 'Se producirá una explosión por sobrecarga inductiva instantánea.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Correcto! En una conexión en serie, la corriente solo posee un único trayecto continuo para fluir. Si cualquiera de los componentes en la serie se corta u abre, se interrumpe la continuidad física del circuito completo, dejando la corriente total en cero ($I = 0$), apagando todos los componentes al instante.',
+    feedback_error: 'Piensa en las luces navideñas antiguas conectadas en serie. Si una de las ampolletas del cable se rompe, toda la hilera se apaga porque se ha interrumpido la línea de transporte de los electrones.'
+  },
+  {
+    id: 'q-fis-4-3-9',
+    enunciado: 'Se conectan dos ampolletas idénticas en paralelo a una batería. Si una de las ampolletas se quema abriendo su rama, ¿qué ocurrirá con el funcionamiento de la ampolleta restante?',
+    alternativas: {
+      A: 'Se apagará inmediatamente.',
+      B: 'Continuará funcionando de forma idéntica, manteniendo el mismo brillo por recibir el mismo voltaje constante de la batería.',
+      C: 'Brillará al doble por recibir toda la corriente del circuito.',
+      D: 'Comenzará a parpadear por inestabilidad de voltaje.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Perfecto! En una conexión en paralelo, las ramas son independientes entre sí. Cada una está conectada directamente a los bornes de la fuente de poder. Si una rama se abre, la otra sigue conectada de forma normal a los $12 \\text{ V}$ de la batería, por lo que su corriente y su brillo se mantienen idénticos sin verse afectados.',
+    feedback_error: 'Esta es la inmensa ventaja de la conexión en paralelo (usada en las casas). Si apagas o quitas una lámpara de tu habitación, el televisor o la nevera de la otra toma de corriente siguen funcionando sin problemas.'
+  },
+  {
+    id: 'q-fis-4-3-10',
+    enunciado: 'Un circuito consta de una fuente de voltaje y un resistor de resistencia $R$. Si añadimos un segundo resistor idéntico en **paralelo** con el primero, ¿qué ocurrirá con la corriente total suministrada por la fuente?',
+    alternativas: {
+      A: 'La corriente total se reduce a la mitad.',
+      B: 'La corriente total permanece igual.',
+      C: 'La corriente total se duplica.',
+      D: 'La corriente total se reduce a la cuarta parte.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente deducción! Al añadir un resistor en paralelo, la resistencia equivalente total del circuito disminuye a la mitad ($R/2$). Por la Ley de Ohm ($I = V / R_{eq}$), si la resistencia equivalente cae a la mitad manteniendo el voltaje constante, la corriente total entregada por la fuente de poder debe duplicarse.',
+    feedback_error: 'Añadir caminos de corriente en paralelo es como abrir compuertas adicionales en una represa. Al haber más caminos disponibles para los electrones, la resistencia global disminuye y la corriente total demandada a la fuente aumenta.'
+  }
+);
+
+// ==========================================
+// PREGUNTAS SECCIÓN 4 (31 a 40)
+// ==========================================
+poolPreguntas.push(
+  {
+    id: 'q-fis-4-4-1',
+    enunciado: 'El kilowatt-hora ($kWh$) es la unidad comercial utilizada por las compañías eléctricas para cobrar el consumo de energía en los hogares. ¿Cuál es el equivalente de $1 \\text{ kWh}$ expresado en Joules ($J$) en el Sistema Internacional?',
+    alternativas: {
+      A: '1.000 J',
+      B: '3.600 J',
+      C: '$3,6 \\times 10^5 \\text{ J}$',
+      D: '$3,6 \\times 10^6 \\text{ J}$'
+    },
+    respuesta_correcta: 'D',
+    feedback_acierto: '¡Correcto! Un kilowatt equivale a $1000 \\text{ W}$ ($1000 \\text{ J/s}$) y una hora equivale a $3600 \\text{ segundos}$. Multiplicando ambas unidades: $1 \\text{ kWh} = 1000 \\text{ J/s} \\times 3600 \\text{ s} = 3.600.000 \\text{ Joules} = 3,6 \\times 10^6 \\text{ J}$.',
+    feedback_error: 'Multiplica la definición de kilo ($1000$) por el número de segundos en una hora ($3600$). Obtendrás la conversión exacta de esta unidad comercial de energía al SI.'
+  },
+  {
+    id: 'q-fis-4-4-2',
+    enunciado: 'Un computador de potencia nominal $250 \\text{ W}$ se usa durante $8 \\text{ horas}$ al día. ¿Cuánta energía eléctrica en $kWh$ consume el computador en un día?',
+    alternativas: {
+      A: '2,0 kWh',
+      B: '20,0 kWh',
+      C: '200,0 kWh',
+      D: '2000,0 kWh'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Excelente! Primero convertimos la potencia nominal a kilowatts dividiendo por 1000: $250 \\text{ W} / 1000 = 0,25 \\text{ kW}$. Luego, multiplicamos por las horas de uso: $E = 0,25 \\text{ kW} \\times 8 \\text{ h} = 2,0 \\text{ kWh}$.',
+    feedback_error: 'Para hallar los $kWh$, divide primero la potencia en Watts entre 1000 para pasarla a kilowatts ($0,25\\text{ kW}$). Luego multiplica ese resultado por las 8 horas de funcionamiento.'
+  },
+  {
+    id: 'q-fis-4-4-3',
+    enunciado: 'Si una compañía distribuidora de electricidad cobra una tarifa fija de \\$120 pesos chilenos por cada $kWh$ consumido, ¿cuál es el costo aproximado de mantener encendido un aire acondicionado de $1500 \\text{ W}$ durante $6 \\text{ horas}$?',
+    alternativas: {
+      A: '\\$1.080 pesos',
+      B: '\\$9.000 pesos',
+      C: '\\$10.800 pesos',
+      D: '\\$108.000 pesos'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Correcto! Calculamos la energía en $kWh$ del equipo: $1,5 \\text{ kW} \\times 6 \\text{ h} = 9,0 \\text{ kWh}$. Multiplicamos la energía consumida por la tarifa de la distribuidora: 9,0 \\text{ kWh} \\times \\$120 \\text{/kWh} = \\$1.080 pesos.',
+    feedback_error: 'Primero pasa la potencia de $1500\\text{ W}$ a kilowatts ($1,5\\text{ kW}$). Multiplícala por las 6 horas para calcular los $kWh$ consumidos ($9\\text{ kWh}$). Luego multiplica ese valor por la tarifa de \\$120.'
+  },
+  {
+    id: 'q-fis-4-4-4',
+    enunciado: '¿Qué es la **eficiencia energética** ($\\eta$) de un electrodoméstico de cocina?',
+    alternativas: {
+      A: 'La masa total de alimentos que puede calentar en un minuto.',
+      B: 'La proporción porcentual entre la energía útil que el aparato destina efectivamente a su función y la energía eléctrica total que consume de la red.',
+      C: 'El tiempo promedio de vida útil del aparato expresado en años.',
+      D: 'El voltaje máximo que puede soportar antes de quemarse.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Perfecto! La eficiencia energética evalúa qué tan buen transformador de energía es el aparato. Una ampolleta eficiente convierte gran parte de la electricidad en luz útil en lugar de perderla en calor. Matemáticamente es: $\\eta = (E_{útil} / E_{total}) \\times 100\\%$.',
+    feedback_error: 'La eficiencia se asocia con el aprovechamiento de recursos. Es el porcentaje de la energía de entrada total que realmente se transforma en la forma útil para la que fue diseñado el equipo.'
+  },
+  {
+    id: 'q-fis-4-4-5',
+    enunciado: 'Una ampolleta incandescente tradicional de $100 \\text{ W}$ emite la misma luz útil que una ampolleta LED moderna de $12 \\text{ W}$. ¿Cuál es la principal razón física detrás de este enorme ahorro energético?',
+    alternativas: {
+      A: 'A que la ampolleta LED funciona a un voltaje diez veces menor.',
+      B: 'A que la ampolleta incandescente pierde cerca del $95\\%$ de su energía consumida en forma de calor indeseado (Efecto Joule), mientras que la LED posee un rendimiento de transformación lumínico enormemente superior.',
+      C: 'A que los LEDs no consumen electrones reales.',
+      D: 'A que el LED no requiere de cables para su conexión.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! Las bombillas incandescentes producen luz calentando un filamento metálico hasta la incandescencia, disipando casi toda la energía como radiación térmica (calor). Los LEDs utilizan semiconductores para producir luz directa mediante electroluminiscencia casi sin disipar calor, lo que los hace sumamente eficientes.',
+    feedback_error: 'Las ampolletas antiguas se calientan tanto que puedes quemarte al tocarlas. Ese calor es energía eléctrica desperdiciada. El LED aprovecha casi toda la corriente para generar luz directa.'
+  },
+  {
+    id: 'q-fis-4-4-6',
+    enunciado: 'Un hervidor eléctrico consume una energía total de $200.000 \\text{ Joules}$ de la red eléctrica. Si de esta energía, $160.000 \\text{ Joules}$ se transfieren de forma útil al agua en forma de calor, ¿cuál es el porcentaje de eficiencia energética del hervidor?',
+    alternativas: {
+      A: '20%',
+      B: '40%',
+      C: '80%',
+      D: '125%'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Correcto! Usando la fórmula de eficiencia energética: $\\eta = \\frac{E_{útil}}{E_{total}} \\times 100\\% \\implies \\eta = \\frac{160.000}{200.000} \\times 100\\% = 0,8 \\times 100\\% = 80\\%$.',
+    feedback_error: 'Aplica la fórmula de eficiencia dividiendo la energía útil que calentó el agua ($160.000$) entre la energía eléctrica total consumida ($200.000$), y multiplica el resultado por 100 para obtener el porcentaje.'
+  },
+  {
+    id: 'q-fis-4-4-7',
+    enunciado: 'En la etiqueta chilena de eficiencia energética de electrodomésticos, ¿cuál es la letra estándar internacional y el color que denota el **máximo nivel de eficiencia y menor consumo**?',
+    alternativas: {
+      A: 'Letra G, color rojo intenso.',
+      B: 'Letra D, color amarillo.',
+      C: 'Letra A (o superiores como A+++), color verde.',
+      D: 'Letra X, color azul oscuro.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente! La etiqueta de eficiencia clasifica de la A (verde, más eficiente) a la G (rojo, menos eficiente). Adquirir productos de clase A o superior garantiza un menor consumo de recursos y menores costos de operación.',
+    feedback_error: 'Asocia el color verde de la ecología y la primera letra del abecedario con los dispositivos que mejor aprovechan la energía en el mercado.'
+  },
+  {
+    id: 'q-fis-4-4-8',
+    enunciado: 'Un televisor en modo de espera o *stand-by* (con el led rojo encendido sin usarse) consume una potencia fantasma constante de $5 \\text{ W}$. Si permanece en este estado durante todo un mes ($720 \\text{ horas}$), ¿cuánta energía en $kWh$ desperdicia en consumo vampiro?',
+    alternativas: {
+      A: '3,6 kWh',
+      B: '36,0 kWh',
+      C: '360,0 kWh',
+      D: '3600,0 kWh'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Perfecto! Convertimos la potencia fantasma a kilowatts: $5 \\text{ W} / 1000 = 0,005 \\text{ kW}$. Multiplicamos por las horas de stand-by mensuales: $E = 0,005 \\text{ kW} \\times 720 \\text{ h} = 3,6 \\text{ kWh}$.',
+    feedback_error: 'Divide los 5 Watts entre 1000 para obtener los kilowatts. Multiplica ese valor decimal por las 720 horas para conocer el desperdicio mensual.'
+  },
+  {
+    id: 'q-fis-4-4-9',
+    enunciado: '¿Cuál de las siguientes acciones domésticas promueve directamente una mayor eficiencia y optimización del consumo eléctrico en el hogar de acuerdo con la física?',
+    alternativas: {
+      A: 'Reemplazar las ampolletas de bajo consumo por incandescentes tradicionales de filamento.',
+      B: 'Conectar varios alargadores en serie para aumentar la resistencia de línea.',
+      C: 'Cambiar las luces domésticas a tecnología LED, desenchufar cargadores sin uso para eliminar consumos fantasma y preferir artefactos con certificación A.',
+      D: 'Dejar el refrigerador abierto para enfriar la cocina en verano.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente! Estas medidas disminuyen directamente la potencia inútil disipada por efecto Joule o consumos fantasma, logrando realizar las mismas funciones cotidianas con una fracción del gasto de energía eléctrica de la red.',
+    feedback_error: 'Busca la alternativa que represente un comportamiento real de ahorro y optimización energética tecnológica actual.'
+  },
+  {
+    id: 'q-fis-4-4-10',
+    enunciado: 'Un refrigerador eficiente funciona con una potencia de $200 \\text{ W}$. Si su motor opera de forma acumulada durante unas $6 \\text{ horas}$ diarias reales en intervalos, ¿cuál será el consumo mensual de energía de este refrigerador considerando un mes de $30 \\text{ días}$?',
+    alternativas: {
+      A: '1,2 kWh',
+      B: '36 kWh',
+      C: '120 kWh',
+      D: '360 kWh'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! Calculamos el tiempo mensual de uso real: $6 \\text{ h/día} \\times 30 \\text{ días} = 180 \\text{ horas en el mes}$. Pasa la potencia a kilowatts: $200 \\text{ W} / 1000 = 0,2 \\text{ kW}$. Calculamos el consumo mensual: $E = 0,2 \\text{ kW} \\times 180 \\text{ h} = 36 \\text{ kWh}$.',
+    feedback_error: 'Primero calcula cuántas horas en total al mes está el motor encendido (6 horas por 30 días). Luego, multiplica esas horas por la potencia expresada en kilowatts ($0,2\\text{ kW}$).'
+  }
+);
+
+// ==========================================
+// PREGUNTAS SECCIÓN 5 (41 a 50)
+// ==========================================
+poolPreguntas.push(
+  {
+    id: 'q-fis-4-5-1',
+    enunciado: '¿Por qué la instalación eléctrica en los hogares de Chile (y en casi todo el mundo) se realiza estrictamente en **paralelo** y no en serie?',
+    alternativas: {
+      A: 'Para que la corriente total de la casa disminuya al encender más electrodomésticos.',
+      B: 'Para que todos los artefactos domésticos operen de forma independiente bajo la misma diferencia de potencial estándar ($220 \\text{ V}$ en Chile) y asegurar que, si uno se apaga o quema, los demás sigan funcionando.',
+      C: 'Porque la conexión en serie requiere conductores magnéticos caros.',
+      D: 'Únicamente para cumplir con las normas de estética habitacional.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Correcto! En una instalación paralela, cada toma de corriente actúa como un ramal autónomo e independiente conectado de forma directa a los cables principales de distribución. Esto permite encender la televisión a $220 \\text{ V}$ sin importar si las ampolletas del pasillo están encendidas o apagadas.',
+    feedback_error: 'Si la instalación de una casa fuera en serie, tendrías que tener encendidos todos los aparatos (ampolletas, nevera, televisor) al mismo tiempo para cerrar el lazo, y si una sola ampolleta del baño se quemara, toda la casa quedaría sin electricidad al instante.'
+  },
+  {
+    id: 'q-fis-4-5-2',
+    enunciado: 'Un estudiante enciende simultáneamente un horno eléctrico, un secador de pelo, una plancha y una tetera eléctrica en la misma toma de corriente de la cocina mediante triples y alargadores. Al cabo de unos segundos, se corta la luz de la casa al saltar el interruptor automático (disyuntor) del tablero. ¿Cuál es la causa física de este corte?',
+    alternativas: {
+      A: 'A que los electrodomésticos se quemaron en cortocircuito debido a la fricción.',
+      B: 'Al conectar muchos artefactos en paralelo, la resistencia equivalente disminuyó de forma drástica, elevando la corriente total por encima del límite térmico seguro del automático, forzándolo a abrir el circuito por seguridad.',
+      C: 'A que los voltajes de los aparatos se sumaron hasta superar los $10.000 \\text{ V}$.',
+      D: 'A la polarización magnética de los alargadores.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Excelente! En paralelo, a mayor número de electrodomésticos activos, menor es la resistencia equivalente ($R_{eq}$) de la casa por sumarse las conductancias de los caminos. Por la Ley de Ohm ($I = V/R_{eq}$), la corriente total demandada al tablero se eleva de manera peligrosa ($I_{total} = \\sum I_{artefactos}$). El automático corta para evitar el calentamiento extremo de los cables que provocaría un incendio.',
+    feedback_error: '¡Sobrecarga de circuito! Cada aparato en paralelo añade demanda de corriente. Al sumar muchas corrientes de aparatos potentes de calefacción, la corriente total supera el amperaje del automático de tu tablero (ej. $16 \\text{ A}$), saltando por seguridad térmica.'
+  },
+  {
+    id: 'q-fis-4-5-3',
+    enunciado: 'El **interruptor diferencial** es un elemento de seguridad obligatorio en los tableros eléctricos. ¿Cuál es el principio físico de funcionamiento de un disyuntor diferencial y qué protege?',
+    alternativas: {
+      A: 'Compara la corriente que ingresa por la fase con la que retorna por el neutro. Si detecta una diferencia mínima (fuga de corriente), se abre al instante, protegiendo a las personas de electrocuciones por contacto indirecto.',
+      B: 'Mide la resistencia magnética de la tierra para evitar que caigan rayos en el tejado.',
+      C: 'Regula el voltaje de entrada para que las ampolletas no parpadeen.',
+      D: 'Corta la electricidad si el refrigerador está demasiado caliente.'
+    },
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Excelente! En un circuito normal sin fallas, toda la corriente que entra por la fase debe regresar por el neutro ($I_{\\text{fase}} = I_{\\text{neutro}}$). Si una persona toca una carcasa electrificada y la corriente se fuga por su cuerpo hacia el suelo, la corriente del neutro disminuye. El diferencial capta esa diferencia (típicamente de $30 \\text{ mA}$) y corta en milésimas de segundo salvando la vida de la persona.',
+    feedback_error: 'El interruptor diferencial se llama así porque detecta una "diferencia" de corriente entre la entrada y la salida. Su función es proteger vidas humanas de electrocuciones rápidas al desviar corriente por su cuerpo.'
+  },
+  {
+    id: 'q-fis-4-5-4',
+    enunciado: 'Un **fusible** es un filamento conductor calibrado conectado en serie con la fase de un circuito. ¿Cuál es el fenómeno físico que provoca la fusión del fusible ante un cortocircuito?',
+    alternativas: {
+      A: 'La inducción magnética del aire.',
+      B: 'El **Efecto Joule**, donde el paso de una corriente anormalmente alta genera calor que funde el filamento del fusible por alcanzar su punto de fusión, interrumpiendo físicamente la corriente por seguridad.',
+      C: 'La fuerza de Coulomb de repulsión de cargas.',
+      D: 'La descompresión gaseosa del metal.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Correcto! El fusible es un elemento de sacrificio calibrado. Si la corriente supera un umbral seguro (debido a un cortocircuito o sobrecarga extrema), el calor generado por Efecto Joule ($Q = I^2 R t$) es tan intenso que funde el metal blando del fusible al instante, abriendo la línea de forma física irreversible.',
+    feedback_error: 'El fusible se "quema" o funde por calor. La corriente excesiva calienta el filamento por Efecto Joule hasta fundirlo, abriendo el paso y protegiendo el resto de los electrodomésticos caros de la casa.'
+  },
+  {
+    id: 'q-fis-4-5-5',
+    enunciado: 'Las tomas de corriente modernas cuentan con tres clavijas. ¿Cuál es el rol de seguridad que cumple el **cable de tierra** (verde/amarillo) en una instalación domiciliaria?',
+    alternativas: {
+      A: 'Suministrar corriente de retorno a la batería central.',
+      B: 'Conectar las partes metálicas de los artefactos a una barra de cobre enterrada en el suelo, permitiendo que las corrientes de fuga se desvíen de forma directa a la tierra, evitando que crucen por el cuerpo de una persona.',
+      C: 'Reducir el voltaje de la casa a la mitad durante emergencias.',
+      D: 'Eliminar el ruido acústico de la nevera.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Perfecto! Si un cable fase suelto toca la carcasa metálica de una lavadora, esta queda electrificada. Sin cable a tierra, si la tocas, la corriente fluye por tu cuerpo al suelo. Si la lavadora tiene conexión a tierra, la corriente de fuga prefiere ir por el cable de cobre (baja resistencia) al suelo, activando de inmediato el diferencial y protegiéndote.',
+    feedback_error: 'La toma de tierra ofrece un escape de baja resistencia para las fallas eléctricas. En vez de que tú actúes como conductor al suelo, el cable verde/amarillo se encarga de drenar esa corriente indeseada de forma segura al suelo.'
+  },
+  {
+    id: 'q-fis-4-5-6',
+    enunciado: 'En la red eléctrica domiciliaria de una vivienda, ¿a cuál de las siguientes líneas de cable se deben conectar en serie los fusibles, interruptores y disyuntores automáticos por razones de seguridad de acuerdo con la física?',
+    alternativas: {
+      A: 'Al cable Neutro únicamente.',
+      B: 'Al cable de Toma de Tierra.',
+      C: 'Al cable de Fase, que es el conductor que transporta la energía de alta tensión.',
+      D: 'A cualquiera de los cables de forma indistinta.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente! Los interruptores y protecciones se conectan en la Fase. Si se colocaran en el neutro, al abrirse o saltar, la fase seguiría conectada de forma directa al electrodoméstico. Aunque el aparato parezca "apagado" por no cerrar circuito, seguiría estando energizado a $220 \\text{ V}$, provocando una electrocución si alguien lo toca por dentro.',
+    feedback_error: 'Debes cortar el flujo desde la entrada de energía. La fase es el cable con tensión activa. Colocar las protecciones o interruptores en el neutro es extremadamente peligroso porque deja el electrodoméstico con carga viva permanente.'
+  },
+  {
+    id: 'q-fis-4-5-7',
+    enunciado: '¿Cuál es la función física del cable **Neutro** en una instalación eléctrica domiciliaria?',
+    alternativas: {
+      A: 'Bloquear el paso de los electrones.',
+      B: 'Servir como canalizador de las descargas atmosféricas de los rayos.',
+      C: 'Proporcionar un camino de retorno seguro para la corriente eléctrica una vez que ha cruzado el electrodoméstico, permitiendo cerrar el circuito.',
+      D: 'Medir el consumo de energía comercial.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Correcto! Para que los electrones fluyan de forma continua, se necesita un lazo cerrado. La Fase trae la corriente con energía potencial y el Neutro proporciona la línea de retorno al transformador local a potencial cero ($0 \\text{ V}$), cerrando el circuito eléctrico.',
+    feedback_error: 'El circuito requiere ida y vuelta. Si solo tuvieras fase, los electrones no tendrían un camino para fluir de regreso. El cable neutro cierra el trayecto de vuelta.'
+  },
+  {
+    id: 'q-fis-4-5-8',
+    enunciado: 'Un cortocircuito se define como una falla geológica de resistencia nula ($R \\approx 0 \\text{ } \\Omega$) que une directamente el cable fase con el neutro. ¿Qué ocurre con el valor de la corriente en el circuito en el instante del cortocircuito de acuerdo con la física?',
+    alternativas: {
+      A: 'La corriente se reduce a cero de forma instantánea.',
+      B: 'La corriente permanece en el valor nominal normal.',
+      C: 'La corriente experimenta una elevación teóricamente infinita ($I = V/R \\implies I \\to \\infty$), generando temperaturas extremas instantáneas.',
+      D: 'La corriente se vuelve corriente alterna bipolar.'
+    },
+    respuesta_correcta: 'C',
+    feedback_acierto: '¡Excelente física! Según la Ley de Ohm ($I = V/R$), si la resistencia en el camino del conductor tiende a cero, la intensidad de la corriente se dispara al infinito instantáneamente. Esto provoca chispas violentas, calor destructivo que puede derretir cables y un peligro extremo de incendio si no se cuenta con automáticos de respuesta rápida.',
+    feedback_error: 'Al no haber resistencia que obstaculice el paso de los electrones en el empalme directo de fase y neutro, la corriente fluye de forma masiva sin límites. La Ley de Ohm nos demuestra que corriente e impedancia son inversas.'
+  },
+  {
+    id: 'q-fis-4-5-9',
+    enunciado: 'Un disyuntor automático domiciliario indica en su grabado técnico: "C16". ¿Qué significa físicamente este valor de grabado en el elemento de protección?',
+    alternativas: {
+      A: 'Que el disyuntor soporta una corriente nominal máxima de $16 \\text{ Amperes}$ antes de abrir el circuito por sobrecarga.',
+      B: 'Que el dispositivo solo funciona a temperaturas mayores a $16^\\circ\\text{C}$.',
+      C: 'Que el cortocircuito tardará 16 segundos en apagarse.',
+      D: 'Que el disyuntor consume $16 \\text{ Watts}$ por hora.'
+    },
+    // Se inyecta la última pregunta con total precisión
+    respuesta_correcta: 'A',
+    feedback_acierto: '¡Correcto! El grabado "16" (o C16) indica que la corriente nominal umbral de disparo por sobrecarga es de $16 \\text{ Amperes}$. Si la corriente total demandada al circuito supera este valor durante un periodo determinado de tiempo, el bimetal interno se calienta y dobla abriendo el circuito.',
+    feedback_error: 'Los interruptores automáticos están clasificados por su corriente de diseño máxima permitida. Un automático C16 saltará si la corriente excede los 16 Amperes.'
+  },
+  {
+    id: 'q-fis-4-5-10',
+    enunciado: 'Una persona sufre una descarga eléctrica severa por tocar la carcasa de un tostador defectuoso. ¿Por qué el disyuntor de la toma de tierra y el diferencial no evitaron la descarga si no se contaba con cable a tierra en la casa?',
+    alternativas: {
+      A: 'Porque el diferencial solo funciona en presencia de cortocircuitos.',
+      B: 'Porque al no existir un cable de toma de tierra en la casa, la corriente de fuga no tenía una ruta alternativa al suelo, quedando la carcasa energizada hasta que el cuerpo de la persona actuó como único conductor hacia la tierra.',
+      C: 'Porque la persona tenía puestos zapatos aislantes que anularon el diferencial.',
+      D: 'Porque las tomas de corriente sin tierra duplican el amperaje.'
+    },
+    respuesta_correcta: 'B',
+    feedback_acierto: '¡Soberbio diagnóstico! El cable de tierra canaliza la corriente de fuga de inmediato al ocurrir la falla, provocando una diferencia de corriente que activa el diferencial *antes* de que alguien toque el artefacto. Sin tierra, el tostador permanece electrificado en silencio; la corriente solo se fuga cuando una persona lo toca, actuando su cuerpo como conductor físico hacia el suelo.',
+    feedback_error: 'La toma de tierra es la prevención de fallas. Si no hay cable de tierra, la lavadora o tostador con fallas no avisa ni hace saltar el diferencial, ya que la corriente no tiene por dónde fugarse hasta que tú la tocas sirviendo de cable.'
+  }
+);
+
+// -------------------------------------------------------------
+// ENSAMBLADO DE LAS SECCIONES CON SUS RESPECTIVAS 10 PREGUNTAS
+// -------------------------------------------------------------
+poolPreguntas.push(...preguntasRestantes = []); // Prevenir cualquier error por variable no definida
+
+dataSeccionesTeoria.forEach((sec, idx) => {
+  // Extraemos las 10 preguntas de la sección correspondiente
+  const startIdx = idx * 10;
+  const preguntasSeccion = poolPreguntas.slice(startIdx, startIdx + 10);
+
+  if (preguntasSeccion.length < 10) {
+    console.warn(`Alerta: Sección ${sec.id} tiene menos de 10 preguntas! actual: ${preguntasSeccion.length}`);
+  }
+
+  capElectricidad.secciones.push({
+    id: sec.id,
+    capituloId: 'cap-fisica-4-electricidad',
+    materiaId: 'ciencias-fisica',
+    title: sec.title,
+    introduccion: sec.introduccion,
+    datos_claves: sec.datos_claves,
+    order: idx + 1,
+    testId: `test-fis-4-${idx + 1}`,
+    test: {
+      id: `test-fis-4-${idx + 1}`,
+      seccionId: sec.id,
+      preguntas: preguntasSeccion
+    }
+  });
+});
+
+// Escribimos el JSON final en el directorio de scratch del proyecto
+const scratchPath = path.resolve(__dirname, 'fisica-cap4-mockup.json');
+fs.writeFileSync(scratchPath, JSON.stringify([capElectricidad], null, 2), 'utf8');
+
+console.log('🎉 Mockup de Física del Capítulo 4 (Electricidad) generado exitosamente en scratch del proyecto!');
+console.log('Path absoluto del archivo generado:', scratchPath);
+console.log('Cantidad de pasos/secciones:', capElectricidad.secciones.length);
+console.log('Total de preguntas generadas:', capElectricidad.secciones.reduce((acc, s) => acc + s.test.preguntas.length, 0));

@@ -10,6 +10,23 @@ export interface Materia {
   imageUrl?: string;
 }
 
+export interface GuideSlide {
+  icon: string;
+  title: string;
+  bgGradient: string;
+  iconBg: string;
+  content: string;
+  interactive?: boolean;
+  quizId?: string;
+}
+
+export interface QuizAlt {
+  key: string;
+  text: string;
+  correct: boolean;
+  explain: string;
+}
+
 export interface Capitulo {
   id: string;
   materiaId: string;
@@ -18,6 +35,8 @@ export interface Capitulo {
   order: number;
   pdfUrl?: string;
   secciones: Seccion[];
+  slides?: GuideSlide[];
+  quizzes?: Record<string, QuizAlt[]>;
 }
 
 export interface Seccion {
