@@ -119,7 +119,6 @@ export class FirestoreService {
   private cachedProfile$: Observable<UserProfile | null> | null = null;
 
   constructor() { 
-    (window as any).firestoreService = this; 
     // Clear cached profile observable when auth status resets
     authState(this.auth).subscribe(user => {
       if (!user) {
@@ -168,7 +167,7 @@ export class FirestoreService {
     }
 
     this.cachedProfile$ = authState(this.auth).pipe(
-      switchMap((user: any) => {
+      switchMap((user) => {
         if (!user) {
           this.profileSignal.set(null);
           return of(null);
@@ -258,7 +257,7 @@ export class FirestoreService {
 
   async migrateUserData(oldUid: string, newUid: string): Promise<void> {
     try {
-      console.log(`[Migration] Starting data migration from ${oldUid} to ${newUid}`);
+
       
       // 1. Copiar documento de perfil
       const oldDocRef = doc(this.firestore, 'users', oldUid);
@@ -267,13 +266,13 @@ export class FirestoreService {
       
       if (oldSnap.exists()) {
         const oldData = oldSnap.data();
-        console.log('[Migration] Migrating profile data:', oldData);
+
         // Preservar uid del nuevo usuario y actualizar en Firestore
         await setDoc(newDocRef, { ...oldData, uid: newUid }, { merge: true });
         
         // Eliminar documento antiguo de perfil para evitar futuras duplicaciones o re-migraciones
         await deleteDoc(oldDocRef);
-        console.log('[Migration] Old profile document deleted successfully.');
+
       } else {
         console.warn('[Migration] Old profile document did not exist.');
       }
@@ -282,23 +281,23 @@ export class FirestoreService {
       const intentosRef = collection(this.firestore, 'intentos');
       const qIntentos = query(intentosRef, where('odId', '==', oldUid));
       const intentosSnap = await getDocs(qIntentos);
-      console.log(`[Migration] Found ${intentosSnap.size} attempts to migrate.`);
+
       for (const docSnap of intentosSnap.docs) {
         await updateDoc(doc(this.firestore, 'intentos', docSnap.id), { odId: newUid });
       }
-      console.log('[Migration] Simulation attempts migrated successfully.');
+
       
       // 3. Migrar actividades (copiar subcolección)
       const oldActRef = collection(this.firestore, `users/${oldUid}/actividad`);
       const newActRef = collection(this.firestore, `users/${newUid}/actividad`);
       const actSnap = await getDocs(oldActRef);
-      console.log(`[Migration] Found ${actSnap.size} activities to migrate.`);
+
       for (const docSnap of actSnap.docs) {
         await setDoc(doc(newActRef, docSnap.id), docSnap.data());
         // Eliminar actividad antigua
         await deleteDoc(doc(oldActRef, docSnap.id));
       }
-      console.log('[Migration] Activity history migrated and cleaned up successfully.');
+
       
     } catch (error) {
       console.error('[Migration] Critical error migrating user data:', error);
@@ -389,7 +388,7 @@ export class FirestoreService {
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
     const answers = snap.data()['answers'] || [];
-    const idx = answers.findIndex((a: any) => a.preguntaId === preguntaId);
+    const idx = answers.findIndex((a: { preguntaId: string }) => a.preguntaId === preguntaId);
     if (idx >= 0) answers[idx] = { preguntaId, selectedAnswer, isCorrect };
     else answers.push({ preguntaId, selectedAnswer, isCorrect });
     await updateDoc(ref, { answers });
@@ -399,7 +398,7 @@ export class FirestoreService {
     const ref = doc(this.firestore, 'intentos', intentoId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return 0;
-    const correct = snap.data()['answers'].filter((a: any) => a.isCorrect).length;
+    const correct = snap.data()['answers'].filter((a: { isCorrect: boolean }) => a.isCorrect).length;
     const score = Math.round(100 + (correct / Math.max(totalQuestions, 1)) * 900);
     await updateDoc(ref, { status: 'completed', finishedAt: Timestamp.now(), score });
     return score;

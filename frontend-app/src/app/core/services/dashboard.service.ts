@@ -253,11 +253,10 @@ export class DashboardService {
       // o se integran desde la colección global 'intentos'
       const history = await this.firestoreService.getUserActivities(user.uid);
       if (history && history.length > 0) {
-        this._activities.set(history as any);
+        this._activities.set(history as ActivityEntry[]);
       }
 
-      // 2. Cargar records PAES
-      // TODO: Implementar en firestoreService si es necesario
+      // Los records PAES se cargan desde localStorage en loadFromStorage()
     } catch (error) {
       console.warn('[DashboardService] Error sincronizando con Firebase:', error);
     }

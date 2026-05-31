@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from '@angular/fire/auth';
-import { User } from 'firebase/auth';
+import { User, UserCredential } from 'firebase/auth';
 import { Observable, from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { FirestoreService } from './firestore.service';
@@ -53,8 +53,6 @@ export class AuthService {
       // Buscar si existe un perfil con este mismo correo pero diferente UID
       const existingUid = await this.firestoreService.findUidByEmail(googleEmail);
       if (existingUid && existingUid !== googleUser.uid) {
-        // ¡Se detectó la cuenta con el mismo correo pero diferente UID! Migrar todos los datos
-        console.log(`[Auth] Migrating existing user data from UID ${existingUid} to Google UID ${googleUser.uid}`);
         await this.firestoreService.migrateUserData(existingUid, googleUser.uid);
       }
     }
@@ -71,7 +69,7 @@ export class AuthService {
 
   async register(email: string, pass: string, name: string) {
     let userCreated = false;
-    let cred: any = null;
+    let cred: UserCredential | null = null;
     
     // Sanear el nombre quitando saltos de línea
     const cleanName = (name || '').replace(/[\r\n]+/g, ' ').trim();
