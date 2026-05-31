@@ -299,7 +299,7 @@ export class SimulationRunnerComponent implements OnInit, OnDestroy {
   parsedFeedback: SafeHtml = '';
   
   timeLeft: number | null = null;
-  timerInterval: any;
+  timerInterval: ReturnType<typeof setInterval> | null = null;
   storageKey = '';
 
   get currentQuestion() {

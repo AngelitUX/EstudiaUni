@@ -3,13 +3,18 @@ import { Observable, of } from 'rxjs';
 
 interface SimulationAttempt {
   id: string;
-  questions: any[];
+  questions: { id: string; stem: string; options: { id: string; text: string }[] }[];
   type: 'simulation' | 'quiz';
   timeLimitMinutes?: number;
 }
 
-// Este servicio ya no usa el backend - todo está en FirestoreService
-// Se mantiene por compatibilidad con componentes existentes
+interface AnswerSubmission {
+  questionId: string;
+  selectedOption: string;
+}
+
+// Servicio legacy mantenido por compatibilidad con componentes existentes.
+// La lógica principal de ensayos está en FirestoreService.
 @Injectable({ providedIn: 'root' })
 export class SimulationsService {
 
@@ -23,7 +28,7 @@ export class SimulationsService {
     });
   }
 
-  submitSimulation(attemptId: string, answers: any[]) {
+  submitSimulation(attemptId: string, answers: AnswerSubmission[]) {
     return of({ success: true, mock: true });
   }
 

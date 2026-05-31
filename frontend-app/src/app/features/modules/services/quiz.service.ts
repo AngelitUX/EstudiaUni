@@ -6,8 +6,8 @@ export interface QuizSubmission {
   selectedOption: string;
 }
 
-// Este servicio ya no usa el backend - todo está en FirestoreService
-// Se mantiene por compatibilidad con componentes existentes
+// Servicio legacy mantenido por compatibilidad con componentes existentes.
+// La lógica principal está en FirestoreService.
 @Injectable({ providedIn: 'root' })
 export class QuizService {
 
