@@ -8,6 +8,8 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AdminService } from '../admin/services/admin.service';
+import { PaymentService } from '../../core/services/payment.service';
+
 
 @Component({
   selector: 'app-profile-settings',
@@ -52,17 +54,42 @@ import { AdminService } from '../admin/services/admin.service';
               <input [(ngModel)]="profileForm.displayName" type="text" maxlength="50" placeholder="Tu nombre público" />
             </label>
 
-            <label class="upload-card">
-              <span class="upload-title">Sube tu foto</span>
-              <span class="upload-text">JPG, PNG o WebP · Máx 2MB</span>
-              <span class="upload-btn">Seleccionar archivo</span>
-              <input type="file" accept="image/*" (change)="onPhotoFileSelected($event)" />
-            </label>
+            <!-- SECTOR AVATARES PREDEFINIDOS -->
+            <div class="avatars-selector-container">
+              <span class="avatars-selector-title">Avatares de Foco 🐙</span>
+              <div class="avatars-grid">
+                <button
+                  type="button"
+                  class="avatar-option-btn"
+                  *ngFor="let avatar of avatarOptions"
+                  [class.active]="profileForm.photoURL === avatar"
+                  (click)="selectAvatar(avatar)"
+                >
+                  <img [src]="avatar" alt="Avatar Foco" />
+                </button>
+              </div>
+            </div>
 
-            <label class="sidebar-field">
-              URL de foto
-              <input [(ngModel)]="profileForm.photoURL" type="url" placeholder="https://..." />
-            </label>
+            <!-- CARGA DE ARCHIVO LOCAL (Solo Premium) -->
+            <div class="premium-photo-section" [class.locked]="!isProPlan()">
+              <label class="upload-card">
+                <span class="upload-title">Sube tu foto</span>
+                <span class="upload-text">JPG, PNG o WebP · Máx 2MB</span>
+                <span class="upload-btn">Seleccionar archivo</span>
+                <input type="file" accept="image/*" (change)="onPhotoFileSelected($event)" [disabled]="!isProPlan()" />
+              </label>
+
+              <label class="sidebar-field">
+                URL de foto
+                <input [(ngModel)]="profileForm.photoURL" type="url" placeholder="https://..." [disabled]="!isProPlan()" />
+              </label>
+              
+              <!-- Alerta de Bloqueo Freemium -->
+              <div class="freemium-lock-message" *ngIf="!isProPlan()" (click)="paymentService.openPricingModal()">
+                <span>🔒 Carga de fotos es una función ⚡ PRO. ¡Pásate a Premium para subir la tuya!</span>
+              </div>
+            </div>
+
           </aside>
 
           <div class="profile-main">
@@ -685,7 +712,86 @@ import { AdminService } from '../admin/services/admin.service';
       cursor: not-allowed;
     }
 
+    .avatars-selector-container {
+      width: 100%;
+      margin: 0.5rem 0;
+      text-align: left;
+    }
+    .avatars-selector-title {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .avatars-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.4rem;
+    }
+    .avatar-option-btn {
+      border: 2px solid var(--glass-border);
+      background: var(--bg-color);
+      border-radius: 50%;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .avatar-option-btn:hover {
+      transform: scale(1.1);
+      border-color: rgba(133, 92, 214, 0.45);
+    }
+    .avatar-option-btn.active {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 10px rgba(133, 92, 214, 0.35);
+      transform: scale(1.05);
+    }
+    .avatar-option-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .premium-photo-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      position: relative;
+    }
+    .premium-photo-section.locked {
+      opacity: 0.65;
+    }
+    .premium-photo-section.locked label,
+    .premium-photo-section.locked input {
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+    .freemium-lock-message {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1.5px solid rgba(245, 158, 11, 0.3);
+      color: #d97706;
+      border-radius: 10px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.3;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.25rem;
+    }
+    .freemium-lock-message:hover {
+      background: rgba(245, 158, 11, 0.15);
+      transform: translateY(-1px);
+    }
+
     @media (max-width: 720px) {
+
       .profile-shell {
         grid-template-columns: 1fr;
       }
@@ -709,10 +815,31 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
   public readonly adminService = inject(AdminService);
+  public readonly paymentService = inject(PaymentService);
 
   isSettingsMode = false;
+  isProPlan = () => this.firestoreService.profileSignal()?.plan === 'premium';
   loading = true;
   saving = false;
+
+
+  avatarOptions = [
+    'assets/images/avatars/avatar_1.png',
+    'assets/images/avatars/avatar_2.png',
+    'assets/images/avatars/avatar_3.png',
+    'assets/images/avatars/avatar_4.png',
+    'assets/images/avatars/avatar_5.png',
+    'assets/images/avatars/avatar_6.png',
+    'assets/images/avatars/avatar_7.png',
+    'assets/images/avatars/avatar_8.png',
+    'assets/images/avatars/avatar_9.png',
+    'assets/images/avatars/avatar_10.png'
+  ];
+
+  selectAvatar(avatar: string): void {
+    this.profileForm.photoURL = avatar;
+  }
+
 
   profileForm = {
     displayName: '',
@@ -838,6 +965,10 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   onPhotoFileSelected(event: Event): void {
+    if (!this.isProPlan()) {
+      this.toast.error('La carga de fotos personalizadas es una función Premium ⚡.');
+      return;
+    }
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;

@@ -29,18 +29,19 @@ import { Router } from '@angular/router';
           <div class="profile-shell">
             <aside class="profile-sidebar">
               <div class="avatar-container">
-                <div class="avatar-wrap clickable" (click)="photoInput.click()" title="Cambiar foto de perfil">
+                <div class="avatar-wrap" [class.clickable]="isProPlan()" (click)="isProPlan() ? photoInput.click() : showPremiumToast()" title="Foto de perfil">
                   <img *ngIf="profileForm.photoURL; else avatarFallback" [src]="profileForm.photoURL" class="avatar" alt="Foto de perfil"/>
                   <ng-template #avatarFallback><div class="avatar fallback">{{ initial }}</div></ng-template>
-                  <div class="avatar-overlay">
+                  <div class="avatar-overlay" *ngIf="isProPlan()">
                     <span>Cambiar foto</span>
                   </div>
-                  <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;"/>
+                  <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;" [disabled]="!isProPlan()"/>
                 </div>
                 <div class="emoji-pill clickable" (click)="$event.stopPropagation(); showEmojiPicker = true" title="Cambiar emote">
                   {{ profileForm.profileEmoji || '✨' }}
                 </div>
               </div>
+
               <div class="profile-summary">
                 <div class="name-edit-wrap">
                   <input *ngIf="isEditingName" [(ngModel)]="profileForm.displayName" class="title-input" (blur)="isEditingName = false" (keyup.enter)="isEditingName = false" #nameInput/>
@@ -52,6 +53,23 @@ import { Router } from '@angular/router';
                 <a *ngIf="adminService.isAdmin()" routerLink="/admin" class="admin-badge" (click)="closeModal()">🛡️ Panel de Admin</a>
                 <p class="profile-subtitle">Personaliza tu identidad y tu imagen.</p>
               </div>
+
+              <!-- SECTOR AVATARES PREDEFINIDOS EN MODAL -->
+              <div class="avatars-selector-container">
+                <span class="avatars-selector-title">Avatares de Foco 🐙</span>
+                <div class="avatars-grid">
+                  <button
+                    type="button"
+                    class="avatar-option-btn"
+                    *ngFor="let avatar of avatarOptions"
+                    [class.active]="profileForm.photoURL === avatar"
+                    (click)="selectAvatar(avatar)"
+                  >
+                    <img [src]="avatar" alt="Avatar Foco" />
+                  </button>
+                </div>
+              </div>
+
 
               <div class="sidebar-extra-fields">
                 <label class="sidebar-field">Ubicación (Región)
@@ -449,6 +467,52 @@ import { Router } from '@angular/router';
       40%, 60% { transform: translate3d(4px, 0, 0); }
     }
 
+    .avatars-selector-container {
+      width: 100%;
+      margin: 0.75rem 0;
+      text-align: left;
+    }
+    .avatars-selector-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+    .avatars-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.4rem;
+    }
+    .avatar-option-btn {
+      border: 2px solid var(--glass-border);
+      background: var(--bg-color);
+      border-radius: 50%;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .avatar-option-btn:hover {
+      transform: scale(1.1);
+      border-color: rgba(133, 92, 214, 0.45);
+    }
+    .avatar-option-btn.active {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 10px rgba(133, 92, 214, 0.35);
+      transform: scale(1.05);
+    }
+    .avatar-option-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     .emoji-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9500}
     .emoji-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)}
     .emoji-panel{position:relative;z-index:1;width:min(560px,90vw);padding:1rem 1.25rem 1.25rem;border-radius:16px;border:2px solid var(--glass-border);background:#ffffff;box-shadow:var(--shadow-lg)}
@@ -579,6 +643,27 @@ export class ProfileModalComponent implements OnInit {
     { id: 'ciencias-quimica', name: 'Química' }
   ];
   emojiOptions = ['✨', '🔥', '🎯', '🚀', '📚', '🧠', '😎', '🌟', '🎓', '⚡', '💪', '🦊', '🐼', '🦄', '😄', '🤓', '🥳', '😺', '🌈', '🍀', '🪐', '🌙', '☀️', '🎵', '🎮', '🏆', '💎', '🧩', '🫶', '🛡️'];
+
+  avatarOptions = [
+    'assets/images/avatars/avatar_1.png',
+    'assets/images/avatars/avatar_2.png',
+    'assets/images/avatars/avatar_3.png',
+    'assets/images/avatars/avatar_4.png',
+    'assets/images/avatars/avatar_5.png',
+    'assets/images/avatars/avatar_6.png',
+    'assets/images/avatars/avatar_7.png',
+    'assets/images/avatars/avatar_8.png',
+    'assets/images/avatars/avatar_9.png',
+    'assets/images/avatars/avatar_10.png'
+  ];
+
+  selectAvatar(avatar: string): void {
+    this.profileForm.photoURL = avatar;
+  }
+
+  showPremiumToast(): void {
+    this.toast.error('La carga de imágenes personalizadas es una función Premium ⚡.');
+  }
 
   public get firestoreServiceSignal() {
     return this.firestoreService;
@@ -766,6 +851,10 @@ export class ProfileModalComponent implements OnInit {
   }
 
   onPhotoFileSelected(event: Event): void {
+    if (!this.isProPlan()) {
+      this.toast.error('La carga de imágenes personalizadas es una función Premium ⚡.');
+      return;
+    }
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;

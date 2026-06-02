@@ -2125,7 +2125,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       nextBtnText: 'Siguiente',
       prevBtnText: 'Atrás',
       doneBtnText: '¡Comenzar!',
-      onHighlightStarted: (element) => {
+      onHighlightStarted: (element: any) => {
         const sidebar = document.querySelector('.sidebar');
         if (sidebar && element && sidebar.contains(element)) {
           sidebar.scrollTo({

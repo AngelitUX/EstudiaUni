@@ -134,13 +134,17 @@ export class AuthService {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
 
+    // Cuentas nuevas nacen en tier 'free', les asignamos un avatar aleatorio de Foco (1-10)
+    const randomAvatarId = Math.floor(Math.random() * 10) + 1;
+    const finalPhotoURL = `assets/images/avatars/avatar_${randomAvatarId}.png`;
+
     await this.firebaseService.firestore
       .collection('users')
       .doc(uid)
       .set({
         email,
         displayName,
-        photoURL: photoURL || null,
+        photoURL: finalPhotoURL,
         role: 'student',
         createdAt: now,
         updatedAt: now,
@@ -166,6 +170,7 @@ export class AuthService {
         onboardingCompleted: false,
       });
 
-    this.logger.log(`User document created for: ${uid}`);
+    this.logger.log(`User document created for: ${uid} with default avatar ${finalPhotoURL}`);
   }
+
 }

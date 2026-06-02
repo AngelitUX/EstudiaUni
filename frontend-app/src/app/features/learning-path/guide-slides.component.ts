@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { GuideSlide, QuizAlt } from './models/paes.models';
 import { KatexService } from '../../core/services/katex.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { SoundService } from '../../core/services/sound.service';
 
 @Component({
   selector: 'app-guide-slides',
@@ -216,7 +215,6 @@ export class GuideSlidesComponent implements OnChanges {
 
   private katexSvc = inject(KatexService);
   private sanitizer = inject(DomSanitizer);
-  private soundSvc = inject(SoundService);
 
   quizStates: Record<string, { selected: string | null; revealed: boolean }> = {};
 
@@ -269,7 +267,6 @@ export class GuideSlidesComponent implements OnChanges {
 
   next() {
     if (this.current() < this.slides.length - 1) {
-      this.soundSvc.playToggle();
       this.current.update(v => v + 1);
       if (this.current() === this.slides.length - 1) this.triggerConfetti();
     }
@@ -277,7 +274,6 @@ export class GuideSlidesComponent implements OnChanges {
 
   prev() { 
     if (this.current() > 0) {
-      this.soundSvc.playToggle();
       this.current.update(v => v - 1);
     }
   }
@@ -292,12 +288,6 @@ export class GuideSlidesComponent implements OnChanges {
     if (!state || state.revealed) return;
     state.selected = alt.key;
     
-    if (alt.correct) {
-      this.soundSvc.playCorrect();
-    } else {
-      this.soundSvc.playWrong();
-    }
-
     setTimeout(() => { state.revealed = true; }, 400);
   }
 

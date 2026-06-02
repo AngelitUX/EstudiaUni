@@ -193,8 +193,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
                   <!-- Mini lista de temas/capítulos -->
                   <div class="materia-topics">
-                    <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m).topics | slice:0:3">{{ topic }}</span>
-                    <span class="topic-tag" *ngIf="getMateriaInfo(m).topics.length > 3">+{{ getMateriaInfo(m).topics.length - 3 }} más</span>
+                    <span class="topic-tag" *ngFor="let topic of getMateriaInfo(m).topics">{{ topic }}</span>
                   </div>
 
                   <!-- Footer: Progreso y Botón -->
@@ -812,7 +811,7 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     },
     'ciencias-fisica': {
       desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',
-      topics: ['Ondas', 'Mecánica', 'Electricidad'],
+      topics: ['Ondas', 'Mecánica', 'Tierra', 'Electricidad'],
       img: 'assets/images/subjects/fisica.png',
       bgColor: '#DCCEF9'
     },
