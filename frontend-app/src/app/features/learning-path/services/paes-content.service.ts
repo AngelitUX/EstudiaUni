@@ -498,10 +498,8 @@ export class PaesContentService {
           this._progress.set(new Map());
           this.loadProgressFromStorage();
           // Debug: log loaded progress count for verification
-          console.log(`[PaesContentService] ✅ Progreso cargado para usuario ${user.uid}: ${this._progress().size} secciones completadas`);
           if (this._progress().size > 0) {
             const completedCount = Array.from(this._progress().values()).filter(p => p.completed).length;
-            console.log(`[PaesContentService] 📊 De esas, ${completedCount} están marcadas como completadas.`);
           }
         }
 
@@ -526,7 +524,7 @@ export class PaesContentService {
 
   private async loadDataFromLocalMocks() {
     try {
-      console.log('🚧 [EstudiaUni Testing] Loading learning path data from LOCAL MOCKS (Method B)...');
+
       
       // 1. Cargar materias mock (usando ruta absoluta)
       const materiasRes = await fetch('/assets/mocks/materias-mock-local.json');
@@ -540,7 +538,7 @@ export class PaesContentService {
       const capitulos = await capitulosRes.json() as Capitulo[];
       this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
       
-      console.log('✅ [EstudiaUni Testing] Local mocks loaded successfully!');
+
     } catch (error) {
       console.warn('⚠️ [EstudiaUni Testing] Failed to load local mocks. Falling back to Firestore...', error);
       await this.loadDataFromFirestore();
@@ -552,7 +550,7 @@ export class PaesContentService {
   public clearCache(): void {
     localStorage.removeItem('paes_content_cache');
     localStorage.removeItem('paes_content_cache_timestamp');
-    console.log('[PaesContentService] Caché local de PAES borrado.');
+
   }
 
   private async loadDataFromFirestore() {
@@ -570,7 +568,7 @@ export class PaesContentService {
         if (Date.now() - cachedTime < cacheTTL) {
           const cached = JSON.parse(cachedDataRaw);
           if (cached.materias && cached.poolPreguntas && cached.capitulos) {
-            console.log('[PaesContentService] Cargando datos desde caché local...');
+
             this._materias.set(cached.materias);
             this._poolPreguntas.set(cached.poolPreguntas);
             this._capitulos.set(cached.capitulos);
@@ -584,7 +582,7 @@ export class PaesContentService {
     }
 
     try {
-      console.log('[PaesContentService] Obteniendo datos frescos desde Firestore...');
+
       
       // 1. Cargar materias
       let materiasSnap;
@@ -723,7 +721,7 @@ export class PaesContentService {
           };
           localStorage.setItem(cacheKey, JSON.stringify(cacheData));
           localStorage.setItem(cacheTimeKey, Date.now().toString());
-          console.log('[PaesContentService] Datos guardados en caché local con éxito.');
+
         } catch (cacheError) {
           console.warn('[PaesContentService] No se pudo guardar en caché:', cacheError);
         }

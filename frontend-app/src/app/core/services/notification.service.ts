@@ -25,7 +25,6 @@ export class NotificationService {
    */
   private checkNotificationPermission(): void {
     if (!('Notification' in window)) {
-      console.log('Este navegador no soporta notificaciones');
       return;
     }
 
@@ -82,7 +81,6 @@ export class NotificationService {
           return;
         }
       } else {
-        console.log('Permiso de notificaciones no concedido aún, ignorando inicio automático.');
         return;
       }
     }

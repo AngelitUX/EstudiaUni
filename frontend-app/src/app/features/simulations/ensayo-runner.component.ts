@@ -1324,7 +1324,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   timeRemaining = 140 * 60; // 2h 20m in seconds
   initialTimeSeconds = 140 * 60;
   startTime = Date.now();
-  timerInterval: any;
+  timerInterval: ReturnType<typeof setInterval> | null = null;
   isPaused = false;
   savedProgress: SavedProgress | null = null;
 
@@ -1442,13 +1442,12 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     if (this.intentoId) {
       this.loading = true;
       this.firestoreService.getIntento(this.intentoId).subscribe({
-        next: (intento: any) => {
+        next: (intento) => {
           if (intento && intento.status === 'in_progress') {
             // Sincronizar respuestas desde Firestore
-            intento.answers.forEach((a: any) => {
+            intento.answers.forEach((a: { preguntaId: string; selectedAnswer: string }) => {
               this.answers[a.preguntaId] = a.selectedAnswer;
             });
-            console.log('[Runner] Sincronizado con Firestore:', intento.answers.length, 'respuestas');
           }
           this.loading = false;
           this.finishInitialize();
@@ -1803,9 +1802,10 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     await this.sendQuickMessage('Necesito una pista para resolverla.');
   }
 
-  handleImageError(event: any) {
-    console.warn('[Runner] Error al cargar imagen:', event.target.src);
-    event.target.style.display = 'none';
+  handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    console.warn('[Runner] Error al cargar imagen:', img.src);
+    img.style.display = 'none';
   }
 
   ensureLeadingSlash(url: string | null | undefined): string {

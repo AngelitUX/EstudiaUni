@@ -1,8 +1,24 @@
 import { Injectable, inject } from '@angular/core';
 import { of } from 'rxjs';
 
-// Este servicio ya no usa el backend - todo está en FirestoreService
-// Se mantiene por compatibilidad con componentes existentes
+// Servicio legacy mantenido por compatibilidad con componentes existentes.
+// La lógica principal está en FirestoreService.
+
+interface Topic {
+  id: string;
+  title: string;
+  difficulty: number;
+  estimatedMinutes: number;
+  masteryLevel: number;
+  status: string;
+}
+
+interface LearningModule {
+  id: string;
+  title: string;
+  subject: string;
+  topics: Topic[];
+}
 @Injectable({ providedIn: 'root' })
 export class ModulesService {
 
@@ -15,11 +31,11 @@ export class ModulesService {
     const modules = this.getMockModules();
     const module = modules.find(m => m.id === moduleId);
     if (!module) return of(null);
-    const topic = module.topics.find((t: any) => t.id === topicId);
+    const topic = module.topics.find((t: Topic) => t.id === topicId);
     return of(topic || null);
   }
 
-  private getMockModules() {
+  private getMockModules(): LearningModule[] {
     return [
       {
         id: 'mat1',
