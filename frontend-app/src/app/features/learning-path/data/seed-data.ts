@@ -121,5 +121,134 @@ export const CAPITULOS: Capitulo[] = [
         }
       }
     ]
+  },
+  {
+    id: 'cap-interpretar',
+    materiaId: 'comp-lectora',
+    title: 'Habilidad 2: Interpretar',
+    introduccion: 'Interpretar es la habilidad más evaluada en la PAES de Competencia Lectora (~40%). Aprenderás a inferir información implícita, comprender vocabulario en contexto, interpretar figuras retóricas y relacionar ideas entre párrafos.',
+    order: 3,
+    secciones: [
+      {
+        id: 'sec-int-1',
+        capituloId: 'cap-interpretar',
+        materiaId: 'comp-lectora',
+        title: '1. Inferir Información Implícita',
+        introduccion: '¡Bienvenido a la habilidad más importante de la PAES! 🧠 Aquí el texto NO te da la respuesta directamente. Tu misión es deducir lo que el autor sugiere a partir de las pistas que deja.',
+        datos_claves: [
+          'Busca marcas textuales: adjetivos, verbos específicos, comparaciones y tono general del texto. Cada palabra es una pista.',
+          'Distingue entre lo explícito y lo implícito: si puedes señalar exactamente dónde está la respuesta, es localizar. Si debes \"armar\" la respuesta, es interpretar.',
+          'Cuidado con la sobreinterpretación: la inferencia debe estar respaldada por el texto, no por tu conocimiento general.'
+        ],
+        order: 1,
+        test: {
+          id: 'test-int-1',
+          seccionId: 'sec-int-1',
+          contexto_base: 'La sala de espera del hospital estaba en silencio. María apretaba entre sus manos un sobre cerrado que le habían entregado hace diez minutos. No lo había abierto. A su lado, su hermana le tocaba el hombro con suavidad, sin decir nada. Al fondo, un reloj de pared marcaba cada segundo con un sonido que parecía amplificarse en el vacío del pasillo. María miró el sobre, luego la ventana. Afuera, la lluvia caía sin prisa.\n\nCuando el médico apareció por la puerta, María se puso de pie de golpe. \"Doctora —dijo con voz temblorosa—, ¿puedo pasar a verlo?\". La doctora la miró un instante, suspiró y asintió lentamente. María dejó el sobre en la silla y caminó hacia la puerta con pasos cortos, como si sus piernas dudaran de cada movimiento.',
+          preguntas: [
+            { id: 1001, enunciado: '¿Qué se puede inferir sobre el contenido del sobre que María sostiene?', alternativas: { A: 'Contiene instrucciones para un tratamiento médico.', B: 'Contiene resultados o información médica relevante que María teme conocer.', C: 'Es una carta personal de un familiar lejano.', D: 'Son documentos administrativos del hospital.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente inferencia! 🧠 Las marcas textuales (no abrir el sobre, el contexto hospitalario, la actitud temerosa) sugieren que contiene información médica que María no se atreve a leer.', feedback_error: 'Busca las pistas: ¿Por qué María no abre el sobre? ¿Dónde está? ¿Cómo se comporta? Todo sugiere miedo a recibir malas noticias médicas.' },
+            { id: 1002, enunciado: 'A partir de la descripción del segundo párrafo, ¿qué se puede inferir sobre el estado emocional de María?', alternativas: { A: 'Está impaciente y quiere irse del hospital.', B: 'Se siente aliviada porque la doctora le dio buenas noticias.', C: 'Experimenta angustia e incertidumbre ante la situación de un ser querido.', D: 'Está molesta con el personal médico por la demora.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! 🎯 \"Voz temblorosa\", \"pasos cortos\", \"como si sus piernas dudaran\"... todas son marcas textuales de angustia e incertidumbre.', feedback_error: 'Relee las acciones de María: voz temblorosa, pasos cortos y dubitativos. ¿Qué emoción expresan?' },
+            { id: 1003, enunciado: '¿Qué función cumple la mención de la lluvia y el reloj en el primer párrafo?', alternativas: { A: 'Informar sobre las condiciones climáticas y la hora del día.', B: 'Crear una atmósfera de tensión y espera angustiosa.', C: 'Comparar el paso del tiempo con la velocidad de la lluvia.', D: 'Demostrar que María se distrae fácilmente.' }, respuesta_correcta: 'B', feedback_acierto: '¡Gran interpretación! ✨ El reloj que \"amplifica\" su sonido y la lluvia \"sin prisa\" son recursos que el autor usa para transmitir la tensión de la espera.', feedback_error: 'Piensa en el efecto que producen estos elementos. ¿Añaden información factual o crean una atmósfera emocional?' },
+            { id: 1004, enunciado: '¿Qué sugiere la reacción de la doctora cuando María le pregunta si puede pasar?', alternativas: { A: 'Que la doctora está cansada de trabajar largas horas.', B: 'Que la situación del paciente podría ser delicada o grave.', C: 'Que la doctora no reconoce a María como familiar.', D: 'Que las visitas no están permitidas a esa hora.' }, respuesta_correcta: 'B', feedback_acierto: '¡Exacto! 🔍 El suspiro y la mirada de la doctora antes de asentir \"lentamente\" son marcas de una situación difícil.', feedback_error: 'Fíjate en las acciones de la doctora: mirar, suspirar, asentir lentamente. ¿Qué comunican estas acciones?'}
+          ]
+        }
+      },
+      {
+        id: 'sec-int-practice-vocab',
+        capituloId: 'cap-interpretar',
+        materiaId: 'comp-lectora',
+        title: '🧩 Vocabulario Contextual',
+        introduccion: '¡Hora de entrenar! 💪 Practica la técnica de sustitución: lee el fragmento y elige qué significa la palabra según su contexto.',
+        datos_claves: [],
+        order: 2,
+        isPractice: true,
+        practiceType: 'vocabulary-context',
+        test: { id: 'test-int-pv', seccionId: 'sec-int-practice-vocab', contexto_base: null, preguntas: [] }
+      },
+      {
+        id: 'sec-int-2',
+        capituloId: 'cap-interpretar',
+        materiaId: 'comp-lectora',
+        title: '2. Interpretar Lenguaje Figurado',
+        introduccion: '🎭 Los textos literarios en la PAES están llenos de metáforas, comparaciones e ironías. Aquí aprenderás a descifrar el significado real detrás del lenguaje figurado.',
+        datos_claves: [
+          'Metáfora vs. Comparación: La metáfora dice \"A es B\" (\"sus ojos eran estrellas\"), la comparación usa \"como\" (\"sus ojos brillaban como estrellas\"). Ambas requieren que traduzcas el sentido figurado.',
+          'Contexto emocional: Las figuras retóricas siempre transmiten una emoción o actitud. Pregúntate: ¿qué SIENTE el hablante al usar esta expresión?',
+          'Ironía PAES: La ironía dice lo contrario de lo que significa. Detecta el tono: si el contexto contradice las palabras, es ironía.'
+        ],
+        order: 3,
+        test: {
+          id: 'test-int-2',
+          seccionId: 'sec-int-2',
+          contexto_base: 'Pasarán los años y las estaciones; otros labios\nbesarán las mismas tazas que nosotros usamos;\notros ojos verán el mismo cielo\nque ahora nos parece tan nuestro.\n\nLa casa que hoy nos cobija,\ncon sus paredes que guardan nuestras voces,\nserá algún día la casa de otros,\ny nuestras risas serán solo ecos\nque el viento olvidará.\n\nPero hoy, aquí, mientras la tarde\ntiñe de oro las ventanas,\nnada de eso importa.\nHoy somos dueños del mundo\ny el mundo cabe en esta mesa.\n\n— Fragmento poético adaptado',
+          preguntas: [
+            { id: 1005, enunciado: '¿Qué figura retórica predomina en la expresión \"nuestras risas serán solo ecos que el viento olvidará\"?', alternativas: { A: 'Hipérbole, porque exagera el volumen de las risas.', B: 'Personificación, porque atribuye al viento la capacidad de olvidar.', C: 'Comparación, porque compara las risas con ecos.', D: 'Antítesis, porque contrapone risa y olvido.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente! 🎭 El viento no puede \"olvidar\", eso es una acción humana. Al atribuírsela al viento, tenemos una personificación.', feedback_error: 'Fíjate en quién realiza la acción de \"olvidar\". ¿El viento puede olvidar? Esa atribución de una cualidad humana a algo no humano se llama personificación.' },
+            { id: 1006, enunciado: '¿Cómo se puede interpretar la expresión \"el mundo cabe en esta mesa\"?', alternativas: { A: 'Que la mesa es muy grande y puede contener muchas cosas.', B: 'Que todo lo que importa al hablante está reunido en ese momento, en ese lugar.', C: 'Que el hablante tiene una visión reducida del mundo.', D: 'Que están comiendo alimentos de todo el mundo.' }, respuesta_correcta: 'B', feedback_acierto: '¡Brillante interpretación! ✨ Es una metáfora: el \"mundo\" del hablante es la gente y el momento que comparte en esa mesa. Todo lo importante está ahí.', feedback_error: 'No lo tomes literal. \"El mundo\" no se refiere al planeta sino a lo que tiene valor para el hablante. ¿Qué cabe en esa mesa?' },
+            { id: 1007, enunciado: '¿Cuál es el tema central del poema?', alternativas: { A: 'La importancia de cuidar el medio ambiente para las futuras generaciones.', B: 'La nostalgia por un pasado que ya no volverá.', C: 'La valoración del momento presente frente a la fugacidad del tiempo.', D: 'La crítica a una sociedad que olvida sus tradiciones.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! 🎯 El poema reconoce que todo pasará (estrofas 1-2) pero afirma que \"hoy, aquí... nada de eso importa\". Es un canto al presente.', feedback_error: 'Lee la tercera estrofa: \"Pero hoy, aquí... nada de eso importa\". ¿Qué actitud toma el hablante ante el paso del tiempo?' },
+            { id: 1008, enunciado: '¿Qué sentido tiene la expresión \"la tarde tiñe de oro las ventanas\"?', alternativas: { A: 'Que las ventanas están pintadas de color dorado.', B: 'Que la luz del atardecer baña las ventanas con tonos cálidos.', C: 'Que el sol es tan intenso que daña las ventanas.', D: 'Que están decorando la casa para una celebración.' }, respuesta_correcta: 'B', feedback_acierto: '¡Muy bien! 🌅 \"Teñir de oro\" es una metáfora visual que describe la luz dorada del atardecer sobre las ventanas. Hermoso, ¿no?', feedback_error: 'Piensa literalmente: ¿qué produce un efecto \"dorado\" en las ventanas al final del día? La luz del atardecer.' }
+          ]
+        }
+      },
+      {
+        id: 'sec-int-3',
+        capituloId: 'cap-interpretar',
+        materiaId: 'comp-lectora',
+        title: '3. Relaciones entre Ideas',
+        introduccion: '🔗 ¿Qué conecta un párrafo con otro? Las relaciones lógicas son la columna vertebral de cualquier texto argumentativo. En esta lección, dominarás la habilidad de identificar causa-efecto, problema-solución y comparaciones.',
+        datos_claves: [
+          'Los conectores son tu mapa: \"sin embargo\" = contraste, \"por lo tanto\" = consecuencia, \"además\" = adición, \"en cambio\" = oposición. Subráyalos mentalmente.',
+          'No todos los conectores son explícitos: a veces la relación está implícita. Si un párrafo plantea un problema y el siguiente ofrece una medida, hay relación problema-solución aunque no diga \"la solución es\".',
+          'General → Particular: Si el primer párrafo da una idea amplia y el segundo da un ejemplo concreto, esa es la relación.'
+        ],
+        order: 4,
+        test: {
+          id: 'test-int-3',
+          seccionId: 'sec-int-3',
+          contexto_base: 'La deforestación en la Amazonía ha alcanzado niveles críticos en la última década. Según datos del Instituto Nacional de Investigaciones Espaciales (INPE), solo en 2022 se perdieron más de 11.500 kilómetros cuadrados de selva, equivalentes a la superficie de una ciudad como Estambul. Las principales causas incluyen la expansión de la ganadería extensiva, la agricultura industrial de soja y la extracción ilegal de madera.\n\nSin embargo, las consecuencias van mucho más allá de la pérdida de árboles. La destrucción del bosque tropical altera los ciclos hídricos regionales, reduce la biodiversidad y libera grandes cantidades de dióxido de carbono almacenado, acelerando el calentamiento global. Investigadores de la Universidad de São Paulo han advertido que, de continuar al ritmo actual, la Amazonía podría alcanzar un \"punto de no retorno\" en el que dejaría de funcionar como regulador climático.\n\nAnte este escenario, diversos gobiernos latinoamericanos han firmado acuerdos de cooperación para frenar la deforestación. Brasil, en particular, implementó el Plan de Acción para la Prevención y Control de la Deforestación, que combina vigilancia satelital, multas a infractores y apoyo a comunidades indígenas que actúan como guardianes del bosque.',
+          preguntas: [
+            { id: 1009, enunciado: '¿Qué relación lógica se establece entre el primer y el segundo párrafo?', alternativas: { A: 'El primero presenta las soluciones; el segundo describe el problema.', B: 'El primero expone las causas del problema; el segundo detalla sus consecuencias.', C: 'El primero compara la deforestación con otros fenómenos; el segundo la contextualiza históricamente.', D: 'El primero presenta datos científicos; el segundo ofrece opiniones de expertos.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto! 🔗 El primer párrafo identifica las CAUSAS (ganadería, soja, extracción), y el segundo párrafo detalla las CONSECUENCIAS (ciclos hídricos, biodiversidad, CO₂). Es una relación causa-efecto.', feedback_error: 'Relee: ¿Qué hace el primer párrafo? Describe qué provoca la deforestación. ¿Y el segundo? Describe qué produce la deforestación. Eso es causa → efecto.' },
+            { id: 1010, enunciado: '¿Qué función cumple el tercer párrafo en relación con los dos anteriores?', alternativas: { A: 'Resume los puntos principales de los párrafos anteriores.', B: 'Contradice la gravedad del problema presentado.', C: 'Presenta las acciones propuestas como respuesta al problema descrito.', D: 'Introduce un tema completamente nuevo.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente! 🎯 El tercer párrafo es la \"solución\" en la estructura problema-consecuencia-solución. El conector \"Ante este escenario\" marca la transición.', feedback_error: '¿Qué significa la frase \"Ante este escenario\"? Es un marcador de respuesta/solución al problema descrito anteriormente.' },
+            { id: 1011, enunciado: 'En el contexto del segundo párrafo, ¿qué significa la expresión \"punto de no retorno\"?', alternativas: { A: 'Un límite geográfico que no se puede cruzar.', B: 'Un momento en que los viajes a la Amazonía serían imposibles.', C: 'Un umbral crítico tras el cual el daño sería irreversible.', D: 'Una fecha específica calculada por científicos.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien! 🧠 En contexto, \"punto de no retorno\" = umbral/límite irreversible. Si lo cruzas, ya no puedes volver atrás. Usa la técnica de sustitución para confirmarlo.', feedback_error: 'Aplica la técnica de sustitución: reemplaza \"punto de no retorno\" por cada alternativa en la oración original. ¿Cuál mantiene el sentido?' },
+            { id: 1012, enunciado: '¿Qué se puede inferir sobre el rol de las comunidades indígenas mencionadas en el tercer párrafo?', alternativas: { A: 'Son las principales responsables de la deforestación.', B: 'Son aliados estratégicos en la protección de la selva.', C: 'Están en conflicto con los gobiernos latinoamericanos.', D: 'Son beneficiarios pasivos de las políticas ambientales.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente inferencia! 🌿 El texto los llama \"guardianes del bosque\" y dice que reciben \"apoyo\", lo que implica un rol activo y estratégico en la conservación.', feedback_error: '¿Cómo los describe el texto? \"Guardianes del bosque\" + reciben apoyo = rol activo y positivo en la protección.' }
+          ]
+        }
+      },
+      {
+        id: 'sec-int-4',
+        capituloId: 'cap-interpretar',
+        materiaId: 'comp-lectora',
+        title: '4. Sintetizar Información Global',
+        introduccion: '🦅 El nivel más alto de interpretación: integrar ideas de distintas partes del texto para construir una comprensión global. Aquí demostrarás que puedes ver el \"panorama completo\".',
+        datos_claves: [
+          'Lee estratégicamente: Primero haz una lectura rápida para captar la estructura general. Luego relee las partes relevantes para la pregunta.',
+          'El propósito del texto: Pregúntate siempre \"¿Para qué fue escrito esto?\" La respuesta sintetiza el mensaje global.',
+          'Integra, no copies: La síntesis combina ideas de varios párrafos. Si la respuesta viene de un solo párrafo, probablemente no es síntesis.'
+        ],
+        order: 5,
+        test: {
+          id: 'test-int-4',
+          seccionId: 'sec-int-4',
+          contexto_base: 'La inteligencia artificial (IA) ha dejado de ser un tema exclusivo de los laboratorios tecnológicos para instalarse en el centro del debate educativo. Mientras algunos académicos celebran sus posibilidades como herramienta pedagógica, otros advierten sobre los riesgos de una dependencia tecnológica que podría debilitar habilidades cognitivas fundamentales.\n\nUn estudio reciente de la Universidad de Stanford reveló que estudiantes que utilizan asistentes de IA para redactar ensayos muestran una mejora del 35% en la estructura de sus textos, pero experimentan una reducción del 20% en su capacidad de argumentación original cuando escriben sin ayuda tecnológica. \"La herramienta complementa, pero no debe sustituir el proceso de pensamiento\", señaló la investigadora principal del estudio, Dra. Elena Vásquez.\n\nEn Chile, el Ministerio de Educación ha adoptado una postura intermedia. Su plan \"IA en el Aula 2025\" promueve el uso de inteligencia artificial como apoyo al aprendizaje, pero establece que las evaluaciones formales deben realizarse sin acceso a estas herramientas. La medida busca garantizar que los estudiantes desarrollen competencias propias sin renunciar a los beneficios de la tecnología.\n\nNo obstante, organizaciones de docentes han planteado que el verdadero desafío no es regular la IA, sino capacitar a los profesores para integrarla de manera efectiva. \"Sin formación docente, cualquier política será letra muerta\", declaró el presidente del Colegio de Profesores.',
+          preguntas: [
+            { id: 1013, enunciado: '¿Cuál es la idea central que articula todo el texto?', alternativas: { A: 'La IA es perjudicial para la educación y debe prohibirse.', B: 'El debate sobre cómo integrar la IA en la educación requiere equilibrar sus beneficios con la preservación de habilidades autónomas.', C: 'Los estudiantes chilenos están más preparados que los de otros países para usar IA.', D: 'Las universidades deben reemplazar a los profesores con sistemas de IA.' }, respuesta_correcta: 'B', feedback_acierto: '¡Síntesis perfecta! 🏆 Has integrado las ideas de los 4 párrafos: debate (P1), evidencia de beneficios/riesgos (P2), postura intermedia (P3) y desafíos pendientes (P4).', feedback_error: 'La idea central no está en un solo párrafo. Debes integrar: hay un debate (P1), con evidencia a favor y en contra (P2), una postura intermedia (P3) y desafíos (P4). ¿Qué tienen en común?' },
+            { id: 1014, enunciado: 'Según el texto, ¿qué paradoja revela el estudio de Stanford?', alternativas: { A: 'Que la IA es más creativa que los humanos.', B: 'Que la IA mejora un aspecto del escribir (estructura) pero debilita otro (argumentación propia).', C: 'Que los estudiantes prefieren la escritura manual a la digital.', D: 'Que Stanford está en contra del uso de IA.' }, respuesta_correcta: 'B', feedback_acierto: '¡Exacto! ⚖️ El estudio muestra que la IA mejora la forma (+35% estructura) pero puede debilitar el fondo (-20% argumentación original). Esa es la paradoja.', feedback_error: 'Busca los porcentajes en el segundo párrafo: +35% y -20%. ¿Qué mejora y qué empeora? Ahí está la paradoja.' },
+            { id: 1015, enunciado: '¿Qué relación existe entre la postura del Ministerio de Educación (P3) y la del Colegio de Profesores (P4)?', alternativas: { A: 'Son contradictorias: el Ministerio apoya la IA y el Colegio la rechaza.', B: 'Son complementarias: el Ministerio regula el uso y el Colegio señala la condición para que funcione.', C: 'Son idénticas: ambos quieren prohibir la IA en evaluaciones.', D: 'Son irrelevantes entre sí: abordan temas diferentes.' }, respuesta_correcta: 'B', feedback_acierto: '¡Brillante! 🔗 El Ministerio pone las reglas (cómo usar IA), y el Colegio señala el prerrequisito (capacitar docentes). Se complementan.', feedback_error: 'El Ministerio dice \"usemos IA pero regulemos\". El Colegio dice \"la regulación no sirve si no se capacita a los profesores\". ¿Se contradicen o se complementan?' },
+            { id: 1016, enunciado: '¿Qué significa la expresión \"cualquier política será letra muerta\" en el contexto del cuarto párrafo?', alternativas: { A: 'Que las políticas se escriben en papel y no digitalmente.', B: 'Que sin formación docente, las regulaciones existirán pero no tendrán efecto real.', C: 'Que los profesores se niegan a leer las nuevas políticas.', D: 'Que las políticas educativas tienen una vigencia limitada.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto vocabulario en contexto! 📖 \"Letra muerta\" = normativa que existe formalmente pero no se aplica ni tiene impacto real.', feedback_error: 'Aplica sustitución: \"Sin formación docente, cualquier política será [ineficaz/sin efecto]\". ¿Cuál alternativa se acerca a eso?' }
+          ]
+        }
+      },
+      {
+        id: 'sec-int-practice-connect',
+        capituloId: 'cap-interpretar',
+        materiaId: 'comp-lectora',
+        title: '🧩 Conectores Lógicos',
+        introduccion: '¡Último desafío del capítulo! 🏁 Los conectores son las \"señales de tránsito\" del texto. Practica eligiendo el conector correcto para cada oración.',
+        datos_claves: [],
+        order: 6,
+        isPractice: true,
+        practiceType: 'connectors',
+        test: { id: 'test-int-pc', seccionId: 'sec-int-practice-connect', contexto_base: null, preguntas: [] }
+      }
+    ]
   }
 ];

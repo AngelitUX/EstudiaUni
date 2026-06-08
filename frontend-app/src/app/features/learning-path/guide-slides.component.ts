@@ -1,6 +1,6 @@
-import { Component, Output, EventEmitter, signal, computed, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, GuideSlide, QuizAlt } from './guide-slides-data';
+import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, INTERPRETAR_SLIDES, INTERP_QUIZ1, INTERP_QUIZ2, EVALUAR_SLIDES, EVALUAR_QUIZ1, EVALUAR_QUIZ2, GuideSlide, QuizAlt } from './guide-slides-data';
 
 @Component({
   selector: 'app-guide-slides',
@@ -206,16 +206,35 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, GuideSlide, QuizAlt } from 
     }
   `]
 })
-export class GuideSlidesComponent {
+export class GuideSlidesComponent implements OnInit {
+  @Input() capituloId: string = 'cap-localizar';
   @Output() onFinish = new EventEmitter<void>();
 
-  slides = LOCALIZAR_SLIDES;
+  slides: GuideSlide[] = LOCALIZAR_SLIDES;
 
-  private quizzes: Record<string, QuizAlt[]> = { quiz1: SLIDE5_QUIZ, quiz2: SLIDE_QUIZ2 };
-  private quizStates: Record<string, { selected: string | null; revealed: boolean }> = {
-    quiz1: { selected: null, revealed: false },
-    quiz2: { selected: null, revealed: false },
+  private quizzes: Record<string, QuizAlt[]> = {};
+  private quizStates: Record<string, { selected: string | null; revealed: boolean }> = {};
+
+  private readonly SLIDE_MAP: Record<string, GuideSlide[]> = {
+    'cap-localizar': LOCALIZAR_SLIDES,
+    'cap-interpretar': INTERPRETAR_SLIDES,
+    'cap-evaluar': EVALUAR_SLIDES,
   };
+
+  private readonly QUIZ_MAP: Record<string, Record<string, QuizAlt[]>> = {
+    'cap-localizar': { quiz1: SLIDE5_QUIZ, quiz2: SLIDE_QUIZ2 },
+    'cap-interpretar': { interp_quiz1: INTERP_QUIZ1, interp_quiz2: INTERP_QUIZ2 },
+    'cap-evaluar': { evaluar_quiz1: EVALUAR_QUIZ1, evaluar_quiz2: EVALUAR_QUIZ2 },
+  };
+
+  ngOnInit() {
+    this.slides = this.SLIDE_MAP[this.capituloId] || LOCALIZAR_SLIDES;
+    this.quizzes = this.QUIZ_MAP[this.capituloId] || {};
+    // Initialize quiz states for all quizzes in this chapter
+    for (const key of Object.keys(this.quizzes)) {
+      this.quizStates[key] = { selected: null, revealed: false };
+    }
+  }
 
   current = signal(0);
   progressPct = computed(() => (this.current() / (this.slides.length - 1)) * 100);

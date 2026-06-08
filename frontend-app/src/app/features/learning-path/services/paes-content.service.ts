@@ -554,6 +554,7 @@ export class PaesContentService {
   private async loadDataFromFirestore() {
     const cacheKey = 'paes_content_cache';
     const cacheTimeKey = 'paes_content_cache_timestamp';
+    const CACHE_VERSION = 'v4'; // Increment this when data shape changes to bust old caches
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
@@ -565,7 +566,7 @@ export class PaesContentService {
         const cachedTime = parseInt(cachedTimeRaw, 10);
         if (Date.now() - cachedTime < cacheTTL) {
           const cached = JSON.parse(cachedDataRaw);
-          if (cached.materias && cached.poolPreguntas && cached.capitulos) {
+          if (cached.materias && cached.poolPreguntas && cached.capitulos && cached.version === CACHE_VERSION) {
             console.log('[PaesContentService] Cargando datos desde caché local...');
             this._materias.set(cached.materias);
             this._poolPreguntas.set(cached.poolPreguntas);
@@ -661,6 +662,7 @@ export class PaesContentService {
         const test = testsMap.get(secData.testId);
         const seccion = {
           ...secData,
+          id: secDoc.id,  // Ensure the Firestore document ID is always set (critical for auto-generated IDs like practice nodes)
           test
         } as Seccion;
         
@@ -713,6 +715,7 @@ export class PaesContentService {
         // Guardar en caché
         try {
           const cacheData = {
+            version: CACHE_VERSION,
             materias: sortedMaterias,
             poolPreguntas: finalPool,
             capitulos: sortedCapitulos

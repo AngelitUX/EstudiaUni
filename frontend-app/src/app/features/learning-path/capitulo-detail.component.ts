@@ -26,7 +26,7 @@ import { GuideSlidesComponent } from './guide-slides.component';
       </div>
 
       <!-- Hero only for generic chapters -->
-      <header class="guide-hero" *ngIf="cap.id !== 'cap-localizar'">
+      <header class="guide-hero" *ngIf="!isInteractiveChapter()">
         <div class="hero-icon">📖</div>
         <h1>Guía de Estudio: {{ cap.title }}</h1>
         <p class="hero-intro">{{ cap.introduccion }}</p>
@@ -36,12 +36,12 @@ import { GuideSlidesComponent } from './guide-slides.component';
       <main class="guide-content">
         
         <!-- INTERACTIVE SLIDES for Localizar -->
-        <ng-container *ngIf="cap.id === 'cap-localizar'">
-          <app-guide-slides (onFinish)="finishGuide()"></app-guide-slides>
+        <ng-container *ngIf="isInteractiveChapter()">
+          <app-guide-slides [capituloId]="cap.id" (onFinish)="finishGuide()"></app-guide-slides>
         </ng-container>
 
         <!-- GENERIC SECTIONS for other chapters -->
-        <ng-container *ngIf="cap.id !== 'cap-localizar'">
+        <ng-container *ngIf="!isInteractiveChapter()">
           <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
             <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
             <div class="sec-intro">
@@ -61,7 +61,7 @@ import { GuideSlidesComponent } from './guide-slides.component';
         </ng-container>
 
         <!-- CTA TO PRACTICE (only for non-slide guides) -->
-        <div class="cta-bottom" *ngIf="cap.id !== 'cap-localizar'">
+        <div class="cta-bottom" *ngIf="!isInteractiveChapter()">
           <p>¿Terminaste de repasar la teoría?</p>
           <button class="btn-primary-lg" (click)="finishGuide()">¡Empezar a Practicar!</button>
         </div>
@@ -162,6 +162,13 @@ export class CapituloDetailComponent {
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
     // Lo marcamos como HTML seguro
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+  }
+
+  // Chapters that have interactive guide slides
+  private interactiveChapterIds = new Set(['cap-localizar', 'cap-interpretar', 'cap-evaluar']);
+
+  isInteractiveChapter(): boolean {
+    return this.interactiveChapterIds.has(this.capituloId());
   }
 
   finishGuide() {

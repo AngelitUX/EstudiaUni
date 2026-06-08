@@ -5,11 +5,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 import { SynonymPracticeComponent } from './synonym-practice.component';
+import { VocabularyContextPracticeComponent } from './vocabulary-context-practice.component';
+import { ConnectorPracticeComponent } from './connector-practice.component';
+import { FactOpinionPracticeComponent } from './fact-opinion-practice.component';
+import { ToneIntentionPracticeComponent } from './tone-intention-practice.component';
 
 @Component({
   selector: 'app-seccion-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SynonymPracticeComponent],
+  imports: [CommonModule, RouterModule, SynonymPracticeComponent, VocabularyContextPracticeComponent, ConnectorPracticeComponent, FactOpinionPracticeComponent, ToneIntentionPracticeComponent],
   template: `
     <div class="sec-page" *ngIf="seccion() as sec">
       <!-- TOP NAV -->
@@ -42,6 +46,30 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
       <ng-container *ngIf="sec.isPractice && sec.practiceType === 'synonyms'">
         <div class="content-card practice-card">
           <app-synonym-practice (onComplete)="completePractice()"></app-synonym-practice>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'vocabulary-context'">
+        <div class="content-card practice-card">
+          <app-vocabulary-context-practice (onComplete)="completePractice()"></app-vocabulary-context-practice>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'connectors'">
+        <div class="content-card practice-card">
+          <app-connector-practice (onComplete)="completePractice()"></app-connector-practice>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'fact-opinion'">
+        <div class="content-card practice-card">
+          <app-fact-opinion-practice (onFinish)="completePractice()"></app-fact-opinion-practice>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'tone-intention'">
+        <div class="content-card practice-card">
+          <app-tone-intention-practice (onFinish)="completePractice()"></app-tone-intention-practice>
         </div>
       </ng-container>
 

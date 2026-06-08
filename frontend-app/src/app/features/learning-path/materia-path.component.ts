@@ -8,6 +8,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { addDoc, collection, Firestore } from '@angular/fire/firestore';
 
 type PathItem = 
   | { type: 'chapter', capituloId: string, title: string, subtitle: string, isCurrentChapter?: boolean }
@@ -98,7 +99,11 @@ type PathItem =
       </div>
 
       <!-- MAIN -->
-      <main class="main-content animate-fade-in-down" *ngIf="materia() as m">
+      <main class="main-content" 
+            [class.animate-fade-in-down]="!shouldRestore" 
+            [class.animate-fade-in]="shouldRestore && hasRestored()"
+            [style.opacity]="hasRestored() ? '' : '0'"
+            *ngIf="materia() as m">
         <!-- HEADER -->
         <header class="dashboard-header">
           <div class="header-welcome-text" style="flex-direction: row; align-items: center; gap: 1rem;">
@@ -130,7 +135,7 @@ type PathItem =
           <div class="duo-path-container">
             <ng-container *ngFor="let item of pathItems()">
               <!-- CHAPTER SPLASH BANNER -->
-              <div *ngIf="item.type === 'chapter'" class="chapter-splash" [ngClass]="item.capituloId">
+              <div *ngIf="item.type === 'chapter'" class="chapter-splash" [ngClass]="item.capituloId" [id]="'node-' + item.capituloId">
                 <div class="splash-bg-pattern"></div>
                 <div class="splash-inner">
                   <div class="splash-hero">
@@ -141,8 +146,10 @@ type PathItem =
                       <span class="splash-badge">Capítulo {{ getChapterNum(item.capituloId) }}</span>
                       <h2 class="splash-title">{{ item.title }}</h2>
                       <p class="splash-desc" *ngIf="item.capituloId === 'cap-localizar'">Identifica y extrae información explícita del texto. Domina sinónimos, paráfrasis y la técnica de escaneo.</p>
+                      <p class="splash-desc" *ngIf="item.capituloId === 'cap-interpretar'">Infiere, deduce y comprende lo que el texto sugiere sin decirlo. Vocabulario en contexto, figuras retóricas y relaciones lógicas.</p>
+                      <p class="splash-desc" *ngIf="item.capituloId === 'cap-evaluar'">Juzga críticamente el texto, evalúa el tono, la intención del emisor y la calidad de la información diferenciando hechos de opiniones.</p>
                       <div class="splash-stats">
-                        <div class="ss"><span class="ss-icon">📊</span> ~30% de la PAES</div>
+                        <div class="ss"><span class="ss-icon">📊</span> {{ getChapterPaesPct(item.capituloId) }}</div>
                         <div class="ss"><span class="ss-icon">📝</span> {{ getChapterNodeCount(item.capituloId) }} ejercicios</div>
                       </div>
                     </div>
@@ -183,6 +190,8 @@ type PathItem =
                   </div>
                 </div>
 
+
+
                 <!-- Visual separator -->
                 <div class="splash-separator">
                   <div class="sep-line"></div>
@@ -192,7 +201,7 @@ type PathItem =
               </div>
 
               <!-- SECTION NODE -->
-              <div *ngIf="item.type === 'node'" class="node-row">
+              <div *ngIf="item.type === 'node'" class="node-row" [id]="'node-' + item.id">
                 <div class="node-wrapper" [style.transform]="'translateX(' + getOffset(item.nodeIndex) + 'px)'">
                   <div class="active-tooltip" *ngIf="item.status === 'active'">
                     {{ getChapterProgress(item.capituloId).completed === 0 ? 'EMPEZAR' : 'CONTINUAR' }}
@@ -248,7 +257,6 @@ type PathItem =
         <div class="modal-header">
           <h2>Cerrar Sesión</h2>
           <button class="logout-close-btn" (click)="showLogoutConfirm = false">&times;</button>
-        </div>
         <div class="modal-body">
           <div class="confirm-content">
             <div class="confirm-icon">🚪</div>
@@ -400,6 +408,7 @@ type PathItem =
     .chapter-splash { width: 100%; max-width: 600px; margin: 0 auto 7rem; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 2px solid rgba(133,92,214,0.15); box-shadow: 0 12px 40px rgba(133,92,214,0.08); }
     .chapter-splash.cap-localizar { background: linear-gradient(150deg, #f3eeff 0%, #e8dff8 40%, #f0ebff 100%); }
     .chapter-splash.cap-interpretar { background: linear-gradient(150deg, #e8f4fd 0%, #d6ecfa 40%, #eaf6ff 100%); }
+    .chapter-splash.cap-evaluar { background: linear-gradient(150deg, #fde8e8 0%, #fad6d6 40%, #ffeafa 100%); }
     .chapter-splash.cap-evaluar { background: linear-gradient(150deg, #e8fde8 0%, #d6f5d6 40%, #eaffea 100%); }
     .splash-bg-pattern { position: absolute; inset: 0; opacity: 0.04; background-image: radial-gradient(circle at 20% 50%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 80% 20%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 60% 80%, var(--accent-primary) 1px, transparent 1px); background-size: 40px 40px, 60px 60px, 50px 50px; pointer-events: none; }
     .splash-inner { position: relative; padding: 2rem 2rem 1.5rem; }
@@ -619,8 +628,31 @@ export class MateriaPathComponent {
   // Pattern for horizontal zigzag staggering
   private offsets = [0, -40, -65, -40, 0, 40, 65, 40];
 
+  hasRestored = signal(false);
+  shouldRestore = false;
+
   constructor() {
     this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
+    if (sessionStorage.getItem('lastVisitedNode')) {
+      this.shouldRestore = true;
+    } else {
+      this.hasRestored.set(true);
+    }
+  }
+
+  async ngOnInit() {
+    if (this.shouldRestore) {
+      setTimeout(() => {
+        const lastNodeId = sessionStorage.getItem('lastVisitedNode');
+        if (lastNodeId) {
+          const el = document.getElementById('node-' + lastNodeId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'auto', block: 'center' });
+          }
+        }
+        this.hasRestored.set(true);
+      }, 50);
+    }
   }
 
   getOffset(index: number): number {
@@ -696,6 +728,7 @@ export class MateriaPathComponent {
 
   handleNodeClick(item: any) {
     if (item.status === 'locked' && !this.adminService.isAdmin()) return;
+    sessionStorage.setItem('lastVisitedNode', item.id);
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
   }
 
@@ -719,6 +752,7 @@ export class MateriaPathComponent {
   }
 
   goToGuide(capId: string) {
+    sessionStorage.setItem('lastVisitedNode', capId);
     this.router.navigate(['/ruta', this.materiaId(), capId]);
   }
 
@@ -731,6 +765,15 @@ export class MateriaPathComponent {
   getChapterNodeCount(capId: string): number {
     const cap = this.capitulos().find(c => c.id === capId);
     return cap ? cap.secciones.length : 0;
+  }
+
+  getChapterPaesPct(capId: string): string {
+    const map: Record<string, string> = {
+      'cap-localizar': '~30% de la PAES',
+      'cap-interpretar': '~40% de la PAES',
+      'cap-evaluar': '~30% de la PAES',
+    };
+    return map[capId] || '—';
   }
 
   getChapterProgress(capId: string): { completed: number; total: number; pct: number } {
