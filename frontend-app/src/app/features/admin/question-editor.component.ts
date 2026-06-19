@@ -166,7 +166,7 @@ import { KatexService } from '../../core/services/katex.service';
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); padding-bottom: 4rem; }
+    :host { display: block; min-height: 100vh; background: #fafafa !important; color: var(--text-primary); padding-bottom: 4rem; }
     .editor-page { max-width: 1200px; margin: 0 auto; padding: 2rem; }
 
     .editor-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; }

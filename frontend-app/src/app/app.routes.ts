@@ -132,6 +132,10 @@ export const routes: Routes = [
     path: 'soporte',
     loadComponent: () => import('./features/soporte/soporte.component').then(m => m.SoporteComponent),
   },
+  {
+    path: 'trabaja-con-nosotros',
+    loadComponent: () => import('./features/trabaja/trabaja.component').then(m => m.TrabajaComponent),
+  },
   { path: '**', redirectTo: '' }
 ];
 

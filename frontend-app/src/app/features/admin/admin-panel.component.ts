@@ -263,7 +263,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     }
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
+    :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     .admin-layout {
@@ -274,8 +274,9 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     /* SIDEBAR */
     .sidebar { 
       width: 260px; 
-      background: rgba(13, 15, 23, 0.95); 
-      border-right: 1px solid rgba(255,255,255,0.1); 
+      background: rgba(255, 255, 255, 0.85) !important; 
+      backdrop-filter: blur(20px) !important;
+      border-right: 1px solid rgba(133,92,214,0.15) !important; 
       display: flex; 
       flex-direction: column; 
       position: fixed; 
@@ -286,7 +287,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     }
     .sidebar-header { 
       padding: 2.5rem 1.5rem 1.5rem; 
-      border-bottom: 1px solid rgba(255,255,255,0.15); 
+      border-bottom: 1px solid rgba(133,92,214,0.15); 
       text-align: center;
     }
     .sidebar-logo { 
@@ -324,7 +325,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       gap: 0.85rem; 
       padding: 0.9rem 1.1rem; 
       border-radius: 12px; 
-      color: #ffffff; 
+      color: var(--text-primary) !important; 
       text-decoration: none; 
       transition: all 0.2s; 
       cursor: pointer; 
@@ -332,20 +333,20 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       font-weight: 500;
     }
     .nav-item:hover { 
-      background: rgba(255, 255, 255, 0.12); 
-      color: #fff; 
+      background: rgba(133,92,214,0.08) !important; 
+      color: var(--text-primary) !important; 
       transform: translateX(4px);
     }
     .nav-item.active { 
-      background: rgba(139,92,246,0.18); 
-      color: #c4b5fd; 
-      border: none; 
-      border-left: 3.5px solid #a78bfa; 
-      box-shadow: 0 4px 12px rgba(139,92,246,0.12); 
-      font-weight: 700; 
+      background: rgba(133,92,214,0.15) !important; 
+      color: var(--accent-primary) !important; 
+      border: none !important; 
+      border-left: 3.5px solid var(--accent-primary) !important; 
+      box-shadow: 0 4px 12px rgba(133,92,214,0.12) !important; 
+      font-weight: 700 !important; 
     }
-    .nav-item.active .nav-icon { filter: brightness(1.3); }
-    .nav-item.active .nav-text { color: #c4b5fd; }
+    .nav-item.active .nav-icon { filter: brightness(1.1) !important; }
+    .nav-item.active .nav-text { color: var(--accent-primary) !important; }
     .nav-icon { 
       font-size: 1.35rem; 
       width: 32px; 
@@ -356,13 +357,14 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     .nav-count { 
       margin-left: auto; 
       font-size: 0.75rem; 
-      background: rgba(255,255,255,0.15); 
+      background: rgba(133,92,214,0.1); 
+      color: var(--accent-primary);
       padding: 0.2rem 0.6rem; 
       border-radius: 99px; 
       font-weight: 700; 
     }
 
-    .sidebar-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 0.75rem; }
+    .sidebar-divider { height: 1px; background: rgba(133,92,214,0.15); margin: 0.5rem 0.75rem; }
 
     .filter-section { 
       flex: 1; 
@@ -373,7 +375,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       font-size: 0.75rem; 
       text-transform: uppercase; 
       letter-spacing: 0.08em; 
-      color: rgba(255,255,255,0.4); 
+      color: var(--text-muted); 
       margin: 0 0 0.75rem 0.5rem; 
       font-weight: 700; 
     }
@@ -387,7 +389,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       border: 1.5px solid transparent;
       border-radius: 10px;
       background: transparent;
-      color: rgba(255,255,255,0.7);
+      color: var(--text-secondary);
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s;
@@ -395,13 +397,13 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       font-weight: 600;
     }
     .filter-chip:hover { 
-      background: rgba(255,255,255,0.06); 
-      color: #fff; 
+      background: rgba(133,92,214,0.06); 
+      color: var(--text-primary); 
     }
     .filter-chip.active { 
       background: rgba(133,92,214,0.15); 
-      border-color: rgba(167, 139, 250, 0.3); 
-      color: #c084fc; 
+      border-color: rgba(133, 92, 214, 0.3); 
+      color: var(--accent-primary); 
     }
     .chip-icon {
       font-size: 1.1rem;
@@ -410,8 +412,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       justify-content: center;
     }
 
-    .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
-    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
+    .logout-btn-sidebar { color: #ef4444 !important; opacity: 0.8 !important; }
+    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.08) !important; color: #ef4444 !important; opacity: 1 !important; }
 
     /* MAIN CONTENT */
     .main-content { 
@@ -419,6 +421,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       margin-left: 260px; 
       padding: 2.5rem; 
       max-width: calc(100% - 260px); 
+      background: #fafafa !important;
     }
 
     .content-header {

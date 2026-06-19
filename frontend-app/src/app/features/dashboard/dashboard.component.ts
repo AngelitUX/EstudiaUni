@@ -224,22 +224,7 @@ import 'driver.js/dist/driver.css';
 
           <!-- TWO-COLUMN GRID -->
           <div class="dashboard-grid">
-            <!-- 1. PROFILE COMPLETION PROGRESS BAR -->
-            <div class="profile-completion-card glass-card" *ngIf="getProfileCompletion() < 100" style="margin-bottom: 0;">
-              <div class="profile-completion-info">
-                <span class="alert-icon-pulse">⚠️</span>
-                <span class="completion-pill-badge">{{ getProfileCompletion() }}% completado</span>
-                <span class="profile-completion-text">— {{ getProfileCompletionMessage() }}</span>
-              </div>
-              <div class="profile-completion-progress-wrapper">
-                <div class="profile-completion-bar-bg">
-                  <div class="profile-completion-bar-fill" [style.width.%]="getProfileCompletion()"></div>
-                </div>
-                <button class="btn-complete-profile" (click)="showProfileModal = true">
-                  Completar Perfil ➔
-                </button>
-              </div>
-            </div>
+
 
             <!-- 3. AI HERO RECOMMENDATION (Primary CTA) -->
             <section class="ai-hero glass-card" id="ai-hero-section" style="margin-bottom: 0;">
