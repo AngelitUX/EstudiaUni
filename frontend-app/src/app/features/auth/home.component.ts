@@ -1188,36 +1188,43 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="footer-container">
           <div class="footer-grid">
             <div class="footer-col">
-              <div class="nav-logo" style="margin-bottom: 1rem;">
+              <div class="nav-logo" style="margin-bottom: 1rem; cursor: default; pointer-events: none;">
                 <span class="text-gradient">EstudiaUni</span>.cl
               </div>
               <p class="footer-desc">La plataforma inteligente para tu PAES. Maximiza tu puntaje con tecnología adaptativa y retroalimentación IA en tiempo real.</p>
             </div>
             
             <div class="footer-col">
-              <h4>Plataforma</h4>
-              <a class="non-clickable">Simulacros PAES</a>
-              <a class="non-clickable">Práctica Adaptativa</a>
-              <a class="non-clickable">Estadísticas de Rendimiento</a>
-              <a class="non-clickable">Tutor IA (Foco)</a>
+              <h4>Conócenos</h4>
+              <a href="https://www.instagram.com/estudiauni.cl" target="_blank" rel="noopener" style="cursor: pointer; display: flex; align-items: center; gap: 0.45rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;opacity:0.7"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                Instagram
+              </a>
+              <a href="https://www.tiktok.com/@estudiauni" target="_blank" rel="noopener" style="cursor: pointer; display: flex; align-items: center; gap: 0.45rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;opacity:0.7"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.84 1.55V6.79a4.85 4.85 0 01-1.07-.1z"/></svg>
+                TikTok
+              </a>
+              <a href="https://www.facebook.com/estudiauni" target="_blank" rel="noopener" style="cursor: pointer; display: flex; align-items: center; gap: 0.45rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;opacity:0.7"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                Facebook
+              </a>
+              <a routerLink="/trabaja-con-nosotros" style="cursor: pointer; margin-top: 0.25rem;">Trabaja con nosotros ↗</a>
             </div>
             
             <div class="footer-col">
               <h4>Recursos</h4>
-              <a class="non-clickable">Blog Estudiantil</a>
-              <a class="non-clickable">Temarios DEMRE</a>
-              <a class="non-clickable">Calculadora de Puntajes</a>
-              <a class="non-clickable">Guía de Universidades</a>
+              <a href="https://demre.cl/" target="_blank" rel="noopener" style="cursor: pointer;">Portal Oficial DEMRE ↗</a>
+              <a href="https://demre.cl/publicaciones/" target="_blank" rel="noopener" style="cursor: pointer;">Temarios Oficiales PAES ↗</a>
+              <a href="https://demre.cl/universidades/" target="_blank" rel="noopener" style="cursor: pointer;">Guía de Universidades ↗</a>
+              <a href="https://portal.beneficiosestudiantiles.cl/" target="_blank" rel="noopener" style="cursor: pointer;">Beneficios Estudiantiles ↗</a>
             </div>
             
             <div class="footer-col">
               <h4>Soporte y Legal</h4>
-              <a routerLink="/soporte" class="footer-soporte-btn" id="footer-soporte-link">
-                🎧 Soporte de Usuario y Contacto →
-              </a>
-              <a style="cursor: pointer;" (click)="scrollTo('faq')">Preguntas Frecuentes →</a>
-              <a style="cursor: pointer;" (click)="showLegalModal = true; legalModalType = 'terms'">Términos de Servicio →</a>
-              <a style="cursor: pointer;" (click)="showLegalModal = true; legalModalType = 'privacy'">Política de Privacidad →</a>
+              <a routerLink="/soporte" style="cursor: pointer;">Soporte de Usuario y Contacto ↗</a>
+              <a style="cursor: pointer;" (click)="scrollTo('faq')">Preguntas Frecuentes </a>
+              <a style="cursor: pointer;" (click)="showLegalModal = true; legalModalType = 'terms'">Términos de Servicio </a>
+              <a style="cursor: pointer;" (click)="showLegalModal = true; legalModalType = 'privacy'">Política de Privacidad </a>
             </div>
           </div>
           
@@ -1244,28 +1251,51 @@ import { PaymentService } from '../../core/services/payment.service';
             <button class="close-btn" (click)="showLegalModal = false">✕</button>
           </div>
           <div class="legal-modal-body" *ngIf="legalModalType === 'terms'">
-            <h4>1. Aceptación de los Términos</h4>
-            <p>Al acceder y utilizar EstudiaUni, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo, por favor no utilices nuestra plataforma.</p>
-            <h4>2. Descripción del Servicio</h4>
-            <p>EstudiaUni proporciona herramientas educativas, ensayos y un Tutor IA para preparar la PAES. El servicio Premium incluye características adicionales sujetas a pago.</p>
-            <h4>3. Cuentas de Usuario</h4>
-            <p>Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. EstudiaUni no se hace responsable por accesos no autorizados a tu cuenta.</p>
-            <h4>4. Uso del Tutor IA (Foco)</h4>
-            <p>El Tutor IA es una herramienta de apoyo educativo. Aunque nos esforzamos por mantener su precisión, las respuestas deben ser contrastadas con material oficial del DEMRE.</p>
-            <h4>5. Pagos y Suscripciones</h4>
-            <p>Las suscripciones Premium se facturan según el período seleccionado. Puedes cancelar en cualquier momento, manteniendo el acceso hasta el final del período pagado.</p>
+            <h4>Te damos la bienvenida a EstudiaUni</h4>
+            <p>El uso y acceso a nuestro sitio web implica que estás de acuerdo con la totalidad de estas normas y directrices. Te sugerimos que las leas con atención antes de empezar a estudiar con nosotros. En caso de no estar de acuerdo con algún punto, te invitamos a no hacer uso de la plataforma.</p>
+
+            <h4>I. ¿En qué consiste nuestra plataforma?</h4>
+            <p>EstudiaUni es un entorno virtual de aprendizaje cuyo propósito es acompañar a los postulantes chilenos en su camino hacia la rendición de la PAES. Al interior de la plataforma encontrarás ensayos dinámicos, material de apoyo, métricas de rendimiento y nuestro Tutor basado en IA operativo las 24 horas del día. Toda esta oferta está estructurada como un recurso de apoyo y refuerzo, alineado con los contenidos estipulados por el DEMRE.</p>
+
+            <h4>II. Enfoque y propósito de nuestros materiales</h4>
+            <p>Cualquier recurso presente en EstudiaUni —incluyendo ejercicios, correcciones y las guías del asistente inteligente— cumple una función formativa y de orientación. No podemos asegurar un rendimiento determinado en la prueba oficial u otras mediciones. Por ello, instamos a nuestra comunidad a utilizar nuestros recursos como un complemento al estudio formal y a revisar las comunicaciones oficiales emitidas por las autoridades pertinentes.</p>
+
+            <h4>III. Uso de nuestro asistente virtual (Foco)</h4>
+            <p>Nuestro Tutor IA (conocido como Foco) es un complemento digital ideado para acompañarte en tu aprendizaje. A través de tecnología avanzada, busca resolver dudas y hacer más digeribles los temas de estudio. No obstante, como cualquier herramienta artificial, sus sugerencias deben interpretarse como una guía y no como verdades absolutas, siendo ideal contrastar datos clave con fuentes académicas u oficiales.</p>
+
+            <h4>IV. Planes, cobros y facturación</h4>
+            <p>EstudiaUni cuenta con diversas modalidades de suscripción que se detallan en el portal principal. Al optar por un plan, das tu consentimiento para que se efectúen los cargos respectivos. Los ciclos de cobro son automáticos hasta que decidas anular el servicio. Todas las transacciones se manejan mediante procesadores seguros, los cuales intentarán realizar cobros nuevamente si ocurre algún error. Eventuales modificaciones en nuestras tarifas no alterarán el ciclo que ya tienes en curso.</p>
+
+            <h4>V. Cómo dar de baja tu plan</h4>
+            <p>Tienes la libertad de detener tu suscripción en cualquier instante desde el menú de configuración de tu perfil. Al hacerlo, seguirás disfrutando de los beneficios adquiridos hasta que termine el periodo de tiempo que ya abonaste. Cabe destacar que la cancelación no conlleva la devolución del dinero por los días o meses restantes de tu ciclo actual.</p>
+
+            <h4>VI. Tu perfil y responsabilidad de acceso</h4>
+            <p>Es indispensable que la información que utilices al crear tu perfil sea real y exacta. Tu cuenta es estrictamente individual e intransferible, por lo que recae en ti la obligación de mantener tus datos de ingreso en privado. EstudiaUni se reserva la facultad de bloquear o inhabilitar perfiles si se detecta un uso fraudulento o compartido de los mismos.</p>
+
+            <h4>VII. Derechos de autor y uso del material</h4>
+            <p>Absolutamente todos los recursos que conforman EstudiaUni son propiedad nuestra o de nuestros aliados y están amparados por la legislación vigente de derechos de autor. Al ser usuario, recibes un permiso individual y limitado para estudiar con este material, quedando totalmente restringida cualquier forma de copia, distribución, o explotación con motivos comerciales.</p>
+
+            <h4>VIII. Reglas de uso y alcances de nuestra responsabilidad</h4>
+            <p>Al unirte a EstudiaUni, te obligas a darle un uso puramente académico al sitio y a evitar acciones que alteren su correcto funcionamiento. El servicio se entrega "en el estado en que se encuentra" y, si bien procuramos su excelencia, no prometemos que sea infalible o ininterrumpido. No asumiremos daños colaterales que deriven de tus decisiones de estudio, y mantenemos el derecho a actualizar este reglamento cuando sea oportuno.</p>
           </div>
           <div class="legal-modal-body" *ngIf="legalModalType === 'privacy'">
-            <h4>1. Información que Recopilamos</h4>
-            <p>Recopilamos tu nombre, correo electrónico y datos de progreso en la plataforma para personalizar tu experiencia de aprendizaje.</p>
-            <h4>2. Uso de la Información</h4>
-            <p>Tus datos se utilizan exclusivamente para mejorar tu experiencia en EstudiaUni, generar estadísticas de rendimiento y personalizar las sugerencias del Tutor IA.</p>
-            <h4>3. Protección de Datos</h4>
-            <p>Implementamos medidas de seguridad para proteger tu información personal contra acceso no autorizado, alteración o destrucción.</p>
-            <h4>4. Compartir Información</h4>
-            <p>No vendemos, intercambiamos ni transferimos tu información personal a terceros bajo ninguna circunstancia.</p>
-            <h4>5. Cookies</h4>
-            <p>Utilizamos cookies esenciales para mantener tu sesión activa y guardar tus preferencias dentro de la plataforma.</p>
+            <h4>I. ¿Qué datos recolectamos?</h4>
+            <p>A lo largo de tu experiencia en EstudiaUni, guardamos detalles fundamentales como tu nombre e email al momento de inscribirte. Igualmente, registramos la actividad que tienes en la plataforma: resultados de simulacros, evolución de tu aprendizaje, charlas con nuestro asistente de IA y demás parámetros sobre tu desempeño general.</p>
+
+            <h4>II. ¿Para qué usamos tu información?</h4>
+            <p>Todos estos datos tienen un fin claro: entregar un servicio educativo más eficiente. Esto nos permite adaptar el plan de estudios a tus necesidades, hacer que el Tutor responda de forma más precisa, gestionar tus pagos de suscripción y mantenerte informado sobre mejoras, anuncios de la plataforma o cambios relevantes en tu cuenta.</p>
+
+            <h4>III. ¿Cómo resguardamos tus datos?</h4>
+            <p>Aplicamos sistemas de seguridad tecnológica y de organización reconocidos a nivel global para impedir que agentes externos accedan, modifiquen o destruyan tu información. Tus claves de acceso se encriptan y los datos de pago jamás se alojan directamente con nosotros, ya que usamos servicios de cobro externos de alta seguridad.</p>
+
+            <h4>IV. Políticas respecto a terceros</h4>
+            <p>La confidencialidad es prioridad para EstudiaUni. En ningún caso comercializamos o cedemos tus registros personales a otras compañías para que hagan publicidad. Las únicas instancias en las que compartimos datos se limitan a necesidades técnicas operativas (como procesar tu pago) o en situaciones donde la ley o alguna autoridad competente nos lo exija expresamente.</p>
+
+            <h4>V. Rastreo y uso de cookies</h4>
+            <p>Nuestra web se apoya en cookies y herramientas parecidas para mantenerte conectado sin pedirte la clave a cada rato, recordar tus elecciones visuales y analizar el comportamiento de la comunidad con el fin de mejorar el diseño del sitio. Tienes la potestad de bloquear las cookies desde tu navegador, aunque esto puede provocar que la plataforma no rinda al 100%.</p>
+
+            <h4>VI. Control y derechos sobre tu perfil</h4>
+            <p>Cuentas con total libertad para revisar, enmendar o exigir la eliminación definitiva de tu huella de datos en nuestra plataforma. Podrás realizar buena parte de estos ajustes directamente en tu panel de configuración. Para gestiones más complejas sobre tu privacidad, siempre tendrás a disposición nuestro equipo de atención al estudiante.</p>
           </div>
         </div>
       </div>
@@ -4641,7 +4671,8 @@ import { PaymentService } from '../../core/services/payment.service';
       padding-bottom: 1rem; margin-bottom: 1.5rem;
     }
     .legal-modal-header h3 { margin: 0; font-size: 1.5rem; background: var(--gradient-primary, linear-gradient(135deg, #855cd6 0%, #3b82f6 100%)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .legal-modal-header .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted, #9ca3af); cursor: pointer; }
+    .legal-modal-header .close-btn { border: none; background: var(--bg-secondary, #f3f4f6); color: var(--text-secondary, #4b5563); width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: grid; place-items: center; transition: all 0.2s; line-height: 1; }
+    .legal-modal-header .close-btn:hover { background: rgba(239,68,68,0.25); color: #fca5a5 !important; }
     .legal-modal-body h4 { color: var(--text-primary, #111827); margin-top: 1.5rem; margin-bottom: 0.5rem; }
     .legal-modal-body p { color: var(--text-secondary, #4b5563); line-height: 1.6; font-size: 0.95rem; }
   `]
@@ -5016,11 +5047,11 @@ export class HomeComponent implements AfterViewInit, OnInit {
       const gridOverlay = document.querySelector('.hero-grid-overlay') as HTMLElement;
       const blobPurple = document.querySelector('.hero-blob-purple') as HTMLElement;
       const blobBlue = document.querySelector('.hero-blob-blue') as HTMLElement;
-      
+
       let ticking = false;
       window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
-        
+
         if (!ticking) {
           window.requestAnimationFrame(() => {
             // Parallax updates
@@ -5033,11 +5064,11 @@ export class HomeComponent implements AfterViewInit, OnInit {
             if (blobBlue) {
               blobBlue.style.transform = `translateY(${currentScrollY * 0.2}px) scale(${1 - currentScrollY * 0.0001})`;
             }
-            
+
             // Navbar state updates (only trigger Angular zone if state changes)
             const newIsScrolled = currentScrollY > 50;
             const newNavbarHidden = currentScrollY > this.lastScrollY && currentScrollY > 100;
-            
+
             if (newIsScrolled !== this.isScrolled || newNavbarHidden !== this.navbarHidden) {
               this.zone.run(() => {
                 this.isScrolled = newIsScrolled;

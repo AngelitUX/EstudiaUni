@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
-
+import { CareerService, Career } from '../../core/services/career.service';
 
 @Component({
   selector: 'app-profile-modal',
@@ -164,15 +164,27 @@ import { Router } from '@angular/router';
                   <p>Configura tu puntaje objetivo y mide tu progreso en el dashboard.</p>
                 </div>
                 <div class="goal-fields">
-                  <label>Carrera a la que aspiras
-                    <input [(ngModel)]="profileForm.targetCareer" type="text" placeholder="Ej: Ingeniería Civil"/>
-                  </label>
                   <label>Universidad
-                    <input [(ngModel)]="profileForm.targetUniversity" type="text" placeholder="Ej: Universidad de Chile"/>
+                    <select [(ngModel)]="profileForm.targetUniversity" (change)="onUniversityChange()">
+                      <option value="">Selecciona tu universidad</option>
+                      <option *ngFor="let uni of universidades" [value]="uni">{{ uni }}</option>
+                    </select>
+                  </label>
+                  <label>Carrera a la que aspiras
+                    <select [(ngModel)]="profileForm.targetCareer" [disabled]="!profileForm.targetUniversity">
+                      <option value="">Selecciona tu carrera</option>
+                      <option *ngFor="let c of carrerasFiltradas" [value]="c.nombre">{{ c.nombre }}</option>
+                    </select>
                   </label>
                   <label>Puntaje de corte (100-1000)
                     <input [(ngModel)]="profileForm.targetScore" (blur)="onTargetScoreBlur()" (change)="onTargetScoreBlur()" type="number" min="100" max="1000" step="1" placeholder="Ej: 700"/>
                   </label>
+                  
+                  <div *ngIf="!profileForm.targetScore || !profileForm.targetCareer || !profileForm.targetUniversity" style="margin-top: 0.5rem; display: flex; justify-content: center;">
+                    <a routerLink="/encuentra-tu-carrera" (click)="closeModal()" class="btn-buscar-carreras-profile" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-primary); color: white; padding: 0.6rem 1.25rem; border-radius: 9px; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
+                      🔍 Encuentra tu carrera ideal
+                    </a>
+                  </div>
                 </div>
                 <div class="goal-preview" *ngIf="profileForm.targetScore && profileForm.targetCareer">
                   <span class="goal-preview-icon">🏆</span>
@@ -569,7 +581,7 @@ export class ProfileModalComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   public readonly adminService = inject(AdminService);
-
+  private readonly careerService = inject(CareerService);
 
   @Output() close = new EventEmitter<void>();
 
@@ -586,6 +598,10 @@ export class ProfileModalComponent implements OnInit {
   shakeSaveButton = false;
   isEditingName = false;
   imageToEdit = '';
+
+  universidades: string[] = [];
+  todasLasCarreras: Career[] = [];
+  carrerasFiltradas: Career[] = [];
 
   chileanRegions = [
     'Arica y Parinacota',
@@ -754,6 +770,12 @@ export class ProfileModalComponent implements OnInit {
           this.initialProfileForm = JSON.stringify(this.profileForm);
         }
         this.loading = false;
+        
+        this.careerService.getUniversidades().subscribe(unis => this.universidades = unis);
+        this.careerService.getCareers().subscribe(carreras => {
+          this.todasLasCarreras = carreras;
+          this.onUniversityChange();
+        });
       },
       error: () => { this.loading = false; this.toast.error('No se pudo cargar la información.'); }
     });
@@ -1049,6 +1071,20 @@ export class ProfileModalComponent implements OnInit {
 
   onTargetScoreBlur(): void {
     this.profileForm.targetScore = this.clampTargetScore(this.profileForm.targetScore);
+  }
+
+  onUniversityChange(): void {
+    if (!this.profileForm.targetUniversity) {
+      this.carrerasFiltradas = [];
+      this.profileForm.targetCareer = '';
+    } else {
+      this.carrerasFiltradas = this.todasLasCarreras.filter(
+        c => c.universidad === this.profileForm.targetUniversity
+      );
+      if (!this.carrerasFiltradas.some(c => c.nombre === this.profileForm.targetCareer)) {
+        this.profileForm.targetCareer = '';
+      }
+    }
   }
 
   private clampTargetScore(value: number | string | null | undefined): number | null {
