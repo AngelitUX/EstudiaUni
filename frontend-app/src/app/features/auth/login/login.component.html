@@ -38,6 +38,10 @@
       {{ error }}
     </div>
 
+    <div *ngIf="resetSuccess" class="success-banner" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; font-size: 0.9rem;">
+      ✅ Te hemos enviado un correo con instrucciones para restablecer tu contraseña.
+    </div>
+
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
       <div class="form-group">
         <label for="email">Correo Electrónico</label>
@@ -54,15 +58,25 @@
 
       <div class="form-group">
         <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          [(ngModel)]="password" 
-          name="password" 
-          required 
-          placeholder="••••••••"
-          class="glass-input"
-        >
+        <div class="password-input-wrapper" style="position: relative;">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="password" 
+            [(ngModel)]="password" 
+            name="password" 
+            required 
+            placeholder="••••••••"
+            class="glass-input"
+            style="padding-right: 2.5rem; width: 100%; box-sizing: border-box;"
+          >
+          <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0;">
+            <span *ngIf="!showPassword">👁️</span>
+            <span *ngIf="showPassword">🙈</span>
+          </button>
+        </div>
+        <div style="text-align: right; margin-top: 0.5rem;">
+          <a href="javascript:void(0)" (click)="resetPassword()" class="forgot-password-link" style="color: var(--accent-primary); font-size: 0.85rem; text-decoration: none;">¿Olvidaste tu contraseña?</a>
+        </div>
       </div>
 
       <button type="submit" class="btn btn-primary w-full" [disabled]="!loginForm.form.valid || loading">

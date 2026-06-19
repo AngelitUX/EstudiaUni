@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from '@angular/fire/auth';
+import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendPasswordResetEmail } from '@angular/fire/auth';
 import { User, UserCredential } from 'firebase/auth';
 import { Observable, from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -132,5 +132,9 @@ export class AuthService {
 
   logout() {
     return from(signOut(this.auth));
+  }
+
+  async resetPassword(email: string) {
+    await sendPasswordResetEmail(this.auth, email);
   }
 }

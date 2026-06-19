@@ -110,7 +110,7 @@ Si te envío una imagen, léela con atención. Es la captura oficial de la pregu
           { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         ],
         generationConfig: {
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192,
           temperature: 0.7,
         }
       });
@@ -209,7 +209,7 @@ Si te envío una imagen, léela con atención. Es la captura oficial de la pregu
           { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         ],
         generationConfig: {
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192,
           temperature: 0.7,
         }
       });

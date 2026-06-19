@@ -22,6 +22,42 @@ export class LoginComponent {
   password = '';
   error = '';
   loading = false;
+  isResetting = false;
+  resetSuccess = false;
+  showPassword = false;
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  async resetPassword() {
+    if (!this.email) {
+      this.error = 'Por favor, ingresa tu correo electrónico antes de presionar "¿Olvidaste tu contraseña?".';
+      return;
+    }
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(this.email)) {
+      this.error = 'Por favor ingresa un correo electrónico válido para recuperar la contraseña.';
+      return;
+    }
+
+    this.isResetting = true;
+    this.error = '';
+    this.resetSuccess = false;
+    try {
+      await this.authService.resetPassword(this.email.toLowerCase().trim());
+      this.resetSuccess = true;
+      setTimeout(() => this.resetSuccess = false, 5000);
+    } catch (e: any) {
+      if (e?.code === 'auth/user-not-found') {
+        this.error = 'No se encontró ninguna cuenta con este correo.';
+      } else {
+        this.error = 'Error al enviar el correo de recuperación. Intenta de nuevo.';
+      }
+    } finally {
+      this.isResetting = false;
+    }
+  }
 
   async onSubmit() {
     this.error = '';
