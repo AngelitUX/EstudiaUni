@@ -1838,6 +1838,13 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     });
     
     // 3. Procesar comandos matemáticos dentro de todo el texto (especialmente dentro de los tags matemáticos)
+    
+    // Texto dentro de formulas: \text{...} -> ...
+    formatted = formatted.replace(/\\text\{([^{}]+)\}/g, '<span style="font-family: inherit;">$1</span>');
+    formatted = formatted.replace(/\\mathrm\{([^{}]+)\}/g, '<span style="font-family: inherit;">$1</span>');
+    formatted = formatted.replace(/\\mathbf\{([^{}]+)\}/g, '<strong>$1</strong>');
+    formatted = formatted.replace(/\\textbf\{([^{}]+)\}/g, '<strong>$1</strong>');
+
     // Fracciones: \frac{a}{b} -> vertical fraction en HTML
     while (formatted.includes('\\frac{') || formatted.includes('\\dfrac{')) {
       const nextFormatted = formatted.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, (match, num, den) => {

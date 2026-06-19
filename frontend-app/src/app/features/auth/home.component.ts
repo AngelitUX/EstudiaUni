@@ -553,28 +553,15 @@ import { PaymentService } from '../../core/services/payment.service';
             <div *ngIf="activeTab === 0" class="tab-pane fade-in">
               <div class="tab-visual tab-dashboard-wrapper">
                 <!-- Premium Glassmorphic Video Player Placeholder -->
-                <div class="mock-video-player">
-                  <div class="video-play-btn">
-                    <span class="play-arrow">▶</span>
-                  </div>
-                  <div class="video-controls-overlay">
-                    <div class="controls-left">
-                      <span class="control-icon">⏸</span>
-                      <span class="control-time">00:45 / 02:15</span>
-                    </div>
-                    <div class="controls-timeline">
-                      <div class="timeline-track">
-                        <div class="timeline-fill" style="width: 33%"></div>
-                        <div class="timeline-handle" style="left: 33%"></div>
-                      </div>
-                    </div>
-                    <div class="controls-right">
-                      <span class="control-icon">🔊</span>
-                      <span class="control-icon">⚙️</span>
-                      <span class="control-icon">⛶</span>
-                    </div>
-                  </div>
-                </div>
+                <video 
+                  src="assets/videos/rutaDeAprendizajeTest.mp4" 
+                  autoplay 
+                  loop 
+                  muted 
+                  playsinline 
+                  class="real-video-player"
+                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
+                ></video>
               </div>
             </div>
             
@@ -4964,44 +4951,58 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
     // Registrar eventos de mouse en la zona externa de Angular para cero lag (mutación directa del DOM)
     this.zone.runOutsideAngular(() => {
+      let mouseTicking = false;
       document.addEventListener('mousemove', (e: MouseEvent) => {
         if (this.hoveredBenefitIndex !== null) return;
 
-        const sectionEl = document.getElementById('foco-tutor');
-        if (!sectionEl) return;
+        if (!mouseTicking) {
+          window.requestAnimationFrame(() => {
+            const sectionEl = document.getElementById('foco-tutor');
+            if (!sectionEl) {
+              mouseTicking = false;
+              return;
+            }
 
-        const sectionRect = sectionEl.getBoundingClientRect();
-        const isInsideSection = e.clientX >= sectionRect.left && e.clientX <= sectionRect.right &&
-          e.clientY >= sectionRect.top && e.clientY <= sectionRect.bottom;
+            const sectionRect = sectionEl.getBoundingClientRect();
+            const isInsideSection = e.clientX >= sectionRect.left && e.clientX <= sectionRect.right &&
+              e.clientY >= sectionRect.top && e.clientY <= sectionRect.bottom;
 
-        const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
-        if (!mascotEl) return;
+            const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
+            if (!mascotEl) {
+              mouseTicking = false;
+              return;
+            }
 
-        if (!isInsideSection) {
-          mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
-          return;
+            if (!isInsideSection) {
+              mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
+              mouseTicking = false;
+              return;
+            }
+
+            const rect = mascotEl.getBoundingClientRect();
+            const mascotCenterX = rect.left + rect.width / 2;
+            const mascotCenterY = rect.top + rect.height / 2;
+
+            const deltaX = e.clientX - mascotCenterX;
+            const deltaY = e.clientY - mascotCenterY;
+
+            // Desplazamiento máximo dulce de 22px
+            const maxDisplacement = 22;
+            const sensitivity = 300;
+
+            const translateX = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaX / sensitivity) * maxDisplacement));
+            const translateY = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaY / sensitivity) * maxDisplacement));
+
+            const isHovered = e.clientX >= rect.left && e.clientX <= rect.right &&
+              e.clientY >= rect.top && e.clientY <= rect.bottom;
+
+            const scale = isHovered ? 1.06 : 1.0;
+
+            mascotEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            mouseTicking = false;
+          });
+          mouseTicking = true;
         }
-
-        const rect = mascotEl.getBoundingClientRect();
-        const mascotCenterX = rect.left + rect.width / 2;
-        const mascotCenterY = rect.top + rect.height / 2;
-
-        const deltaX = e.clientX - mascotCenterX;
-        const deltaY = e.clientY - mascotCenterY;
-
-        // Desplazamiento máximo dulce de 22px
-        const maxDisplacement = 22;
-        const sensitivity = 300;
-
-        const translateX = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaX / sensitivity) * maxDisplacement));
-        const translateY = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaY / sensitivity) * maxDisplacement));
-
-        const isHovered = e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top && e.clientY <= rect.bottom;
-
-        const scale = isHovered ? 1.06 : 1.0;
-
-        mascotEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
       }, { passive: true });
 
       document.addEventListener('mouseleave', () => {

@@ -168,9 +168,6 @@ import 'driver.js/dist/driver.css';
             <h1 class="header-greeting">¡Hola, <span class="text-gradient" [class.pro-username]="isProPlan()">{{ userName() }}</span>! 👋</h1>
           </div>
           <div class="welcome-actions">
-            <button class="btn-upgrade-pro" style="background: rgba(133,92,214,0.1); border-color: var(--accent-primary); color: var(--accent-primary);" (click)="startTutorial()">
-              Testear Tutorial 🔄
-            </button>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
@@ -2078,6 +2075,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const savedVal = localStorage.getItem('herramientasExpanded');
     this.herramientasExpanded = isToolRoute ? true : (savedVal !== 'false');
 
+    const localSeen = localStorage.getItem('estudiauni_tutorial_seen');
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
@@ -2088,8 +2086,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
               notificationsEnabled: true,
             });
           }
-          if (!profile.hasSeenTutorial) {
+          if (!profile.hasSeenTutorial && !localSeen) {
             this.showTutorialModal = true;
+          } else {
+            this.showTutorialModal = false;
           }
         }
       }
@@ -2101,6 +2101,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async skipTutorial() {
     this.showTutorialModal = false;
+    localStorage.setItem('estudiauni_tutorial_seen', 'true');
     const p = this.firestoreService.profileSignal();
     if (p && p.uid) {
       await this.firestoreService.markTutorialAsSeen(p.uid);
@@ -2109,6 +2110,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async startTutorial() {
     this.showTutorialModal = false;
+    localStorage.setItem('estudiauni_tutorial_seen', 'true');
     const p = this.firestoreService.profileSignal();
     if (p && p.uid) {
       await this.firestoreService.markTutorialAsSeen(p.uid);
@@ -2136,12 +2138,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       steps: [
         {
-          element: '.welcome-widgets-row',
           popover: {
             title: '👋 ¡Bienvenido a tu Dashboard!',
-            description: 'El corazón de EstudiaUni. Aquí encontrarás el resumen de tu progreso, rachas de estudio y el tiempo que falta para la PAES.',
-            side: 'bottom',
-            align: 'start'
+            description: 'El corazón de EstudiaUni. Aquí encontrarás el resumen de tu progreso, rachas de estudio y el tiempo que falta para la PAES.'
           }
         },
         {

@@ -121,18 +121,25 @@
 
         <div class="form-group">
           <label for="password">Contraseña</label>
-          <input 
-            type="password" 
-            id="password" 
-            [(ngModel)]="password" 
-            name="password" 
-            required 
-            minlength="8"
-            (ngModelChange)="validatePassword()"
-            placeholder="Mínimo 8 caracteres"
-            class="glass-input"
-            #passwordInput="ngModel"
-          >
+          <div class="password-input-wrapper" style="position: relative;">
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              id="password" 
+              [(ngModel)]="password" 
+              name="password" 
+              required 
+              minlength="8"
+              (ngModelChange)="validatePassword()"
+              placeholder="Mínimo 8 caracteres"
+              class="glass-input"
+              #passwordInput="ngModel"
+              style="padding-right: 2.5rem; width: 100%; box-sizing: border-box;"
+            >
+            <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0;">
+              <span *ngIf="!showPassword">👁️</span>
+              <span *ngIf="showPassword">🙈</span>
+            </button>
+          </div>
           <div class="password-requirements" *ngIf="password">
             <small [class.valid]="passwordChecks.minLength" [class.invalid]="!passwordChecks.minLength">
               {{ passwordChecks.minLength ? '✓' : '✗' }} Mínimo 8 caracteres
@@ -146,7 +153,31 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-full" [disabled]="!registerForm.form.valid || !isPasswordValid() || !isEmailDomainValid(email) || loading">
+        <div class="form-group">
+          <label for="confirmPassword">Confirmar Contraseña</label>
+          <div class="password-input-wrapper" style="position: relative;">
+            <input 
+              [type]="showConfirmPassword ? 'text' : 'password'" 
+              id="confirmPassword" 
+              [(ngModel)]="confirmPassword" 
+              name="confirmPassword" 
+              required 
+              placeholder="Repite tu contraseña"
+              class="glass-input"
+              #confirmPasswordInput="ngModel"
+              style="padding-right: 2.5rem; width: 100%; box-sizing: border-box;"
+            >
+            <button type="button" class="btn-toggle-password" (click)="toggleConfirmPasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0;">
+              <span *ngIf="!showConfirmPassword">👁️</span>
+              <span *ngIf="showConfirmPassword">🙈</span>
+            </button>
+          </div>
+          <small *ngIf="confirmPassword && password !== confirmPassword" class="error-text" style="display: block; margin-top: 0.25rem;">
+            Las contraseñas no coinciden
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full" [disabled]="!registerForm.form.valid || !isPasswordValid() || password !== confirmPassword || !isEmailDomainValid(email) || loading">
           {{ loading ? 'Creando cuenta...' : 'Crear Cuenta' }}
         </button>
 

@@ -20,7 +20,18 @@ export class RegisterComponent {
   name = '';
   email = '';
   password = '';
+  confirmPassword = '';
   error = '';
+  showPassword = false;
+  showConfirmPassword = false;
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
   loading = false;
   verificationEmailSent = false;
   resendSuccess = false;
@@ -119,6 +130,11 @@ export class RegisterComponent {
 
     if (!this.isPasswordValid()) {
       this.error = 'La contraseña no cumple con los requisitos de seguridad.';
+      return;
+    }
+
+    if (this.password !== this.confirmPassword) {
+      this.error = 'Las contraseñas no coinciden.';
       return;
     }
 
