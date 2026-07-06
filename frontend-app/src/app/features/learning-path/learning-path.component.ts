@@ -229,6 +229,19 @@ import { PaymentService } from '../../core/services/payment.service';
               </div>
             </div>
 
+            <!-- HIDDEN MATERIAS BANNER -->
+            <div *ngIf="hiddenMaterias().length > 0 && filteredAndSortedMaterias().length > 0" class="hidden-materias-banner animate-fade-in" style="margin-top: 1.5rem; background: rgba(255,255,255,0.7); border: 1.5px dashed rgba(133,92,214,0.4); border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">👁️‍🗨️</span>
+                <p style="margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;">
+                  Tienes materias ocultas en tu ruta: <strong style="color: var(--text-primary);">{{ getHiddenMateriasText() }}</strong>. 
+                </p>
+              </div>
+              <button class="btn-profile-redirect" (click)="openProfileModal('subjects-section')" style="margin-top: 0; padding: 0.65rem 1.25rem; font-size: 0.85rem; border-radius: 12px; white-space: nowrap;">
+                Activar en perfil ⚙️
+              </button>
+            </div>
+
             <!-- EMPTY STATE MESSAGE -->
             <div *ngIf="filteredAndSortedMaterias().length === 0" class="empty-path-container animate-fade-in">
               <div class="empty-path-card glass">
@@ -246,7 +259,7 @@ import { PaymentService } from '../../core/services/payment.service';
         </div>
       </main>
       <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsClose()"></app-settings-modal>
-      <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+      <app-profile-modal *ngIf="showProfileModal" [scrollTarget]="profileScrollTarget" (close)="onProfileModalClose()"></app-profile-modal>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
@@ -683,7 +696,13 @@ export class LearningPathComponent implements OnInit, OnDestroy {
   mobileOpen = false;
   showSettingsModal = false;
   showProfileModal = false;
+  profileScrollTarget = '';
   showLogoutConfirm = false;
+
+  openProfileModal(target = '') {
+    this.profileScrollTarget = target;
+    this.showProfileModal = true;
+  }
 
   isProPlan = computed(() => {
     const p = this.firestoreService.profileSignal();
@@ -735,6 +754,16 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     
     return list;
   });
+
+  hiddenMaterias = computed(() => {
+    const list = this.paes.materias();
+    const visibleIds = this.filteredAndSortedMaterias().map(m => m.id);
+    return list.filter(m => !visibleIds.includes(m.id) && m.id !== 'ciencias');
+  });
+
+  getHiddenMateriasText() {
+    return this.hiddenMaterias().map(m => m.title).join(', ');
+  }
 
   onSettingsClose() {
     this.showSettingsModal = false;
