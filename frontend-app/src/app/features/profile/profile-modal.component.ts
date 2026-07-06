@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, Output, EventEmitter, Input, AfterViewInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
@@ -29,13 +29,13 @@ import { CareerService, Career } from '../../core/services/career.service';
           <div class="profile-shell">
             <aside class="profile-sidebar">
               <div class="avatar-container">
-                <div class="avatar-wrap" [class.clickable]="isProPlan()" (click)="isProPlan() ? photoInput.click() : showPremiumToast()" title="Foto de perfil">
+                <div class="avatar-wrap clickable" (click)="(isProPlan() || adminService.isAdmin()) ? photoInput.click() : showPremiumToast()" title="Foto de perfil">
                   <img *ngIf="profileForm.photoURL; else avatarFallback" [src]="profileForm.photoURL" class="avatar" alt="Foto de perfil"/>
                   <ng-template #avatarFallback><div class="avatar fallback">{{ initial }}</div></ng-template>
-                  <div class="avatar-overlay" *ngIf="isProPlan()">
+                  <div class="avatar-overlay">
                     <span>Cambiar foto</span>
                   </div>
-                  <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;" [disabled]="!isProPlan()"/>
+                  <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;" [disabled]="!(isProPlan() || adminService.isAdmin())"/>
                 </div>
                 <div class="emoji-pill clickable" (click)="$event.stopPropagation(); showEmojiPicker = true" title="Cambiar emote">
                   {{ profileForm.profileEmoji || '✨' }}
@@ -78,26 +78,15 @@ import { CareerService, Career } from '../../core/services/career.service';
                     <option *ngFor="let region of chileanRegions" [value]="region">{{ region }}</option>
                   </select>
                 </label>
-                <label class="sidebar-field">Colegio / Liceo
-                  <div class="input-with-icon">
-                    <span class="input-icon">🏫</span>
-                    <input [(ngModel)]="profileForm.school" type="text" placeholder="Tu colegio actual"/>
-                  </div>
+                <label class="sidebar-field">Sobre ti
+                  <textarea #bioInput [(ngModel)]="profileForm.bio" rows="4" maxlength="140" placeholder="Quién eres en una frase" style="width:100%; resize:none; font-size: 0.85rem; padding: 0.45rem; border-radius: 8px; border: 1.5px solid var(--glass-border); margin-top: 0.35rem; min-height: 80px;"></textarea>
+                  <div class="helper-row" style="margin-top: 0.25rem;"><span>Máx 140</span><span class="counter">{{ profileForm.bio.length }}/140</span></div>
                 </label>
               </div>
               
               <div class="sidebar-spacer"></div>
             </aside>
             <div class="profile-main">
-              <div class="section-block">
-                <div class="section-header"><h3>Ruta de Aprendizaje</h3><p>Selecciona las materias que quieres ver en tu ruta.</p></div>
-                <div class="grid subjects-grid-profile">
-                  <label class="switch-profile" *ngFor="let subject of subjectsList">
-                    <input type="checkbox" [checked]="isSubjectSelected(subject.id)" (change)="toggleSubject(subject.id)"/>
-                    <span>{{ subject.name }}</span>
-                  </label>
-                </div>
-              </div>
               <div class="section-block">
                 <div class="section-header"><h3>Plan de Cuenta</h3><p>Estado actual de tu suscripción en EstudiaUni.</p></div>
                 <div class="info-row">
@@ -118,12 +107,49 @@ import { CareerService, Career } from '../../core/services/career.service';
                 </div>
               </div>
               </div>
-              <div class="section-block">
-                <div class="section-header"><h3>Sobre ti</h3><p>Una frase rápida para mostrar en tu perfil.</p></div>
-                <label>Descripción breve<textarea [(ngModel)]="profileForm.bio" rows="3" maxlength="140" placeholder="Quién eres en una frase"></textarea></label>
-                <div class="helper-row"><span>Máx 140 caracteres</span><span class="counter">{{ profileForm.bio.length }}/140</span></div>
+              <div class="section-block subjects-section" [class.highlight-section]="scrollTarget === 'subjects-section'">
+                <div class="section-header"><h3>Ruta de Aprendizaje</h3><p>Selecciona las materias que quieres ver en tu ruta.</p></div>
+                <div class="grid subjects-grid-profile">
+                  <label class="switch-profile" *ngFor="let subject of subjectsList">
+                    <input type="checkbox" [checked]="isSubjectSelected(subject.id)" (change)="toggleSubject(subject.id)"/>
+                    <span>{{ subject.name }}</span>
+                  </label>
+                </div>
               </div>
-              <div class="section-block">
+              <div class="section-block paes-goal-section" [class.highlight-section]="scrollTarget === 'paes-goal-section'">
+                <div class="section-header">
+                  <h3>🎯 Meta PAES</h3>
+                  <p>Configura tu puntaje objetivo y mide tu progreso en el dashboard.</p>
+                </div>
+                <div class="goal-fields">
+                  <label>Universidad
+                    <select [(ngModel)]="profileForm.targetUniversity" (change)="onUniversityChange()">
+                      <option value="">Selecciona tu universidad</option>
+                      <option *ngFor="let uni of universidades" [value]="uni">{{ uni }}</option>
+                    </select>
+                  </label>
+                  <label>Carrera a la que aspiras
+                    <select [(ngModel)]="profileForm.targetCareer" [disabled]="!profileForm.targetUniversity">
+                      <option value="">Selecciona tu carrera</option>
+                      <option *ngFor="let c of carrerasFiltradas" [value]="c.nombre">{{ c.nombre }}</option>
+                    </select>
+                  </label>
+                  <label>Puntaje de corte (100-1000)
+                    <input [(ngModel)]="profileForm.targetScore" (blur)="onTargetScoreBlur()" (change)="onTargetScoreBlur()" type="number" min="100" max="1000" step="1" placeholder="Ej: 700"/>
+                  </label>
+                  
+                  <div *ngIf="!profileForm.targetScore || !profileForm.targetCareer || !profileForm.targetUniversity" style="margin-top: 0.5rem; display: flex; justify-content: center;">
+                    <a routerLink="/encuentra-tu-carrera" (click)="closeModal()" class="btn-buscar-carreras-profile" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-primary); color: white; padding: 0.6rem 1.25rem; border-radius: 9px; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
+                      🔍 Encuentra tu carrera ideal
+                    </a>
+                  </div>
+                </div>
+                <div class="goal-preview" *ngIf="profileForm.targetScore && profileForm.targetCareer">
+                  <span class="goal-preview-icon">🏆</span>
+                  <span class="goal-preview-text">Tu meta: <strong>{{ profileForm.targetCareer }}</strong> — {{ profileForm.targetScore }} pts</span>
+                </div>
+              </div>
+              <div class="section-block nem-history-section" [class.highlight-section]="scrollTarget === 'nem-history-section'">
                 <div class="section-header">
                   <h3>Historial NEM</h3>
                   <p>Tus notas guardadas desde la Calculadora NEM.</p>
@@ -157,39 +183,6 @@ import { CareerService, Career } from '../../core/services/career.service';
                     <a routerLink="/calculadora-nem" (click)="closeModal()" class="btn-nem-link">Ir a la calculadora</a>
                   </div>
                 </ng-template>
-              </div>
-              <div class="section-block paes-goal-section">
-                <div class="section-header">
-                  <h3>🎯 Meta PAES</h3>
-                  <p>Configura tu puntaje objetivo y mide tu progreso en el dashboard.</p>
-                </div>
-                <div class="goal-fields">
-                  <label>Universidad
-                    <select [(ngModel)]="profileForm.targetUniversity" (change)="onUniversityChange()">
-                      <option value="">Selecciona tu universidad</option>
-                      <option *ngFor="let uni of universidades" [value]="uni">{{ uni }}</option>
-                    </select>
-                  </label>
-                  <label>Carrera a la que aspiras
-                    <select [(ngModel)]="profileForm.targetCareer" [disabled]="!profileForm.targetUniversity">
-                      <option value="">Selecciona tu carrera</option>
-                      <option *ngFor="let c of carrerasFiltradas" [value]="c.nombre">{{ c.nombre }}</option>
-                    </select>
-                  </label>
-                  <label>Puntaje de corte (100-1000)
-                    <input [(ngModel)]="profileForm.targetScore" (blur)="onTargetScoreBlur()" (change)="onTargetScoreBlur()" type="number" min="100" max="1000" step="1" placeholder="Ej: 700"/>
-                  </label>
-                  
-                  <div *ngIf="!profileForm.targetScore || !profileForm.targetCareer || !profileForm.targetUniversity" style="margin-top: 0.5rem; display: flex; justify-content: center;">
-                    <a routerLink="/encuentra-tu-carrera" (click)="closeModal()" class="btn-buscar-carreras-profile" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-primary); color: white; padding: 0.6rem 1.25rem; border-radius: 9px; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
-                      🔍 Encuentra tu carrera ideal
-                    </a>
-                  </div>
-                </div>
-                <div class="goal-preview" *ngIf="profileForm.targetScore && profileForm.targetCareer">
-                  <span class="goal-preview-icon">🏆</span>
-                  <span class="goal-preview-text">Tu meta: <strong>{{ profileForm.targetCareer }}</strong> — {{ profileForm.targetScore }} pts</span>
-                </div>
               </div>
               <div class="bottom-spacer"></div>
             </div>
@@ -420,7 +413,13 @@ import { CareerService, Career } from '../../core/services/career.service';
 
     .logout-profile-btn .icon{font-size:1.1rem}
     .profile-main{display:flex;flex-direction:column;gap:1.2rem}
-    .section-block{background:var(--bg-color);border:2px solid var(--glass-border);border-radius:16px;padding:1rem;display:flex;flex-direction:column;gap:.85rem}
+    .section-block{background:var(--bg-color);border:2px solid var(--glass-border);border-radius:16px;padding:0.75rem 1rem;display:flex;flex-direction:column;gap:.6rem;transition:all 0.3s}
+    .highlight-section { animation: pulse-glow 2s infinite; border-color: var(--accent-primary) !important; box-shadow: 0 0 15px rgba(133,92,214,0.4) !important; }
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 15px rgba(133,92,214,0.3); }
+      50% { box-shadow: 0 0 25px rgba(133,92,214,0.6); }
+      100% { box-shadow: 0 0 15px rgba(133,92,214,0.3); }
+    }
     .section-header{display:flex;flex-direction:column;gap:.25rem}
     .section-header h3{margin:0;font-size:1.05rem;color:var(--text-primary);font-weight:700}
     .section-header p{margin:0;color:var(--text-secondary);font-size:.9rem;font-weight:500}
@@ -542,7 +541,7 @@ import { CareerService, Career } from '../../core/services/career.service';
     }
 
     /* PAES GOAL SECTION */
-    .paes-goal-section { border-color: rgba(133,92,214,0.25) !important; background: linear-gradient(135deg, rgba(133,92,214,0.03), rgba(99,102,241,0.05)) !important; }
+    .paes-goal-section { background: linear-gradient(135deg, rgba(133,92,214,0.03), rgba(99,102,241,0.05)) !important; }
     .goal-fields { display: flex; flex-direction: column; gap: 0.5rem; }
     .goal-fields label { font-size: 0.88rem; }
     .goal-preview { display: flex; align-items: center; gap: 0.75rem; background: rgba(133,92,214,0.08); border: 1.5px solid rgba(133,92,214,0.2); border-radius: 12px; padding: 0.85rem 1rem; margin-top: 0.5rem; }
@@ -584,6 +583,18 @@ export class ProfileModalComponent implements OnInit {
   private readonly careerService = inject(CareerService);
 
   @Output() close = new EventEmitter<void>();
+  @Input() scrollTarget?: string;
+
+  ngAfterViewInit() {
+    if (this.scrollTarget) {
+      setTimeout(() => {
+        const el = document.querySelector('.' + this.scrollTarget);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }
 
   loading = true;
   saving = false;
@@ -873,7 +884,7 @@ export class ProfileModalComponent implements OnInit {
   }
 
   onPhotoFileSelected(event: Event): void {
-    if (!this.isProPlan()) {
+    if (!this.isProPlan() && !this.adminService.isAdmin()) {
       this.toast.error('La carga de imágenes personalizadas es una función Premium ⚡.');
       return;
     }

@@ -108,7 +108,7 @@ import { PaymentService } from '../../core/services/payment.service';
             </button>
             <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
             <div class="profile-menu-wrap">
-              <button class="profile-trigger" (click)="showProfileModal = true">
+              <button class="profile-trigger" (click)="showProfileModal = true; profileScrollTarget = ''">
                 <span class="profile-avatar-wrap">
                   <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
@@ -251,7 +251,7 @@ import { PaymentService } from '../../core/services/payment.service';
     </div>
 
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
-    <app-profile-modal *ngIf="showProfileModal" (close)="showProfileModal = false"></app-profile-modal>
+    <app-profile-modal *ngIf="showProfileModal" [scrollTarget]="profileScrollTarget" (close)="showProfileModal = false"></app-profile-modal>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
@@ -528,6 +528,7 @@ export class NemCalculatorComponent {
   mobileOpen = false;
   showSettingsModal = false;
   showProfileModal = false;
+  profileScrollTarget = '';
   showLogoutConfirm = false;
 
   isProPlan = computed(() => {
@@ -713,6 +714,8 @@ export class NemCalculatorComponent {
       };
       await this.firestoreService.updateProfileSettings({ notasNem: notas });
       this.saveSuccess = true;
+      this.profileScrollTarget = 'nem-history-section';
+      this.showProfileModal = true;
       setTimeout(() => { this.saveSuccess = false; }, 3000);
     } catch (err) {
       console.error(err);

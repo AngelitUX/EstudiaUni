@@ -168,12 +168,13 @@ import 'driver.js/dist/driver.css';
             <h1 class="header-greeting">¡Hola, <span class="text-gradient" [class.pro-username]="isProPlan()">{{ userName() }}</span>! 👋</h1>
           </div>
           <div class="welcome-actions">
+            <button class="btn-primary" style="margin-right: 1rem; padding: 0.5rem 1rem; font-size: 0.9rem;" (click)="startTutorial()">Test Tutorial</button>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
             <span class="plan-badge" [class.pro]="isProPlan() && !adminService.isAdmin()" [class.admin]="adminService.isAdmin()">{{ adminService.isAdmin() ? 'ADMIN' : (isProPlan() ? 'PRO' : 'BASICO') }}</span>
             <div class="profile-menu-wrap" id="tour-nav-profile">
-              <button class="profile-trigger" (click)="showProfileModal = true">
+              <button class="profile-trigger" (click)="openProfileModal('')">
                 <span class="profile-avatar-wrap">
                   <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
@@ -260,7 +261,7 @@ import 'driver.js/dist/driver.css';
                 <div class="goal-header">
                   <div class="goal-info">
                     <span class="goal-label">🎯 Meta PAES</span>
-                    <span class="goal-target">{{ firestoreService.profileSignal()?.targetCareer || 'Tu carrera' }}<span *ngIf="firestoreService.profileSignal()?.targetUniversity"> en {{ firestoreService.profileSignal()?.targetUniversity }}</span> · {{ target }} pts</span>
+                    <span class="goal-target">{{ firestoreService.profileSignal()?.targetCareer || 'Tu carrera' }}<span *ngIf="firestoreService.profileSignal()?.targetUniversity"> en {{ firestoreService.profileSignal()?.targetUniversity }}</span></span>
                   </div>
                   <div class="goal-score-display">
                     <span class="goal-current" [class.on-track]="getRoundedAverageScore() >= target" [class.behind]="getRoundedAverageScore() > 0 && getRoundedAverageScore() < target">{{ getRoundedAverageScore() || '---' }}</span>
@@ -310,7 +311,7 @@ import 'driver.js/dist/driver.css';
                     </p>
                   </div>
                   <div class="goal-empty-actions" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                    <button (click)="showProfileModal = true" class="btn-cta-primary btn-sm" style="font-size: 0.85rem; padding: 0.5rem 1rem; cursor: pointer;">
+                    <button (click)="openProfileModal('paes-goal-section')" class="btn-cta-primary btn-sm" style="font-size: 0.85rem; padding: 0.5rem 1rem; cursor: pointer;">
                       🎯 Meta
                     </button>
                   </div>
@@ -530,7 +531,7 @@ import 'driver.js/dist/driver.css';
       </div>
     </div>
 
-    <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
+    <app-profile-modal *ngIf="showProfileModal" [scrollTarget]="profileScrollTarget" (close)="onProfileModalClose()"></app-profile-modal>
     <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsModalClose()"></app-settings-modal>
     <app-history-modal *ngIf="showHistoryModal" (close)="showHistoryModal = false"></app-history-modal>
 
@@ -1401,9 +1402,9 @@ import 'driver.js/dist/driver.css';
     .paes-goal-bar { padding: 1.25rem 1.5rem; border-radius: 16px; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.85rem; border: 2px solid var(--glass-border) !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .paes-goal-bar:hover { border-color: rgba(133,92,214,0.4) !important; transform: translateY(-4px); box-shadow: var(--shadow-md); }
     .goal-header { display: flex; justify-content: space-between; align-items: center; }
-    .goal-info { display: flex; flex-direction: column; gap: 0.15rem; }
+    .goal-info { display: flex; flex-direction: column; gap: 0.25rem; }
     .goal-label { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-    .goal-target { font-size: 0.85rem; color: #4b5563; font-weight: 700; }
+    .goal-target { font-size: 0.78rem; color: #4b5563; font-weight: 700; max-width: 280px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .goal-score-display { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; }
     .goal-current { font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
     .goal-current.on-track { background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; }
@@ -1901,6 +1902,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   mobileMenuOpen = false;
   activeRecIdx = 0;
   showProfileModal = false;
+  profileScrollTarget = '';
+
+  openProfileModal(target = '') {
+    this.profileScrollTarget = target;
+    this.showProfileModal = true;
+  }
   showSettingsModal = false;
   showHistoryModal = false;
   showStreakInfo = false;
@@ -2072,7 +2079,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             });
           }
           if (!profile.hasSeenTutorial && !localSeen) {
-            this.showTutorialModal = true;
+            setTimeout(() => this.startTutorial(), 500);
           } else {
             this.showTutorialModal = false;
           }
@@ -2113,6 +2120,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       prevBtnText: 'Atrás',
       doneBtnText: '¡Comenzar!',
       onHighlightStarted: (element: any) => {
+        if (element && element.classList && element.classList.contains('help-fab')) {
+          element.style.pointerEvents = 'none';
+        }
         const sidebar = document.querySelector('.sidebar');
         if (sidebar && element && sidebar.contains(element)) {
           sidebar.scrollTo({
@@ -2121,11 +2131,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
           });
         }
       },
+      onDeselected: (element: any) => {
+        if (element && element.classList && element.classList.contains('help-fab')) {
+          element.style.pointerEvents = 'auto';
+        }
+      },
       steps: [
         {
           popover: {
             title: '👋 ¡Bienvenido a tu Dashboard!',
             description: 'El corazón de EstudiaUni. Aquí encontrarás el resumen de tu progreso, rachas de estudio y el tiempo que falta para la PAES.'
+          }
+        },
+        {
+          element: '.help-fab',
+          popover: {
+            title: '💡 Información del Dashboard',
+            description: 'Si haces clic en este botón, podrás ver una guía rápida que te explica para qué sirve cada sección.',
+            side: 'left',
+            align: 'start'
           }
         },
         {
