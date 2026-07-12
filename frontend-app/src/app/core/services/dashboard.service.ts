@@ -68,6 +68,9 @@ export class DashboardService {
   private auth = inject(Auth);
   private currentUid: string | null = null;
 
+  // Streak Modal state
+  public showStreakModalState = signal(false);
+
   // ─── Signals ───
   private _activities = signal<ActivityEntry[]>([]);
   private _streakDays = signal<number>(0);
@@ -562,7 +565,13 @@ export class DashboardService {
 
       if (isNaN(actDate.getTime())) continue;
 
-      const diffDays = Math.floor((actDate.getTime() - monday.getTime()) / 86400000);
+      // Safe date comparison to avoid DST bugs
+      // Calculate local start of day for actDate
+      const actDateLocal = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
+      // Calculate difference in days safely
+      // Adding half a day (12h) before dividing avoids floor errors from DST
+      const diffDays = Math.floor((actDateLocal.getTime() - monday.getTime() + 43200000) / 86400000);
+      
       if (diffDays >= 0 && diffDays < 7) {
         result[diffDays] = true;
       }

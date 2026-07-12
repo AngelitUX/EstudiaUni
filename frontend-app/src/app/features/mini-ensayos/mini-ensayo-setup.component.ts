@@ -9,6 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 
 
 interface MateriaOption {
@@ -20,7 +21,7 @@ interface MateriaOption {
 @Component({
   selector: 'app-mini-ensayo-setup',
   standalone: true,
-  imports: [CommonModule, RouterLink, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, RouterLink, SettingsModalComponent, ProfileModalComponent, StreakIconComponent],
   template: `
     <div class="ensayos-container">
       
@@ -74,6 +75,7 @@ interface MateriaOption {
             <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Practica a tu medida con preguntas oficiales del banco PAES</p>
           </div>
           <div class="welcome-actions">
+            <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>

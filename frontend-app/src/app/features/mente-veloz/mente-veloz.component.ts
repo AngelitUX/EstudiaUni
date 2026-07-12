@@ -10,6 +10,7 @@ import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 
 type DifficultyMode = 'normal' | 'hardcore' | 'suddendeath';
 type GameState = 'setup' | 'playing' | 'results';
@@ -24,7 +25,7 @@ interface PlayedQuestion {
 @Component({
   selector: 'app-mente-veloz',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent],
   template: `
     <div class="mv-layout">
       <!-- SIDEBAR -->
@@ -127,6 +128,7 @@ interface PlayedQuestion {
             </div>
           </div>
           <div class="welcome-actions">
+            <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>

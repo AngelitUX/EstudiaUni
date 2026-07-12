@@ -8,13 +8,14 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { Materia } from './models/paes.models';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-learning-path',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent],
   template: `
     <div class="lp-layout">
       <!-- SIDEBAR -->
@@ -104,6 +105,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Elige una materia para empezar tu camino PAES 🚀</p>
           </div>
           <div class="welcome-actions">
+            <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
@@ -536,7 +538,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .card-header-row h2 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2; }
     .status-badges { display: flex; gap: 0.5rem; }
     
-    .status-badge { font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 99px; background: rgba(133,92,214,0.1); color: var(--accent-primary); white-space: nowrap; height: fit-content; }
+    .status-badge { font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 99px; background: var(--accent-primary); color: white; white-space: nowrap; height: fit-content; box-shadow: 0 2px 4px rgba(133,92,214,0.3); }
     .status-badge.badge-complete { background: rgba(88,204,2,0.1); color: #3d8c00; }
     .status-badge.badge-new { background: rgba(0,0,0,0.05); color: var(--text-secondary); }
 

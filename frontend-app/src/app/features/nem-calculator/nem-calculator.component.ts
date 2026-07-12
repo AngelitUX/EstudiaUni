@@ -8,11 +8,12 @@ import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 
 @Component({
   selector: 'app-nem-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent],
   template: `
     <div class="app-layout">
       <!-- SIDEBAR -->
@@ -103,6 +104,7 @@ import { PaymentService } from '../../core/services/payment.service';
           </div>
           
           <div class="welcome-actions">
+            <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>

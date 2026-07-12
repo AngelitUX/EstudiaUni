@@ -18,10 +18,12 @@ import { PaymentService } from '../../core/services/payment.service';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
+import { StreakIconComponent } from '../../shared/components/streak-icon.component';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ProfileModalComponent, SettingsModalComponent, HistoryModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent, HistoryModalComponent],
   template: `
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
@@ -168,7 +170,11 @@ import 'driver.js/dist/driver.css';
             <h1 class="header-greeting">¡Hola, <span class="text-gradient" [class.pro-username]="isProPlan()">{{ userName() }}</span>! 👋</h1>
           </div>
           <div class="welcome-actions">
-            <button class="btn-primary" style="margin-right: 1rem; padding: 0.5rem 1rem; font-size: 0.9rem;" (click)="startTutorial()">Test Tutorial</button>
+            <!-- BOTÓN TEMPORAL DE PRUEBA -->
+            <button class="btn-primary" style="margin-right: 1rem; padding: 0.4rem 0.8rem; font-size: 0.85rem;" (click)="mockSuperStreak()">Probar Súper Racha</button>
+
+            <!-- STREAK ICON -->
+            <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
@@ -190,7 +196,6 @@ import 'driver.js/dist/driver.css';
           <div class="welcome-header-row">
             <div class="welcome-sub-info">
               <div class="welcome-date" style="margin-top: 0; margin-bottom: 0.35rem;">{{ currentDate }}</div>
-              <p style="color: var(--text-secondary); font-weight: 500; font-size: 1.15rem; margin: 0;">Bienvenido de vuelta. Aquí está tu resumen de hoy.</p>
             </div>
             
             <div class="welcome-widgets-row">
@@ -227,11 +232,19 @@ import 'driver.js/dist/driver.css';
           <div class="dashboard-grid">
 
 
+            <div class="dashboard-row-2">
             <!-- 3. AI HERO RECOMMENDATION (Primary CTA) -->
-            <section class="ai-hero glass-card" id="ai-hero-section" style="margin-bottom: 0;">
-              <div class="ai-hero-left">
-                <div class="ai-hero-badge">🤖 Recomendación IA · <span>Personalizado</span></div>
-                <div class="ai-hero-rec" [class.anim-even]="activeRecIdx % 2 === 0" [class.anim-odd]="activeRecIdx % 2 !== 0" *ngIf="dashSvc.recommendations()[activeRecIdx] as rec">
+            <section class="ai-hero glass-card" id="ai-hero-section" style="margin-bottom: 0; flex-direction: column; align-items: stretch; padding-top: 1.5rem;">
+              
+              <div class="metric-header" style="flex-direction: column; align-items: center; gap: 0.15rem; margin-bottom: 1.5rem; width: 100%;">
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 0.5rem;">
+                  <span class="ai-hero-badge" style="margin: 0; text-align: center;">🤖 Recomendación IA · <span>Personalizado</span></span>
+                </div>
+              </div>
+
+              <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <div class="ai-hero-left">
+                  <div class="ai-hero-rec" [class.anim-even]="activeRecIdx % 2 === 0" [class.anim-odd]="activeRecIdx % 2 !== 0" *ngIf="dashSvc.recommendations()[activeRecIdx] as rec">
                   <div class="ai-hero-icon">{{ rec.icon }}</div>
                   <div class="ai-hero-text">
                     <h3>{{ rec.title }}</h3>
@@ -250,20 +263,24 @@ import 'driver.js/dist/driver.css';
               </div>
               <div class="ai-hero-actions">
                 <button class="btn-cta-primary btn-hero" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
-                  🚀 {{ dashSvc.recommendations()[activeRecIdx].type === 'repaso' ? 'Retomar estudio' : 'Comenzar ahora' }}
+                   Ir
                 </button>
+              </div>
               </div>
             </section>
 
             <!-- 4. PAES GOAL PROGRESS -->
             <section class="paes-goal-bar glass-card" id="paes-goal-section" style="margin-bottom: 0;">
               <ng-container *ngIf="firestoreService.profileSignal()?.targetScore as target; else noGoal">
-                <div class="goal-header">
-                  <div class="goal-info">
+                <div class="goal-header" style="flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
+                  <div class="goal-info" style="align-items: center;">
                     <span class="goal-label">🎯 Meta PAES</span>
-                    <span class="goal-target">{{ firestoreService.profileSignal()?.targetCareer || 'Tu carrera' }}<span *ngIf="firestoreService.profileSignal()?.targetUniversity"> en {{ firestoreService.profileSignal()?.targetUniversity }}</span></span>
+                    <span class="goal-target" style="text-align: center;">
+                      <span style="display: block;">{{ firestoreService.profileSignal()?.targetCareer || 'Tu carrera' }}</span>
+                      <span *ngIf="firestoreService.profileSignal()?.targetUniversity" style="display: block; font-weight: 600; opacity: 0.85; margin-top: 0.1rem;">{{ firestoreService.profileSignal()?.targetUniversity }}</span>
+                    </span>
                   </div>
-                  <div class="goal-score-display">
+                  <div class="goal-score-display" style="align-items: center;">
                     <span class="goal-current" [class.on-track]="getRoundedAverageScore() >= target" [class.behind]="getRoundedAverageScore() > 0 && getRoundedAverageScore() < target">{{ getRoundedAverageScore() || '---' }}</span>
                     <span class="goal-current-label">Promedio actual</span>
                   </div>
@@ -303,34 +320,32 @@ import 'driver.js/dist/driver.css';
                 </div>
               </ng-container>
               <ng-template #noGoal>
-                <div class="goal-empty-state" style="display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; padding: 0.25rem 0;">
-                  <div class="goal-empty-info" style="display: flex; flex-direction: column; gap: 0.35rem; flex: 1; min-width: 200px;">
-                    <span class="goal-label" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem;">🎯 Meta PAES</span>
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">
+                <div class="goal-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1rem; padding: 1rem 0;">
+                  <div class="goal-empty-info" style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+                    <span class="goal-label" style="font-size: 1.15rem; display: flex; align-items: center; gap: 0.4rem;">🎯 Meta PAES</span>
+                    <p style="margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.45;">
                       Establece tu carrera para ver tu proyección.
                     </p>
                   </div>
-                  <div class="goal-empty-actions" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                    <button (click)="openProfileModal('paes-goal-section')" class="btn-cta-primary btn-sm" style="font-size: 0.85rem; padding: 0.5rem 1rem; cursor: pointer;">
-                      🎯 Meta
+                  <div class="goal-empty-actions">
+                    <button (click)="openProfileModal('paes-goal-section')" class="btn-cta-primary" style="font-size: 1rem; padding: 0.7rem 1.5rem; border-radius: 99px; font-weight: 800; cursor: pointer;">
+                      🎯 Establecer Meta
                     </button>
                   </div>
                 </div>
               </ng-template>
             </section>
+            </div>
 
             <!-- 5. SUBJECT MASTERY -->
-            <div class="metric-card glass-card mastery-card">
-              <div class="metric-header" style="flex-direction: column; align-items: flex-start; gap: 0.15rem; margin-bottom: 0.65rem; width: 100%;">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="metric-card glass-card mastery-card" style="position: relative; padding-bottom: 2rem;">
+              <div class="metric-header" style="flex-direction: column; align-items: center; gap: 0.15rem; margin-bottom: 0.65rem; width: 100%;">
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 0.5rem;">
                   <span class="metric-label">Nivel de Dominio por Tema</span>
                   <span class="metric-icon">🎯</span>
                 </div>
-                <span *ngIf="dashSvc.subjectMasteries().length > 0" class="scroll-hint-text" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-top: 0.1rem;">
-                  💡 Si no ves tu materia, usa la rueda del mouse para bajar
-                </span>
               </div>
-              <div class="metric-body mastery-body">
+              <div class="metric-body mastery-body" (scroll)="onMasteryScroll($event)">
                 <ng-container *ngIf="dashSvc.subjectMasteries().length > 0; else noMastery">
                   <div *ngFor="let m of dashSvc.subjectMasteries()" class="mastery-item clickable" (click)="router.navigate(['/ruta', m.subjectId])">
                     <div class="mastery-top">
@@ -365,26 +380,35 @@ import 'driver.js/dist/driver.css';
                   </div>
                 </ng-template>
               </div>
+              <div class="scroll-down-indicator" *ngIf="dashSvc.subjectMasteries().length > 2 && showMasteryScrollIndicator">
+                <span class="scroll-text">Desliza para ver más</span>
+                <span class="scroll-arrow">↓</span>
+              </div>
             </div>
 
             <!-- 6. PUNTAJE MAS ALTO (RECORD CARD) -->
             <div class="metric-card glass-card record-card">
-              <div class="metric-header record-header" [class.no-arrows]="dashSvc.paesRecords().length < 2">
-                <button class="nav-arrow" (click)="prevRecordSubject()" *ngIf="dashSvc.paesRecords().length >= 2">‹</button>
-                <span class="metric-label" [style.margin]="dashSvc.paesRecords().length < 2 ? '0 auto' : '0'">{{ recordSubjects[currentRecordIdx].name }}</span>
-                <button class="nav-arrow" (click)="nextRecordSubject()" *ngIf="dashSvc.paesRecords().length >= 2">›</button>
+              <div class="metric-header record-header" [class.no-arrows]="dashSvc.paesRecords().length < 2" style="flex-direction: column; gap: 0.4rem; align-items: center;">
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 0.5rem;">
+                  <span class="metric-label">Récord Ensayo PAES</span>
+                  <span class="metric-icon" style="font-size: 1.1rem;">🏆</span>
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 1rem;">
+                  <button class="nav-arrow small" (click)="prevRecordSubject()" *ngIf="dashSvc.paesRecords().length >= 2">‹</button>
+                  <span class="record-materia-badge" style="margin: 0; margin-top: 0;">{{ recordSubjects[currentRecordIdx].name }}</span>
+                  <button class="nav-arrow small" (click)="nextRecordSubject()" *ngIf="dashSvc.paesRecords().length >= 2">›</button>
+                </div>
               </div>
               <div class="metric-body">
                 <ng-container *ngIf="displayedRecord; else noRecord">
                   <div class="record-display">
                     <!-- PAES PROJECTED SCORE -->
                     <div class="record-projected">{{ displayedRecord.score || calculatePaesScore(displayedRecord) }}</div>
-                    <span class="record-projected-label">PAES Proyectado</span>
                     <!-- Improvement indicator -->
-                    <span class="improvement-badge" *ngIf="getImprovementDelta() as delta" [class.positive]="delta > 0" [class.negative]="delta < 0">
+                    <span class="improvement-badge" style="margin-top: 0.2rem;" *ngIf="getImprovementDelta() as delta" [class.positive]="delta > 0" [class.negative]="delta < 0">
                       {{ delta > 0 ? '+' : '' }}{{ delta }} pts vs anterior
                     </span>
-                    <span class="record-detail" style="font-size:0.75rem;">{{ displayedRecord.correctAnswers }}/{{ displayedRecord.totalQuestions }} corr. · {{ displayedRecord.ensayoTitle }}</span>
+                    <span class="record-detail" style="font-size:0.75rem; margin-top: 0.2rem;">{{ displayedRecord.ensayoTitle }}</span>
                     <!-- BULLET THERMOMETER (if target set) -->
                     <div class="bullet-bar" *ngIf="firestoreService.profileSignal()?.targetScore as target">
                       <div class="bullet-track">
@@ -432,42 +456,6 @@ import 'driver.js/dist/driver.css';
               </div>
             </div>
 
-            <!-- 7. COMBINED STREAK CARD WITH WEEKLY CALENDAR -->
-            <div class="metric-card glass-card combined-streak-card clickable" (click)="showStreakInfo = true">
-              <div class="metric-header">
-                <span class="metric-label">Tus Rachas Activas</span>
-                <span class="metric-icon">🔥</span>
-              </div>
-              <div class="metric-body streaks-container">
-                <div class="streak-item normal-streak">
-                  <div class="streak-icon-wrap">🔥</div>
-                  <div class="streak-details">
-                    <div class="streak-value">{{ dashSvc.streakDays() }} <span class="streak-label">días</span></div>
-                    <div class="streak-name">Racha de estudio</div>
-                  </div>
-                </div>
-                
-                <div class="streak-item super-streak">
-                  <div class="streak-icon-wrap">⚡</div>
-                  <div class="streak-details">
-                    <div class="streak-value">{{ dashSvc.superStreakDays() }} <span class="streak-label">días</span></div>
-                    <div class="streak-name">Súper racha</div>
-                  </div>
-                </div>
-              </div>
-              <!-- WEEKLY CALENDAR -->
-              <div class="week-calendar">
-                <div *ngFor="let day of weekDays; let i = index" class="week-day" [class.active]="weeklyActivity[i]" [class.today]="i === todayWeekIndex">
-                  <span class="week-day-label">{{ day }}</span>
-                  <span class="week-day-dot" [class.filled]="weeklyActivity[i]">{{ weeklyActivity[i] ? '✓' : '' }}</span>
-                </div>
-              </div>
-              <div class="metric-footer">
-                <span class="metric-subtext" *ngIf="dashSvc.superStreakDays() > 0">⚡ ¡Imparable! Dominando al máximo.</span>
-                <span class="metric-subtext" *ngIf="dashSvc.streakDays() > 0 && dashSvc.superStreakDays() === 0">🔥 Vas muy bien.</span>
-                <span class="metric-subtext" *ngIf="dashSvc.streakDays() === 0">Inicia tu racha hoy.</span>
-              </div>
-            </div>
 
             <!-- 8. RECENT ACTIVITY -->
             <section class="activity-section-full" style="margin-bottom: 0;">
@@ -591,42 +579,6 @@ import 'driver.js/dist/driver.css';
         </div>
         <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end;">
           <button type="button" class="btn-primary-modal" (click)="showMetaPaesMateriasModal = false">Listo</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-overlay" *ngIf="showStreakInfo" (click)="showStreakInfo = false">
-      <div class="modal-container glass streak-info-modal animate-scale-up" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>¿Cómo funcionan las Rachas?</h2>
-          <button class="close-btn" (click)="showStreakInfo = false">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="info-section">
-            <div class="info-icon normal">🔥</div>
-            <div class="info-content">
-              <h3>Racha de Estudio</h3>
-              <p>Es tu constancia diaria. Se suma cada día que completas al menos <strong>una lección</strong> o <strong>un ensayo</strong>.</p>
-              <span class="info-tip">💡 Tip: ¡Basta con 10 minutos al día para mantenerla viva!</span>
-            </div>
-          </div>
-
-          <div class="info-divider"></div>
-
-          <div class="info-section">
-            <div class="info-icon super">⚡</div>
-            <div class="info-content">
-              <h3>Súper Racha</h3>
-              <p>Es el máximo nivel de disciplina. Se suma únicamente si logras:</p>
-              <ul>
-                <li>Completar al menos <strong>una lección</strong> de <strong>CADA materia</strong> activa en tu ruta de aprendizaje durante el mismo día.</li>
-              </ul>
-              <span class="info-tip">🚀 Reto: ¡Mantener esta racha te garantiza un progreso masivo!</span>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-primary-modal" (click)="showStreakInfo = false">¡Entendido!</button>
         </div>
       </div>
     </div>
@@ -926,9 +878,11 @@ import 'driver.js/dist/driver.css';
       border-radius: 10px;
       width: fit-content;
       box-shadow: var(--shadow-sm);
-      border: 1.5px solid rgba(133,92,214,0.35);
+      border: 2px solid var(--glass-border) !important;
       margin-top: 0;
       line-height: 1;
+      height: 62px;
+      box-sizing: border-box;
     }
     .countdown-label { font-size: 0.82rem; font-weight: 700; color: #4b5563; margin: 0; line-height: 1; }
     .countdown-timer { display: flex; gap: 0.5rem; align-items: center; }
@@ -949,11 +903,11 @@ import 'driver.js/dist/driver.css';
     .plan-badge.admin { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: 2.5px solid #d97706 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.25); box-shadow: 0 0 12px rgba(245,158,11,0.6), inset 0 1px 2px rgba(255,255,255,0.35); }
 
     /* METRICS */
-    .metrics-section { display: grid; grid-template-columns: 1.5fr 0.75fr 0.85fr; gap: 1.5rem; margin-bottom: 2rem; }
-    .metric-card { padding: 1rem 1.15rem; border-radius: 16px; display: flex; flex-direction: column; background: #ffffff; border: 2px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow); }
-    .metric-card:hover { border-color: rgba(133,92,214,0.4); transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .metrics-section { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .metric-card { padding: 1rem 1.15rem; border-radius: 16px; display: flex; flex-direction: column; background: #ffffff; border: 2px solid var(--glass-border) !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow); }
+    .metric-card:hover { border-color: rgba(133,92,214,0.4) !important; transform: translateY(-4px); box-shadow: var(--shadow-md); }
     .metric-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .metric-label { font-size: 0.9rem; color: #374151; font-weight: 700; }
+    .metric-label { font-size: 1.1rem; color: #374151; font-weight: 800; }
     .metric-icon { font-size: 1.4rem; }
     .metric-body { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
     .metric-number { font-size: 2.4rem; font-weight: 800; font-family: var(--font-heading); background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
@@ -1048,10 +1002,10 @@ import 'driver.js/dist/driver.css';
 
     /* ACTIVITY SECTION */
     .activity-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
-    .activity-card, .recent-activity { padding: 1.5rem; border-radius: 16px; background: #ffffff; border: 2px solid var(--glass-border); transition: all 0.3s; box-shadow: var(--shadow); }
-    .activity-card:hover, .recent-activity:hover { border-color: rgba(133,92,214,0.4); box-shadow: var(--shadow-md); }
+    .activity-card, .recent-activity { padding: 1.5rem; border-radius: 16px; background: #ffffff; border: 2px solid var(--glass-border) !important; transition: all 0.3s; box-shadow: var(--shadow); }
+    .activity-card:hover, .recent-activity:hover { border-color: rgba(133,92,214,0.4) !important; box-shadow: var(--shadow-md); }
     .activity-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .activity-header h3 { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+    .activity-header h3 { font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0; }
     .activity-badge { background: rgba(133,92,214,0.1); color: var(--accent-primary); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
     .activity-body { display: flex; flex-direction: column; gap: 1.5rem; }
 
@@ -1117,6 +1071,11 @@ import 'driver.js/dist/driver.css';
     .mastery-bar-bg { height: 6px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 0.15rem; }
     .mastery-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .mastery-sub { font-size: 0.72rem; color: #6b7280; font-weight: 600; }
+
+    .scroll-down-indicator { position: absolute; bottom: 0.25rem; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: var(--accent-primary); opacity: 0.9; }
+    .scroll-down-indicator .scroll-text { font-size: 0.7rem; font-weight: 700; margin-bottom: -3px; }
+    .scroll-down-indicator .scroll-arrow { font-size: 1.1rem; font-weight: 800; animation: scrollBounce 2s infinite; }
+    @keyframes scrollBounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } 60% { transform: translateY(-2px); } }
 
     /* Estilos del candado y la barra de progreso dorada animada para usuarios gratis (BASICO) */
     .mastery-bar-container {
@@ -1327,9 +1286,9 @@ import 'driver.js/dist/driver.css';
     .ai-hero { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.75rem; border-radius: 18px; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(133,92,214,0.06), rgba(99,102,241,0.12)); border: 2px solid rgba(133,92,214,0.25) !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); gap: 1.5rem; flex-wrap: wrap; }
     .ai-hero:hover { border-color: rgba(133,92,214,0.4) !important; transform: translateY(-4px); box-shadow: var(--shadow-md); }
     .ai-hero-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.75rem; }
-    .ai-hero-badge { font-size: 0.78rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.04em; }
-    .ai-hero-badge span { background: rgba(133,92,214,0.1); padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.7rem; }
-    .ai-hero-rec { display: flex; gap: 1rem; align-items: flex-start; }
+    .ai-hero-badge { font-size: 1.05rem; font-weight: 800; color: var(--accent-primary); letter-spacing: 0.02em; }
+    .ai-hero-badge span { background: rgba(133,92,214,0.1); padding: 0.15rem 0.5rem; border-radius: 6px; font-size: inherit; }
+    .ai-hero-rec { display: flex; gap: 1rem; align-items: center; min-height: 115px; }
     .ai-hero-rec.anim-even { animation: fadeInSlideRec1 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     .ai-hero-rec.anim-odd { animation: fadeInSlideRec2 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     @keyframes fadeInSlideRec1 {
@@ -1372,13 +1331,15 @@ import 'driver.js/dist/driver.css';
     .ai-hero-actions { display: flex; flex-direction: column; align-items: center; gap: 0.65rem; flex-shrink: 0; }
     .btn-hero {
       font-family: inherit;
-      padding: 0.6rem 1.35rem;
-      font-size: 0.92rem;
-      border-radius: 11px;
+      padding: 0.7rem 2.2rem;
+      font-size: 1.05rem;
+      border-radius: 99px;
       font-weight: 800;
       background: var(--gradient-brand);
+      color: #fff;
       border: 1.5px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.2);
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-hero:hover {
       transform: translateY(-2px);
@@ -1403,7 +1364,7 @@ import 'driver.js/dist/driver.css';
     .paes-goal-bar:hover { border-color: rgba(133,92,214,0.4) !important; transform: translateY(-4px); box-shadow: var(--shadow-md); }
     .goal-header { display: flex; justify-content: space-between; align-items: center; }
     .goal-info { display: flex; flex-direction: column; gap: 0.25rem; }
-    .goal-label { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+    .goal-label { font-size: 1.15rem; font-weight: 800; color: var(--text-primary); }
     .goal-target { font-size: 0.78rem; color: #4b5563; font-weight: 700; max-width: 280px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .goal-score-display { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; }
     .goal-current { font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
@@ -1485,8 +1446,8 @@ import 'driver.js/dist/driver.css';
 
     /* KPIS ROW */
     .kpis-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
-    .kpi-card { display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 1rem; border-radius: 12px; transition: all 0.2s; height: 62px; box-sizing: border-box; }
-    .kpi-card:hover { transform: translateY(-2px); border-color: rgba(133,92,214,0.3); }
+    .kpi-card { display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 1rem; border-radius: 12px; transition: all 0.2s; height: 62px; box-sizing: border-box; border: 2px solid var(--glass-border) !important; }
+    .kpi-card:hover { transform: translateY(-2px); border-color: rgba(133,92,214,0.4) !important; }
     .kpi-icon { font-size: 1.2rem; width: 34px; height: 34px; border-radius: 8px; background: rgba(133,92,214,0.08); display: flex; align-items: center; justify-content: center; }
     .kpi-content { display: flex; flex-direction: column; }
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-heading); line-height: 1.1; }
@@ -1791,26 +1752,31 @@ import 'driver.js/dist/driver.css';
       gap: 1rem;
     }
 
+    .dashboard-row-2 {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
     @media (min-width: 1025px) {
       .dashboard-grid {
         display: grid;
-        grid-template-columns: 1.5fr 0.75fr 0.85fr;
+        grid-template-columns: 1fr 1fr;
         grid-template-rows: auto auto auto auto;
         gap: 1.5rem;
         align-items: stretch;
       }
       .profile-completion-card {
-        grid-column: 1 / 4;
+        grid-column: 1 / 3;
         grid-row: 1;
         box-sizing: border-box;
       }
-      .ai-hero {
+      .dashboard-row-2 {
         grid-column: 1 / 3;
         grid-row: 2;
-      }
-      .paes-goal-bar {
-        grid-column: 3;
-        grid-row: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
       }
       .mastery-card {
         grid-column: 1;
@@ -1821,13 +1787,8 @@ import 'driver.js/dist/driver.css';
         grid-row: 3;
         margin-bottom: 0 !important;
       }
-      .combined-streak-card {
-        grid-column: 3;
-        grid-row: 3;
-        margin-bottom: 0 !important;
-      }
       .activity-section-full {
-        grid-column: 1 / 4;
+        grid-column: 1 / 3;
         grid-row: 4;
       }
     }
@@ -1910,12 +1871,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
   showSettingsModal = false;
   showHistoryModal = false;
-  showStreakInfo = false;
   showMetaPaesMateriasModal = false;
   savingMetaPaesMaterias = false;
   showLogoutConfirm = false;
   showHelpModal = false;
   showTutorialModal = false;
+
+  mockSuperStreak() {
+    const svc = this.dashSvc as any;
+    svc._superStreakDays.set(3);
+    svc._streakDays.set(10);
+    this.toast.show('¡Súper racha simulada con éxito! (10 días / 3 súper días)', 'success');
+  }
   driverObj: any;
   currentDate = (() => {
     const formatted = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
@@ -1956,10 +1923,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return p?.displayName?.split(' ')[0] || 'Estudiante';
   });
   currentRecordIdx = 0;
+  showMasteryScrollIndicator = true;
+
+  onMasteryScroll(event: Event) {
+    const target = event.target as HTMLElement;
+    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 5;
+    this.showMasteryScrollIndicator = !isAtBottom;
+  }
   displayedRecord: any = null;
 
   recordSubjects = [
-    { id: 'all', name: 'Último puntaje más alto' },
+    { id: 'all', name: 'Último ensayo realizado' },
     { id: 'comp-lectora', name: 'Competencia Lectora' },
     { id: 'mat1', name: 'Matemática M1' },
     { id: 'mat2', name: 'Matemática M2' },
@@ -1993,9 +1967,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const now = new Date();
     const dayOfWeek = now.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + mondayOffset);
-    monday.setHours(0, 0, 0, 0);
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
 
     let totalMinutes = 0;
     for (const act of this.dashSvc.activities()) {
@@ -2011,7 +1983,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
 
       if (isNaN(actDate.getTime())) continue;
-      if (actDate.getTime() >= monday.getTime()) {
+      
+      const actDateLocal = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
+      
+      if (actDateLocal.getTime() >= monday.getTime()) {
         if (act.type === 'leccion') totalMinutes += 15;
         else if (act.type === 'ensayo') totalMinutes += 140;
         else if (act.type === 'mente-veloz') totalMinutes += 5;
@@ -2061,9 +2036,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') || 
-                        this.router.url.includes('/calculadora-nem') || 
-                        this.router.url.includes('/recursos');
+    const isToolRoute = this.router.url.includes('/encuentra-tu-carrera') ||
+      this.router.url.includes('/calculadora-nem') ||
+      this.router.url.includes('/recursos');
     const savedVal = localStorage.getItem('herramientasExpanded');
     this.herramientasExpanded = isToolRoute ? true : (savedVal !== 'false');
 
@@ -2226,7 +2201,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       ]
     });
-    
+
     // Ejecutar con un pequeño delay para asegurar renderizado
     setTimeout(() => {
       this.driverObj.drive();
@@ -2245,7 +2220,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (recs && recs.length > 1) {
         this.activeRecIdx = (this.activeRecIdx + 1) % recs.length;
       }
-    }, 5000);
+    }, 12000);
   }
 
   stopAutoPlay() {
@@ -2275,14 +2250,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.nextExamLabel = nextTarget.label;
       const diff = nextTarget.date.getTime() - now;
-      
+
       this.countdown = {
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
         hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
         minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       };
     };
-    
+
     update();
     this.countdownInterval = setInterval(update, 60000);
   }
@@ -2328,7 +2303,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const currentSubjectId = this.recordSubjects[this.currentRecordIdx].id;
 
     if (currentSubjectId === 'all') {
-      this.displayedRecord = this.dashSvc.bestPaesRecord();
+      this.displayedRecord = allRecords.reduce((latest, r) => {
+        return new Date(r.timestamp).getTime() > new Date(latest.timestamp).getTime() ? r : latest;
+      }, allRecords[0]);
     } else {
       const subjectRecords = allRecords.filter(r => r.subject === currentSubjectId || r.subject === currentSubjectId.replace('ciencias-', ''));
       if (subjectRecords.length === 0) {
