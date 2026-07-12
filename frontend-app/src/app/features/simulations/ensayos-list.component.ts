@@ -8,6 +8,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 
 interface Prueba {
   id: string;
@@ -37,7 +38,7 @@ type ExamMode = 'real' | 'asistido';
 @Component({
   selector: 'app-ensayos-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent],
   template: `
     <div class="ensayos-container">
       <!-- SIDEBAR -->
@@ -119,6 +120,7 @@ type ExamMode = 'real' | 'asistido';
             <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Realiza ensayos completos y simulacros bajo condiciones reales</p>
           </div>
           <div class="welcome-actions">
+            <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
