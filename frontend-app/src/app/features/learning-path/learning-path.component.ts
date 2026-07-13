@@ -836,9 +836,9 @@ export class LearningPathComponent implements OnInit, OnDestroy {
       bgColor: '#C7D2FE'
     },
     'historia': {
-      desc: 'Comprende los procesos históricos de Chile y el mundo, y analiza geografía y formación ciudadana de manera crítica.',
+      desc: 'Domina la Historia de Chile, los grandes procesos del mundo contemporáneo y los fundamentos de Formación Ciudadana. Aprenderás a analizar el territorio, la economía y tus derechos constitucionales para asegurar un excelente puntaje en la PAES.',
       topics: ['Historia de Chile', 'Historia Universal', 'Formación Ciudadana'],
-      img: 'assets/images/historia.png'
+      img: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783834829/wi0iolyulfk6sxiq0jwt.gif'
     },
     'ciencias-fisica': {
       desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',

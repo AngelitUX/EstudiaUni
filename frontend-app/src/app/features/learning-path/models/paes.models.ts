@@ -33,7 +33,9 @@ export interface Capitulo {
   title: string;
   introduccion: string;
   order: number;
+  paesWeight?: string;
   pdfUrl?: string;
+  imageUrl?: string;
   secciones: Seccion[];
   slides?: GuideSlide[];
   quizzes?: Record<string, QuizAlt[]>;
@@ -49,9 +51,11 @@ export interface Seccion {
   guia_contenido?: string;
   datos_claves: string[];
   order: number;
+  level?: number;
   isBoss?: boolean;
   isPractice?: boolean;
   practiceType?: string;
+  imageUrl?: string;
   test: TestPaes;
 }
 
