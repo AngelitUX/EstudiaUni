@@ -522,7 +522,17 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   executeExit() {
     this.showExitConfirm = false;
     if (this.intervalId) clearInterval(this.intervalId);
-    this.router.navigate(['/ruta']);
+    const cap = this.paes.getCapituloBySeccionId(this.seccionId());
+    if (cap) {
+      this.router.navigate(['/ruta', cap.materiaId], { fragment: this.seccionId() });
+    } else {
+      const sec = this.seccion();
+      if (sec) {
+        this.router.navigate(['/ruta', sec.materiaId], { fragment: this.seccionId() });
+      } else {
+        this.router.navigate(['/ruta']);
+      }
+    }
   }
 
   formatTime(seconds: number): string {

@@ -14,7 +14,7 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
     <div class="sec-page" *ngIf="seccion() as sec">
       <!-- TOP NAV -->
       <div class="guide-nav-container">
-        <button class="btn-back" (click)="goBackPath()">← Volver a la ruta</button>
+        <button class="btn-back" (click)="goBack()">← Volver a la ruta</button>
         
         <div class="materia-progress-mini" *ngIf="materiaProgress() as progress">
           <span class="progress-pct">{{ progress.percentage }}% Completado</span>
@@ -68,11 +68,14 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
           <span class="card-icon">🧠</span>
           <h3>{{ sec.guia_titulo || '¿Qué aprenderás?' }}</h3>
         </div>
+        <div class="sec-image-wrap" *ngIf="sec.imageUrl">
+          <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image">
+        </div>
         <p class="guide-body" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
       </div>
 
       <!-- TEXTO BASE -->
-      <div class="content-card context-card" *ngIf="sec.test?.contexto_base">
+      <div class="content-card context-card" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
         <div class="card-header">
           <span class="card-icon">📄</span>
           <h3>Texto de práctica</h3>
@@ -138,8 +141,11 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
     .pregunta-count { font-size: 0.72rem; font-weight: 700; background: rgba(133,92,214,0.08); color: var(--accent-primary); padding: 0.2rem 0.65rem; border-radius: 99px; }
 
     /* MINI GUIA */
-    .guide-card { border-color: rgba(133,92,214,0.15); background: linear-gradient(135deg, rgba(133,92,214,0.04), #fff); }
+    .guide-card { border-color: rgba(133,92,214,0.15); background: linear-gradient(135deg, rgba(133,92,214,0.04), #fff); display: flow-root; }
     .guide-body { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.75; margin: 0; }
+    .sec-image-wrap { float: right; width: 220px; margin: 0 0 1rem 1.5rem; text-align: center; }
+    .sec-image { max-width: 100%; border-radius: 16px; border: 3px solid rgba(133,92,214,0.15); box-shadow: 0 10px 25px rgba(0,0,0,0.08); animation: floatingImage 4s ease-in-out infinite; }
+    @keyframes floatingImage { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(1.5deg)} }
 
     /* CONTEXT */
     .context-body { background: rgba(133,92,214,0.03); border-left: 4px solid var(--accent-primary); border-radius: 0 12px 12px 0; padding: 1.25rem; }
@@ -238,6 +244,10 @@ export class SeccionDetailComponent {
       this.seccionId.set(params.get('seccionId') || '');
       this.practiceCompleted.set(false);
     });
+  }
+
+  goBack() {
+    window.history.back();
   }
 
   goToTest() {

@@ -110,6 +110,10 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     :host ::ng-deep .mc.red { background:rgba(239,68,68,0.06); border:2px solid rgba(239,68,68,0.15); color:#dc2626; }
     :host ::ng-deep .mc.green { background:rgba(88,204,2,0.06); border:2px solid rgba(88,204,2,0.2); color:#16a34a; grid-column:1/-1; }
 
+    /* IMAGES */
+    :host ::ng-deep .slide-image-wrap { float: right; width: 300px; margin: 0.5rem 0 1.5rem 2rem; text-align: center; }
+    :host ::ng-deep .slide-image { max-width: 100%; border-radius: 16px; border: 3px solid rgba(133,92,214,0.15); box-shadow: 0 10px 25px rgba(0,0,0,0.08); animation: floatingImage 4s ease-in-out infinite; }
+
     /* BIG RULE */
     :host ::ng-deep .big-rule { background:rgba(255,200,0,0.08); border:2px solid rgba(255,200,0,0.2); border-radius:16px; padding:1.25rem; margin:0.5rem 0; text-align:center; }
     :host ::ng-deep .big-rule p { font-size:1.05rem; line-height:1.6; margin:0; }
@@ -205,6 +209,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       .slide-title { font-size:1.2rem; }
       :host ::ng-deep .mini-cards, :host ::ng-deep .synonym-grid { grid-template-columns:1fr; }
       .nav-btn { padding:0.7rem 1rem; font-size:0.88rem; }
+      :host ::ng-deep .slide-image-wrap { float: none; width: 100%; margin: 1.5rem 0; display: flex; justify-content: center; }
+      :host ::ng-deep .slide-image { max-width: 85%; }
     }
   `]
 })
@@ -268,6 +274,7 @@ export class GuideSlidesComponent implements OnChanges {
   next() {
     if (this.current() < this.slides.length - 1) {
       this.current.update(v => v + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       if (this.current() === this.slides.length - 1) this.triggerConfetti();
     }
   }
@@ -275,10 +282,15 @@ export class GuideSlidesComponent implements OnChanges {
   prev() { 
     if (this.current() > 0) {
       this.current.update(v => v - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  goTo(i: number) { this.current.set(i); if (i === this.slides.length - 1) this.triggerConfetti(); }
+  goTo(i: number) { 
+    this.current.set(i); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (i === this.slides.length - 1) this.triggerConfetti(); 
+  }
 
   getQuiz(id: string): QuizAlt[] { return this.quizzes[id] || []; }
   getQuizState(id: string) { return this.quizStates[id] || { selected: null, revealed: false }; }

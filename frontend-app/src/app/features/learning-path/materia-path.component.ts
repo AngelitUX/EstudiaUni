@@ -9,9 +9,11 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
+type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
+
 type PathItem =
-  | { type: 'chapter', capituloId: string, title: string, subtitle: string, isCurrentChapter?: boolean }
-  | { type: 'node', id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number };
+  | { type: 'chapter', capituloId: string, title: string, subtitle: string, imageUrl?: string, isCurrentChapter?: boolean, isLocked?: boolean }
+  | { type: 'node-row', nodes: NodeItem[], rowIndex: number };
 
 @Component({
   selector: 'app-materia-path',
@@ -132,22 +134,23 @@ type PathItem =
           <div class="materia-page">
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
-            <ng-container *ngFor="let item of pathItems()">
+            <ng-container *ngFor="let item of pathItems(); let i = index">
               <!-- CHAPTER SPLASH BANNER -->
-              <div *ngIf="item.type === 'chapter'" class="chapter-splash" [ngClass]="item.capituloId">
-                <div class="splash-bg-pattern"></div>
-                <div class="splash-inner">
+              <div *ngIf="item.type === 'chapter'" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="chapter-splash" [ngClass]="item.capituloId" style="margin-bottom: 7rem; width: 100%;">
+                  <div class="splash-bg-pattern"></div>
+                  <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img src="assets/img/foco-octopus.png" alt="Foco" class="splash-mascot" />
+                      <img [src]="item.imageUrl || 'assets/img/foco-octopus.png'" alt="Foco" class="splash-mascot chapter-image-custom" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge">Capítulo {{ getChapterNum(item.capituloId) }}</span>
                       <h2 class="splash-title">{{ item.title }}</h2>
                       <p class="splash-desc" *ngIf="item.capituloId === 'cap-localizar'">Identifica y extrae información explícita del texto. Domina sinónimos, paráfrasis y la técnica de escaneo.</p>
                       <div class="splash-stats">
-                        <div class="ss"><span class="ss-icon">📊</span> ~30% de la PAES</div>
-                        <div class="ss"><span class="ss-icon">📝</span> {{ getChapterNodeCount(item.capituloId) }} ejercicios</div>
+                        <div class="ss"><span class="ss-icon">📚</span> {{ getChapterNodeCount(item.capituloId) }} Lecciones</div>
+                        <div class="ss" *ngIf="getChapterWeight(item.capituloId)"><span class="ss-icon">📊</span> {{ getChapterWeight(item.capituloId) }}</div>
                       </div>
                     </div>
                   </div>
@@ -169,7 +172,7 @@ type PathItem =
                       EMPEZAR
                       <div class="tooltip-arrow"></div>
                     </div>
-                    <button class="splash-guide-btn" (click)="goToGuide(item.capituloId)" style="flex: 1;">
+                    <button class="splash-guide-btn" [class.locked]="item.isLocked" (click)="!item.isLocked && goToGuide(item.capituloId)" style="flex: 1;">
                       <span class="sgb-icon">📖</span> Estudiar la Guía
                     </button>
                     <button *ngIf="adminService.isAdmin()"
@@ -194,47 +197,82 @@ type PathItem =
                   <div class="sep-line"></div>
                 </div>
               </div>
+              
+              <!-- CONEXION DE CAPITULO A NODO -->
+              <svg class="path-svg" *ngIf="item.type === 'chapter' && !isLastPathItem(item)" style="height: 148px; top: calc(100% - 7rem); z-index: -1;">
+                <path *ngFor="let conn of getChapterConnections(i)"
+                      [attr.d]="conn.d"
+                      [attr.stroke]="conn.color"
+                      [attr.stroke-dasharray]="conn.dasharray"
+                      fill="none" stroke-width="8" stroke-linecap="round" />
+              </svg>
+            </div>
 
-              <!-- SECTION NODE -->
-              <div *ngIf="item.type === 'node'" class="node-row">
-                <div class="node-wrapper" [style.transform]="'translateX(' + getOffset(item.nodeIndex) + 'px)'">
-                  <div class="active-tooltip" *ngIf="item.status === 'active'">
-                    {{ getChapterProgress(item.capituloId).completed === 0 ? 'EMPEZAR' : 'CONTINUAR' }}
-                    <div class="tooltip-arrow"></div>
-                  </div>
+            <!-- SECTION NODE ROW -->
+            <div *ngIf="item.type === 'node-row'" class="node-row" 
+                 [style.margin-bottom]="materiaId() === 'historia' ? '7.5rem' : '6.5rem'">
+              
+              <!-- SVG CAMINITO CONECTOR (SOLO HISTORIA) -->
+              <svg class="path-svg" *ngIf="materiaId() === 'historia' && !isLastPathItem(item)" 
+                   [style.height]="isNextChapter(i) ? '156px' : 'calc(72px + 7.5rem)'">
+                <path *ngFor="let conn of getConnections(i)"
+                      [attr.d]="conn.d"
+                      [attr.stroke]="conn.color"
+                      [attr.stroke-dasharray]="conn.dasharray"
+                      fill="none" stroke-width="8" stroke-linecap="round" />
+              </svg>
+                
+                <div class="node-wrapper" 
+                     [style.transform]="item.nodes.length === 1 ? ('translateX(' + getOffset(item.rowIndex) + 'px)') : 'none'"
+                     [style.display]="item.nodes.length > 1 ? 'flex' : 'flex'"
+                     [style.flex-direction]="item.nodes.length > 1 ? 'row' : 'column'"
+                     [style.gap]="item.nodes.length > 1 ? '4.5rem' : '0'"
+                     style="align-items: center; justify-content: center;">
+                     
+                  <ng-container *ngFor="let node of item.nodes; let isLast = last">
+                    <div [id]="node.id" style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                      
+                      <div class="active-tooltip" *ngIf="node.status === 'active' && item.nodes.length === 1">
+                        {{ getChapterProgress(node.capituloId).completed === 0 ? 'EMPEZAR' : 'CONTINUAR' }}
+                        <div class="tooltip-arrow"></div>
+                      </div>
 
-                  <!-- Admin toggle node button -->
-                  <button *ngIf="adminService.isAdmin()"
-                    class="admin-node-toggle"
-                    [class.completed]="item.status === 'completed'"
-                    [title]="item.status === 'completed' ? 'Marcar lección como incompleta' : 'Marcar lección como completada'"
-                    (click)="toggleNodeCompletion($event, item)">
-                    <span class="admin-toggle-icon-default">{{ item.status === 'completed' ? '✓' : '+' }}</span>
-                    <span class="admin-toggle-icon-hover">✕</span>
-                  </button>
+                      <!-- Admin toggle node button -->
+                      <button *ngIf="adminService.isAdmin()"
+                        class="admin-node-toggle"
+                        [class.completed]="node.status === 'completed'"
+                        [title]="node.status === 'completed' ? 'Marcar lección como incompleta' : 'Marcar lección como completada'"
+                        (click)="toggleNodeCompletion($event, node)">
+                        <span class="admin-toggle-icon-default">{{ node.status === 'completed' ? '✓' : '+' }}</span>
+                        <span class="admin-toggle-icon-hover">✕</span>
+                      </button>
 
-                  <button class="duo-node" 
-                    [class.node-completed]="item.status === 'completed'"
-                    [class.node-active]="item.status === 'active'"
-                    [class.node-locked]="item.status === 'locked'"
-                    (click)="handleNodeClick(item)">
-                    <div class="node-inner">
-                      <svg *ngIf="item.status === 'completed'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                      <svg *ngIf="item.status === 'active'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                      <svg *ngIf="item.status === 'locked'" class="node-icon icon-lock" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
-                      </svg>
+                      <button class="duo-node" 
+                        [class.node-completed]="node.status === 'completed'"
+                        [class.node-active]="node.status === 'active'"
+                        [class.node-locked]="node.status === 'locked'"
+                        (click)="handleNodeClick(node)">
+                        <div class="node-inner">
+                          <svg *ngIf="node.status === 'completed'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          <svg *ngIf="node.status === 'active'" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          <svg *ngIf="node.status === 'locked'" class="node-icon icon-lock" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                          </svg>
+                        </div>
+                      </button>
+                      <div class="node-title" 
+                        [class.text-completed]="node.status === 'completed'"
+                        [class.text-active]="node.status === 'active'"
+                        [class.historia-title]="materiaId() === 'historia'"
+                        [style.bottom]="(materiaId() === 'historia' && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
+                        {{ node.title }}
+                      </div>
                     </div>
-                  </button>
-                  <div class="node-title" 
-                    [class.text-completed]="item.status === 'completed'"
-                    [class.text-active]="item.status === 'active'">
-                    {{ item.title }}
-                  </div>
+                  </ng-container>
                 </div>
               </div>
             </ng-container>
@@ -401,7 +439,7 @@ type PathItem =
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
 
     /* CHAPTER SPLASH BANNER */
-    .chapter-splash { width: 100%; max-width: 600px; margin: 0 auto 7rem; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 2px solid rgba(133,92,214,0.15); box-shadow: 0 12px 40px rgba(133,92,214,0.08); }
+    .chapter-splash { width: 100%; max-width: 600px; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 2px solid rgba(133,92,214,0.15); box-shadow: 0 12px 40px rgba(133,92,214,0.08); }
     .chapter-splash.cap-localizar { background: linear-gradient(150deg, #f3eeff 0%, #e8dff8 40%, #f0ebff 100%); }
     .chapter-splash.cap-interpretar { background: linear-gradient(150deg, #e8f4fd 0%, #d6ecfa 40%, #eaf6ff 100%); }
     .chapter-splash.cap-evaluar { background: linear-gradient(150deg, #e8fde8 0%, #d6f5d6 40%, #eaffea 100%); }
@@ -409,8 +447,8 @@ type PathItem =
     .splash-inner { position: relative; padding: 2rem 2rem 1.5rem; }
     .splash-hero { display: flex; align-items: center; gap: 1.5rem; }
     .splash-mascot-area { flex-shrink: 0; }
-    .splash-mascot { width: 110px; height: 110px; object-fit: contain; animation: mascotFloat 4s ease-in-out infinite; filter: drop-shadow(0 8px 16px rgba(133,92,214,0.2)); }
-    @keyframes mascotFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(2deg)} }
+    .splash-mascot { width: 120px; height: 120px; object-fit: cover; border-radius: 20px; border: 4px solid rgba(255,255,255,0.7); animation: mascotFloat 3.5s ease-in-out infinite; box-shadow: 0 12px 24px rgba(133,92,214,0.4); background: #fff; }
+    @keyframes mascotFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-12px) rotate(3deg)} }
     .splash-info { flex: 1; min-width: 0; }
     .splash-badge { display: inline-block; background: var(--accent-primary); color: #fff; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
     .splash-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.35rem; line-height: 1.2; }
@@ -433,6 +471,8 @@ type PathItem =
     .guide-tooltip .tooltip-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #111827; }
     .splash-guide-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.7); border: 2px solid rgba(133,92,214,0.2); border-radius: 14px; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); cursor: pointer; transition: all 0.2s; }
     .splash-guide-btn:hover { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(133,92,214,0.25); }
+    .splash-guide-btn.locked { background: #e5e5e5; border-color: #cccccc; color: #afafaf; cursor: not-allowed; box-shadow: none; }
+    .splash-guide-btn.locked:hover { background: #e5e5e5; border-color: #cccccc; color: #afafaf; transform: none; box-shadow: none; }
     .sgb-icon { font-size: 1.1rem; }
 
     /* Separator */
@@ -441,13 +481,42 @@ type PathItem =
     .sep-text { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
 
     /* NODE ROW */
-    .node-row { width: 100%; display: flex; justify-content: center; margin-bottom: 6.5rem; position: relative; z-index: 2; }
+    .node-row { width: 100%; display: flex; justify-content: center; position: relative; z-index: 2; }
     .node-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; transition: transform 0.3s ease; }
 
+    /* CAMINITO CONECTOR (SVG) */
+    .path-svg {
+      position: absolute;
+      top: 36px; /* Centrado en el nodo (que mide 72px) */
+      left: 50%;
+      width: 2px;
+      overflow: visible;
+      z-index: -1;
+    }
+
     /* NODE FLOATING TITLE (BOTTOM) */
-    .node-title { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; pointer-events: none; transition: all 0.2s; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
+    .node-title { 
+      position: absolute; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      font-family: var(--font-heading); 
+      font-size: 0.95rem; 
+      font-weight: 800; 
+      color: var(--text-secondary); 
+      white-space: nowrap;
+      pointer-events: none; 
+      transition: all 0.2s; 
+      text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); 
+    }
+    .node-title.historia-title {
+      font-size: 0.9rem;
+      white-space: normal;
+      width: 130px;
+      text-align: center;
+      line-height: 1.2;
+    }
     .text-completed { color: #3d8c00; }
-    .text-active { color: var(--accent-primary); bottom: -36px; }
+    .text-active { color: var(--accent-primary); }
 
     /* ACTIVE TOOLTIP */
     .active-tooltip { position: absolute; top: -55px; background: #111827; color: #fff; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; letter-spacing: 0.05em; animation: bounce 2s infinite; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 10; }
@@ -621,7 +690,7 @@ export class MateriaPathComponent {
   capitulos = computed(() => this.paes.getCapitulosByMateria(this.materiaId()));
 
   // Pattern for horizontal zigzag staggering
-  private offsets = [0, -40, -65, -40, 0, 40, 65, 40];
+  private offsets = [0, -80, -115, -80, 0, 80, 115, 80];
 
   constructor() {
     this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
@@ -629,6 +698,100 @@ export class MateriaPathComponent {
 
   getOffset(index: number): number {
     return this.offsets[index % this.offsets.length];
+  }
+
+  isLastPathItem(item: any): boolean {
+    const items = this.pathItems();
+    const index = items.indexOf(item);
+    return index === items.length - 1;
+  }
+
+  isNextChapter(index: number): boolean {
+    const items = this.pathItems();
+    const next = items[index + 1];
+    return next ? next.type === 'chapter' : false;
+  }
+
+  getChapterConnections(index: number): { d: string, color: string, dasharray?: string }[] {
+    const items = this.pathItems();
+    const item = items[index];
+    if (item.type !== 'chapter') return [];
+    
+    const nextItem = items[index + 1];
+    if (!nextItem || nextItem.type !== 'node-row') return [];
+
+    const endOffsets = nextItem.nodes.length === 1 
+      ? [this.getOffset(nextItem.rowIndex)] 
+      : [-72, 72];
+
+    const height = 148;
+    const isCompleted = this.isGuideCompleted(item.capituloId);
+
+    return endOffsets.map(x2 => {
+      const d = `M 0 0 C 0 ${height * 0.35}, ${x2} ${height * 0.65}, ${x2} ${height}`;
+      return { d, color: isCompleted ? '#58cc02' : '#e5e5e5', dasharray: isCompleted ? 'none' : '8 8' };
+    });
+  }
+
+  getConnections(index: number): { d: string, color: string, dasharray?: string }[] {
+    const items = this.pathItems();
+    const item = items[index];
+    if (item.type !== 'node-row') return [];
+    
+    const height = this.materiaId() === 'historia' ? 192 : 176;
+
+    const nextItem = items[index + 1];
+    if (!nextItem) return [];
+
+    const startOffsets = item.nodes.length === 1 
+      ? [this.getOffset(item.rowIndex)] 
+      : [-72, 72];
+      
+    const connections: { d: string, color: string, dasharray?: string }[] = [];
+
+    const getColor = (sourceOffset: number) => {
+      const node = item.nodes.find(n => 
+        (item.nodes.length === 1 && sourceOffset === this.getOffset(item.rowIndex)) ||
+        (item.nodes.length === 2 && ((sourceOffset === -72 && n === item.nodes[0]) || (sourceOffset === 72 && n === item.nodes[1])))
+      );
+      return node?.status === 'completed' ? '#58cc02' : '#e5e5e5';
+    };
+
+    const getDash = (sourceOffset: number) => {
+      return getColor(sourceOffset) === '#58cc02' ? 'none' : '8 8';
+    };
+
+    if (nextItem.type === 'chapter') {
+      startOffsets.forEach(x1 => {
+        const d = `M ${x1} 0 C ${x1} ${156 * 0.35}, 0 ${156 * 0.65}, 0 156`;
+        connections.push({ d, color: getColor(x1), dasharray: getDash(x1) });
+      });
+      return connections;
+    }
+
+    const endOffsets = nextItem.nodes.length === 1 
+      ? [this.getOffset(nextItem.rowIndex)] 
+      : [-72, 72];
+
+    const pushConn = (x1: number, x2: number) => {
+      const d = `M ${x1} 0 C ${x1} ${height * 0.35}, ${x2} ${height * 0.65}, ${x2} ${height}`;
+      connections.push({ d, color: getColor(x1), dasharray: getDash(x1) });
+    };
+
+    if (startOffsets.length === 1 && endOffsets.length === 2) {
+      pushConn(startOffsets[0], endOffsets[0]);
+      pushConn(startOffsets[0], endOffsets[1]);
+    } else if (startOffsets.length === 2 && endOffsets.length === 1) {
+      pushConn(startOffsets[0], endOffsets[0]);
+      pushConn(startOffsets[1], endOffsets[0]);
+    } else if (startOffsets.length === 2 && endOffsets.length === 2) {
+      pushConn(startOffsets[0], endOffsets[0]);
+      pushConn(startOffsets[1], endOffsets[1]);
+    } else {
+      pushConn(startOffsets[0], endOffsets[0]);
+    }
+
+    return connections;
   }
 
   pathItems = computed(() => {
@@ -650,50 +813,91 @@ export class MateriaPathComponent {
     }
 
     let foundActive = false;
+    let rowIndex = 0;
 
     this.capitulos().forEach((cap, capIndex) => {
+      const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
+      const chapterIsLocked = !unlockAll && foundActive;
+
       // 1. Add Chapter Divider
       items.push({
         type: 'chapter',
         capituloId: cap.id,
         title: cap.title,
         subtitle: `Capítulo ${capIndex + 1}`,
-        isCurrentChapter: cap.id === activeChapterId
+        imageUrl: cap.imageUrl,
+        isCurrentChapter: cap.id === activeChapterId,
+        isLocked: chapterIsLocked
       });
 
       const guideProg = this.paes.getSeccionProgress('guide_' + cap.id);
       const isGuideCompleted = guideProg?.completed || false;
-      const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
       const blockChapter = unlockAll ? false : !isGuideCompleted;
 
-      // 2. Add Sections as nodes
+      // 2. Group Sections by Level to support branching
+      const rows: any[][] = [];
+      let currentLevel = -1;
+      let autoLevel = 1000;
+      let currentGroup: any[] = [];
+
       cap.secciones.forEach((sec) => {
-        const prog = this.paes.getSeccionProgress(sec.id);
-        const completed = prog?.completed || false;
-
-        let status: 'completed' | 'active' | 'locked' = 'locked';
-
-        if (completed) {
-          status = 'completed';
-        } else if (unlockAll) {
-          status = 'active';
-        } else if (!foundActive && !blockChapter) {
-          status = 'active';
-          foundActive = true;
-        } else if (!foundActive && blockChapter) {
-          status = 'locked';
-          foundActive = true;
+        const lvl = sec.level !== undefined ? sec.level : (autoLevel++);
+        if (currentLevel === -1 || currentLevel !== lvl) {
+          if (currentGroup.length > 0) rows.push(currentGroup);
+          currentLevel = lvl;
+          currentGroup = [sec];
         } else {
-          status = 'locked';
+          currentGroup.push(sec);
+        }
+      });
+      if (currentGroup.length > 0) rows.push(currentGroup);
+
+      // 3. Render rows
+      rows.forEach(row => {
+        let allCompletedInRow = true;
+        let anyCompletedInRow = false;
+        
+        const rowNodes: NodeItem[] = row.map((sec) => {
+          const prog = this.paes.getSeccionProgress(sec.id);
+          const completed = prog?.completed || false;
+          if (!completed) allCompletedInRow = false;
+          if (completed) anyCompletedInRow = true;
+
+          let status: 'completed' | 'active' | 'locked' = 'locked';
+
+          if (completed) {
+            status = 'completed';
+          } else if (unlockAll) {
+            status = 'active';
+          } else if (!foundActive && !blockChapter) {
+            status = 'active';
+            // We DO NOT set foundActive = true yet, because all sibling nodes in this active row should be 'active'
+          } else if (!foundActive && blockChapter) {
+            status = 'locked';
+          } else {
+            status = 'locked';
+          }
+
+          return {
+            id: sec.id,
+            capituloId: cap.id,
+            title: sec.title,
+            status,
+            nodeIndex: nodeIndex++
+          };
+        });
+
+        // If this row had active nodes, the subsequent rows will be locked
+        if (!allCompletedInRow && !unlockAll && !blockChapter && !foundActive) {
+          foundActive = true;
+        } else if (blockChapter && !foundActive) {
+          foundActive = true;
         }
 
         items.push({
-          type: 'node',
-          id: sec.id,
-          capituloId: cap.id,
-          title: sec.title,
-          status,
-          nodeIndex: nodeIndex++
+          type: 'node-row',
+          nodes: rowNodes,
+          rowIndex: rowIndex++
         });
       });
     });
@@ -741,6 +945,11 @@ export class MateriaPathComponent {
     return cap ? cap.secciones.length : 0;
   }
 
+  getChapterWeight(capId: string): string | undefined {
+    const cap = this.capitulos().find(c => c.id === capId);
+    return cap?.paesWeight;
+  }
+
   getChapterProgress(capId: string): { completed: number; total: number; pct: number } {
     const cap = this.capitulos().find(c => c.id === capId);
     if (!cap) return { completed: 0, total: 0, pct: 0 };
@@ -775,10 +984,44 @@ export class MateriaPathComponent {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Tecla rápida Alt + U para alternar desbloqueo de todos los pasos
     if (event.altKey && event.key.toLowerCase() === 'u') {
       this.toggleUnlockAllSteps();
     }
+    if (event.altKey && event.key.toLowerCase() === 'c') {
+      console.log('AUTO-COMPLETING ALL FOR TESTING...');
+      this.completeAllMateria();
+    }
+    if (event.altKey && event.key.toLowerCase() === 'x') {
+      console.log('RESETTING ALL PROGRESS FOR TESTING...');
+      this.resetAllMateria();
+    }
+  }
+
+  completeAllMateria() {
+    this.capitulos().forEach(cap => {
+      this.paes.markSeccionCompleted('guide_' + cap.id);
+      if (cap.secciones) {
+        cap.secciones.forEach(sec => {
+          this.paes.markSeccionCompleted(sec.id);
+        });
+      }
+    });
+    console.log('Everything marked as complete!');
+    window.location.reload();
+  }
+
+  resetAllMateria() {
+    this.capitulos().forEach(cap => {
+      this.paes.markSeccionIncomplete('guide_' + cap.id);
+      if (cap.secciones) {
+        cap.secciones.forEach(sec => {
+          this.paes.markSeccionIncomplete(sec.id);
+        });
+      }
+    });
+    localStorage.setItem('unlockAllSteps', 'false');
+    console.log('Progress reset and steps locked!');
+    window.location.reload();
   }
 
 }

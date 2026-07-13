@@ -485,7 +485,8 @@ export class PaesContentService {
       if (useMocks) {
       this.loadDataFromLocalMocks();
     } else {
-      this.loadDataFromFirestore();
+      // Don't fetch immediately, wait for auth to resolve to avoid permission denied errors
+      // that trigger the local fallbacks prematurely.
     }
     // Subscribe to auth state changes to load user-specific progress and fetch fresh firestore data
     this.auth.onAuthStateChanged((user) => {
@@ -504,16 +505,11 @@ export class PaesContentService {
         }
 
         // Cargar datos de Firestore ahora que estamos 100% autenticados
-        if (this._materias().length === 0) {
-          this.loadDataFromFirestore();
-        }
+        // Siempre intentamos cargar de Firestore al loguearnos
+        this.loadDataFromFirestore();
       } else {
         this.currentUid = null;
         this._progress.set(new Map());
-        // Only reset loading if data hasn't been loaded yet.
-        // This prevents the race condition where auth briefly resolves as null
-        // before the user is authenticated, which would set loading=true
-        // permanently since no subsequent loadDataFromFirestore() call occurs.
         if (this._materias().length === 0) {
           this.loading.set(true);
         }
@@ -548,14 +544,14 @@ export class PaesContentService {
   }
 
   public clearCache(): void {
-    localStorage.removeItem('paes_content_cache');
-    localStorage.removeItem('paes_content_cache_timestamp');
+    localStorage.removeItem('paes_content_cache_v2');
+    localStorage.removeItem('paes_content_cache_timestamp_v2');
 
   }
 
   private async loadDataFromFirestore() {
-    const cacheKey = 'paes_content_cache';
-    const cacheTimeKey = 'paes_content_cache_timestamp';
+    const cacheKey = 'paes_content_cache_v11';
+    const cacheTimeKey = 'paes_content_cache_timestamp_v11';
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
@@ -775,6 +771,26 @@ export class PaesContentService {
     }
     
     return null;
+  }
+
+  getStrictNextNodeUrl(seccionId: string): string[] | null {
+    const cap = this.getCapituloBySeccionId(seccionId);
+    if (!cap) return null;
+    const secciones = [...cap.secciones].sort((a, b) => a.order - b.order);
+    const currentIndex = secciones.findIndex(s => s.id === seccionId);
+    
+    if (currentIndex >= 0 && currentIndex < secciones.length - 1) {
+      return ['/ruta', cap.materiaId, cap.id, secciones[currentIndex + 1].id];
+    } else {
+      // It's the last section of the chapter, find next chapter
+      const capitulos = this.getCapitulosByMateria(cap.materiaId).sort((a, b) => a.order - b.order);
+      const capIndex = capitulos.findIndex(c => c.id === cap.id);
+      if (capIndex >= 0 && capIndex < capitulos.length - 1) {
+        const nextCap = capitulos[capIndex + 1];
+        return ['/ruta', cap.materiaId, nextCap.id]; // Go to next chapter's guide
+      }
+    }
+    return null; // There is no next level (end of course)
   }
 
   getCapituloById(capituloId: string): Capitulo | undefined {

@@ -303,11 +303,11 @@ export class SeccionTestReviewComponent {
   goBack() {
     const cap = this.paes.getCapituloBySeccionId(this.seccionId());
     if (cap) {
-      this.router.navigate(['/ruta', cap.materiaId]);
+      this.router.navigate(['/ruta', cap.materiaId], { fragment: this.seccionId() });
     } else {
       const sec = this.seccion();
       if (sec) {
-        this.router.navigate(['/ruta', sec.materiaId]);
+        this.router.navigate(['/ruta', sec.materiaId], { fragment: this.seccionId() });
       } else {
         this.router.navigate(['/ruta']);
       }
@@ -319,17 +319,17 @@ export class SeccionTestReviewComponent {
   }
 
   goNext() {
-    const cap = this.paes.getCapituloBySeccionId(this.seccionId());
-    const materiaId = cap?.materiaId || this.seccion()?.materiaId;
-    if (materiaId) {
-      const nextUrl = this.paes.getNextNodeUrl(materiaId);
-      if (nextUrl) {
-        this.router.navigate(nextUrl);
-      } else {
-        this.router.navigate(['/ruta', materiaId]);
-      }
+    const nextUrl = this.paes.getStrictNextNodeUrl(this.seccionId());
+    if (nextUrl) {
+      this.router.navigate(nextUrl);
     } else {
-      this.router.navigate(['/ruta']);
+      const cap = this.paes.getCapituloBySeccionId(this.seccionId());
+      const materiaId = cap?.materiaId || this.seccion()?.materiaId;
+      if (materiaId) {
+        this.router.navigate(['/ruta', materiaId]);
+      } else {
+        this.router.navigate(['/ruta']);
+      }
     }
   }
 

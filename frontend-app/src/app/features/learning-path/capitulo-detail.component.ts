@@ -50,6 +50,9 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
           <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
             <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
             <div class="sec-intro">
+              <div class="sec-image-wrap" *ngIf="sec.imageUrl">
+                <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image">
+              </div>
               <p [innerHTML]="parseMixed(sec.introduccion)"></p>
             </div>
 
@@ -100,11 +103,13 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
     .theory-section { margin-bottom: 4rem; position: relative; padding-left: 2rem; }
     .theory-section::before { content: ''; position: absolute; left: 0; top: 0; bottom: -2rem; width: 4px; background: rgba(0,0,0,0.05); border-radius: 4px; }
     .theory-section:last-child::before { display: none; }
-
-    .sec-title { display: flex; align-items: center; gap: 1rem; font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1.5rem; }
-    .sec-num { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--accent-primary); color: #fff; border-radius: 50%; font-size: 1rem; font-weight: 800; box-shadow: 0 4px 12px rgba(133,92,214,0.3); }
     
-    .sec-intro p { font-size: 1.05rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 1.5rem; }
+    .sec-title { font-family: var(--font-heading); font-size: 1.45rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1.25rem; display: flex; align-items: center; gap: 0.85rem; }
+    .sec-num { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 1.1rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(133,92,214,0.3); flex-shrink: 0; }
+    .sec-image-wrap { float: right; width: 220px; margin: 0 0 1rem 1.5rem; text-align: center; }
+    .sec-image { max-width: 100%; border-radius: 16px; border: 3px solid rgba(133,92,214,0.15); box-shadow: 0 10px 25px rgba(0,0,0,0.08); animation: floatingImage 4s ease-in-out infinite; }
+    @keyframes floatingImage { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(1.5deg)} }
+    .sec-intro p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; margin: 0 0 1.5rem; }
 
     /* TIPS BOX */
     .tips-box { background: rgba(255, 200, 0, 0.1); border: 2px solid rgba(255, 200, 0, 0.3); border-radius: 16px; padding: 1.5rem; margin-top: 2rem; }
@@ -135,6 +140,8 @@ export class CapituloDetailComponent {
   private katexSvc = inject(KatexService);
   private sanitizer = inject(DomSanitizer);
 
+  tipColors = ['#855cd6', '#1cb0f6', '#ff9600', '#58cc02', '#ef4444'];
+
   materiaId = signal('');
   capituloId = signal('');
 
@@ -154,7 +161,7 @@ export class CapituloDetailComponent {
   }
 
   goBack() {
-    this.router.navigate(['/ruta', this.materiaId()]);
+    window.history.back();
   }
 
   parseMixed(text: string | undefined): SafeHtml {
@@ -219,6 +226,7 @@ export class CapituloDetailComponent {
   }
 
   private buildDynamicSlideContent(sec: any): string {
+    const imgHtml = sec.imageUrl ? `<div class="slide-image-wrap"><img src="${sec.imageUrl}" class="slide-image" alt="Imagen ${sec.title}"></div>` : '';
     const intro = sec.introduccion ? `<p>${sec.introduccion}</p>` : '';
     const bullets = (sec.datos_claves || [])
       .map((dato: string) => `<li>${dato}</li>`)
@@ -226,7 +234,7 @@ export class CapituloDetailComponent {
     const tips = bullets
       ? `<div class="callout-gold"><strong>Conceptos clave:</strong><ul>${bullets}</ul></div>`
       : '';
-    return `${intro}${tips}`;
+    return `${imgHtml}${intro}${tips}`;
   }
 
   private getSlideIcon(index: number): string {
