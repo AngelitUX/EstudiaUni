@@ -29,7 +29,7 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
       <!-- Hero only for generic chapters -->
       <header class="guide-hero" *ngIf="!hasSlides(cap)">
         <div class="hero-icon">📖</div>
-        <h1>Guía de Estudio: {{ cap.title }}</h1>
+        <h1>Resumen: {{ cap.title }}</h1>
         <p class="hero-intro">{{ cap.introduccion }}</p>
       </header>
 
@@ -47,23 +47,23 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
 
         <!-- GENERIC SECTIONS for other chapters -->
         <ng-container *ngIf="!hasSlides(cap)">
-          <div *ngFor="let sec of cap.secciones; let i = index" class="theory-section">
+          <div *ngFor="let sec of cap.secciones; let i = index" class="theory-card">
             <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
-            <div class="sec-intro">
-              <div class="sec-image-wrap" *ngIf="sec.imageUrl">
-                <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image">
+            <div class="theory-card-content">
+              <div class="theory-text">
+                <p class="theory-intro" [innerHTML]="parseMixed(sec.introduccion)"></p>
+                <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
+                  <h3>💡 Conceptos clave:</h3>
+                  <ul class="tips-list">
+                    <li *ngFor="let dato of sec.datos_claves">
+                      <span [innerHTML]="parseMixed(dato)"></span>
+                    </li>
+                  </ul>
+                </div>
               </div>
-              <p [innerHTML]="parseMixed(sec.introduccion)"></p>
-            </div>
-
-            <!-- Tips & Examples -->
-            <div class="tips-box" *ngIf="sec.datos_claves && sec.datos_claves.length > 0">
-              <h3>💡 Conceptos Clave & Ejemplos</h3>
-              <ul class="tips-list">
-                <li *ngFor="let dato of sec.datos_claves">
-                  <span [innerHTML]="parseMixed(dato)"></span>
-                </li>
-              </ul>
+              <div class="theory-image-container" *ngIf="sec.imageUrl">
+                <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="theory-image">
+              </div>
             </div>
           </div>
         </ng-container>
@@ -100,23 +100,28 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
     .hero-intro { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
     /* CONTENT */
-    .theory-section { margin-bottom: 4rem; position: relative; padding-left: 2rem; }
-    .theory-section::before { content: ''; position: absolute; left: 0; top: 0; bottom: -2rem; width: 4px; background: rgba(0,0,0,0.05); border-radius: 4px; }
-    .theory-section:last-child::before { display: none; }
+    .theory-card { background: #ffffff; border-radius: 20px; padding: 2.5rem; margin-bottom: 2.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .theory-card:hover { transform: translateY(-4px); box-shadow: 0 16px 50px rgba(133,92,214,0.1); border-color: rgba(133,92,214,0.2); }
     
-    .sec-title { font-family: var(--font-heading); font-size: 1.45rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1.25rem; display: flex; align-items: center; gap: 0.85rem; }
-    .sec-num { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 1.1rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(133,92,214,0.3); flex-shrink: 0; }
-    .sec-image-wrap { float: right; width: 220px; margin: 0 0 1rem 1.5rem; text-align: center; }
-    .sec-image { max-width: 100%; border-radius: 16px; border: 3px solid rgba(133,92,214,0.15); box-shadow: 0 10px 25px rgba(0,0,0,0.08); animation: floatingImage 4s ease-in-out infinite; }
-    @keyframes floatingImage { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(1.5deg)} }
-    .sec-intro p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; margin: 0 0 1.5rem; }
-
-    /* TIPS BOX */
-    .tips-box { background: rgba(255, 200, 0, 0.1); border: 2px solid rgba(255, 200, 0, 0.3); border-radius: 16px; padding: 1.5rem; margin-top: 2rem; }
-    .tips-box h3 { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; color: #b8860b; margin: 0 0 1rem; }
-    .tips-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
-    .tips-list li { position: relative; padding-left: 1.5rem; font-size: 1rem; color: var(--text-primary); line-height: 1.5; }
-    .tips-list li::before { content: '•'; position: absolute; left: 0; top: 0; color: #ffc800; font-size: 1.5rem; line-height: 1; font-weight: bold; }
+    .sec-title { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .sec-num { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-primary), #6b47b8); color: #fff; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(133,92,214,0.4); flex-shrink: 0; }
+    
+    .theory-card-content { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 768px) {
+      .theory-card-content { grid-template-columns: 1.2fr 1fr; }
+    }
+    
+    .theory-intro { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.7; margin: 0 0 1.5rem; }
+    
+    .theory-image-container { display: flex; align-items: flex-start; justify-content: center; }
+    .theory-image { width: 100%; max-width: 320px; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); border: 4px solid rgba(255,255,255,0.8); object-fit: cover; }
+    
+    /* TIPS BOX REDESIGN */
+    .tips-box { background: linear-gradient(135deg, rgba(28, 176, 246, 0.05), rgba(28, 176, 246, 0.1)); border-radius: 16px; padding: 1.5rem; border-left: 4px solid #1cb0f6; }
+    .tips-box h3 { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: #158bc2; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .tips-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .tips-list li { position: relative; padding-left: 1.5rem; font-size: 0.95rem; color: var(--text-primary); line-height: 1.5; font-weight: 500; }
+    .tips-list li::before { content: '→'; position: absolute; left: 0; top: 0; color: #1cb0f6; font-size: 1.1rem; font-weight: 900; line-height: 1.4; }
 
     /* CTA */
     .cta-bottom { text-align: center; margin-top: 5rem; padding-top: 3rem; border-top: 2px dashed rgba(0,0,0,0.1); }
@@ -128,8 +133,8 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
     @media (max-width: 768px) {
       .guide-hero { padding: 2rem 1rem; }
       .guide-hero h1 { font-size: 1.75rem; }
-      .theory-section { padding-left: 0; }
-      .theory-section::before { display: none; }
+      .theory-card { padding: 1.5rem; }
+      .theory-card-content { grid-template-columns: 1fr; }
     }
   `]
 })
@@ -226,15 +231,16 @@ export class CapituloDetailComponent {
   }
 
   private buildDynamicSlideContent(sec: any): string {
-    const imgHtml = sec.imageUrl ? `<div class="slide-image-wrap"><img src="${sec.imageUrl}" class="slide-image" alt="Imagen ${sec.title}"></div>` : '';
-    const intro = sec.introduccion ? `<p>${sec.introduccion}</p>` : '';
+    const intro = sec.introduccion ? `<p class="theory-intro">${sec.introduccion}</p>` : '';
     const bullets = (sec.datos_claves || [])
       .map((dato: string) => `<li>${dato}</li>`)
       .join('');
     const tips = bullets
-      ? `<div class="callout-gold"><strong>Conceptos clave:</strong><ul>${bullets}</ul></div>`
+      ? `<div class="tips-box-premium"><h3>💡 Conceptos clave:</h3><ul class="tips-list-premium">${bullets}</ul></div>`
       : '';
-    return `${imgHtml}${intro}${tips}`;
+    const imgHtml = sec.imageUrl ? `<div class="slide-image-wrap-large"><img src="${sec.imageUrl}" class="slide-image-premium" alt="Imagen ${sec.title}"></div>` : '';
+    
+    return `${intro}${tips}${imgHtml}`;
   }
 
   private getSlideIcon(index: number): string {

@@ -36,7 +36,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-1-1',
         title: '1. Ideas liberales en Europa',
-        introduccion: 'Durante el siglo XIX, las ideas liberales, herederas de la Ilustración y la Revolución Francesa, reconfiguraron el mapa político y económico de Occidente. Este movimiento intelectual y político surgió como respuesta al absolutismo monárquico, buscando limitar el poder del Estado y garantizar los derechos fundamentales del individuo. En América Latina, estas ideas cruzaron el océano impulsadas por la burguesía criolla, convirtiéndose en el motor ideológico fundamental para los procesos de independencia y la posterior construcción de las jóvenes repúblicas.',
+        introduccion: 'Durante el siglo XIX, las ideas liberales, herederas de la Ilustración y la Revolución Francesa, reconfiguraron el mapa político y económico de Occidente.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Durante el siglo XIX, las ideas liberales, herederas de la Ilustración y la Revolución Francesa, reconfiguraron el mapa político y económico de Occidente. Este movimiento intelectual y político surgió como respuesta al absolutismo monárquico, buscando limitar el poder del Estado y garantizar los derechos fundamentales del individuo. En América Latina, estas ideas cruzaron el océano impulsadas por la burguesía criolla, convirtiéndose en el motor ideológico fundamental para los procesos de independencia y la posterior construcción de las jóvenes repúblicas.`,
         datos_claves: [
           '**Liberalismo Político:** Promueve la soberanía popular (el poder reside en el pueblo), la separación de los poderes del Estado (Ejecutivo, Legislativo y Judicial) y el constitucionalismo (existencia de una carta magna que rige la nación).',
           '**Liberalismo Económico (Adam Smith):** Defiende el libre mercado, la propiedad privada como derecho inalienable, la libre competencia y la nula intervención del Estado en la economía (Laissez-faire).',
@@ -62,7 +64,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-1-2',
         title: '2. Formación de la República de Chile',
-        introduccion: 'Tras consolidar su independencia, Chile enfrentó una etapa de intensa búsqueda de organización política conocida como "Ensayos Constitucionales" (1823-1830). Este periodo de inestabilidad culminó con el triunfo del bando conservador (pelucones) en la Batalla de Lircay. A partir de entonces, bajo la figura omnipotente del ministro Diego Portales, se instaló un régimen político altamente autoritario y centralizado, cristalizado en la Constitución de 1833. Esta carta magna priorizó el orden por sobre las libertades, sentando las bases del Estado chileno durante el resto del siglo.',
+        introduccion: 'Tras consolidar su independencia, Chile enfrentó una etapa de intensa búsqueda de organización política conocida como "Ensayos Constitucionales" (1823-1830).',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Tras consolidar su independencia, Chile enfrentó una etapa de intensa búsqueda de organización política conocida como "Ensayos Constitucionales" (1823-1830). Este periodo de inestabilidad culminó con el triunfo del bando conservador (pelucones) en la Batalla de Lircay. A partir de entonces, bajo la figura omnipotente del ministro Diego Portales, se instaló un régimen político altamente autoritario y centralizado, cristalizado en la Constitución de 1833. Esta carta magna priorizó el orden por sobre las libertades, sentando las bases del Estado chileno durante el resto del siglo.`,
         datos_claves: [
           '**Ensayos Constitucionales:** Periodo de aprendizaje político donde se intentaron varios modelos: Moralista (1823), Federal (1826) y Liberal (1828), fracasando por la inexperiencia y pugnas internas.',
           '**El Orden Portaliano:** Ideología práctica de Diego Portales. Desconfiaba de la democracia y promovía un "gobierno fuerte, centralizador, cuyos hombres sean verdaderos modelos de virtud y patriotismo", para educar al pueblo.',
@@ -88,7 +92,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-1-3',
         title: '3. Inserción de Chile en la economía global',
-        introduccion: 'Durante la segunda mitad del siglo XIX, Chile abandonó el aislamiento colonial para integrarse de lleno en el sistema capitalista mundial. Apoyado en las ideas del liberalismo económico, el país adoptó un modelo de "Crecimiento hacia afuera", convirtiéndose en un activo exportador de materias primas e importador de manufacturas. Este auge económico, impulsado por descubrimientos mineros y la demanda agrícola internacional, enriqueció a la oligarquía y permitió modernizar la infraestructura nacional, aunque sentó las bases de una profunda dependencia externa.',
+        introduccion: 'Durante la segunda mitad del siglo XIX, Chile abandonó el aislamiento colonial para integrarse de lleno en el sistema capitalista mundial.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Durante la segunda mitad del siglo XIX, Chile abandonó el aislamiento colonial para integrarse de lleno en el sistema capitalista mundial. Apoyado en las ideas del liberalismo económico, el país adoptó un modelo de "Crecimiento hacia afuera", convirtiéndose en un activo exportador de materias primas e importador de manufacturas. Este auge económico, impulsado por descubrimientos mineros y la demanda agrícola internacional, enriqueció a la oligarquía y permitió modernizar la infraestructura nacional, aunque sentó las bases de una profunda dependencia externa.`,
         datos_claves: [
           '**Crecimiento hacia afuera:** Modelo económico donde el desarrollo del país depende de la demanda externa por sus materias primas, dejando a la economía vulnerable a las crisis internacionales.',
           '**Auge Agrícola:** Fiebres del oro en California y Australia generaron una demanda explosiva de trigo chileno, reactivando la agricultura del valle central y fortaleciendo a los latifundistas.',
@@ -114,7 +120,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-1-4',
         title: '4. El ciclo del salitre',
-        introduccion: 'Tras la victoria en la Guerra del Pacífico (1879-1884), Chile anexó los territorios ricos en salitre del norte grande. Este mineral, vital para el mundo como fertilizante y explosivo, inauguró una era de riqueza sin precedentes. El Estado decidió no explotar directamente las salitreras, dejándolas en manos de privados (mayoritariamente capitales británicos) y cobrando un alto impuesto de exportación. Estos cuantiosos ingresos fiscales modernizaron el país, pero acentuaron las desigualdades sociales, creando el caldo de cultivo para futuras crisis.',
+        introduccion: 'Tras la victoria en la Guerra del Pacífico (1879-1884), Chile anexó los territorios ricos en salitre del norte grande.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Tras la victoria en la Guerra del Pacífico (1879-1884), Chile anexó los territorios ricos en salitre del norte grande. Este mineral, vital para el mundo como fertilizante y explosivo, inauguró una era de riqueza sin precedentes. El Estado decidió no explotar directamente las salitreras, dejándolas en manos de privados (mayoritariamente capitales británicos) y cobrando un alto impuesto de exportación. Estos cuantiosos ingresos fiscales modernizaron el país, pero acentuaron las desigualdades sociales, creando el caldo de cultivo para futuras crisis.`,
         datos_claves: [
           '**El monopolio mundial:** Chile quedó como el único gran proveedor de nitrato natural, lo que disparó las arcas fiscales mediante el cobro de derechos aduaneros de exportación.',
           '**El rol del Estado y Privados:** El Estado no fue empresario, fue rentista. Empresarios como el inglés John Thomas North ("El Rey del Salitre") controlaron la producción, transporte y comercio del mineral.',
@@ -140,7 +148,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-1-5',
         title: '5. La Cuestión Social en Chile',
-        introduccion: 'El crecimiento económico de fines del siglo XIX y principios del XX tuvo un lado oscuro: la pauperización extrema de las clases trabajadoras. A este conjunto de problemas (hacinamiento, insalubridad, explotación laboral y mortalidad) se le denominó la "Cuestión Social". Ante la ceguera y represión de la oligarquía gobernante, que veía la pobreza como un problema de caridad o policial, el proletariado comenzó a organizarse de manera autónoma, fundando mutuales y mancomunales, lo que daría origen al moderno movimiento obrero chileno.',
+        introduccion: 'El crecimiento económico de fines del siglo XIX y principios del XX tuvo un lado oscuro: la pauperización extrema de las clases trabajadoras.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `El crecimiento económico de fines del siglo XIX y principios del XX tuvo un lado oscuro: la pauperización extrema de las clases trabajadoras. A este conjunto de problemas (hacinamiento, insalubridad, explotación laboral y mortalidad) se le denominó la "Cuestión Social". Ante la ceguera y represión de la oligarquía gobernante, que veía la pobreza como un problema de caridad o policial, el proletariado comenzó a organizarse de manera autónoma, fundando mutuales y mancomunales, lo que daría origen al moderno movimiento obrero chileno.`,
         datos_claves: [
           '**Definición:** Conjunto de graves problemas sociales y laborales que afectaron a los sectores populares (obreros salitreros, mineros, industriales y campesinos emigrados) a fines del s. XIX y comienzos del XX.',
           '**Problemas Urbanos:** Migración masiva campo-ciudad. La gente vivía hacinada en "conventillos" (piezas minúsculas sin servicios básicos), sufriendo alta mortalidad infantil y epidemias de cólera y viruela.',
@@ -180,7 +190,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-2-1',
         title: '1. La Crisis del 29 y el Estado de Bienestar',
-        introduccion: 'La Gran Depresión iniciada el "Jueves Negro" de 1929 no solo derrumbó la bolsa de Wall Street, sino que destrozó el dogma del liberalismo económico (el mercado se regula solo). Al quebrar masivamente bancos y fábricas, el desempleo global se disparó. La respuesta a este colapso provino de las ideas del economista John Maynard Keynes, quien argumentó que, en tiempos de crisis, el Estado debía intervenir activamente inyectando dinero y creando obras públicas para dar trabajo. Así nació el Estado de Bienestar en occidente, un modelo que buscaba garantizar derechos sociales mínimos (salud, pensiones) y que en América Latina se tradujo en la industrialización estatal.',
+        introduccion: 'La Gran Depresión iniciada el "Jueves Negro" de 1929 no solo derrumbó la bolsa de Wall Street, sino que destrozó el dogma del liberalismo económico (el mercado se regula solo).',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `La Gran Depresión iniciada el "Jueves Negro" de 1929 no solo derrumbó la bolsa de Wall Street, sino que destrozó el dogma del liberalismo económico (el mercado se regula solo). Al quebrar masivamente bancos y fábricas, el desempleo global se disparó. La respuesta a este colapso provino de las ideas del economista John Maynard Keynes, quien argumentó que, en tiempos de crisis, el Estado debía intervenir activamente inyectando dinero y creando obras públicas para dar trabajo. Así nació el Estado de Bienestar en occidente, un modelo que buscaba garantizar derechos sociales mínimos (salud, pensiones) y que en América Latina se tradujo en la industrialización estatal.`,
         datos_claves: [
           '**La Gran Depresión (1929):** Colapso del mercado de valores de EE.UU. por exceso de especulación y sobreproducción. Provocó una crisis económica global de proporciones inéditas.',
           '**Impacto en Chile:** La Sociedad de Naciones declaró que Chile fue el país más golpeado del mundo. Las exportaciones de salitre se detuvieron abruptamente, llevando al cierre de minas y al desempleo masivo.',
@@ -206,7 +218,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-2-2',
         title: '2. Totalitarismos europeos',
-        introduccion: 'La desesperación tras la Primera Guerra Mundial y la ruina económica de 1929 crearon un caldo de cultivo perfecto para el surgimiento de ideologías radicales en Europa. El Fascismo en Italia (Mussolini) y el Nazismo en Alemania (Hitler) instauraron regímenes totalitarios. A diferencia de las dictaduras tradicionales, los totalitarismos no solo buscaban el poder político, sino el control absoluto de la mente, la cultura y la vida íntima de las personas. Prometieron devolver la gloria a sus naciones a cambio de la sumisión incondicional del individuo al Estado.',
+        introduccion: 'La desesperación tras la Primera Guerra Mundial y la ruina económica de 1929 crearon un caldo de cultivo perfecto para el surgimiento de ideologías radicales en Europa.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `La desesperación tras la Primera Guerra Mundial y la ruina económica de 1929 crearon un caldo de cultivo perfecto para el surgimiento de ideologías radicales en Europa. El Fascismo en Italia (Mussolini) y el Nazismo en Alemania (Hitler) instauraron regímenes totalitarios. A diferencia de las dictaduras tradicionales, los totalitarismos no solo buscaban el poder político, sino el control absoluto de la mente, la cultura y la vida íntima de las personas. Prometieron devolver la gloria a sus naciones a cambio de la sumisión incondicional del individuo al Estado.`,
         datos_claves: [
           '**Definición de Totalitarismo:** Régimen político donde el Estado tiene el control absoluto y totalitario de todas las esferas de la vida pública y privada. El individuo no existe, solo la Nación o el Estado.',
           '**Características Principales:** Existencia de un partido único y líder indiscutido, uso del terror de Estado policial (Gestapo), adoctrinamiento masivo desde la juventud (Juventudes Hitlerianas) y control de la propaganda.',
@@ -232,7 +246,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-2-3',
         title: '3. El nuevo orden: La Guerra Fría',
-        introduccion: 'Con la derrota del Eje (Alemania, Japón, Italia) en 1945, las dos superpotencias ganadoras, Estados Unidos y la Unión Soviética, se repartieron el mundo en zonas de influencia. Así comenzó la "Guerra Fría", un conflicto global ideológico, geopolítico y económico de casi medio siglo. Se llamó "fría" porque, gracias al desarrollo de armas nucleares, ambas potencias sabían que un enfrentamiento directo significaba la Destrucción Mutua Asegurada (MAD, por sus siglas en inglés). En lugar de pelear cara a cara, compitieron en la carrera espacial, la propaganda y auspiciando guerras en países periféricos.',
+        introduccion: 'Con la derrota del Eje (Alemania, Japón, Italia) en 1945, las dos superpotencias ganadoras, Estados Unidos y la Unión Soviética, se repartieron el mundo en zonas de influencia.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Con la derrota del Eje (Alemania, Japón, Italia) en 1945, las dos superpotencias ganadoras, Estados Unidos y la Unión Soviética, se repartieron el mundo en zonas de influencia. Así comenzó la "Guerra Fría", un conflicto global ideológico, geopolítico y económico de casi medio siglo. Se llamó "fría" porque, gracias al desarrollo de armas nucleares, ambas potencias sabían que un enfrentamiento directo significaba la Destrucción Mutua Asegurada (MAD, por sus siglas en inglés). En lugar de pelear cara a cara, compitieron en la carrera espacial, la propaganda y auspiciando guerras en países periféricos.`,
         datos_claves: [
           '**El Mundo Bipolar:** La Tierra se dividió en dos bloques: Occidente (Capitalista, Democrático, liderado por EE.UU.) y Oriente (Comunista, Autoritario, liderado por la URSS).',
           '**Alianzas Militares:** EE.UU. creó la OTAN (Organización del Tratado del Atlántico Norte) para defensa mutua, mientras la URSS respondió creando el Pacto de Varsovia con sus países satélites de Europa del Este.',
@@ -313,7 +329,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-3-1',
         title: '1. Chile a mediados del siglo XX',
-        introduccion: 'Hacia los años 60, el modelo económico desarrollista chileno (ISI) mostraba claros signos de agotamiento, generando inflación y estancamiento. Para superar el subdesarrollo, surgieron tres proyectos políticos excluyentes (Derecha, Centro DC e Izquierda UP) que proponían soluciones radicales, como la Reforma Agraria para modernizar el campo o la Chilenización/Nacionalización del cobre. La elección del socialista Salvador Allende en 1970 ("La Vía Chilena al Socialismo") polarizó al extremo a una sociedad ya cruzada por la tensión de la Guerra Fría. La severa crisis económica (desabastecimiento, boicot estadounidense) y la violencia callejera pavimentaron el camino hacia el colapso institucional.',
+        introduccion: 'Hacia los años 60, el modelo económico desarrollista chileno (ISI) mostraba claros signos de agotamiento, generando inflación y estancamiento.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Hacia los años 60, el modelo económico desarrollista chileno (ISI) mostraba claros signos de agotamiento, generando inflación y estancamiento. Para superar el subdesarrollo, surgieron tres proyectos políticos excluyentes (Derecha, Centro DC e Izquierda UP) que proponían soluciones radicales, como la Reforma Agraria para modernizar el campo o la Chilenización/Nacionalización del cobre. La elección del socialista Salvador Allende en 1970 ("La Vía Chilena al Socialismo") polarizó al extremo a una sociedad ya cruzada por la tensión de la Guerra Fría. La severa crisis económica (desabastecimiento, boicot estadounidense) y la violencia callejera pavimentaron el camino hacia el colapso institucional.`,
         datos_claves: [
           '**Reforma Agraria:** Proceso clave iniciado por Alessandri ("reforma de macetero"), profundizado por Frei Montalva y radicalizado por Allende. Su fin era eliminar los enormes latifundios ineficientes y entregar "la tierra al que la trabaja".',
           '**Nacionalización del Cobre:** Culminación del proceso iniciado por Frei. En 1971, bajo el gobierno de Allende, el Congreso aprobó por unanimidad expropiar la gran minería del cobre, hasta entonces en manos de EE.UU.',
@@ -342,7 +360,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-3-2',
         title: '2. El Quiebre de 1973',
-        introduccion: 'El 11 de septiembre de 1973, las Fuerzas Armadas y Carabineros ejecutaron un violento Golpe de Estado, derrocando al gobierno democrático de Salvador Allende, quien falleció en el Palacio de La Moneda. Este hecho marcó la destrucción inmediata del Estado de Derecho republicano. La Junta Militar clausuró el Congreso Nacional, censuró la prensa, disolvió el Tribunal Constitucional y proscribió los partidos políticos, concentrando todos los poderes del Estado. Así, se inició una dictadura liderada por Augusto Pinochet que duraría casi dos décadas.',
+        introduccion: 'El 11 de septiembre de 1973, las Fuerzas Armadas y Carabineros ejecutaron un violento Golpe de Estado, derrocando al gobierno democrático de Salvador Allende, quien falleció en el Palacio de La Moneda.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `El 11 de septiembre de 1973, las Fuerzas Armadas y Carabineros ejecutaron un violento Golpe de Estado, derrocando al gobierno democrático de Salvador Allende, quien falleció en el Palacio de La Moneda. Este hecho marcó la destrucción inmediata del Estado de Derecho republicano. La Junta Militar clausuró el Congreso Nacional, censuró la prensa, disolvió el Tribunal Constitucional y proscribió los partidos políticos, concentrando todos los poderes del Estado. Así, se inició una dictadura liderada por Augusto Pinochet que duraría casi dos décadas.`,
         datos_claves: [
           '**Fin de la República Liberal:** El Golpe no fue un simple cambio de mando, fue el desmantelamiento de todas las instituciones democráticas que Chile construyó desde la Constitución de 1925.',
           '**Concentración del Poder:** La Junta de Gobierno asumió el Poder Ejecutivo y el Poder Legislativo simultáneamente, gobernando mediante "Bandos Militares" y "Decretos Leyes" sin contrapeso legal.',
@@ -371,7 +391,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-3-3',
         title: '3. El modelo neoliberal y la Constitución de 1980',
-        introduccion: 'Tras tomar el poder, la dictadura decidió que no bastaba con eliminar a la izquierda, había que refundar el país ("Las Modernizaciones"). En el plano económico, un grupo de economistas chilenos (los "Chicago Boys") implantó el modelo Neoliberal, reduciendo drásticamente al Estado y entregando los derechos sociales al mercado. En el plano político, el régimen diseñó la Constitución de 1980 para institucionalizar su modelo, creando una "Democracia Protegida" con mecanismos autoritarios para evitar que futuros gobiernos populares pudieran revertir estas profundas transformaciones estructurales.',
+        introduccion: 'Tras tomar el poder, la dictadura decidió que no bastaba con eliminar a la izquierda, había que refundar el país ("Las Modernizaciones").',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Tras tomar el poder, la dictadura decidió que no bastaba con eliminar a la izquierda, había que refundar el país ("Las Modernizaciones"). En el plano económico, un grupo de economistas chilenos (los "Chicago Boys") implantó el modelo Neoliberal, reduciendo drásticamente al Estado y entregando los derechos sociales al mercado. En el plano político, el régimen diseñó la Constitución de 1980 para institucionalizar su modelo, creando una "Democracia Protegida" con mecanismos autoritarios para evitar que futuros gobiernos populares pudieran revertir estas profundas transformaciones estructurales.`,
         datos_claves: [
           '**Neoliberalismo:** Modelo que confía casi exclusivamente en el libre mercado para asignar recursos. Privatizó decenas de empresas públicas estratégicas y redujo los aranceles de importación.',
           '**Estado Subsidiario:** Principio clave de la Constitución del 80. Establece que el Estado solo debe intervenir o proveer servicios en aquellas áreas donde los privados no quieran o no puedan invertir.',
@@ -400,7 +422,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-3-4',
         title: '4. Violaciones a los Derechos Humanos',
-        introduccion: 'Durante los 17 años de régimen militar, la represión a la disidencia no fue un exceso de algunos oficiales, sino una política sistemática planificada y ejecutada desde el propio aparato del Estado. A través de organismos de inteligencia secretos que operaban por sobre la ley, la dictadura secuestró, torturó masivamente, ejecutó y desapareció a miles de opositores políticos (principalmente militantes de izquierda y dirigentes sindicales). Frente a la inacción cómplice de los Tribunales de Justicia, solo las iglesias y organizaciones civiles se levantaron para defender la vida de los perseguidos.',
+        introduccion: 'Durante los 17 años de régimen militar, la represión a la disidencia no fue un exceso de algunos oficiales, sino una política sistemática planificada y ejecutada desde el propio aparato del Estado.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Durante los 17 años de régimen militar, la represión a la disidencia no fue un exceso de algunos oficiales, sino una política sistemática planificada y ejecutada desde el propio aparato del Estado. A través de organismos de inteligencia secretos que operaban por sobre la ley, la dictadura secuestró, torturó masivamente, ejecutó y desapareció a miles de opositores políticos (principalmente militantes de izquierda y dirigentes sindicales). Frente a la inacción cómplice de los Tribunales de Justicia, solo las iglesias y organizaciones civiles se levantaron para defender la vida de los perseguidos.`,
         datos_claves: [
           '**Terrorismo de Estado:** Uso ilegal de la fuerza y los recursos del Estado para imponer terror en la población civil. Incluyó centros clandestinos de detención y tortura (ej. Villa Grimaldi, Estadio Nacional).',
           '**Organismos Represivos:** La DINA (Dirección de Inteligencia Nacional) y su sucesora, la CNI. Tenían poder ilimitado para arrestar e interrogar bajo tortura, sin responder a la justicia ordinaria.',
@@ -429,7 +453,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-3-5',
         title: '5. La Transición a la Democracia',
-        introduccion: 'Tras la severa crisis económica de 1982, estallaron grandes Protestas Nacionales que reorganizaron a la oposición política y civil. Respetando el cronograma trazado por la propia dictadura en la Constitución de 1980, en 1988 se celebró el Plebiscito Nacional donde la opción "NO" (rechazo a la continuidad de Pinochet) obtuvo la victoria. Esto forzó la realización de elecciones presidenciales libres en 1989. Aunque el demócratacristiano Patricio Aylwin asumió el mando en 1990, inició un proceso de "Transición" marcado por la fuerte presencia tutelar de las Fuerzas Armadas y la imposibilidad inicial de cambiar el modelo heredado.',
+        introduccion: 'Tras la severa crisis económica de 1982, estallaron grandes Protestas Nacionales que reorganizaron a la oposición política y civil.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Tras la severa crisis económica de 1982, estallaron grandes Protestas Nacionales que reorganizaron a la oposición política y civil. Respetando el cronograma trazado por la propia dictadura en la Constitución de 1980, en 1988 se celebró el Plebiscito Nacional donde la opción "NO" (rechazo a la continuidad de Pinochet) obtuvo la victoria. Esto forzó la realización de elecciones presidenciales libres en 1989. Aunque el demócratacristiano Patricio Aylwin asumió el mando en 1990, inició un proceso de "Transición" marcado por la fuerte presencia tutelar de las Fuerzas Armadas y la imposibilidad inicial de cambiar el modelo heredado.`,
         datos_claves: [
           '**Crisis de 1982 y Protestas:** La quiebra del modelo neoliberal detonó masivas y violentas protestas sociales, rompiendo el "apagón cultural" y forzando a los partidos políticos a salir de la clandestinidad.',
           '**Plebiscito de 1988:** Consulta nacional donde el "SÍ" significaba 8 años más de Pinochet. La victoria del "NO" (55% a 43%) marcó el triunfo pacífico de la "Concertación de Partidos por el NO" (alianza de centro-izquierda).',
@@ -473,7 +499,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-4-1',
         title: '1. Fundamentos de la Democracia y el Estado',
-        introduccion: 'La democracia moderna no se limita a realizar elecciones periódicas; exige un compromiso profundo con la soberanía popular y el Estado de Derecho. Esto significa que el poder emana del pueblo y que tanto los ciudadanos como las autoridades están sometidos a la Constitución. Además, requiere de pluralismo político, permitiendo la existencia de diversas visiones y partidos, y la separación de los poderes del Estado para evitar la tiranía y asegurar que las libertades fundamentales se respeten sin distinción alguna.',
+        introduccion: 'La democracia moderna no se limita a realizar elecciones periódicas; exige un compromiso profundo con la soberanía popular y el Estado de Derecho.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `La democracia moderna no se limita a realizar elecciones periódicas; exige un compromiso profundo con la soberanía popular y el Estado de Derecho. Esto significa que el poder emana del pueblo y que tanto los ciudadanos como las autoridades están sometidos a la Constitución. Además, requiere de pluralismo político, permitiendo la existencia de diversas visiones y partidos, y la separación de los poderes del Estado para evitar la tiranía y asegurar que las libertades fundamentales se respeten sin distinción alguna.`,
         datos_claves: ['La soberanía reside en la Nación y se delega mediante elecciones.', 'Debe existir pluralismo político (distintos partidos e ideas).', 'La Constitución es la Ley Suprema que rige el país.'],
         order: 1,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/y4uzuo3kfgtgfa3mwu0j.jpg',
 
@@ -493,7 +521,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-4-2',
         title: '2. Ciudadanía Activa',
-        introduccion: 'El concepto tradicional de ciudadanía, centrado exclusivamente en el sufragio, ha evolucionado hacia una "Ciudadanía Activa". Esto implica que el rol del ciudadano moderno incluye participar activamente en el espacio público (juntas de vecinos, ONG, cabildos), pagar impuestos, cumplir con sus obligaciones cívicas y exigir la rendición de cuentas a las autoridades. Una democracia sana depende de una sociedad civil empoderada, que vigile el correcto uso de los recursos públicos y que contribuya al bienestar colectivo de forma permanente y responsable.',
+        introduccion: 'El concepto tradicional de ciudadanía, centrado exclusivamente en el sufragio, ha evolucionado hacia una "Ciudadanía Activa".',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `El concepto tradicional de ciudadanía, centrado exclusivamente en el sufragio, ha evolucionado hacia una "Ciudadanía Activa". Esto implica que el rol del ciudadano moderno incluye participar activamente en el espacio público (juntas de vecinos, ONG, cabildos), pagar impuestos, cumplir con sus obligaciones cívicas y exigir la rendición de cuentas a las autoridades. Una democracia sana depende de una sociedad civil empoderada, que vigile el correcto uso de los recursos públicos y que contribuya al bienestar colectivo de forma permanente y responsable.`,
         datos_claves: ['Ser ciudadano otorga derechos políticos (sufragio, postular a cargos públicos).', 'Implica responsabilidades cívicas (pagar impuestos, respetar la ley).', 'Las ONG, juntas de vecinos y marchas son formas de participación no electoral.'],
         order: 2,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905040/kei7irgbxklaibqbbxvc.jpg',
 
@@ -516,7 +546,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-4-3',
         title: '3. Medios de comunicación y Fake News',
-        introduccion: 'La era digital ha transformado radicalmente nuestro acceso a la información, democratizando la comunicación pero trayendo nuevos peligros. El fenómeno de las "Fake News" y la posverdad amenaza la estabilidad democrática, al propagar mentiras diseñadas para manipular emociones e intervenir en elecciones. Los algoritmos de las redes sociales nos encierran en "cámaras de eco" que refuerzan nuestros prejuicios y polarizan a la sociedad. La defensa principal del ciudadano moderno es la alfabetización mediática, el pensamiento crítico y la verificación rigurosa de fuentes antes de difundir información.',
+        introduccion: 'La era digital ha transformado radicalmente nuestro acceso a la información, democratizando la comunicación pero trayendo nuevos peligros.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `La era digital ha transformado radicalmente nuestro acceso a la información, democratizando la comunicación pero trayendo nuevos peligros. El fenómeno de las "Fake News" y la posverdad amenaza la estabilidad democrática, al propagar mentiras diseñadas para manipular emociones e intervenir en elecciones. Los algoritmos de las redes sociales nos encierran en "cámaras de eco" que refuerzan nuestros prejuicios y polarizan a la sociedad. La defensa principal del ciudadano moderno es la alfabetización mediática, el pensamiento crítico y la verificación rigurosa de fuentes antes de difundir información.`,
         datos_claves: ['La libertad de expresión es vital, pero se ve amenazada por la desinformación.', 'Las "Fake news" buscan polarizar, generar miedo y manipular procesos electorales.', 'La educación cívica digital es la mejor defensa frente a la posverdad.'],
         order: 3,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905040/elottrpyhfyxth84bsw8.jpg',
 
@@ -539,7 +571,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-4-4',
         title: '4. El Sistema Judicial Chileno',
-        introduccion: 'Para garantizar la igualdad y el debido proceso, el sistema judicial chileno experimentó una profunda modernización a través de la Reforma Procesal Penal (iniciada el año 2000). Se pasó de un sistema inquisitivo y secreto a uno acusatorio, oral y transparente. Hoy, el Ministerio Público (fiscales) investiga los delitos, la Defensoría Penal Pública asegura una defensa gratuita a los imputados, y el Juez de Garantía o Tribunal Oral dicta sentencia basándose en evidencia. Este modelo protege el principio irrenunciable de la presunción de inocencia.',
+        introduccion: 'Para garantizar la igualdad y el debido proceso, el sistema judicial chileno experimentó una profunda modernización a través de la Reforma Procesal Penal (iniciada el año 2000).',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `Para garantizar la igualdad y el debido proceso, el sistema judicial chileno experimentó una profunda modernización a través de la Reforma Procesal Penal (iniciada el año 2000). Se pasó de un sistema inquisitivo y secreto a uno acusatorio, oral y transparente. Hoy, el Ministerio Público (fiscales) investiga los delitos, la Defensoría Penal Pública asegura una defensa gratuita a los imputados, y el Juez de Garantía o Tribunal Oral dicta sentencia basándose en evidencia. Este modelo protege el principio irrenunciable de la presunción de inocencia.`,
         datos_claves: ['Antes de 2000, el juez investigaba y dictaba sentencia en secreto.', 'La Reforma Procesal Penal creó un sistema oral y público.', 'El Ministerio Público investiga, la Defensoría defiende, y el Tribunal juzga.'],
         order: 4,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905045/ardr8kvu2sis5j2v4kqo.jpg',
 
@@ -577,7 +611,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-5-1',
         title: '1. Funcionamiento del Mercado',
-        introduccion: 'El problema económico fundamental radica en que las necesidades humanas son infinitas, pero los recursos para satisfacerlas son escasos. En una economía de libre mercado, los precios no los fija el gobierno, sino que nacen de la interacción constante entre la Oferta (quienes venden) y la Demanda (quienes compran). Sin embargo, cuando este mecanismo falla o es corrompido, surgen graves problemas sociales, como los monopolios o la colusión de empresas para subir precios artificialmente, lo que vulnera el bienestar de los consumidores y requiere una regulación efectiva.',
+        introduccion: 'El problema económico fundamental radica en que las necesidades humanas son infinitas, pero los recursos para satisfacerlas son escasos.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `El problema económico fundamental radica en que las necesidades humanas son infinitas, pero los recursos para satisfacerlas son escasos. En una economía de libre mercado, los precios no los fija el gobierno, sino que nacen de la interacción constante entre la Oferta (quienes venden) y la Demanda (quienes compran). Sin embargo, cuando este mecanismo falla o es corrompido, surgen graves problemas sociales, como los monopolios o la colusión de empresas para subir precios artificialmente, lo que vulnera el bienestar de los consumidores y requiere una regulación efectiva.`,
         datos_claves: ['La Economía estudia cómo satisfacer necesidades ilimitadas con recursos escasos.', 'La Oferta y la Demanda fijan los precios en un libre mercado.', 'Existen fallas de mercado, como los monopolios y las colusiones.'],
         order: 1,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/ahfrpvle3kr0rwtekpkw.webp',
 
@@ -600,7 +636,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-5-2',
         title: '2. El Rol del Estado y los Impuestos',
-        introduccion: 'El Estado necesita recursos para proveer bienes públicos como salud y educación, los cuales obtiene principalmente a través de impuestos como el IVA y el Impuesto a la Renta. En el modelo chileno instaurado en la Constitución de 1980, el Estado asume un rol "subsidiario", lo que significa que delega la mayor parte de la actividad económica y la provisión de servicios básicos (salud, educación, pensiones) al sector privado, interviniendo únicamente cuando este último no tiene interés o capacidad de participar.',
+        introduccion: 'El Estado necesita recursos para proveer bienes públicos como salud y educación, los cuales obtiene principalmente a través de impuestos como el IVA y el Impuesto a la Renta.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `El Estado necesita recursos para proveer bienes públicos como salud y educación, los cuales obtiene principalmente a través de impuestos como el IVA y el Impuesto a la Renta. En el modelo chileno instaurado en la Constitución de 1980, el Estado asume un rol "subsidiario", lo que significa que delega la mayor parte de la actividad económica y la provisión de servicios básicos (salud, educación, pensiones) al sector privado, interviniendo únicamente cuando este último no tiene interés o capacidad de participar.`,
         datos_claves: ['En Chile, el Estado tiene un "rol subsidiario".', 'El Estado recauda fondos a través de impuestos (IVA, impuesto a la renta).', 'El IVA es un impuesto regresivo que pagamos todos por igual al consumir.'],
         order: 2,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/e2y8gqkm53jjo0fql4ko.jpg',
 
@@ -623,7 +661,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-5-3',
         title: '3. Desarrollo Sustentable',
-        introduccion: 'El modelo económico chileno es de carácter primario-exportador (o extractivista), basado fuertemente en la explotación y exportación de materias primas con bajo valor agregado (cobre, litio, forestal, salmonicultura). Este enfoque ha generado dependencia internacional y profundos daños ambientales, como el agotamiento del agua y la creación de "zonas de sacrificio". Ante esto, surge la urgencia del Desarrollo Sustentable, buscando un equilibrio indispensable entre el crecimiento económico, la equidad social y el cuidado ecológico para no comprometer a las futuras generaciones.',
+        introduccion: 'El modelo económico chileno es de carácter primario-exportador (o extractivista), basado fuertemente en la explotación y exportación de materias primas con bajo valor agregado (cobre, litio, forestal, salmonicultura).',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `El modelo económico chileno es de carácter primario-exportador (o extractivista), basado fuertemente en la explotación y exportación de materias primas con bajo valor agregado (cobre, litio, forestal, salmonicultura). Este enfoque ha generado dependencia internacional y profundos daños ambientales, como el agotamiento del agua y la creación de "zonas de sacrificio". Ante esto, surge la urgencia del Desarrollo Sustentable, buscando un equilibrio indispensable entre el crecimiento económico, la equidad social y el cuidado ecológico para no comprometer a las futuras generaciones.`,
         datos_claves: ['El modelo primario exportador agota los recursos naturales.', 'Desarrollo Sustentable: satisfacer necesidades actuales sin dañar a futuras generaciones.', 'Desafíos chilenos: sequía, zonas de sacrificio, dependencia del cobre.'],
         order: 3,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905042/lflmpcg6lybq7elbnvas.png',
 
@@ -646,7 +686,9 @@ const CAPITULOS = [
       {
         id: 'sec-hist-5-4',
         title: '4. Derechos Laborales y Sindicatos',
-        introduccion: 'En el mercado laboral existe una asimetría de poder natural entre el empleador y el trabajador, por lo que el Estado establece leyes protectoras contenidas en el Código del Trabajo. Para equilibrar esta relación, los trabajadores tienen derechos fundamentales como la sindicalización, la negociación colectiva y la huelga, herramientas esenciales para lograr mejoras salariales y de condiciones laborales. En Chile, la Dirección del Trabajo es la entidad encargada de velar por el cumplimiento de estas normas y fiscalizar que no ocurran abusos.',
+        introduccion: 'En el mercado laboral existe una asimetría de poder natural entre el empleador y el trabajador, por lo que el Estado establece leyes protectoras contenidas en el Código del Trabajo.',
+        guia_titulo: '📖 Teoría y Contexto Histórico',
+        guia_contenido: `En el mercado laboral existe una asimetría de poder natural entre el empleador y el trabajador, por lo que el Estado establece leyes protectoras contenidas en el Código del Trabajo. Para equilibrar esta relación, los trabajadores tienen derechos fundamentales como la sindicalización, la negociación colectiva y la huelga, herramientas esenciales para lograr mejoras salariales y de condiciones laborales. En Chile, la Dirección del Trabajo es la entidad encargada de velar por el cumplimiento de estas normas y fiscalizar que no ocurran abusos.`,
         datos_claves: ['El Código del Trabajo protege al trabajador, pues hay asimetría de poder frente al jefe.', 'La huelga y la negociación colectiva son derechos fundamentales.', 'La Inspección del Trabajo fiscaliza que no haya abusos.'],
         order: 4,        imageUrl: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/je4etlc1wgnxeuzdewjp.jpg',
 

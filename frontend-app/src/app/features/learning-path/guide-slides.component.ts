@@ -114,6 +114,22 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     :host ::ng-deep .slide-image-wrap { float: right; width: 300px; margin: 0.5rem 0 1.5rem 2rem; text-align: center; }
     :host ::ng-deep .slide-image { max-width: 100%; border-radius: 16px; border: 3px solid rgba(133,92,214,0.15); box-shadow: 0 10px 25px rgba(0,0,0,0.08); animation: floatingImage 4s ease-in-out infinite; }
 
+    /* PREMIUM DYNAMIC SLIDES */
+    :host ::ng-deep .slide-content-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1.5rem; }
+    @media (min-width: 576px) {
+      :host ::ng-deep .slide-content-grid { grid-template-columns: 1fr 1fr; align-items: center; }
+    }
+    :host ::ng-deep .theory-intro { font-size: 1.15rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 1.5rem; }
+    
+    :host ::ng-deep .tips-box-premium { background: linear-gradient(135deg, rgba(28, 176, 246, 0.05), rgba(28, 176, 246, 0.15)); border-radius: 16px; padding: 1.5rem; border-left: 4px solid #1cb0f6; box-shadow: 0 4px 15px rgba(28, 176, 246, 0.05); }
+    :host ::ng-deep .tips-box-premium h3 { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: #158bc2; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    :host ::ng-deep .tips-list-premium { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    :host ::ng-deep .tips-list-premium li { position: relative; padding-left: 1.5rem; font-size: 0.95rem; color: var(--text-primary); line-height: 1.5; font-weight: 600; }
+    :host ::ng-deep .tips-list-premium li::before { content: '→'; position: absolute; left: 0; top: 0; color: #1cb0f6; font-size: 1.1rem; font-weight: 900; line-height: 1.4; }
+
+    :host ::ng-deep .slide-image-wrap-large { display: flex; justify-content: center; align-items: center; margin-top: 2rem; }
+    :host ::ng-deep .slide-image-premium { width: 100%; max-width: 600px; border-radius: 20px; border: 4px solid rgba(255,255,255,0.8); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+
     /* BIG RULE */
     :host ::ng-deep .big-rule { background:rgba(255,200,0,0.08); border:2px solid rgba(255,200,0,0.2); border-radius:16px; padding:1.25rem; margin:0.5rem 0; text-align:center; }
     :host ::ng-deep .big-rule p { font-size:1.05rem; line-height:1.6; margin:0; }
@@ -141,6 +157,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     .slide.stagger :host ::ng-deep .anim-arrow:nth-child(3) { animation-delay:0.6s; }
     .slide.stagger :host ::ng-deep .anim-arrow:nth-child(4) { animation-delay:0.75s; }
     @keyframes arrowSlide { from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)} }
+    @keyframes floatingImage { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(1.5deg)} }
     :host ::ng-deep .arrow-from { background:rgba(239,68,68,0.1); color:#dc2626; padding:0.2rem 0.5rem; border-radius:6px; font-weight:700; text-decoration:line-through; text-decoration-color:rgba(239,68,68,0.4); font-size:0.85rem; }
     :host ::ng-deep .arrow-icon { font-size:1rem; color:var(--accent-primary); font-weight:900; }
     :host ::ng-deep .arrow-to { background:rgba(88,204,2,0.1); color:#16a34a; padding:0.2rem 0.5rem; border-radius:6px; font-weight:700; font-size:0.85rem; }
