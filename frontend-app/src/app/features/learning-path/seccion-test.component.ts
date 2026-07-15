@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
@@ -108,16 +108,15 @@ import { ToastService } from '../../core/services/toast.service';
 
       <!-- BOTTOM BAR -->
       <div class="bottom-bar">
-        <button class="btn-secondary" (click)="prevQuestion()" [disabled]="currentIndex() === 0 || showFeedback()">
-          ← Anterior
-        </button>
+        <div style="visibility: hidden; pointer-events: none;">
+          <button class="btn-secondary">← Anterior</button>
+        </div>
 
         <div class="dot-indicators">
           <span *ngFor="let p of t.preguntas; let i = index"
             class="dot"
             [class.answered]="answers().has(p.id)"
-            [class.current]="i === currentIndex()"
-            (click)="!showFeedback() && goToQuestion(i)"></span>
+            [class.current]="i === currentIndex()"></span>
         </div>
 
         <ng-container *ngIf="!showFeedback()">
@@ -279,6 +278,7 @@ import { ToastService } from '../../core/services/toast.service';
   `]
 })
 export class SeccionTestComponent implements OnInit, OnDestroy {
+  private platformId = inject(PLATFORM_ID);
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -320,10 +320,58 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return t > 0 ? Math.round(((this.currentIndex() + (this.showFeedback() ? 1 : 0)) / t) * 100) : 0;
   });
 
+  private getStorageKey(): string {
+    return `paes_test_state_${this.seccionId()}`;
+  }
+
+  private saveState() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const state = {
+      answers: Array.from(this.answers().entries()),
+      currentIndex: this.currentIndex(),
+      showFeedback: this.showFeedback(),
+      timer: this.timer()
+    };
+    sessionStorage.setItem(this.getStorageKey(), JSON.stringify(state));
+  }
+
+  private loadState() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const saved = sessionStorage.getItem(this.getStorageKey());
+    if (saved) {
+      try {
+        const state = JSON.parse(saved);
+        if (state.answers) {
+          this.answers.set(new Map(state.answers));
+        }
+        if (typeof state.currentIndex === 'number') {
+          this.currentIndex.set(state.currentIndex);
+        }
+        if (typeof state.showFeedback === 'boolean') {
+          this.showFeedback.set(state.showFeedback);
+        }
+        if (typeof state.timer === 'number') {
+          this.timer.set(state.timer);
+        }
+      } catch (e) {
+        console.warn('Error loading test state', e);
+      }
+    }
+  }
+
   ngOnInit() {
     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
-    this.timer.set(0);
-    this.intervalId = setInterval(() => this.timer.update(v => v + 1), 1000);
+    this.loadState();
+    if (this.timer() === 0) {
+      this.timer.set(0);
+    }
+    this.intervalId = setInterval(() => {
+      this.timer.update(v => v + 1);
+      // Guardar el estado cada 5 segundos para que el timer persista bien
+      if (this.timer() % 5 === 0) {
+        this.saveState();
+      }
+    }, 1000);
   }
 
   ngOnDestroy() {
@@ -467,6 +515,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const newMap = new Map(this.answers());
     newMap.set(preguntaId, option);
     this.answers.set(newMap);
+    this.saveState();
   }
 
   hasCurrentAnswer(): boolean {
@@ -488,21 +537,13 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       this.toastSvc.error('Respuesta incorrecta');
     }
     this.showFeedback.set(true);
+    this.saveState();
   }
 
   nextQuestion() {
     this.showFeedback.set(false);
     this.currentIndex.update(v => v + 1);
-  }
-
-  prevQuestion() {
-    this.showFeedback.set(false);
-    this.currentIndex.update(v => Math.max(0, v - 1));
-  }
-
-  goToQuestion(index: number) {
-    this.showFeedback.set(false);
-    this.currentIndex.set(index);
+    this.saveState();
   }
 
   isLastQuestion(): boolean {
@@ -511,6 +552,9 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   submitTest() {
     if (this.intervalId) clearInterval(this.intervalId);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.removeItem(this.getStorageKey());
+    }
     this.paes.submitTest(this.seccionId(), this.answers());
     this.router.navigate(['/test', this.seccionId(), 'review']);
   }

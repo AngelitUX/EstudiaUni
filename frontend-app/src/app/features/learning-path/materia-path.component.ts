@@ -173,7 +173,7 @@ type PathItem =
                       <div class="tooltip-arrow"></div>
                     </div>
                     <button class="splash-guide-btn" [class.locked]="item.isLocked" (click)="!item.isLocked && goToGuide(item.capituloId)" style="flex: 1;">
-                      <span class="sgb-icon">📖</span> Estudiar la Guía
+                      <span class="sgb-icon">📖</span> Resumen del Capítulo
                     </button>
                     <button *ngIf="adminService.isAdmin()"
                       class="admin-guide-toggle-btn"
@@ -210,10 +210,10 @@ type PathItem =
 
             <!-- SECTION NODE ROW -->
             <div *ngIf="item.type === 'node-row'" class="node-row" 
-                 [style.margin-bottom]="materiaId() === 'historia' ? '7.5rem' : '6.5rem'">
+                 [style.margin-bottom]="'7.5rem'">
               
               <!-- SVG CAMINITO CONECTOR (SOLO HISTORIA) -->
-              <svg class="path-svg" *ngIf="materiaId() === 'historia' && !isLastPathItem(item)" 
+              <svg class="path-svg" *ngIf="!isLastPathItem(item)" 
                    [style.height]="isNextChapter(i) ? '156px' : 'calc(72px + 7.5rem)'">
                 <path *ngFor="let conn of getConnections(i)"
                       [attr.d]="conn.d"
@@ -267,8 +267,8 @@ type PathItem =
                       <div class="node-title" 
                         [class.text-completed]="node.status === 'completed'"
                         [class.text-active]="node.status === 'active'"
-                        [class.historia-title]="materiaId() === 'historia'"
-                        [style.bottom]="(materiaId() === 'historia' && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
+                        [class.historia-title]="true"
+                        [style.bottom]="(node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
                         {{ node.title }}
                       </div>
                     </div>
@@ -738,7 +738,7 @@ export class MateriaPathComponent {
     const item = items[index];
     if (item.type !== 'node-row') return [];
     
-    const height = this.materiaId() === 'historia' ? 192 : 176;
+    const height = 192;
 
     const nextItem = items[index + 1];
     if (!nextItem) return [];
