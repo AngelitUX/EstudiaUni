@@ -63,6 +63,18 @@ export const routes: Routes = [
     canActivate: [authGuard, emailVerifiedGuard]
   },
   {
+    path: 'ruta/mat1',
+    data: { materiaId: 'mat1' },
+    loadComponent: () => import('./features/learning-path/materia-math-path.component').then(m => m.MateriaMathPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/mat2',
+    data: { materiaId: 'mat2' },
+    loadComponent: () => import('./features/learning-path/materia-math-path.component').then(m => m.MateriaMathPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
     path: 'ruta/:materiaId',
     loadComponent: () => import('./features/learning-path/materia-path.component').then(m => m.MateriaPathComponent),
     canActivate: [authGuard, emailVerifiedGuard]
