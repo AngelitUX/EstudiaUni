@@ -9,7 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
-type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[] };
+type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean };
 
 type PathItem = {
   type: 'chapter' | 'node-row';
@@ -183,7 +183,7 @@ type PathItem = {
 
                   <!-- Guide CTA -->
                   <div class="guide-btn-wrapper" style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
-                    <div class="guide-tooltip" *ngIf="item.isCurrentChapter && !isGuideCompleted(item.capituloId)">
+                    <div class="guide-tooltip" *ngIf="item.isCurrentChapter && !isGuideCompleted(item.capituloId) && getChapterProgress(item.capituloId).completed === 0">
                       EMPEZAR
                       <div class="tooltip-arrow"></div>
                     </div>
@@ -275,29 +275,35 @@ type PathItem = {
                         [class.node-locked]="node.status === 'locked'"
                         (click)="handleNodeClick(node)">
                         <div class="node-inner">
-                          <ng-container *ngIf="node.isBoss">
-                            <svg class="node-icon icon-boss" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2C7.03 2 3 6.03 3 11V14.5C3 15.33 3.67 16 4.5 16H6V20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20V16H19.5C20.33 16 21 15.33 21 14.5V11C21 6.03 16.97 2 12 2ZM8 10C6.9 10 6 9.1 6 8C6 6.9 6.9 6 8 6C9.1 6 10 6.9 10 8C10 9.1 9.1 10 8 10ZM16 10C14.9 10 14 9.1 14 8C14 6.9 14.9 6 16 6C17.1 6 18 6.9 18 8C18 9.1 17.1 10 16 10ZM15 19H9V16H15V19Z" />
-                            </svg>
-                          </ng-container>
-                          <ng-container *ngIf="!node.isBoss && isPracticeNode(node)">
-                            <svg class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
-                            </svg>
-                          </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !isPracticeNode(node)">
-                            <svg class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                          </ng-container>
+                          <!-- CROWN SVG -->
+                          <svg *ngIf="node.isCrown && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-crown" viewBox="0 0 24 24" fill="currentColor" style="color: #ffd700; filter: drop-shadow(0 0 4px rgba(255,215,0,0.5));">
+                            <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.55 18.55 20 18 20H6C5.45 20 5 19.55 5 19V18H19V19Z"/>
+                          </svg>
+                          <!-- BOSS SVG -->
+                          <svg *ngIf="!node.isCrown && node.isBoss && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-boss" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C7.03 2 3 6.03 3 11V14.5C3 15.33 3.67 16 4.5 16H6V20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20V16H19.5C20.33 16 21 15.33 21 14.5V11C21 6.03 16.97 2 12 2ZM8 10C6.9 10 6 9.1 6 8C6 6.9 6.9 6 8 6C9.1 6 10 6.9 10 8C10 9.1 9.1 10 8 10ZM16 10C14.9 10 14 9.1 14 8C14 6.9 14.9 6 16 6C17.1 6 18 6.9 18 8C18 9.1 17.1 10 16 10ZM15 19H9V16H15V19Z" />
+                          </svg>
+                          <!-- PRACTICE SVG -->
+                          <svg *ngIf="!node.isCrown && !node.isBoss && isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
+                          </svg>
+                          <!-- STAR SVG -->
+                          <svg *ngIf="!node.isCrown && !node.isBoss && !isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          <!-- LOCK SVG -->
+                          <svg *ngIf="node.status === 'locked'" class="node-icon icon-lock" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                          </svg>
                         </div>
                       </button>
                       <div class="node-title" 
                         [class.text-completed]="node.status === 'completed'"
                         [class.text-active]="node.status === 'active'"
                         [class.historia-title]="hasTreeLayout()"
-                        [class.title-boss]="node.isBoss"
-                        [class.title-practice]="!node.isBoss && isPracticeNode(node)"
+                        [class.title-boss]="node.isBoss && !node.isCrown"
+                        [class.title-crown]="node.isCrown"
+                        [class.title-practice]="!node.isBoss && !node.isCrown && isPracticeNode(node)"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
                         {{ node.title }}
                       </div>
@@ -839,11 +845,8 @@ type PathItem = {
       font-size: 0.95rem; 
       font-weight: 800; 
       color: var(--text-secondary); 
-      white-space: normal;
+      white-space: nowrap;
       text-align: center;
-      width: 150px;
-      max-width: 150px;
-      line-height: 1.2;
       pointer-events: none; 
       transition: all 0.2s; 
       text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); 
@@ -870,6 +873,9 @@ type PathItem = {
     
     .node-title.title-boss { color: #ef4444; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
     .node-title.title-boss.text-completed { color: #ef4444; border: 2.5px solid #ef4444 !important; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
+    
+    .node-title.title-crown { color: #d97706; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); font-weight: 900; }
+    .node-title.title-crown.text-completed { color: #d97706; border: 2.5px solid #d97706 !important; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); }
     
     .node-title.title-practice { color: #0284c7; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
     .node-title.title-practice.text-completed { color: #0284c7; border: 2px solid #0284c7 !important; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15); }
@@ -2237,8 +2243,16 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     return arr[rowIndex % arr.length];
   }
 
+
+
   getNodeTransform(item: any, nodeIndex: number): string {
-    if (item.nodes!.length === 1) return 'none';
+    if (item.nodes!.length === 1) {
+      if (this.hasTreeLayout()) {
+        return 'none';
+      } else {
+        return `translateX(${this.getOffset(item.nodes[0].nodeIndex)}px)`;
+      }
+    }
     const zig = this.getAccordionZigzag(item.rowIndex!);
     if (item.nodes!.length === 3) {
       if (nodeIndex === 0) return `translateX(${zig}px)`;
@@ -2369,7 +2383,6 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
   pathItems = computed(() => {
     const items: PathItem[] = [];
-    let nodeIndex = 0;
 
     let activeChapterId = '';
     let foundActivePre = false;
@@ -2389,6 +2402,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     let rowIndex = 0;
 
     this.capitulos().forEach((cap, capIndex) => {
+      let nodeIndex = 0;
       const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
       const chapterIsLocked = !unlockAll && foundActive;
 
@@ -2413,16 +2427,18 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
       let autoLevel = 1000;
       let currentGroup: any[] = [];
 
-      const sortedSecciones = [...cap.secciones].sort((a, b) => {
-        const lA = a.level !== undefined ? a.level : 1000;
-        const lB = b.level !== undefined ? b.level : 1000;
-        if (lA !== lB) return lA - lB;
+      const sortedSecciones = this.hasTreeLayout()
+        ? [...cap.secciones].sort((a, b) => {
+            const lA = a.level !== undefined ? a.level : 1000;
+            const lB = b.level !== undefined ? b.level : 1000;
+            if (lA !== lB) return lA - lB;
 
-        // If same level, sort by subcapitulo to maintain consistent columns
-        const subA = (a as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
-        const subB = (b as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
-        return subA.localeCompare(subB);
-      });
+            // If same level, sort by subcapitulo to maintain consistent columns
+            const subA = (a as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
+            const subB = (b as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
+            return subA.localeCompare(subB);
+          })
+        : [...cap.secciones].sort((a, b) => (a.order || 0) - (b.order || 0));
 
       sortedSecciones.forEach((sec) => {
         const lvl = sec.level !== undefined ? sec.level : (autoLevel++);
@@ -2466,9 +2482,10 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
             capituloId: cap.id,
             title: sec.title,
             status,
-            nodeIndex: 0,
+            nodeIndex: nodeIndex++,
             tags: sec.tags,
-            isBoss: sec.id === lastSectionId
+            isBoss: this.materiaId() === 'mat2' ? false : sec.id === lastSectionId,
+            isCrown: (sec as any).isCrown || false
           } as any;
         });
 

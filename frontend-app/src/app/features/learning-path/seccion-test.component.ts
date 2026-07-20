@@ -12,7 +12,17 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="test-page" *ngIf="test() as t">
+    <div class="test-page" *ngIf="test() as t" [ngClass]="'level-' + questionLevel().num">
+      <!-- Watermark Math Ornaments -->
+      <div class="math-bg-ornaments">
+        <div class="math-sym sym-1">∑ xᵢ</div>
+        <div class="math-sym sym-2">π ≈ 3.14</div>
+        <div class="math-sym sym-3">√a² + b²</div>
+        <div class="math-sym sym-4">f(x) = mx + c</div>
+        <div class="math-sym sym-5">x ∈ ℤ</div>
+        <div class="math-sym sym-6">100%</div>
+      </div>
+
       <!-- TOP BAR -->
       <div class="top-bar">
         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
@@ -40,8 +50,9 @@ import { ToastService } from '../../core/services/toast.service';
 
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
-        <div class="question-counter">
-          Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}
+        <div class="question-counter" style="display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; position: relative; z-index: 10;">
+          <span>Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}</span>
+          <span class="level-badge" [ngClass]="questionLevel().class">{{ questionLevel().label }}</span>
         </div>
 
         <div class="question-card" *ngIf="currentQuestion() as q">
@@ -81,12 +92,12 @@ import { ToastService } from '../../core/services/toast.service';
           <div class="options-grid">
             <button *ngFor="let key of optionKeys"
               class="option-btn"
-              [class.selected]="answers().get(q.id) === key"
+              [class.selected]="answers().get(q.id) === key && !showFeedback()"
               [class.correct]="showFeedback() && key === q.respuesta_correcta"
               [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
               [disabled]="showFeedback()"
               (click)="selectAnswer(q.id, key)">
-              <span class="opt-letter" [class.sel]="answers().get(q.id) === key">{{ key }}</span>
+              <span class="opt-letter" [class.sel]="answers().get(q.id) === key && !showFeedback()">{{ key }}</span>
               <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(q.alternativas[key])"></span>
               <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
                 alt="Opción {{ key }}" class="opt-img" />
@@ -100,7 +111,16 @@ import { ToastService } from '../../core/services/toast.service';
             <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
             <div class="feedback-body">
               <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
-              <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
+              <div *ngIf="isCurrentCorrect()">
+                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
+              </div>
+              <div *ngIf="!isCurrentCorrect()">
+                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_error)"></p>
+                <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
+                  <strong style="color: #166534; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</strong>
+                  <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -108,15 +128,19 @@ import { ToastService } from '../../core/services/toast.service';
 
       <!-- BOTTOM BAR -->
       <div class="bottom-bar">
-        <div style="visibility: hidden; pointer-events: none;">
-          <button class="btn-secondary">← Anterior</button>
+        <div>
+          <button class="btn-secondary" [disabled]="showFeedback() || currentIndex() === 0" (click)="prevQuestion()">
+            ← Anterior
+          </button>
         </div>
 
         <div class="dot-indicators">
           <span *ngFor="let p of t.preguntas; let i = index"
             class="dot"
             [class.answered]="answers().has(p.id)"
-            [class.current]="i === currentIndex()"></span>
+            [class.current]="i === currentIndex()"
+            [ngClass]="getDotLevelClass(p)"
+            (click)="!showFeedback() && goToQuestion(i)"></span>
         </div>
 
         <ng-container *ngIf="!showFeedback()">
@@ -149,7 +173,46 @@ import { ToastService } from '../../core/services/toast.service';
   `,
   styles: [`
     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
-    .test-page { min-height: 100vh; display: flex; flex-direction: column; }
+    .test-page { min-height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.5s ease; z-index: 1; }
+
+    /* WATERMARK MATH BACKGROUND ORNAMENTS (Light Theme) */
+    .math-bg-ornaments { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .math-sym { position: absolute; font-family: 'Outfit', 'Inter', serif; font-weight: 800; color: rgba(0, 0, 0, 0.015); font-size: 5rem; user-select: none; transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    /* DYNAMIC LEVEL WATERMARKS */
+    .level-1 .math-sym { color: rgba(88, 204, 2, 0.035); }
+    .level-2 .math-sym { color: rgba(28, 176, 246, 0.035); }
+    .level-3 .math-sym { color: rgba(255, 150, 0, 0.035); }
+    
+    .sym-1 { top: 8%; left: 3%; transform: rotate(-15deg); font-size: 6.5rem; }
+    .sym-2 { top: 12%; right: 5%; transform: rotate(12deg); font-size: 7rem; }
+    .sym-3 { bottom: 15%; left: 4%; transform: rotate(25deg); font-size: 6rem; }
+    .sym-4 { bottom: 18%; right: 4%; transform: rotate(-18deg); font-size: 6.5rem; }
+    .sym-5 { top: 42%; left: 85%; transform: rotate(35deg); font-size: 7.5rem; }
+    .sym-6 { bottom: 8%; left: 40%; transform: rotate(-10deg); font-size: 5.5rem; }
+
+    /* PREMIUM DYNAMIC LIGHT MATH GRID BACKGROUND */
+    .test-page.level-1 {
+      background-color: #fafdf7;
+      background-image: radial-gradient(circle at 5% 5%, rgba(88, 204, 2, 0.04) 0%, transparent 60%),
+                        linear-gradient(rgba(0,0,0,0.012) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(0,0,0,0.012) 1px, transparent 1px);
+      background-size: 100% 100%, 20px 20px, 20px 20px;
+    }
+    .test-page.level-2 {
+      background-color: #f7fbfe;
+      background-image: radial-gradient(circle at 5% 5%, rgba(28, 176, 246, 0.04) 0%, transparent 60%),
+                        linear-gradient(rgba(0,0,0,0.012) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(0,0,0,0.012) 1px, transparent 1px);
+      background-size: 100% 100%, 20px 20px, 20px 20px;
+    }
+    .test-page.level-3 {
+      background-color: #fefbf7;
+      background-image: radial-gradient(circle at 5% 5%, rgba(255, 150, 0, 0.045) 0%, transparent 60%),
+                        linear-gradient(rgba(0,0,0,0.012) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(0,0,0,0.012) 1px, transparent 1px);
+      background-size: 100% 100%, 20px 20px, 20px 20px;
+    }
 
     /* TOP BAR */
     .top-bar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); }
@@ -180,7 +243,54 @@ import { ToastService } from '../../core/services/toast.service';
     .question-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
     .question-counter { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
 
-    .question-card { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 2rem; max-width: 850px; width: 100%; animation: slideUp 0.35s ease-out; }
+    .question-card {
+      background: #fff;
+      border: 2px solid rgba(0,0,0,0.06);
+      border-radius: 20px;
+      padding: 2.25rem 2.25rem 2.25rem 3.5rem; /* extra padding for notebook spirals */
+      max-width: 850px;
+      width: 100%;
+      animation: slideUp 0.35s ease-out;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+      transition: all 0.4s ease;
+    }
+
+    /* RED MARGIN LINE OF A NOTEBOOK */
+    .question-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 2.5rem;
+      width: 2px;
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* NOTEBOOK SPIRAL RINGS */
+    .question-card::after {
+      content: '••••••••••••••••••••';
+      position: absolute;
+      top: 15px;
+      left: 6px;
+      bottom: 15px;
+      width: 16px;
+      color: #94a3b8;
+      font-size: 1.8rem;
+      line-height: 2.2rem;
+      letter-spacing: 0.18rem;
+      writing-mode: vertical-rl;
+      overflow: hidden;
+      opacity: 0.5;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* LEVEL THEMED BORDERS */
+    .level-1 .question-card { border-color: rgba(88, 204, 2, 0.15); border-left: 5px solid #58cc02; }
+    .level-2 .question-card { border-color: rgba(28, 176, 246, 0.15); border-left: 5px solid #1cb0f6; }
+    .level-3 .question-card { border-color: rgba(255, 150, 0, 0.15); border-left: 5px solid #ff9600; }
     .q-text { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.5rem; }
 
     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
@@ -268,8 +378,39 @@ import { ToastService } from '../../core/services/toast.service';
     @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+    .level-badge { padding: 0.25rem 0.65rem; border-radius: 99px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; vertical-align: middle; }
+    .level-badge.lvl-1 { background: rgba(88,204,2,0.12); color: #58cc02; border: 1px solid rgba(88,204,2,0.2); }
+    .level-badge.lvl-2 { background: rgba(28,176,246,0.12); color: #1cb0f6; border: 1px solid rgba(28,176,246,0.2); }
+    .level-badge.lvl-3 { background: rgba(255,200,0,0.12); color: #ff9600; border: 1px solid rgba(255,200,0,0.2); }
+    
+    .dot.dot-lvl-1.current { box-shadow: 0 0 0 3px rgba(88,204,2,0.25); background: #58cc02; }
+    .dot.dot-lvl-2.current { box-shadow: 0 0 0 3px rgba(28,176,246,0.25); background: #1cb0f6; }
+    .dot.dot-lvl-3.current { box-shadow: 0 0 0 3px rgba(255,200,0,0.25); background: #ff9600; }
+
+    /* DYNAMIC BUTTON & DOT COLORS */
+    .level-1 .btn-check { background: #58cc02; box-shadow: 0 4px 0 #46a302; }
+    .level-1 .btn-check:hover:not(:disabled) { box-shadow: 0 2px 0 #46a302; }
+    
+    .level-2 .btn-check { background: #1cb0f6; box-shadow: 0 4px 0 #0d8ecf; }
+    .level-2 .btn-check:hover:not(:disabled) { box-shadow: 0 2px 0 #0d8ecf; }
+    
+    .level-3 .btn-check { background: #ff9600; box-shadow: 0 4px 0 #cc7a00; }
+    .level-3 .btn-check:hover:not(:disabled) { box-shadow: 0 2px 0 #cc7a00; }
+
+    /* DYNAMIC SELECTION HIGHLIGHTS */
+    .level-1 .option-btn.selected { border-color: #58cc02; background: rgba(88,204,2,0.04); box-shadow: 0 0 0 3px rgba(88,204,2,0.1); }
+    .level-1 .opt-letter.sel { background: #58cc02; border-color: #58cc02; color: #fff; }
+
+    .level-2 .option-btn.selected { border-color: #1cb0f6; background: rgba(28,176,246,0.04); box-shadow: 0 0 0 3px rgba(28,176,246,0.1); }
+    .level-2 .opt-letter.sel { background: #1cb0f6; border-color: #1cb0f6; color: #fff; }
+
+    .level-3 .option-btn.selected { border-color: #ff9600; background: rgba(255,150,0,0.04); box-shadow: 0 0 0 3px rgba(255,150,0,0.1); }
+    .level-3 .opt-letter.sel { background: #ff9600; border-color: #ff9600; color: #fff; }
+
     @media (max-width: 640px) {
-      .question-card { padding: 1.25rem; }
+      .question-card { padding: 1.5rem 1.5rem 1.5rem 2.5rem; }
+      .question-card::before { left: 1.75rem; }
+      .question-card::after { display: none; }
       .q-text { font-size: 1rem; }
       .bottom-bar { padding: 0.75rem 1rem; }
       .dot-indicators { gap: 4px; }
@@ -306,6 +447,21 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const mId = this.seccion()?.materiaId;
     return mId ? mId.toLowerCase().includes('mat') : false;
   });
+
+  questionLevel = computed(() => {
+    const q = this.currentQuestion() as any;
+    const lvl = q?.nivel || 1;
+    if (lvl === 1) return { num: 1, label: '⚡ Nivel 1: Mecánica Directa', class: 'lvl-1' };
+    if (lvl === 2) return { num: 2, label: '💼 Nivel 2: Contexto Cotidiano', class: 'lvl-2' };
+    return { num: 3, label: '🧠 Nivel 3: Análisis y Trampas', class: 'lvl-3' };
+  });
+
+  getDotLevelClass(question: any): string {
+    const lvl = question?.nivel || 1;
+    if (lvl === 1) return 'dot-lvl-1';
+    if (lvl === 2) return 'dot-lvl-2';
+    return 'dot-lvl-3';
+  }
 
   currentQuestion = computed(() => {
     const t = this.test();
@@ -407,6 +563,38 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
           this.submitTest();
         }
       }
+    }
+
+    // =========================================================================
+    // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO COMMENT OR REMOVE LATER)
+    // =========================================================================
+    // Seleccionar alternativa: Z -> A, X -> B, C -> C, V -> D
+    if (!this.showFeedback()) {
+      if (key === 'z') this.selectAnswerForCurrent('A');
+      if (key === 'x') this.selectAnswerForCurrent('B');
+      if (key === 'c') this.selectAnswerForCurrent('C');
+      if (key === 'v') this.selectAnswerForCurrent('D');
+    }
+
+    // Comprobar con Enter o Flecha Derecha, o avanzar a la siguiente
+    if (key === 'arrowright' || key === 'enter') {
+      if (!this.showFeedback() && this.hasCurrentAnswer()) {
+        this.checkAnswer();
+      } else if (this.showFeedback()) {
+        if (!this.isLastQuestion()) {
+          this.nextQuestion();
+        } else {
+          this.submitTest();
+        }
+      }
+    }
+    // =========================================================================
+  }
+
+  private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
+    const q = this.currentQuestion();
+    if (q) {
+      this.selectAnswer(q.id, option);
     }
   }
 
@@ -546,6 +734,18 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     this.saveState();
   }
 
+  prevQuestion() {
+    if (this.currentIndex() > 0 && !this.showFeedback()) {
+      this.currentIndex.update(v => v - 1);
+      this.saveState();
+    }
+  }
+
+  goToQuestion(index: number) {
+    this.currentIndex.set(index);
+    this.saveState();
+  }
+
   isLastQuestion(): boolean {
     return this.currentIndex() === this.totalQuestions() - 1;
   }
@@ -633,41 +833,24 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
     const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
-    return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+    const unescapedHtml = withBreaks
+      .replace(/&lt;div(.*?)&gt;/g, '<div$1>')
+      .replace(/&lt;\/div&gt;/g, '</div>')
+      .replace(/&lt;svg(.*?)&gt;/g, '<svg$1>')
+      .replace(/&lt;\/svg&gt;/g, '</svg>')
+      .replace(/&lt;line(.*?)&gt;/g, '<line$1>')
+      .replace(/&lt;\/line&gt;/g, '</line>')
+      .replace(/&lt;circle(.*?)&gt;/g, '<circle$1>')
+      .replace(/&lt;\/circle&gt;/g, '</circle>')
+      .replace(/&lt;text(.*?)&gt;/g, '<text$1>')
+      .replace(/&lt;\/text&gt;/g, '</text>')
+      .replace(/&lt;path(.*?)&gt;/g, '<path$1>')
+      .replace(/&lt;\/path&gt;/g, '</path>')
+      .replace(/&lt;polygon(.*?)&gt;/g, '<polygon$1>')
+      .replace(/&lt;\/polygon&gt;/g, '</polygon>')
+      .replace(/&lt;rect(.*?)&gt;/g, '<rect$1>')
+      .replace(/&lt;\/rect&gt;/g, '</rect>');
+    return this.sanitizer.bypassSecurityTrustHtml(unescapedHtml);
   }
-  /*
-    // =========================================================================
-    // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
-    // =========================================================================
-    @HostListener('window:keydown', ['$event'])
-    handleKeyboardEvent(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-  
-      // Select alternative
-      if (key === 'z') this.selectAnswerForCurrent('A');
-      if (key === 'x') this.selectAnswerForCurrent('B');
-      if (key === 'c') this.selectAnswerForCurrent('C');
-      if (key === 'v') this.selectAnswerForCurrent('D');
-  
-      // Check answer or go to next (Enter or Right Arrow)
-      if (key === 'arrowright' || key === 'enter') {
-        if (!this.showFeedback() && this.hasCurrentAnswer()) {
-          this.checkAnswer();
-        } else if (this.showFeedback()) {
-          if (!this.isLastQuestion()) {
-            this.nextQuestion();
-          } else {
-            this.submitTest();
-          }
-        }
-      }
-    }
-  
-    private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
-      const q = this.currentQuestion();
-      if (q) {
-        this.selectAnswer(q.id, option);
-      }
-    }
-      */
+
 }

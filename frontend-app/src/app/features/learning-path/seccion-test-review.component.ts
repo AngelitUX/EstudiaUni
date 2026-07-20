@@ -121,9 +121,18 @@ import { KatexService } from '../../core/services/katex.service';
 
         <div class="explanation-box" [class.exp-success]="isCorrect(r, p.id)" [class.exp-error]="!isCorrect(r, p.id)">
           <span class="exp-icon">{{ isCorrect(r, p.id) ? '💡' : '📖' }}</span>
-          <div>
-            <h4>{{ isCorrect(r, p.id) ? '¿Por qué es correcta?' : '¿Por qué te equivocaste?' }}</h4>
-            <p [innerHTML]="parseMixed(isCorrect(r, p.id) ? p.feedback_acierto : p.feedback_error)"></p>
+          <div style="flex: 1;">
+            <h4>{{ isCorrect(r, p.id) ? '¿Por qué es correcta?' : 'Explicación del error' }}</h4>
+            <div *ngIf="isCorrect(r, p.id)">
+              <p [innerHTML]="parseMixed(p.feedback_acierto)"></p>
+            </div>
+            <div *ngIf="!isCorrect(r, p.id)">
+              <p [innerHTML]="parseMixed(p.feedback_error)"></p>
+              <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
+                <h4 style="color: #166534; font-size: 0.9rem; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</h4>
+                <p [innerHTML]="parseMixed(p.feedback_acierto)"></p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -344,6 +353,23 @@ export class SeccionTestReviewComponent {
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
     const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
-    return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+    const unescapedHtml = withBreaks
+      .replace(/&lt;div(.*?)&gt;/g, '<div$1>')
+      .replace(/&lt;\/div&gt;/g, '</div>')
+      .replace(/&lt;svg(.*?)&gt;/g, '<svg$1>')
+      .replace(/&lt;\/svg&gt;/g, '</svg>')
+      .replace(/&lt;line(.*?)&gt;/g, '<line$1>')
+      .replace(/&lt;\/line&gt;/g, '</line>')
+      .replace(/&lt;circle(.*?)&gt;/g, '<circle$1>')
+      .replace(/&lt;\/circle&gt;/g, '</circle>')
+      .replace(/&lt;text(.*?)&gt;/g, '<text$1>')
+      .replace(/&lt;\/text&gt;/g, '</text>')
+      .replace(/&lt;path(.*?)&gt;/g, '<path$1>')
+      .replace(/&lt;\/path&gt;/g, '</path>')
+      .replace(/&lt;polygon(.*?)&gt;/g, '<polygon$1>')
+      .replace(/&lt;\/polygon&gt;/g, '</polygon>')
+      .replace(/&lt;rect(.*?)&gt;/g, '<rect$1>')
+      .replace(/&lt;\/rect&gt;/g, '</rect>');
+    return this.sanitizer.bypassSecurityTrustHtml(unescapedHtml);
   }
 }

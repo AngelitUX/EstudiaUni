@@ -480,7 +480,8 @@ export class PaesContentService {
     // this.clearCache(); // Commented out to prevent erasing cache on every reload/hot-reload, reducing Firestore reads.
     
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
-      const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
+      // Forzar uso de mocks locales para desarrollo local (mejora-m1)
+      const useMocks = true;
       this.useMocksMode = useMocks;
       if (useMocks) {
       this.loadDataFromLocalMocks();
