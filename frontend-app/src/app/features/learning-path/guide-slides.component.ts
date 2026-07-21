@@ -26,9 +26,13 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       <!-- SLIDE VIEWPORT -->
       <div class="slide-viewport" [style.background]="slides[current()].bgGradient"
         (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
-        <div class="slide-track" [style.transform]="'translateX(-' + (current() * 100) + '%)'">
+        <div class="slide-track">
           <div *ngFor="let slide of slides; let i = index" class="slide"
-            [class.active]="i === current()" [class.stagger]="i === current()">
+            [class.active]="i === current()" 
+            [class.stagger]="i === current()"
+            [style.transform]="'translateX(' + ((i - current()) * 100) + '%)'"
+            [style.position]="i === current() ? 'relative' : 'absolute'"
+            [style.visibility]="abs(i - current()) > 1 ? 'hidden' : 'visible'">
 
             <div class="slide-icon-wrap" [style.background]="slide.iconBg">{{ slide.icon }}</div>
             <h2 class="slide-title s-anim s-d1" [innerHTML]="parseMixed(slide.title)"></h2>
@@ -78,10 +82,10 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent-primary),#58cc02); border-radius:99px; transition:width 0.4s ease; }
 
     /* VIEWPORT */
-    .slide-viewport { overflow:hidden; border-radius:24px; border:2px solid rgba(0,0,0,0.06); box-shadow:0 8px 32px rgba(0,0,0,0.06); transition:background 0.5s ease; }
-    .slide-track { display:flex; transition:transform 0.5s cubic-bezier(0.4,0,0.2,1); }
-    .slide { min-width:100%; padding:2rem 2rem 2.25rem; opacity:0.3; transition:opacity 0.5s ease; }
-    .slide.active { opacity:1; }
+    .slide-viewport { overflow:hidden; border-radius:24px; border:2px solid rgba(0,0,0,0.06); box-shadow:0 8px 32px rgba(0,0,0,0.06); transition:background 0.5s ease; position:relative; }
+    .slide-track { display:grid; grid-template-columns:1fr; }
+    .slide { grid-area:1/1; width:100%; padding:2rem 2rem 2.25rem; opacity:0; pointer-events:none; transition:transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease; top:0; left:0; }
+    .slide.active { opacity:1; pointer-events:auto; z-index:2; }
 
     /* ICON */
     .slide-icon-wrap { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:0.75rem; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
@@ -109,6 +113,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     :host ::ng-deep .mc { padding:0.6rem 0.85rem; border-radius:10px; font-size:0.88rem; font-weight:700; text-align:center; }
     :host ::ng-deep .mc.red { background:rgba(239,68,68,0.06); border:2px solid rgba(239,68,68,0.15); color:#dc2626; }
     :host ::ng-deep .mc.green { background:rgba(88,204,2,0.06); border:2px solid rgba(88,204,2,0.2); color:#16a34a; grid-column:1/-1; }
+    :host ::ng-deep .mc.blue { background:rgba(59,130,246,0.06); border:2px solid rgba(59,130,246,0.2); color:#2563eb; grid-column:1/-1; text-align:center; margin-top: 0.5rem; }
 
     /* IMAGES */
     :host ::ng-deep .slide-image-wrap { float: right; width: 300px; margin: 0.5rem 0 1.5rem 2rem; text-align: center; }
@@ -194,7 +199,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     .quiz-section { margin-top:0.35rem; }
     .quiz-alt { padding:0.7rem 0.85rem; border-radius:10px; border:2px solid rgba(0,0,0,0.08); margin-bottom:0.45rem; cursor:pointer; transition:all 0.25s; font-size:0.88rem; line-height:1.45; }
     .quiz-alt:hover:not(.selected):not(.correct):not(.wrong) { border-color:var(--accent-primary); background:rgba(133,92,214,0.04); transform:translateX(3px); }
-    .quiz-alt.selected { border-color:var(--accent-primary); background:rgba(133,92,214,0.08); }
+    .quiz-alt.selected { border-color:var(--accent-primary); background:rgba(133,92,214,0.08); animation: quizPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes quizPop { 0% { transform: scale(1); } 50% { transform: scale(0.97); } 100% { transform: scale(1); } }
     .quiz-alt.correct { border-color:#58cc02; background:rgba(88,204,2,0.08); cursor:default; }
     .quiz-alt.wrong { border-color:#ef4444; background:rgba(239,68,68,0.06); cursor:default; }
     .quiz-alt.dimmed { opacity:0.45; cursor:default; }
@@ -240,6 +246,10 @@ export class GuideSlidesComponent implements OnChanges {
   private sanitizer = inject(DomSanitizer);
 
   quizStates: Record<string, { selected: string | null; revealed: boolean }> = {};
+
+  abs(n: number): number {
+    return Math.abs(n);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['quizzes'] || changes['slides']) && this.quizzes) {

@@ -5,11 +5,12 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 import { SynonymPracticeComponent } from './synonym-practice.component';
+import { PhysicsPracticeComponent } from './physics-practice.component';
 
 @Component({
   selector: 'app-seccion-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SynonymPracticeComponent],
+  imports: [CommonModule, RouterModule, SynonymPracticeComponent, PhysicsPracticeComponent],
   template: `
     <div class="sec-page" *ngIf="seccion() as sec">
       <!-- TOP NAV -->
@@ -60,6 +61,10 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
         </div>
       </ng-container>
 
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'physics'">
+        <app-physics-practice [gameData]="sec.gameData" (onComplete)="completePractice()"></app-physics-practice>
+      </ng-container>
+
       <!-- NORMAL SECTION CONTENT -->
       <ng-container *ngIf="!sec.isPractice">
       <!-- MINI GUÍA -->
@@ -72,28 +77,16 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
         <div class="sec-image-wrap-large" *ngIf="sec.imageUrl">
           <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image-large">
         </div>
-      </div>
-
-      <!-- TEXTO BASE -->
-      <div class="content-card context-card" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
-        <div class="card-header">
-          <span class="card-icon">📄</span>
-          <h3>Texto de práctica</h3>
-          <span class="pregunta-count">{{ sec.test.preguntas.length }} {{ sec.test.preguntas.length === 1 ? 'pregunta' : 'preguntas' }}</span>
-        </div>
-        <div class="context-body">
-          <p *ngFor="let p of getFormattedParagraphs(sec.test.contexto_base)">
-            <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
-            <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
-          </p>
+        <div class="sec-svg-wrap-large" *ngIf="sec.svgContent">
+          <div [innerHTML]="renderSvg(sec.svgContent)" class="sec-svg-container"></div>
         </div>
       </div>
 
       <!-- TIPS CLAVE -->
       <div class="content-card tips-card" *ngIf="sec.datos_claves?.length">
         <div class="card-header">
-          <span class="card-icon">💡</span>
-          <h3>Tips clave</h3>
+          <span class="card-icon">🔑</span>
+          <h3>Conceptos clave</h3>
         </div>
         <div class="tips-list">
           <div *ngFor="let dato of sec.datos_claves; let i = index" class="tip-item">
@@ -102,6 +95,23 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
           </div>
         </div>
       </div>
+
+      <!-- TEXTO BASE / EJEMPLO RESUELTO -->
+      <div class="content-card context-card" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
+        <div class="card-header">
+          <span class="card-icon" *ngIf="isScienceOrMath()">📝</span>
+          <span class="card-icon" *ngIf="!isScienceOrMath()">📄</span>
+          <h3>{{ isScienceOrMath() ? 'Ejemplo Resuelto' : 'Texto de práctica' }}</h3>
+          <span class="pregunta-count" *ngIf="!isScienceOrMath()">{{ sec.test.preguntas.length }} {{ sec.test.preguntas.length === 1 ? 'pregunta' : 'preguntas' }}</span>
+        </div>
+        <div class="context-body">
+          <p *ngFor="let p of getFormattedParagraphs(sec.test.contexto_base)">
+            <span class="p-num" *ngIf="!p.isTitle && !isScienceOrMath()">[{{ p.number }}]</span>
+            <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
+          </p>
+        </div>
+      </div>
+
 
       <!-- CTA -->
       <div class="cta-section">
@@ -142,24 +152,37 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
 
     /* MINI GUIA */
     .guide-card { border-color: rgba(133,92,214,0.15); background: linear-gradient(135deg, rgba(133,92,214,0.04), #fff); }
-    .guide-body { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.75; margin: 0; }
+    .guide-body { font-size: 1rem; color: var(--text-secondary); line-height: 1.75; margin: 0; font-family: 'Helvetica', 'Arial', sans-serif; }
+    ::ng-deep .guide-body strong, ::ng-deep .guide-body b { color: #000; font-weight: bold; }
+    ::ng-deep .guide-body .katex { color: #000; font-weight: bold; }
     
-    .sec-image-wrap-large { margin: 2rem 0; text-align: center; }
+    .sec-image-wrap-large, .sec-svg-wrap-large { margin: 2rem 0; text-align: center; display: flex; justify-content: center; }
     .sec-image-large { max-width: 100%; width: 500px; border-radius: 16px; border: 4px solid rgba(133,92,214,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .sec-svg-container { max-width: 100%; width: 500px; }
     
     /* CONTEXT */
     .context-body { background: rgba(133,92,214,0.03); border-left: 4px solid var(--accent-primary); border-radius: 0 12px 12px 0; padding: 1.25rem; }
-    .context-body p { font-size: 0.93rem; color: var(--text-primary); line-height: 1.9; margin: 0 0 1rem; font-style: italic; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .context-body p { margin: 0 0 0.85rem; padding-left: 0.5rem; line-height: 1.6; display: flex; gap: 0.6rem; align-items: baseline; }
     .context-body p:last-child { margin-bottom: 0; }
-    .p-text { flex: 1; }
+    .p-num { font-weight: 800; color: #b8b8b8; font-size: 0.85rem; user-select: none; min-width: 1.5rem; }
+    .p-text { color: var(--text-secondary); font-size: 1rem; font-family: 'Helvetica', 'Arial', sans-serif; }
+    ::ng-deep .p-text strong, ::ng-deep .p-text b { color: #000; font-weight: bold; }
+    ::ng-deep .p-text .katex { color: #000; font-weight: bold; }
     .p-text.p-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--accent-primary); font-style: normal; margin-top: 0.75rem; margin-bottom: 0.35rem; display: block; border-bottom: 2px solid rgba(133,92,214,0.15); padding-bottom: 0.35rem; }
 
-    /* TIPS */
-    .tips-list { display: flex; flex-direction: column; gap: 0.6rem; }
-    .tip-item { display: flex; align-items: flex-start; gap: 0.85rem; padding: 0.85rem 1rem; background: rgba(0,0,0,0.015); border-radius: 12px; transition: all 0.2s; }
-    .tip-item:hover { background: rgba(133,92,214,0.04); transform: translateX(4px); }
-    .tip-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; color: #fff; flex-shrink: 0; margin-top: 0.1rem; }
-    .tip-item p { font-size: 0.9rem; color: var(--text-primary); line-height: 1.6; margin: 0; }
+    /* Tips & Key Points */
+    .key-points-list { margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-family: 'Helvetica', 'Arial', sans-serif; }
+    .key-points-list li { margin-bottom: 0.5rem; line-height: 1.5; }
+    .key-points-list li:last-child { margin-bottom: 0; }
+    ::ng-deep .key-points-list strong, ::ng-deep .key-points-list b { color: #000; font-weight: bold; }
+    ::ng-deep .key-points-list .katex { color: #000; font-weight: bold; }
+    
+    .tips-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .tip-item { display: flex; gap: 0.75rem; background: rgba(0,0,0,0.02); padding: 0.75rem; border-radius: 10px; align-items: flex-start; }
+    .tip-num { width: 24px; height: 24px; border-radius: 6px; background: var(--accent-primary); color: #fff; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem; }
+    .tip-item p { margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5; font-family: 'Helvetica', 'Arial', sans-serif; }
+    ::ng-deep .tip-item p strong, ::ng-deep .tip-item p b { color: #000; font-weight: bold; }
+    ::ng-deep .tip-item p .katex { color: #000; font-weight: bold; }
 
     /* CTA */
     .cta-section { margin: 2rem 0; animation: fadeSlide 0.5s ease-out 0.2s both; }
@@ -222,6 +245,10 @@ export class SeccionDetailComponent {
   voiceMenuOpen = false;
 
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
+  isScienceOrMath = computed(() => {
+    const id = this.materiaId().toLowerCase();
+    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica');
+  });
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
   materiaProgress = computed(() => {
@@ -267,9 +294,14 @@ export class SeccionDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 
+  renderSvg(svg: string | undefined): SafeHtml {
+    if (!svg) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
+  }
+
   getFormattedParagraphs(text: string | null | undefined): { text: string; isTitle: boolean; number?: number }[] {
     if (!text) return [];
-    const rawParagraphs = text.split('\n\n')
+    const rawParagraphs = text.split('\n')
       .map(p => p.trim())
       .filter(p => p !== '' && p !== '--- DIVISION_TEXTOS ---');
       

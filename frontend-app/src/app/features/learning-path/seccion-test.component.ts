@@ -12,18 +12,28 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="test-page" *ngIf="test() as t">
+    <div class="test-page" [class.boss-mode]="isBossMode()" [class.final-boss-mode]="isFinalBoss()" [class.taking-damage]="takingDamage()" *ngIf="test() as t">
       <!-- TOP BAR -->
-      <div class="top-bar">
+      <div class="top-bar" [class.boss-bar]="isBossMode()">
         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
-        <div class="top-progress">
-          <div class="top-progress-fill" [style.width.%]="progressPct()"></div>
-        </div>
-        <div class="top-timer" [class.urgent]="timer() >= 300">{{ formatTime(timer()) }}</div>
+        
+        <ng-container *ngIf="!isBossMode()">
+          <div class="top-progress">
+            <div class="top-progress-fill" [style.width.%]="progressPct()"></div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="isBossMode()">
+          <div class="lives-container">
+            <span class="heart" *ngFor="let i of livesArray()" [class.empty]="lives() < i">❤️</span>
+          </div>
+        </ng-container>
+
+        <div class="top-timer" [class.urgent]="isTimerUrgent()">{{ formatTime(timer()) }}</div>
       </div>
 
       <!-- CONTEXTO BASE -->
-      <div class="context-section" *ngIf="t.contexto_base">
+      <div class="context-section" *ngIf="t.contexto_base && !isScienceOrMath() && !isPhysics()">
         <button class="context-toggle" (click)="contextCollapsed = !contextCollapsed">
           <span>📄 Texto de referencia</span>
           <span class="toggle-arrow" [style.transform]="contextCollapsed ? 'rotate(0)' : 'rotate(180deg)'">▼</span>
@@ -41,12 +51,13 @@ import { ToastService } from '../../core/services/toast.service';
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
         <div class="question-counter">
-          Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}
+          Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}
         </div>
 
-        <div class="question-card" *ngIf="currentQuestion() as q">
+        <div class="question-card" [class.boss-card]="isBossMode()" [class.split-layout]="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)" *ngIf="currentQuestion() as q">
           
-          <!-- VOICE CONTROLS (Collapsible) -->
+          <div class="split-left">
+            <!-- VOICE CONTROLS (Collapsible) -->
           <div class="voice-dropdown-container" *ngIf="!isMathModule()">
             <button class="btn-voice-toggle" (click)="voiceMenuOpen = !voiceMenuOpen">
               🎧 Audio descriptivo <span class="arrow" [class.open]="voiceMenuOpen">▼</span>
@@ -67,7 +78,7 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
 
           <!-- Preámbulo imagen (Ciencias/Matemáticas) -->
-          <div class="q-image-wrap" *ngIf="q.preambulo_imagen_url">
+          <div class="q-image-wrap" *ngIf="q.preambulo_imagen_url && !isPhysics()">
             <img [src]="q.preambulo_imagen_url" alt="Imagen de apoyo" class="q-image" />
           </div>
 
@@ -93,15 +104,37 @@ import { ToastService } from '../../core/services/toast.service';
             </button>
           </div>
 
-          <!-- FEEDBACK -->
-          <div class="feedback-bar" *ngIf="showFeedback()"
-            [class.correct]="isCurrentCorrect()"
-            [class.wrong]="!isCurrentCorrect()">
-            <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
-            <div class="feedback-body">
-              <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
-              <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
+            <!-- FEEDBACK -->
+            <div class="feedback-bar" *ngIf="showFeedback()"
+              [class.correct]="isCurrentCorrect()"
+              [class.wrong]="!isCurrentCorrect()">
+              <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
+              <div class="feedback-body">
+                <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
+                <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
+              </div>
             </div>
+          </div> <!-- End split-left -->
+
+          <div class="split-right" *ngIf="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)">
+            <img *ngIf="q.preambulo_imagen_url || q.imageUrl" [src]="q.preambulo_imagen_url || q.imageUrl" alt="Imagen de apoyo de física" class="physics-support-img" />
+            <div *ngIf="q.svgContent" class="physics-support-svg" [innerHTML]="renderSvg(q.svgContent)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTEXTO BASE (Bottom for Physics) -->
+      <div class="context-section physics-bottom-context" *ngIf="t.contexto_base && isPhysics()">
+        <button class="context-toggle physics-context-btn" (click)="togglePhysicsContext($event)">
+          <span>📖 Ejemplo de ejercicio resuelto</span>
+          <span class="toggle-arrow" [style.transform]="contextCollapsed ? 'rotate(0)' : 'rotate(180deg)'">▼</span>
+        </button>
+        <div class="context-wrapper" [class.collapsed]="contextCollapsed">
+          <div class="context-body" style="background: #fff; padding: 1.2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <p *ngFor="let p of getFormattedParagraphs(getActiveContexto(t))">
+              <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+              <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
+            </p>
           </div>
         </div>
       </div>
@@ -113,15 +146,15 @@ import { ToastService } from '../../core/services/toast.service';
         </div>
 
         <div class="dot-indicators">
-          <span *ngFor="let p of t.preguntas; let i = index"
+          <span *ngFor="let p of shuffledPreguntas(); let i = index"
             class="dot"
             [class.answered]="answers().has(p.id)"
             [class.current]="i === currentIndex()"></span>
         </div>
 
         <ng-container *ngIf="!showFeedback()">
-          <button class="btn-check" (click)="checkAnswer()" [disabled]="!hasCurrentAnswer()">
-            Comprobar
+          <button class="btn-check" [class.btn-attack]="isBossMode()" (click)="checkAnswer()" [disabled]="!hasCurrentAnswer()">
+            {{ isBossMode() ? '⚔️ Atacar' : 'Comprobar' }}
           </button>
         </ng-container>
         <ng-container *ngIf="showFeedback()">
@@ -145,6 +178,18 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
         </div>
       </div>
+
+      <!-- GAME OVER MODAL -->
+      <div class="modal-overlay" *ngIf="showGameOver">
+        <div class="modal-container glass boss-game-over">
+          <h3 style="color: #ef4444; font-size: 2rem; margin-bottom: 0;">💀 Game Over 💀</h3>
+          <p style="font-size: 1.1rem; margin-top: 0.5rem;">{{ gameOverReason() }}</p>
+          <p>Has fallado en tu enfrentamiento contra el Jefe. Debes volver a intentarlo desde el principio.</p>
+          <div class="modal-actions" style="margin-top: 1.5rem;">
+            <button class="btn-confirm-exit" (click)="executeExit()">Volver a la Ruta</button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -152,17 +197,88 @@ import { ToastService } from '../../core/services/toast.service';
     .test-page { min-height: 100vh; display: flex; flex-direction: column; }
 
     /* TOP BAR */
-    .top-bar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); }
+    .top-bar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1.5rem; background: #fff; border-bottom: 2px solid rgba(0,0,0,0.06); transition: all 0.3s ease; }
+    
+    /* BOSS MODE LIGHT UI */
+    .boss-bar { background: linear-gradient(to right, #fff, #fff0f0, #fff); border-bottom: 3px solid #ef4444; }
+    .boss-bar .top-timer { color: #dc2626; font-size: 1.1rem; }
+    
+    .question-card { transition: all 0.3s ease; }
+    .question-card.boss-card { border: 3px solid #ef4444; box-shadow: 0 10px 40px rgba(239, 68, 68, 0.12); position: relative; overflow: hidden; }
+    .question-card.boss-card.final-boss { border-color: #ff3300; }
+
+    /* SPLIT LAYOUT PARA FÍSICA */
+    .question-card.split-layout { display: flex; flex-direction: row; gap: 2rem; align-items: stretch; max-width: 1200px; padding: 0; overflow: hidden; }
+    .question-card.split-layout .split-left { flex: 1; padding: 2rem; display: flex; flex-direction: column; }
+    .question-card.split-layout .split-right { flex: 1; background: #f0f4f8; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 1rem; border-left: 2px dashed rgba(0,0,0,0.08); }
+    .physics-support-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .physics-support-svg { width: 100%; display: flex; align-items: center; justify-content: center; }
+    .physics-support-svg svg { max-width: 100%; height: auto; }
+
+    @media (max-width: 900px) {
+      .question-card.split-layout { flex-direction: column-reverse; }
+      .question-card.split-layout .split-right { border-left: none; border-bottom: 2px dashed rgba(0,0,0,0.08); min-height: 250px; }
+    }
+
+    @keyframes fireGlow {
+      0% { box-shadow: 0 0 15px rgba(255, 51, 0, 0.4), 0 0 30px rgba(255, 174, 0, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(255, 51, 0, 0.7), 0 0 50px rgba(255, 174, 0, 0.4); }
+      100% { box-shadow: 0 0 15px rgba(255, 51, 0, 0.4), 0 0 30px rgba(255, 174, 0, 0.2); }
+    }
+
+    /* FINAL BOSS SUPREMO UI */
+    .test-page.final-boss-mode { background: #050505; }
+    .test-page.final-boss-mode .question-card.split-layout .split-right { background: transparent; border-color: rgba(255, 51, 0, 0.3); }
+    .test-page.final-boss-mode .top-bar { background: linear-gradient(to right, #000, #1a0800, #000); border-bottom: 3px solid #ff3300; color: #fff; }
+    .test-page.final-boss-mode .top-title, .test-page.final-boss-mode .top-timer, .test-page.final-boss-mode .lives-count { color: #ffae00; }
+    .test-page.final-boss-mode .question-card { background: #111; border: 3px solid #ff3300; animation: fireGlow 2s infinite alternate, slideUp 0.35s ease-out; }
+    .test-page.final-boss-mode .q-text, .test-page.final-boss-mode .opt-text { color: #eee; }
+    .test-page.final-boss-mode .q-preambulo { background: rgba(255, 174, 0, 0.05); border-left-color: #ffae00; }
+    .test-page.final-boss-mode .q-preambulo p { color: #ccc; }
+    .test-page.final-boss-mode .option-btn { background: #1a1a1a; border-color: #333; }
+    .test-page.final-boss-mode .option-btn:hover:not(:disabled):not(.selected) { border-color: rgba(255, 51, 0, 0.5); background: rgba(255, 51, 0, 0.15); }
+    .test-page.final-boss-mode .option-btn.selected { border-color: #ffae00; background: rgba(255, 174, 0, 0.15); box-shadow: 0 0 0 3px rgba(255, 174, 0, 0.2); }
+    .test-page.final-boss-mode .btn-check, .test-page.final-boss-mode .btn-attack { background: linear-gradient(135deg, #ff3300, #991a00); box-shadow: 0 5px 0 #661100; border: none; }
+    .test-page.final-boss-mode .btn-check:hover, .test-page.final-boss-mode .btn-attack:hover:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #661100; }
+    .test-page.final-boss-mode .question-counter { color: #ffae00; }
+    
+    .test-page.final-boss-mode .bottom-bar { background: #111; border-top-color: #333; }
+    .test-page.final-boss-mode .btn-secondary { background: #1a1a1a; border-color: #333; color: #aaa; }
+    .test-page.final-boss-mode .btn-secondary:hover:not(:disabled) { border-color: #ffae00; color: #ffae00; }
+    .test-page.final-boss-mode .dot { background: #333; }
+    .test-page.final-boss-mode .dot.answered { background: #ff3300; }
+    .test-page.final-boss-mode .dot.current { background: #ffae00; box-shadow: 0 0 0 3px rgba(255, 174, 0, 0.3); }
+    
+    .test-page.final-boss-mode .feedback-bar { background: #1a1a1a; border-color: #333; }
+    .test-page.final-boss-mode .feedback-bar.correct { background: rgba(88,204,2,0.15); border-color: #58cc02; }
+    .test-page.final-boss-mode .feedback-bar.wrong { background: rgba(239,68,68,0.15); border-color: #ef4444; }
+    .test-page.final-boss-mode .feedback-body p { color: #ccc; }
+    
+    .test-page.final-boss-mode .context-section { background: #111; border-color: #333; }
+    .test-page.final-boss-mode .context-toggle { color: #eee; }
+    .test-page.final-boss-mode .context-toggle:hover { background: rgba(255, 174, 0, 0.1); }
+    .test-page.final-boss-mode .context-body p { color: #ccc; }
+    .test-page.final-boss-mode .p-text { color: #ccc; }
+    ::ng-deep .test-page.final-boss-mode .p-text strong, ::ng-deep .test-page.final-boss-mode .p-text b, ::ng-deep .test-page.final-boss-mode .p-text .katex { color: #ffae00; }
+    
     .btn-close { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-secondary); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
     .btn-close:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.05); }
-    .top-progress { flex: 1; height: 14px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; }
+    .top-progress { flex: 1; height: 14px; background: rgba(0,0,0,0.06); border-radius: 99px; overflow: hidden; margin: 0 1rem; }
     .top-progress-fill { height: 100%; background: linear-gradient(90deg, #58cc02, #78d64b); border-radius: 99px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
     .top-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 60%); border-radius: 99px; }
     .top-timer { font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem; color: var(--text-secondary); min-width: 52px; text-align: center; }
     .top-timer.urgent { color: #ef4444; animation: urgentPulse 1s ease-in-out infinite; }
+    
+    .lives-container { flex: 1; display: flex; justify-content: center; gap: 0.5rem; font-size: 1.6rem; }
+    .heart { transition: all 0.3s; filter: drop-shadow(0 2px 4px rgba(239,68,68,0.4)); animation: pulseHeart 1.5s infinite alternate ease-in-out; display: inline-block; }
+    .heart.empty { filter: grayscale(100%) opacity(0.3); transform: scale(0.8); animation: none; }
 
-    /* CONTEXT */
-    .context-section { margin: 0.75rem 1.5rem 0; background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; overflow: hidden; }
+    /* CONTEXT MODULE */
+    .physics-bottom-context { margin-top: 1.5rem; margin-bottom: 0.5rem; border: 2px dashed rgba(133,92,214,0.4); }
+    .physics-context-btn { background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.95rem; font-weight: 700; transition: all 0.3s; animation: pulseHint 2s infinite alternate ease-in-out; }
+    .physics-context-btn:hover { background: rgba(133,92,214,0.15); transform: translateY(-1px); }
+    @keyframes pulseHint { 0% { box-shadow: 0 0 0 0 rgba(133,92,214, 0.4); } 100% { box-shadow: 0 0 10px 2px rgba(133,92,214, 0.1); } }
+    .context-section { background: #fff; border: 2px solid rgba(0,0,0,0.06); border-radius: 14px; overflow: hidden; }
     .context-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.85rem 1.15rem; background: transparent; border: none; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: background 0.2s; }
     .context-toggle:hover { background: rgba(0,0,0,0.02); }
     .toggle-arrow { font-size: 0.75rem; color: var(--text-secondary); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -170,9 +286,11 @@ import { ToastService } from '../../core/services/toast.service';
     .context-wrapper.collapsed { grid-template-rows: 0fr; }
     .context-body { overflow: hidden; padding: 0 1.15rem 1rem; }
     .context-body p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; margin: 0 0 0.85rem; font-style: italic; display: flex; gap: 0.5rem; align-items: flex-start; }
-    .context-body p:last-child { margin-bottom: 0; }
-    .p-text { flex: 1; }
-    .p-text.p-title { font-family: var(--font-heading); font-size: 1rem; font-weight: 800; color: var(--accent-primary); font-style: normal; margin-top: 0.75rem; margin-bottom: 0.25rem; display: block; border-bottom: 2px solid rgba(133,92,214,0.15); padding-bottom: 0.35rem; }
+    .p-num { font-weight: 800; color: #b8b8b8; font-size: 0.85rem; user-select: none; min-width: 1.5rem; }
+    .p-text { color: var(--text-secondary); font-size: 1rem; font-family: 'Helvetica', 'Arial', sans-serif; }
+    ::ng-deep .p-text strong, ::ng-deep .p-text b { color: #000; font-weight: bold; }
+    ::ng-deep .p-text .katex { color: #000; font-weight: bold; }
+    .p-text.p-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--accent-primary); font-style: normal; margin-top: 0.75rem; margin-bottom: 0.35rem; display: block; border-bottom: 2px solid rgba(133,92,214,0.15); padding-bottom: 0.35rem; }
     .context-wrapper.collapsed .context-body { padding-top: 0; padding-bottom: 0; opacity: 0; transition: opacity 0.2s, padding 0.3s; }
     .context-wrapper:not(.collapsed) .context-body { opacity: 1; transition: opacity 0.3s 0.1s, padding 0.3s; }
 
@@ -233,6 +351,10 @@ import { ToastService } from '../../core/services/toast.service';
     .btn-check { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
     .btn-check:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
     .btn-check:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+    
+    .btn-attack { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 0 #991b1b; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-attack:hover:not(:disabled) { box-shadow: 0 2px 0 #991b1b; }
+
     .btn-next { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: #58cc02; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #4caf00; transition: all 0.2s; }
     .btn-next:hover { transform: translateY(2px); box-shadow: 0 2px 0 #4caf00; }
     .btn-finish { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #cc7a00; transition: all 0.2s; }
@@ -262,11 +384,24 @@ import { ToastService } from '../../core/services/toast.service';
     .btn-cancel:hover { background: rgba(0,0,0,0.1); }
     .btn-confirm-exit { background: #ef4444; color: #fff; box-shadow: 0 4px 0 #b91c1c; }
     .btn-confirm-exit:hover { transform: translateY(2px); box-shadow: 0 2px 0 #b91c1c; }
+    
+    .boss-game-over { border-color: #ef4444; background: #fff0f0; }
 
     @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
     @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes pulseHeart { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+    
+    /* DAMAGE ANIMATION */
+    .test-page.taking-damage { animation: damageShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; position: relative; }
+    .test-page.taking-damage::after { content: ''; position: fixed; inset: 0; box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.8); z-index: 9999; pointer-events: none; }
+    @keyframes damageShake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
 
     @media (max-width: 640px) {
       .question-card { padding: 1.25rem; }
@@ -286,12 +421,13 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private toastSvc = inject(ToastService);
 
-
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
   seccionId = signal('');
   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
   test = computed(() => this.paes.getTestBySeccionId(this.seccionId()));
+  shuffledPreguntas = signal<any[]>([]);
+  
   answers = signal(new Map<number, 'A' | 'B' | 'C' | 'D'>());
   timer = signal(0);
   private intervalId: any;
@@ -299,20 +435,68 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   currentIndex = signal(0);
   showFeedback = signal(false);
   contextCollapsed = false;
+
+  togglePhysicsContext(event: Event) {
+    this.contextCollapsed = !this.contextCollapsed;
+    if (!this.contextCollapsed) {
+      setTimeout(() => {
+        const btn = event.currentTarget as HTMLElement;
+        btn.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
+    }
+  }
+
   voiceMenuOpen = false;
   showExitConfirm = false;
+  showGameOver = false;
+  gameOverReason = signal('');
+
+  materiaId = computed(() => this.seccion()?.materiaId || '');
+
+  isPhysics = computed(() => {
+    const id = this.materiaId().toLowerCase();
+    return id.includes('fisica');
+  });
+
+  isBossMode = computed(() => {
+    const s = this.seccion();
+    if (!s) return false;
+    return s.id.includes('boss') || (s.title && s.title.toLowerCase().includes('jefe'));
+  });
+
+  isFinalBoss = computed(() => {
+    const s = this.seccion();
+    if (!s) return false;
+    return s.id === 'jefe-final' || s.id.includes('jefe-final') || s.id === 'boss-mecanica' || s.id.includes('boss-final');
+  });
+
+  lives = signal(3);
+  takingDamage = signal(false);
+
+  isTimerUrgent = computed(() => {
+    if (this.isBossMode()) return this.timer() <= 60; // Less than 60s left
+    return this.timer() >= 300; // More than 5 mins elapsed
+  });
 
   isMathModule = computed(() => {
-    const mId = this.seccion()?.materiaId;
+    const mId = this.materiaId();
     return mId ? mId.toLowerCase().includes('mat') : false;
   });
 
-  currentQuestion = computed(() => {
-    const t = this.test();
-    return t ? t.preguntas[this.currentIndex()] : undefined;
+  isScienceOrMath = computed(() => {
+    const id = this.materiaId().toLowerCase();
+    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica');
   });
 
-  totalQuestions = computed(() => this.test()?.preguntas.length || 0);
+  maxLives = computed(() => this.isFinalBoss() ? 5 : 3);
+  livesArray = computed(() => Array.from({length: this.maxLives()}, (_, i) => i + 1));
+
+  currentQuestion = computed(() => {
+    const qList = this.shuffledPreguntas();
+    return qList.length > 0 ? qList[this.currentIndex()] : undefined;
+  });
+
+  totalQuestions = computed(() => this.shuffledPreguntas().length || 0);
   answeredCount = computed(() => this.answers().size);
 
   progressPct = computed(() => {
@@ -330,7 +514,9 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       answers: Array.from(this.answers().entries()),
       currentIndex: this.currentIndex(),
       showFeedback: this.showFeedback(),
-      timer: this.timer()
+      timer: this.timer(),
+      lives: this.lives(),
+      questionOrder: this.shuffledPreguntas().map(q => q.id)
     };
     sessionStorage.setItem(this.getStorageKey(), JSON.stringify(state));
   }
@@ -353,20 +539,82 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
         if (typeof state.timer === 'number') {
           this.timer.set(state.timer);
         }
+        if (typeof state.lives === 'number') {
+          this.lives.set(state.lives);
+        }
+        return state.questionOrder; // return saved order if exists
       } catch (e) {
         console.warn('Error loading test state', e);
       }
     }
+    return null;
   }
 
   ngOnInit() {
     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
-    this.loadState();
-    if (this.timer() === 0) {
-      this.timer.set(0);
+    this.loadTest();
+  }
+
+  loadTest() {
+    this.showFeedback.set(false);
+    this.contextCollapsed = this.materiaId().includes('fisica');
+    
+    const savedOrder = this.loadState();
+    
+    // Inicializar y mezclar preguntas
+    const t = this.test();
+    if (t && t.preguntas) {
+      if (savedOrder && Array.isArray(savedOrder) && savedOrder.length === t.preguntas.length) {
+        // Restaurar orden guardado
+        const reordered = savedOrder.map(id => t.preguntas.find((p: any) => p.id === id)).filter(Boolean);
+        this.shuffledPreguntas.set(reordered);
+      } else {
+        // Mezclar aleatoriamente pero por bloques de dificultad
+        const arr = [...t.preguntas];
+        const chunkSize = Math.ceil(arr.length / 3);
+        const easy = arr.slice(0, chunkSize);
+        const medium = arr.slice(chunkSize, chunkSize * 2);
+        const hard = arr.slice(chunkSize * 2);
+        
+        const shuffle = (array: any[]) => {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        };
+
+        const finalArr = [...shuffle(easy), ...shuffle(medium), ...shuffle(hard)];
+        this.shuffledPreguntas.set(finalArr);
+        this.saveState(); // Guardar el nuevo orden
+      }
     }
+
+    if (!savedOrder) {
+      this.lives.set(this.isFinalBoss() ? 5 : 3);
+    }
+
+    if (this.timer() === 0) {
+      if (this.isBossMode()) {
+        const qCount = t?.preguntas?.length || 10;
+        this.timer.set(qCount * 60); // 1 minuto por pregunta
+      } else {
+        this.timer.set(0);
+      }
+    }
+
     this.intervalId = setInterval(() => {
-      this.timer.update(v => v + 1);
+      if (this.showGameOver) return;
+      
+      if (this.isBossMode()) {
+        this.timer.update(v => Math.max(0, v - 1));
+        if (this.timer() === 0) {
+          this.triggerGameOver('¡Se agotó el tiempo!');
+        }
+      } else {
+        this.timer.update(v => v + 1);
+      }
+      
       // Guardar el estado cada 5 segundos para que el timer persista bien
       if (this.timer() % 5 === 0) {
         this.saveState();
@@ -534,10 +782,32 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     if (this.isCurrentCorrect()) {
       this.toastSvc.success('¡Respuesta correcta!');
     } else {
-      this.toastSvc.error('Respuesta incorrecta');
+      if (this.isBossMode()) {
+        this.lives.update(v => v - 1);
+        this.takingDamage.set(true);
+        setTimeout(() => this.takingDamage.set(false), 400); // 400ms duration for shake
+
+        if (this.lives() <= 0) {
+          setTimeout(() => this.triggerGameOver('Has perdido todos tus corazones.'), 500);
+          return;
+        } else {
+          this.toastSvc.error(`Incorrecto. ¡Te quedan ${this.lives()} vidas!`);
+        }
+      } else {
+        this.toastSvc.error('Respuesta incorrecta');
+      }
     }
     this.showFeedback.set(true);
     this.saveState();
+  }
+
+  triggerGameOver(reason: string) {
+    if (this.intervalId) clearInterval(this.intervalId);
+    this.gameOverReason.set(reason);
+    this.showGameOver = true;
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.removeItem(this.getStorageKey()); // Limpiamos para que empiece de cero
+    }
   }
 
   nextQuestion() {
@@ -634,6 +904,11 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
     const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
+  }
+
+  renderSvg(svg: string | null | undefined): SafeHtml {
+    if (!svg) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
   }
   /*
     // =========================================================================

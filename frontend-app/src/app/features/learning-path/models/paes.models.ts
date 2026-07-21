@@ -55,7 +55,9 @@ export interface Seccion {
   isBoss?: boolean;
   isPractice?: boolean;
   practiceType?: string;
+  gameData?: any;
   imageUrl?: string;
+  svgContent?: string;
   test: TestPaes;
 }
 
