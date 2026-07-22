@@ -30,7 +30,7 @@ type PathItem = {
   standalone: true,
   imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
   template: `
-    <div class="lp-layout">
+    <div class="lp-layout" [ngClass]="materiaId() === 'mat1' ? 'materia-mat1' : 'materia-mat2'">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -150,6 +150,15 @@ type PathItem = {
             <ng-container *ngFor="let item of pathItems(); let i = index">
               <!-- CHAPTER SPLASH BANNER -->
               <div *ngIf="item.type === 'chapter'" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <!-- SIMBOLOS DE CAPITULO (M1 vs M2) -->
+                <ng-container *ngIf="materiaId() === 'mat1'">
+                  <div class="math-decor-item decor-left" style="top: 20%;">π</div>
+                  <div class="math-decor-item decor-right" style="top: 60%;">√x</div>
+                </ng-container>
+                <ng-container *ngIf="materiaId() === 'mat2'">
+                  <div class="math-decor-item decor-left" style="top: 20%;">lim</div>
+                  <div class="math-decor-item decor-right" style="top: 60%;">f'(x)</div>
+                </ng-container>
                 <div class="chapter-splash" [ngClass]="[item.capituloId, getChapterProgress(item.capituloId).pct === 100 ? 'chapter-completed' : '']" style="margin-bottom: 7rem; width: 100%;">
                   <div class="splash-bg-pattern"></div>
                   <div class="splash-inner">
@@ -208,33 +217,44 @@ type PathItem = {
                 <!-- Visual separator -->
                 <div class="splash-separator">
                   <div class="sep-line"></div>
-                  <span class="sep-text">Tu ruta comienza aquí ↓</span>
+                  <span class="sep-text">🏁 Tu ruta comienza aquí ↓</span>
                   <div class="sep-line"></div>
                 </div>
-              </div>
-              
-              <!-- CONEXION DE CAPITULO A NODO -->
-              <svg class="path-svg" *ngIf="item.type === 'chapter' && !isLastPathItem(item)" style="height: 148px; top: calc(100% - 7rem); z-index: -1;">
-                <path *ngFor="let conn of getChapterConnections(i)"
-                      [attr.d]="conn.d"
-                      [attr.stroke]="conn.color"
-                      [attr.stroke-dasharray]="conn.dasharray"
-                      fill="none" stroke-width="8" stroke-linecap="round" />
-              </svg>
+                </div>
             </div>
 
             <!-- SECTION NODE ROW -->
             <div *ngIf="item.type === 'node-row'" class="node-row" 
                  [style.margin-bottom]="hasTreeLayout() ? '7.5rem' : '6.5rem'">
+              <!-- SIMBOLOS DE LECCION ALTERNADOS (M1 vs M2) -->
+              <ng-container *ngIf="materiaId() === 'mat1'">
+                <div *ngIf="i % 4 === 0" class="math-decor-item decor-left" style="top: 0px;">∑</div>
+                <div *ngIf="i % 4 === 1" class="math-decor-item decor-right" style="top: 0px;">∞</div>
+                <div *ngIf="i % 4 === 2" class="math-decor-item decor-left" style="top: 0px;">%</div>
+                <div *ngIf="i % 4 === 3" class="math-decor-item decor-right" style="top: 0px;">∫</div>
+              </ng-container>
+              <ng-container *ngIf="materiaId() === 'mat2'">
+                <div *ngIf="i % 4 === 0" class="math-decor-item decor-left" style="top: 0px;">log x</div>
+                <div *ngIf="i % 4 === 1" class="math-decor-item decor-right" style="top: 0px;">θ</div>
+                <div *ngIf="i % 4 === 2" class="math-decor-item decor-left" style="top: 0px;">λ</div>
+                <div *ngIf="i % 4 === 3" class="math-decor-item decor-right" style="top: 0px;">u·v</div>
+              </ng-container>
+              
+              <!-- SVG CONECTOR HACIA EL CAPITULO DE ARRIBA (Invertido) -->
+              <svg class="path-svg" *ngIf="i > 0 && pathItems()[i - 1].type === 'chapter'" style="height: 150px; top: -114px; z-index: -1;">
+                <path [attr.d]="getUpwardChapterConnection(i)"
+                      [attr.stroke]="getUpwardChapterColor(i)"
+                      fill="none" stroke-width="12" stroke-linecap="round" />
+              </svg>
               
               <!-- SVG CAMINITO CONECTOR -->
-              <svg class="path-svg" *ngIf="hasTreeLayout() && !isLastPathItem(item)" 
-                   [style.height]="isNextChapter(i) ? '156px' : 'calc(72px + 7.5rem)'">
+              <svg class="path-svg" *ngIf="!isLastPathItem(item)" 
+                   [style.height]="isNextChapter(i) ? '156px' : (hasTreeLayout() ? 'calc(72px + 7.5rem)' : 'calc(72px + 6.5rem)')">
                 <path *ngFor="let conn of getConnections(i)"
                       [attr.d]="conn.d"
                       [attr.stroke]="conn.color"
                       [attr.stroke-dasharray]="conn.dasharray"
-                      fill="none" stroke-width="8" stroke-linecap="round" />
+                      fill="none" stroke-width="12" stroke-linecap="round" />
               </svg>
                 
                 <div class="node-wrapper" 
@@ -646,8 +666,32 @@ type PathItem = {
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
-    .lp-layout { display: flex; min-height: 100vh; }
+    :host {
+      display: block;
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+    .lp-layout.materia-mat1 {
+      background-color: #f5f3ff;
+      background-image: 
+        radial-gradient(circle at 100% 150%, #c7d2fe 0%, transparent 60%),
+        radial-gradient(circle at 0% 0%, #ddd6fe 0%, transparent 60%),
+        radial-gradient(#855cd6 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
+    }
+    .lp-layout.materia-mat2 {
+      background-color: #f0fdfa;
+      background-image: 
+        radial-gradient(circle at 100% 150%, #99f6e4 0%, transparent 60%),
+        radial-gradient(circle at 0% 0%, #bae6fd 0%, transparent 60%),
+        radial-gradient(#0d9488 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
+    }
+    .lp-layout {
+      display: flex;
+      min-height: 100vh;
+      transition: background-color 0.3s ease;
+    }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
@@ -776,7 +820,15 @@ type PathItem = {
     .btn-back:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateX(-4px); }
 
     /* PATH CONTAINER */
-    .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; }
+    .duo-path-container {
+      position: relative;
+      background: transparent;
+      padding: 4rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: visible;
+    }
 
     /* CHAPTER SPLASH BANNER */
     .chapter-splash { width: 100%; max-width: 600px; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 1.5px solid rgba(133,92,214,0.25); box-shadow: 0 16px 40px rgba(133,92,214,0.12), inset 0 2px 4px rgba(255,255,255,0.8); background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 100%); transition: all 0.3s ease; }
@@ -1369,6 +1421,46 @@ type PathItem = {
       .node-inner { width: 64px; height: 64px; }
       .node-active .node-inner { width: 68px; height: 68px; }
       .node-icon { width: 28px; height: 28px; }
+    }
+
+    /* DECORACIONES MATEMATICAS FLOTANTES (PROPUESTA 2) */
+    .math-decor-item {
+      position: absolute;
+      font-size: 3rem;
+      font-weight: 800;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      font-family: 'Outfit', sans-serif;
+      opacity: 0.22;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .materia-mat1 .math-decor-item {
+      background-image: linear-gradient(135deg, #7c3aed, #2563eb);
+    }
+    .materia-mat2 .math-decor-item {
+      background-image: linear-gradient(135deg, #0d9488, #059669);
+    }
+    .decor-left {
+      left: 10px;
+      animation: floatLeft 7s ease-in-out infinite alternate;
+    }
+    .decor-right {
+      right: 10px;
+      animation: floatRight 9s ease-in-out infinite alternate;
+    }
+    @keyframes floatLeft {
+      0% { transform: translateY(0) rotate(-6deg); }
+      100% { transform: translateY(-16px) rotate(6deg); }
+    }
+    @keyframes floatRight {
+      0% { transform: translateY(0) rotate(6deg); }
+      100% { transform: translateY(-16px) rotate(-6deg); }
+    }
+    @media (max-width: 640px) {
+      .math-decor-item { display: none; }
     }
   `]
 })
@@ -2271,7 +2363,13 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
 
   getOffsetsForNodes(item: any): number[] {
     if (!item.nodes) return [0];
-    if (item.nodes!.length === 1) return [0];
+    if (item.nodes!.length === 1) {
+      if (this.hasTreeLayout()) {
+        return [0];
+      } else {
+        return [this.getOffset(item.nodes[0].nodeIndex)];
+      }
+    }
     const zig = this.getAccordionZigzag(item.rowIndex!);
     if (item.nodes!.length === 2) return [-164 + zig, 164 - zig];
     // For 3 nodes: left zigzags, center is 0, right zigzags opposite
@@ -2294,6 +2392,22 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const items = this.pathItems();
     const next = items[index + 1];
     return next ? next.type === 'chapter' : false;
+  }
+
+  getUpwardChapterConnection(index: number): string {
+    const items = this.pathItems();
+    const item = items[index];
+    const x1 = this.getOffsetsForNodes(item)[0];
+    return `M ${x1} 150 C ${x1} 98, 0 52, 0 0`;
+  }
+
+  getUpwardChapterColor(index: number): string {
+    const items = this.pathItems();
+    const chapterItem = items[index - 1];
+    if (chapterItem && chapterItem.type === 'chapter') {
+      return this.isGuideCompleted(chapterItem.capituloId) ? '#58cc02' : '#e5e5e5';
+    }
+    return '#e5e5e5';
   }
 
   getChapterConnections(index: number): { d: string, color: string, dasharray?: string }[] {
