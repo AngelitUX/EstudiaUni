@@ -12,7 +12,6 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-<<<<<<< HEAD
     <div class="test-page" *ngIf="test() as t" [ngClass]="'level-' + questionLevel().num">
       <!-- Watermark Math Ornaments -->
       <div class="math-bg-ornaments">
@@ -24,9 +23,6 @@ import { ToastService } from '../../core/services/toast.service';
         <div class="math-sym sym-6">100%</div>
       </div>
 
-=======
-    <div class="test-page" [class.boss-mode]="isBossMode()" [class.final-boss-mode]="isFinalBoss()" [class.taking-damage]="takingDamage()" *ngIf="test() as t">
->>>>>>> origin/arreglarRutaFisica
       <!-- TOP BAR -->
       <div class="top-bar" [class.boss-bar]="isBossMode()">
         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
@@ -64,14 +60,9 @@ import { ToastService } from '../../core/services/toast.service';
 
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
-<<<<<<< HEAD
         <div class="question-counter" style="display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; position: relative; z-index: 10;">
           <span>Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}</span>
           <span class="level-badge" [ngClass]="questionLevel().class">{{ questionLevel().label }}</span>
-=======
-        <div class="question-counter">
-          Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}
->>>>>>> origin/arreglarRutaFisica
         </div>
 
         <div class="question-card" [class.boss-card]="isBossMode()" [class.split-layout]="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)" *ngIf="currentQuestion() as q">
@@ -124,7 +115,6 @@ import { ToastService } from '../../core/services/toast.service';
             </button>
           </div>
 
-<<<<<<< HEAD
           <!-- FEEDBACK -->
           <div class="feedback-bar" *ngIf="showFeedback()"
             [class.correct]="isCurrentCorrect()"
@@ -141,16 +131,6 @@ import { ToastService } from '../../core/services/toast.service';
                   <strong style="color: #166534; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</strong>
                   <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
                 </div>
-=======
-            <!-- FEEDBACK -->
-            <div class="feedback-bar" *ngIf="showFeedback()"
-              [class.correct]="isCurrentCorrect()"
-              [class.wrong]="!isCurrentCorrect()">
-              <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
-              <div class="feedback-body">
-                <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
-                <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
->>>>>>> origin/arreglarRutaFisica
               </div>
             </div>
           </div> <!-- End split-left -->
@@ -573,6 +553,13 @@ import { ToastService } from '../../core/services/toast.service';
   `]
 })
 export class SeccionTestMathComponent implements OnInit, OnDestroy {
+  // Mock de propiedades para ignorar lógica de Boss Mode en Matemáticas
+  livesArray = computed(() => []);
+  isMathModule = computed(() => true);
+  isBossMode = computed(() => false);
+  isFinalBoss = computed(() => false);
+  takingDamage = computed(() => false);
+
   private platformId = inject(PLATFORM_ID);
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);

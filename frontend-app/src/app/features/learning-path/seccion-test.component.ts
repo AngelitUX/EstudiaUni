@@ -12,21 +12,7 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-<<<<<<< HEAD
-    <div class="test-page" *ngIf="test() as t" [ngClass]="'level-' + questionLevel().num">
-      <!-- Watermark Math Ornaments -->
-      <div class="math-bg-ornaments">
-        <div class="math-sym sym-1">∑ xᵢ</div>
-        <div class="math-sym sym-2">π ≈ 3.14</div>
-        <div class="math-sym sym-3">√a² + b²</div>
-        <div class="math-sym sym-4">f(x) = mx + c</div>
-        <div class="math-sym sym-5">x ∈ ℤ</div>
-        <div class="math-sym sym-6">100%</div>
-      </div>
-
-=======
     <div class="test-page" [class.boss-mode]="isBossMode()" [class.final-boss-mode]="isFinalBoss()" [class.taking-damage]="takingDamage()" *ngIf="test() as t">
->>>>>>> origin/arreglarRutaFisica
       <!-- TOP BAR -->
       <div class="top-bar" [class.boss-bar]="isBossMode()">
         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
@@ -64,14 +50,8 @@ import { ToastService } from '../../core/services/toast.service';
 
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
-<<<<<<< HEAD
-        <div class="question-counter" style="display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; position: relative; z-index: 10;">
-          <span>Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}</span>
-          <span class="level-badge" [ngClass]="questionLevel().class">{{ questionLevel().label }}</span>
-=======
         <div class="question-counter">
           Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}
->>>>>>> origin/arreglarRutaFisica
         </div>
 
         <div class="question-card" [class.boss-card]="isBossMode()" [class.split-layout]="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)" *ngIf="currentQuestion() as q">
@@ -124,24 +104,6 @@ import { ToastService } from '../../core/services/toast.service';
             </button>
           </div>
 
-<<<<<<< HEAD
-          <!-- FEEDBACK -->
-          <div class="feedback-bar" *ngIf="showFeedback()"
-            [class.correct]="isCurrentCorrect()"
-            [class.wrong]="!isCurrentCorrect()">
-            <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
-            <div class="feedback-body">
-              <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
-              <div *ngIf="isCurrentCorrect()">
-                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
-              </div>
-              <div *ngIf="!isCurrentCorrect()">
-                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_error)"></p>
-                <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
-                  <strong style="color: #166534; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</strong>
-                  <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
-                </div>
-=======
             <!-- FEEDBACK -->
             <div class="feedback-bar" *ngIf="showFeedback()"
               [class.correct]="isCurrentCorrect()"
@@ -150,7 +112,6 @@ import { ToastService } from '../../core/services/toast.service';
               <div class="feedback-body">
                 <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
                 <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
->>>>>>> origin/arreglarRutaFisica
               </div>
             </div>
           </div> <!-- End split-left -->
@@ -191,7 +152,6 @@ import { ToastService } from '../../core/services/toast.service';
             class="dot"
             [class.answered]="answers().has(p.id)"
             [class.current]="i === currentIndex()"
-            [ngClass]="getDotLevelClass(p)"
             (click)="!showFeedback() && goToQuestion(i)"></span>
         </div>
 
