@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
-import { KatexService } from '../../core/services/katex.service';
+import { MathKatexService } from '../../core/services/math-katex.service';
 
 
 @Component({
@@ -267,7 +267,7 @@ export class SeccionTestReviewMathComponent {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private katexSvc = inject(KatexService);
+  private katexSvc = inject(MathKatexService);
   private sanitizer = inject(DomSanitizer);
 
 

@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
-import { KatexService } from '../../core/services/katex.service';
+import { MathKatexService } from '../../core/services/math-katex.service';
 import { ToastService } from '../../core/services/toast.service';
 
 
@@ -561,7 +561,7 @@ export class SeccionTestMathComponent implements OnInit, OnDestroy {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private katex = inject(KatexService);
+  private katex = inject(MathKatexService);
   private sanitizer = inject(DomSanitizer);
   private toastSvc = inject(ToastService);
 
