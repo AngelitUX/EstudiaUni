@@ -133,7 +133,8 @@ import { ToastService } from '../../core/services/toast.service';
                 </div>
               </div>
             </div>
-          </div> <!-- End split-left -->
+          </div> <!-- End feedback-bar -->
+        </div> <!-- End split-left -->
 
           <div class="split-right" *ngIf="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)">
             <img *ngIf="q.preambulo_imagen_url || q.imageUrl" [src]="q.preambulo_imagen_url || q.imageUrl" alt="Imagen de apoyo de física" class="physics-support-img" />
