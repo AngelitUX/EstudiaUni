@@ -643,30 +643,9 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return mId ? mId.toLowerCase().includes('mat') : false;
   });
 
-<<<<<<< HEAD
-  questionLevel = computed(() => {
-    const q = this.currentQuestion() as any;
-    const lvl = q?.nivel || 1;
-    if (lvl === 1) return { num: 1, label: '⚡ Nivel 1: Mecánica Directa', class: 'lvl-1' };
-    if (lvl === 2) return { num: 2, label: '💼 Nivel 2: Contexto Cotidiano', class: 'lvl-2' };
-    return { num: 3, label: '🧠 Nivel 3: Análisis y Trampas', class: 'lvl-3' };
-  });
-
-  getDotLevelClass(question: any): string {
-    const lvl = question?.nivel || 1;
-    if (lvl === 1) return 'dot-lvl-1';
-    if (lvl === 2) return 'dot-lvl-2';
-    return 'dot-lvl-3';
-  }
-
-  currentQuestion = computed(() => {
-    const t = this.test();
-    return t ? t.preguntas[this.currentIndex()] : undefined;
-=======
   isScienceOrMath = computed(() => {
     const id = this.materiaId().toLowerCase();
     return id.includes('mat') || id.includes('ciencias') || id.includes('fisica');
->>>>>>> origin/arreglarRutaFisica
   });
 
   maxLives = computed(() => this.isFinalBoss() ? 5 : 3);
@@ -1148,46 +1127,8 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustHtml(unescapedHtml);
   }
 
-<<<<<<< HEAD
-=======
   renderSvg(svg: string | null | undefined): SafeHtml {
     if (!svg) return '';
     return this.sanitizer.bypassSecurityTrustHtml(svg);
   }
-  /*
-    // =========================================================================
-    // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO DELETE LATER)
-    // =========================================================================
-    @HostListener('window:keydown', ['$event'])
-    handleKeyboardEvent(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-  
-      // Select alternative
-      if (key === 'z') this.selectAnswerForCurrent('A');
-      if (key === 'x') this.selectAnswerForCurrent('B');
-      if (key === 'c') this.selectAnswerForCurrent('C');
-      if (key === 'v') this.selectAnswerForCurrent('D');
-  
-      // Check answer or go to next (Enter or Right Arrow)
-      if (key === 'arrowright' || key === 'enter') {
-        if (!this.showFeedback() && this.hasCurrentAnswer()) {
-          this.checkAnswer();
-        } else if (this.showFeedback()) {
-          if (!this.isLastQuestion()) {
-            this.nextQuestion();
-          } else {
-            this.submitTest();
-          }
-        }
-      }
-    }
-  
-    private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
-      const q = this.currentQuestion();
-      if (q) {
-        this.selectAnswer(q.id, option);
-      }
-    }
-      */
->>>>>>> origin/arreglarRutaFisica
 }

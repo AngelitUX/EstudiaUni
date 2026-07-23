@@ -74,6 +74,8 @@ export interface PreguntaTest {
   texto_index?: number;                    // Índice del texto contextual correspondiente (ej: para desafíos con múltiples textos)
   preambulo_texto?: string | null;         // Citas cortas (Historia/Ciencias)
   preambulo_imagen_url?: string | null;    // Imagen de apoyo (Ciencias/Matemáticas)
+  imageUrl?: string | null;                // Imagen alternativa
+  svgContent?: string | null;              // Contenido SVG de física
   enunciado: string;
   formula_latex?: string | null;           // Fórmulas LaTeX (Matemáticas M1/M2)
   tipo_alternativas?: 'texto' | 'imagen';  // Flag para renderizado dinámico
