@@ -556,9 +556,6 @@ export class SeccionTestMathComponent implements OnInit, OnDestroy {
   // Mock de propiedades para ignorar lógica de Boss Mode en Matemáticas
   livesArray = computed(() => []);
   isMathModule = computed(() => true);
-  isBossMode = computed(() => false);
-  isFinalBoss = computed(() => false);
-  takingDamage = computed(() => false);
 
   private platformId = inject(PLATFORM_ID);
   private paes = inject(PaesContentService);
