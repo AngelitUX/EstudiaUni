@@ -47,7 +47,7 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
 
         <!-- GENERIC SECTIONS for other chapters -->
         <ng-container *ngIf="!hasSlides(cap)">
-          <div *ngFor="let sec of cap.secciones; let i = index" class="theory-card">
+          <div *ngFor="let sec of getTheorySections(cap); let i = index" class="theory-card">
             <h2 class="sec-title"><span class="sec-num">{{ i + 1 }}</span> {{ sec.title }}</h2>
             <div class="theory-card-content">
               <div class="theory-text">
@@ -63,6 +63,9 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
               </div>
               <div class="theory-image-container" *ngIf="sec.imageUrl">
                 <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="theory-image">
+              </div>
+              <div class="theory-svg-container" *ngIf="sec.svgContent">
+                <div [innerHTML]="renderSvg(sec.svgContent)" class="theory-svg"></div>
               </div>
             </div>
           </div>
@@ -113,8 +116,9 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data'
     
     .theory-intro { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.7; margin: 0 0 1.5rem; }
     
-    .theory-image-container { display: flex; align-items: flex-start; justify-content: center; }
+    .theory-image-container, .theory-svg-container { display: flex; align-items: flex-start; justify-content: center; }
     .theory-image { width: 100%; max-width: 320px; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); border: 4px solid rgba(255,255,255,0.8); object-fit: cover; }
+    .theory-svg { width: 100%; max-width: 380px; }
     
     /* TIPS BOX REDESIGN */
     .tips-box { background: linear-gradient(135deg, rgba(28, 176, 246, 0.05), rgba(28, 176, 246, 0.1)); border-radius: 16px; padding: 1.5rem; border-left: 4px solid #1cb0f6; }
@@ -181,6 +185,11 @@ export class CapituloDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 
+  renderSvg(svg: string | undefined): SafeHtml {
+    if (!svg) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
+  }
+
   finishGuide() {
     this.paes.markSeccionCompleted('guide_' + this.capituloId());
     const nextUrl = this.paes.getNextNodeUrl(this.materiaId());
@@ -207,6 +216,16 @@ export class CapituloDetailComponent {
     if (cap.slides && cap.slides.length > 0) return cap.slides;
     if (cap.secciones && cap.secciones.length > 0) return this.buildDynamicSlides(cap);
     return [];
+  }
+
+  getTheorySections(cap: any): any[] {
+    if (!cap.secciones) return [];
+    // Hide practices, bosses, and roots from the theory summary list
+    return cap.secciones.filter((sec: any) => 
+      !sec.isPractice && 
+      !sec.id.includes('boss') && 
+      !sec.id.includes('root')
+    );
   }
 
   getQuizzes(cap: any): any {
@@ -239,8 +258,9 @@ export class CapituloDetailComponent {
       ? `<div class="tips-box-premium"><h3>💡 Conceptos clave:</h3><ul class="tips-list-premium">${bullets}</ul></div>`
       : '';
     const imgHtml = sec.imageUrl ? `<div class="slide-image-wrap-large"><img src="${sec.imageUrl}" class="slide-image-premium" alt="Imagen ${sec.title}"></div>` : '';
+    const svgHtml = sec.svgContent ? `<div class="slide-svg-wrap-large">${sec.svgContent}</div>` : '';
     
-    return `${intro}${tips}${imgHtml}`;
+    return `${intro}${tips}${imgHtml}${svgHtml}`;
   }
 
   private getSlideIcon(index: number): string {

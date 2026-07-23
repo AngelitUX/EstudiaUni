@@ -90,6 +90,16 @@ export const routes: Routes = [
     canActivate: [authGuard, emailVerifiedGuard]
   },
   {
+    path: 'test-math/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-test-math.component').then(m => m.SeccionTestMathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'test-math/:seccionId/review',
+    loadComponent: () => import('./features/learning-path/seccion-test-review-math.component').then(m => m.SeccionTestReviewMathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
     path: 'test/:seccionId',
     loadComponent: () => import('./features/learning-path/seccion-test.component').then(m => m.SeccionTestComponent),
     canActivate: [authGuard, emailVerifiedGuard]

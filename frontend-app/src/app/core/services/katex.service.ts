@@ -78,7 +78,9 @@ export class KatexService {
 
     let lastIndex = 0;
     let result = '';
-    const regex = /\$(.+?)\$/g;
+    // This regex matches either $$...$$ or $...$. 
+    // Group 1 is the delimiter ($$ or $), Group 2 is the content.
+    const regex = /(\$\$?)(.+?)\1/g;
     let match;
 
     while ((match = regex.exec(placeholderText)) !== null) {
@@ -86,11 +88,12 @@ export class KatexService {
       const normalText = placeholderText.substring(lastIndex, match.index);
       result += this.escapeHtml(normalText).replace(/\n/g, '&lt;br&gt;');
       
-      const latexBlock = match[1].replace(/%%%DOLLAR%%%/g, '\\$');
+      const isDisplayMode = match[1] === '$$';
+      const latexBlock = match[2].replace(/%%%DOLLAR%%%/g, '\\$');
       
       // Renderizamos el bloque con KaTeX (retorna un string HTML internamente)
       const latexHtml = katex.renderToString(latexBlock, {
-        displayMode: false,
+        displayMode: isDisplayMode,
         throwOnError: false,
         trust: true,
         strict: false,

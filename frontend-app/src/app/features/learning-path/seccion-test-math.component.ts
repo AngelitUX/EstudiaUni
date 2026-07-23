@@ -8,7 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 
 
 @Component({
-  selector: 'app-seccion-test',
+  selector: 'app-seccion-test-math',
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -66,7 +66,7 @@ import { ToastService } from '../../core/services/toast.service';
       <div class="question-area">
 <<<<<<< HEAD
         <div class="question-counter" style="display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; position: relative; z-index: 10;">
-          <span>Pregunta {{ currentIndex() + 1 }} de {{ t.preguntas.length }}</span>
+          <span>Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}</span>
           <span class="level-badge" [ngClass]="questionLevel().class">{{ questionLevel().label }}</span>
 =======
         <div class="question-counter">
@@ -572,7 +572,7 @@ import { ToastService } from '../../core/services/toast.service';
     }
   `]
 })
-export class SeccionTestComponent implements OnInit, OnDestroy {
+export class SeccionTestMathComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
@@ -1051,7 +1051,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       sessionStorage.removeItem(this.getStorageKey());
     }
     this.paes.submitTest(this.seccionId(), this.answers());
-    this.router.navigate(['/test', this.seccionId(), 'review']);
+    this.router.navigate(['/test-math', this.seccionId(), 'review']);
   }
 
   confirmExit() {
