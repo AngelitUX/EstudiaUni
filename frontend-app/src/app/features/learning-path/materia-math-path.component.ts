@@ -26,11 +26,11 @@ type PathItem = {
 };
 
 @Component({
-  selector: 'app-materia-path',
+  selector: 'app-materia-math-path',
   standalone: true,
   imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
   template: `
-    <div class="lp-layout">
+    <div class="lp-layout" [ngClass]="materiaId() === 'mat1' ? 'materia-mat1' : 'materia-mat2'">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -150,6 +150,15 @@ type PathItem = {
             <ng-container *ngFor="let item of pathItems(); let i = index">
               <!-- CHAPTER SPLASH BANNER -->
               <div *ngIf="item.type === 'chapter'" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <!-- SIMBOLOS DE CAPITULO (M1 vs M2) -->
+                <ng-container *ngIf="materiaId() === 'mat1'">
+                  <div class="math-decor-item decor-left" style="top: 20%;">π</div>
+                  <div class="math-decor-item decor-right" style="top: 60%;">√x</div>
+                </ng-container>
+                <ng-container *ngIf="materiaId() === 'mat2'">
+                  <div class="math-decor-item decor-left" style="top: 20%;">lim</div>
+                  <div class="math-decor-item decor-right" style="top: 60%;">f'(x)</div>
+                </ng-container>
                 <div class="chapter-splash" [ngClass]="[item.capituloId, getChapterProgress(item.capituloId).pct === 100 ? 'chapter-completed' : '']" style="margin-bottom: 7rem; width: 100%;">
                   <div class="splash-bg-pattern"></div>
                   <div class="splash-inner">
@@ -208,33 +217,44 @@ type PathItem = {
                 <!-- Visual separator -->
                 <div class="splash-separator">
                   <div class="sep-line"></div>
-                  <span class="sep-text">Tu ruta comienza aquí ↓</span>
+                  <span class="sep-text">🏁 Tu ruta comienza aquí ↓</span>
                   <div class="sep-line"></div>
                 </div>
-              </div>
-              
-              <!-- CONEXION DE CAPITULO A NODO -->
-              <svg class="path-svg" *ngIf="item.type === 'chapter' && !isLastPathItem(item)" style="height: 148px; top: calc(100% - 7rem); z-index: -1;">
-                <path *ngFor="let conn of getChapterConnections(i)"
-                      [attr.d]="conn.d"
-                      [attr.stroke]="conn.color"
-                      [attr.stroke-dasharray]="conn.dasharray"
-                      fill="none" stroke-width="8" stroke-linecap="round" />
-              </svg>
+                </div>
             </div>
 
             <!-- SECTION NODE ROW -->
             <div *ngIf="item.type === 'node-row'" class="node-row" 
                  [style.margin-bottom]="hasTreeLayout() ? '7.5rem' : '6.5rem'">
+              <!-- SIMBOLOS DE LECCION ALTERNADOS (M1 vs M2) -->
+              <ng-container *ngIf="materiaId() === 'mat1'">
+                <div *ngIf="i % 4 === 0" class="math-decor-item decor-left" style="top: 0px;">∑</div>
+                <div *ngIf="i % 4 === 1" class="math-decor-item decor-right" style="top: 0px;">∞</div>
+                <div *ngIf="i % 4 === 2" class="math-decor-item decor-left" style="top: 0px;">%</div>
+                <div *ngIf="i % 4 === 3" class="math-decor-item decor-right" style="top: 0px;">∫</div>
+              </ng-container>
+              <ng-container *ngIf="materiaId() === 'mat2'">
+                <div *ngIf="i % 4 === 0" class="math-decor-item decor-left" style="top: 0px;">log x</div>
+                <div *ngIf="i % 4 === 1" class="math-decor-item decor-right" style="top: 0px;">θ</div>
+                <div *ngIf="i % 4 === 2" class="math-decor-item decor-left" style="top: 0px;">λ</div>
+                <div *ngIf="i % 4 === 3" class="math-decor-item decor-right" style="top: 0px;">u·v</div>
+              </ng-container>
+              
+              <!-- SVG CONECTOR HACIA EL CAPITULO DE ARRIBA (Invertido) -->
+              <svg class="path-svg" *ngIf="i > 0 && pathItems()[i - 1].type === 'chapter'" style="height: 150px; top: -114px; z-index: -1;">
+                <path [attr.d]="getUpwardChapterConnection(i)"
+                      [attr.stroke]="getUpwardChapterColor(i)"
+                      fill="none" stroke-width="12" stroke-linecap="round" />
+              </svg>
               
               <!-- SVG CAMINITO CONECTOR -->
-              <svg class="path-svg" *ngIf="hasTreeLayout() && !isLastPathItem(item)" 
-                   [style.height]="isNextChapter(i) ? '156px' : 'calc(72px + 7.5rem)'">
+              <svg class="path-svg" *ngIf="!isLastPathItem(item)" 
+                   [style.height]="isNextChapter(i) ? '156px' : (hasTreeLayout() ? 'calc(72px + 7.5rem)' : 'calc(72px + 6.5rem)')">
                 <path *ngFor="let conn of getConnections(i)"
                       [attr.d]="conn.d"
                       [attr.stroke]="conn.color"
                       [attr.stroke-dasharray]="conn.dasharray"
-                      fill="none" stroke-width="8" stroke-linecap="round" />
+                      fill="none" stroke-width="12" stroke-linecap="round" />
               </svg>
                 
                 <div class="node-wrapper" 
@@ -348,10 +368,6 @@ type PathItem = {
             </div>
           </div>
 
-          <div style="font-size: 0.85rem; color: #4b5563; text-align: center; margin-bottom: 1rem; padding: 0.6rem; background: rgba(0,0,0,0.04); border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 500; border: 1px solid rgba(0,0,0,0.05);">
-            💡 <span>Si no visualizas bien la simulación, usa el botón <strong>↗ Ampliar</strong> de arriba.</span>
-          </div>
-          
           <div class="sim-chapter-groups">
             <select class="sim-chapter-select" (change)="setSimChapter($event)">
               <option value="0" [selected]="selectedSimChapterIndex === 0">1 — Mecánica</option>
@@ -370,18 +386,15 @@ type PathItem = {
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
               <button class="sim-tab" [class.active]="activeSimTab === 'waves'" (click)="setSimTab('waves')">〜 Onda Sinusoidal</button>
               <button class="sim-tab" [class.active]="activeSimTab === 'interference'" (click)="setSimTab('interference')">🔀 Interferencia</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'optics'" (click)="setSimTab('optics')">🔍 Óptica y Lentes</button>
             </div>
             <!-- CAP 3: Energía -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
               <button class="sim-tab" [class.active]="activeSimTab === 'pendulum'" (click)="setSimTab('pendulum')">🕰️ Péndulo</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'calorimetry'" (click)="setSimTab('calorimetry')">🌡️ Calorimetría</button>
             </div>
             <!-- CAP 4: Electricidad -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
               <button class="sim-tab" [class.active]="activeSimTab === 'coulomb'" (click)="setSimTab('coulomb')">⚡ Ley de Coulomb</button>
               <button class="sim-tab" [class.active]="activeSimTab === 'circuit'" (click)="setSimTab('circuit')">🔋 Circuito Ohm</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'faraday'" (click)="setSimTab('faraday')">🧲 Ley de Faraday</button>
             </div>
             <!-- CAP 5: Tierra y Universo -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 4">
@@ -595,100 +608,6 @@ type PathItem = {
             </div>
           </div>
 
-          
-          <!-- ═══ CALORIMETRY SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'calorimetry'">
-            <div class="sim-info-badge">🌡️ Calorimetría — Equilibrio térmico de mezclas</div>
-            <canvas #calorimetryCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Masa 1: <strong>{{ calMass1 }} g</strong></label>
-                <input type="range" min="10" max="500" [value]="calMass1" (input)="calMass1 = +$any($event.target).value; drawCalorimetry()">
-              </div>
-              <div class="sim-control-row">
-                <label>Temp 1: <strong>{{ calTemp1 }} °C</strong></label>
-                <input type="range" min="0" max="100" [value]="calTemp1" (input)="calTemp1 = +$any($event.target).value; drawCalorimetry()">
-              </div>
-              <div class="sim-control-row">
-                <label>Masa 2: <strong>{{ calMass2 }} g</strong></label>
-                <input type="range" min="10" max="500" [value]="calMass2" (input)="calMass2 = +$any($event.target).value; drawCalorimetry()">
-              </div>
-              <div class="sim-control-row">
-                <label>Temp 2: <strong>{{ calTemp2 }} °C</strong></label>
-                <input type="range" min="0" max="100" [value]="calTemp2" (input)="calTemp2 = +$any($event.target).value; drawCalorimetry()">
-              </div>
-            </div>
-            <div class="sim-stats">
-              <div class="proj-stat full" (mouseenter)="hoveredFormula = 'T_eq = (m₁T₁ + m₂T₂) / (m₁ + m₂)'" (mouseleave)="hoveredFormula = ''">
-                <span>Temp. de Equilibrio</span>
-                <strong>{{ calTeq | number:'1.1-1' }} °C</strong>
-              </div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Equilibrio</span><span class="formula-text">T_eq = (m₁T₁ + m₂T₂) / (m₁ + m₂)</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ OPTICS SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'optics'">
-            <div class="sim-info-badge">🔍 Óptica Geométrica — Formación de imagen en Lente Convergente</div>
-            <canvas #opticsCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Foco (f): <strong>{{ optFocal }} cm</strong></label>
-                <input type="range" min="20" max="80" [value]="optFocal" (input)="optFocal = +$any($event.target).value; drawOptics()">
-              </div>
-              <div class="sim-control-row">
-                <label>Dist. Objeto (do): <strong>{{ optDist }} cm</strong></label>
-                <input type="range" min="10" max="250" [value]="optDist" (input)="optDist = +$any($event.target).value; drawOptics()">
-              </div>
-              <div class="sim-control-row">
-                <label>Alt. Objeto (ho): <strong>{{ optHeight }} cm</strong></label>
-                <input type="range" min="10" max="80" [value]="optHeight" (input)="optHeight = +$any($event.target).value; drawOptics()">
-              </div>
-            </div>
-            <div class="sim-stats">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = '1/f = 1/do + 1/di'" (mouseleave)="hoveredFormula = ''"><span>Dist. Imagen (di)</span><strong>{{ getOpticsDi() | number:'1.1-1' }} cm</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'M = -di / do'" (mouseleave)="hoveredFormula = ''"><span>Aumento (M)</span><strong>{{ getOpticsM() | number:'1.2-2' }} x</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'hi = M · ho'" (mouseleave)="hoveredFormula = ''"><span>Alt. Imagen (hi)</span><strong>{{ getOpticsHi() | number:'1.1-1' }} cm</strong></div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Ecuación Lentes</span><span class="formula-text">1/f = 1/do + 1/di</span></div>
-              <div class="sim-formula"><span class="formula-label">Aumento</span><span class="formula-text">M = -di / do</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ FARADAY SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'faraday'">
-            <div class="sim-info-badge">🧲 Ley de Faraday — Inducción electromagnética por flujo magnético</div>
-            <canvas #faradayCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Espiras (N): <strong>{{ faraN }}</strong></label>
-                <input type="range" min="1" max="10" [value]="faraN" (input)="faraN = +$any($event.target).value">
-              </div>
-              <div class="sim-control-row">
-                <label>Área (A): <strong>{{ faraArea }}</strong></label>
-                <input type="range" min="1" max="20" [value]="faraArea" (input)="faraArea = +$any($event.target).value">
-              </div>
-              <div class="sim-control-row">
-                <label>Velocidad imán: <strong>{{ faraSpeed }}</strong></label>
-                <input type="range" min="1" max="15" [value]="faraSpeed" (input)="faraSpeed = +$any($event.target).value">
-              </div>
-              <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="toggleFaraday()">{{ faraRunning ? '⏸ Pausar' : '▶ Animar' }}</button>
-              </div>
-            </div>
-            <div class="sim-stats">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Φ = B · A'" (mouseleave)="hoveredFormula = ''"><span>Flujo (Φ)</span><strong>{{ faraFlux | number:'1.1-1' }} Wb</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'ε = -N · (ΔΦ/Δt)'" (mouseleave)="hoveredFormula = ''"><span>FEM inducida</span><strong>{{ faraEmf | number:'1.2-2' }} V</strong></div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Flujo Magnético</span><span class="formula-text">Φ = B · A · cos(θ)</span></div>
-              <div class="sim-formula"><span class="formula-label">Ley Faraday</span><span class="formula-text">ε = -N · (ΔΦ/Δt)</span></div>
-            </div>
-          </div>
-
           <!-- ═══ ORBIT SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'orbit'">
             <div class="sim-info-badge">🪐 Órbita planetaria — gravedad y velocidad orbital</div>
@@ -747,8 +666,32 @@ type PathItem = {
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
-    .lp-layout { display: flex; min-height: 100vh; }
+    :host {
+      display: block;
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+    .lp-layout.materia-mat1 {
+      background-color: #f5f3ff;
+      background-image: 
+        radial-gradient(circle at 100% 150%, #c7d2fe 0%, transparent 60%),
+        radial-gradient(circle at 0% 0%, #ddd6fe 0%, transparent 60%),
+        radial-gradient(#855cd6 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
+    }
+    .lp-layout.materia-mat2 {
+      background-color: #f0fdfa;
+      background-image: 
+        radial-gradient(circle at 100% 150%, #99f6e4 0%, transparent 60%),
+        radial-gradient(circle at 0% 0%, #bae6fd 0%, transparent 60%),
+        radial-gradient(#0d9488 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
+    }
+    .lp-layout {
+      display: flex;
+      min-height: 100vh;
+      transition: background-color 0.3s ease;
+    }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
@@ -877,7 +820,15 @@ type PathItem = {
     .btn-back:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateX(-4px); }
 
     /* PATH CONTAINER */
-    .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; }
+    .duo-path-container {
+      position: relative;
+      background: transparent;
+      padding: 4rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: visible;
+    }
 
     /* CHAPTER SPLASH BANNER */
     .chapter-splash { width: 100%; max-width: 600px; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 1.5px solid rgba(133,92,214,0.25); box-shadow: 0 16px 40px rgba(133,92,214,0.12), inset 0 2px 4px rgba(255,255,255,0.8); background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 100%); transition: all 0.3s ease; }
@@ -1471,9 +1422,49 @@ type PathItem = {
       .node-active .node-inner { width: 68px; height: 68px; }
       .node-icon { width: 28px; height: 28px; }
     }
+
+    /* DECORACIONES MATEMATICAS FLOTANTES (PROPUESTA 2) */
+    .math-decor-item {
+      position: absolute;
+      font-size: 3rem;
+      font-weight: 800;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      font-family: 'Outfit', sans-serif;
+      opacity: 0.22;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .materia-mat1 .math-decor-item {
+      background-image: linear-gradient(135deg, #7c3aed, #2563eb);
+    }
+    .materia-mat2 .math-decor-item {
+      background-image: linear-gradient(135deg, #0d9488, #059669);
+    }
+    .decor-left {
+      left: 10px;
+      animation: floatLeft 7s ease-in-out infinite alternate;
+    }
+    .decor-right {
+      right: 10px;
+      animation: floatRight 9s ease-in-out infinite alternate;
+    }
+    @keyframes floatLeft {
+      0% { transform: translateY(0) rotate(-6deg); }
+      100% { transform: translateY(-16px) rotate(6deg); }
+    }
+    @keyframes floatRight {
+      0% { transform: translateY(0) rotate(6deg); }
+      100% { transform: translateY(-16px) rotate(-6deg); }
+    }
+    @media (max-width: 640px) {
+      .math-decor-item { display: none; }
+    }
   `]
 })
-export class MateriaPathComponent implements AfterViewInit, OnDestroy {
+export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -1491,23 +1482,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   simPanelOpen = false;
   simExpanded = false;
   selectedSimChapterIndex = 0;
-  activeSimTab: 'waves' | 'interference' | 'projectile' | 'inclined' | 'pendulum' | 'coulomb' | 'circuit' | 'orbit' | 'calorimetry' | 'optics' | 'faraday' = 'projectile';
-
-  // Calorimetry
-  calMass1 = 100; calTemp1 = 80;
-  calMass2 = 100; calTemp2 = 20;
-  calTeq = 50;
-
-  // Optics
-  optFocal = 50; optDist = 120; optHeight = 40;
-
-  // Faraday
-  faraSpeed = 5; faraN = 3; faraArea = 10;
-  faraFlux = 0; faraEmf = 0;
-  faraMagnetX = 0;
-  faraRunning = false; faraAnimReq: any;
-  faraMagnetDir = 1;
-
+  activeSimTab: 'waves' | 'interference' | 'projectile' | 'inclined' | 'pendulum' | 'coulomb' | 'circuit' | 'orbit' = 'projectile';
   hoveredFormula = '';
 
   toggleSimExpand() {
@@ -1591,9 +1566,6 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   @ViewChild('coulombCanvas') coulombCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('circuitCanvas') circuitCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('orbitCanvas') orbitCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('calorimetryCanvas') calorimetryCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('opticsCanvas') opticsCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('faradayCanvas') faradayCanvasRef!: ElementRef<HTMLCanvasElement>;
 
 
   get herramientasExpanded(): boolean {
@@ -1682,7 +1654,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  setSimTab(tab: 'waves' | 'interference' | 'projectile' | 'inclined' | 'pendulum' | 'coulomb' | 'circuit' | 'orbit' | 'calorimetry' | 'optics' | 'faraday') {
+  setSimTab(tab: 'waves' | 'interference' | 'projectile' | 'inclined' | 'pendulum' | 'coulomb' | 'circuit' | 'orbit') {
     this.activeSimTab = tab;
     // Stop all animations
     this.waveAnimating = false; cancelAnimationFrame(this.waveAnimFrame);
@@ -1717,9 +1689,6 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     else if (this.activeSimTab === 'coulomb') this.drawCoulomb();
     else if (this.activeSimTab === 'circuit') this.drawCircuit();
     else if (this.activeSimTab === 'orbit') this.resetOrbit();
-    else if (this.activeSimTab === 'calorimetry') this.drawCalorimetry();
-    else if (this.activeSimTab === 'optics') this.drawOptics();
-    else if (this.activeSimTab === 'faraday') this.resetFaraday();
   }
 
   // ─── Wave Simulator ───
@@ -2354,7 +2323,13 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   }
 
   constructor() {
-    this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
+    let id = this.route.snapshot.paramMap.get('materiaId') || this.route.snapshot.data['materiaId'];
+    if (!id) {
+      const url = this.router.url;
+      if (url.includes('/mat1')) id = 'mat1';
+      else if (url.includes('/mat2')) id = 'mat2';
+    }
+    this.materiaId.set(id || '');
   }
 
   getOffset(index: number): number {
@@ -2388,7 +2363,13 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
   getOffsetsForNodes(item: any): number[] {
     if (!item.nodes) return [0];
-    if (item.nodes!.length === 1) return [0];
+    if (item.nodes!.length === 1) {
+      if (this.hasTreeLayout()) {
+        return [0];
+      } else {
+        return [this.getOffset(item.nodes[0].nodeIndex)];
+      }
+    }
     const zig = this.getAccordionZigzag(item.rowIndex!);
     if (item.nodes!.length === 2) return [-164 + zig, 164 - zig];
     // For 3 nodes: left zigzags, center is 0, right zigzags opposite
@@ -2411,6 +2392,22 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     const items = this.pathItems();
     const next = items[index + 1];
     return next ? next.type === 'chapter' : false;
+  }
+
+  getUpwardChapterConnection(index: number): string {
+    const items = this.pathItems();
+    const item = items[index];
+    const x1 = this.getOffsetsForNodes(item)[0];
+    return `M ${x1} 150 C ${x1} 98, 0 52, 0 0`;
+  }
+
+  getUpwardChapterColor(index: number): string {
+    const items = this.pathItems();
+    const chapterItem = items[index - 1];
+    if (chapterItem && chapterItem.type === 'chapter') {
+      return this.isGuideCompleted(chapterItem.capituloId) ? '#58cc02' : '#e5e5e5';
+    }
+    return '#e5e5e5';
   }
 
   getChapterConnections(index: number): { d: string, color: string, dasharray?: string }[] {
@@ -2716,354 +2713,6 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   confirmLogout() {
     this.showLogoutConfirm = true;
   }
-
-  
-  // ═══ CALORIMETRY SIMULATOR ═══
-  drawCalorimetry() {
-    this.calTeq = (this.calMass1 * this.calTemp1 + this.calMass2 * this.calTemp2) / (this.calMass1 + this.calMass2);
-    if (!this.calorimetryCanvasRef) {
-      setTimeout(() => this.drawCalorimetry(), 50);
-      return;
-    }
-    const canvas = this.calorimetryCanvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    if(!ctx) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    if (canvas.width !== rect.width * 2) {
-      canvas.width = rect.width * 2;
-      canvas.height = rect.height * 2;
-      ctx.scale(2, 2);
-    }
-    
-    const w = rect.width || canvas.width/2 || 600;
-    const h = rect.height || canvas.height/2 || 300;
-    
-    ctx.clearRect(0, 0, w, h);
-    
-    const drawBeaker = (x: number, y: number, width: number, height: number, mass: number, temp: number, label: string) => {
-      const r = Math.min(255, Math.max(0, (temp/100) * 255));
-      const b = Math.min(255, Math.max(0, 255 - (temp/100) * 255));
-      const color = `rgba(${r}, 50, ${b}, 0.8)`;
-      
-      const fillHeight = (mass / 500) * (height - 20) + 10;
-      
-      ctx.fillStyle = color;
-      ctx.fillRect(x + 5, y + height - fillHeight - 5, width - 10, fillHeight);
-      
-      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + height);
-      ctx.lineTo(x + width, y + height);
-      ctx.lineTo(x + width, y);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#fff';
-      ctx.font = '14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${mass}g a ${temp}°C`, x + width/2, y + height + 20);
-      ctx.fillText(label, x + width/2, y - 10);
-    };
-    
-    drawBeaker(w*0.1, h*0.2, 80, 100, this.calMass1, this.calTemp1, "Sustancia 1");
-    drawBeaker(w*0.75, h*0.2, 80, 100, this.calMass2, this.calTemp2, "Sustancia 2");
-    
-    drawBeaker(w*0.35, h*0.4, 150, 150, this.calMass1 + this.calMass2, this.calTeq, "Mezcla (Equilibrio)");
-    
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(w*0.1 + 40, h*0.2 + 130);
-    ctx.lineTo(w*0.35 + 30, h*0.4 + 20);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(w*0.75 + 40, h*0.2 + 130);
-    ctx.lineTo(w*0.35 + 120, h*0.4 + 20);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // ═══ OPTICS SIMULATOR ═══
-  getOpticsDi() {
-    if (this.optDist === this.optFocal) return 9999;
-    return 1 / (1/this.optFocal - 1/this.optDist);
-  }
-  
-  getOpticsM() {
-    return -this.getOpticsDi() / this.optDist;
-  }
-  
-  getOpticsHi() {
-    return this.getOpticsM() * this.optHeight;
-  }
-
-  drawOptics() {
-    if (!this.opticsCanvasRef) {
-      setTimeout(() => this.drawOptics(), 50);
-      return;
-    }
-    const canvas = this.opticsCanvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    if(!ctx) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    if (canvas.width !== rect.width * 2) {
-      canvas.width = rect.width * 2;
-      canvas.height = rect.height * 2;
-      ctx.scale(2, 2);
-    }
-    
-    const w = rect.width || canvas.width/2 || 600;
-    const h = rect.height || canvas.height/2 || 300;
-    const cy = h / 2;
-    const cx = w / 2;
-    
-    ctx.clearRect(0, 0, w, h);
-    
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(0, cy);
-    ctx.lineTo(w, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    ctx.strokeStyle = '#00e5ff';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 100);
-    ctx.lineTo(cx, cy + 100);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 10, cy - 90); ctx.lineTo(cx, cy - 100); ctx.lineTo(cx + 10, cy - 90);
-    ctx.moveTo(cx - 10, cy + 90); ctx.lineTo(cx, cy + 100); ctx.lineTo(cx + 10, cy + 90);
-    ctx.stroke();
-    
-    const pxToCm = 1.5;
-    const fpX = this.optFocal * pxToCm;
-    ctx.fillStyle = '#ff3b30';
-    ctx.beginPath(); ctx.arc(cx - fpX, cy, 4, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + fpX, cy, 4, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = '12px sans-serif';
-    ctx.fillText("F", cx - fpX - 5, cy + 15);
-    ctx.fillText("F'", cx + fpX - 5, cy + 15);
-    
-    const doX = cx - (this.optDist * pxToCm);
-    const hoY = cy - (this.optHeight * pxToCm);
-    
-    const drawArrow = (x: number, yEnd: number, color: string, label: string) => {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(x, cy);
-      ctx.lineTo(x, yEnd);
-      ctx.stroke();
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      const dir = yEnd < cy ? 1 : -1;
-      ctx.moveTo(x, yEnd);
-      ctx.lineTo(x - 6, yEnd + 8 * dir);
-      ctx.lineTo(x + 6, yEnd + 8 * dir);
-      ctx.fill();
-      ctx.fillText(label, x + 10, yEnd + 10 * dir);
-    };
-    
-    drawArrow(doX, hoY, '#ffc800', 'Obj');
-    
-    const di = this.getOpticsDi();
-    const hi = this.getOpticsHi();
-    const diX = cx + (di * pxToCm);
-    const hiY = cy - (hi * pxToCm);
-    
-    ctx.strokeStyle = 'rgba(255, 200, 0, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(doX, hoY);
-    ctx.lineTo(cx, hoY);
-    if (di > 0 && di < 9999) {
-      ctx.lineTo(diX, hiY);
-    } else {
-      ctx.lineTo(cx + fpX*2, cy - (hoY - cy));
-    }
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(doX, hoY);
-    if (di > 0 && di < 9999) {
-      ctx.lineTo(diX, hiY);
-    } else {
-      ctx.lineTo(cx + (cx-doX), cy + (cy-hoY));
-    }
-    ctx.stroke();
-    
-    if (di > 0 && di < 9999) {
-      drawArrow(diX, hiY, '#00ff66', 'Img');
-    } else if (di < 0) {
-      ctx.setLineDash([5,5]);
-      ctx.beginPath();
-      ctx.moveTo(cx, hoY);
-      ctx.lineTo(diX, hiY);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(diX, hiY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      drawArrow(diX, hiY, '#00ff66', 'Img (Virtual)');
-    }
-  }
-
-  // ═══ FARADAY SIMULATOR ═══
-  resetFaraday() {
-    this.faraRunning = false;
-    if (this.faraAnimReq) cancelAnimationFrame(this.faraAnimReq);
-    this.faraMagnetX = 0;
-    this.faraMagnetDir = 1;
-    this.faraFlux = 0;
-    this.faraEmf = 0;
-    this.drawFaraday();
-  }
-
-  toggleFaraday() {
-    if (this.faraRunning) {
-      this.faraRunning = false;
-      cancelAnimationFrame(this.faraAnimReq);
-    } else {
-      this.faraRunning = true;
-      this.faraMagnetX = 0;
-      this.faraMagnetDir = 1;
-      this.animateFaraday();
-    }
-  }
-
-  animateFaraday = () => {
-    if (!this.faraRunning) return;
-    
-    const canvas = this.faradayCanvasRef?.nativeElement;
-    const w = canvas ? canvas.getBoundingClientRect().width : 600;
-    const coilX = w / 2;
-    const margin = 50;
-    
-    const prevFlux = this.faraFlux;
-    
-    this.faraMagnetX += this.faraSpeed * this.faraMagnetDir * 2;
-    
-    if (this.faraMagnetX > w - margin) {
-      this.faraMagnetX = w - margin;
-      this.faraMagnetDir = -1;
-    } else if (this.faraMagnetX < margin) {
-      this.faraMagnetX = margin;
-      this.faraMagnetDir = 1;
-    }
-    
-    const distance = Math.abs(this.faraMagnetX - coilX);
-    const B = 100 * Math.exp(-(distance * distance) / 10000);
-    this.faraFlux = B * this.faraArea;
-    
-    this.faraEmf = -this.faraN * (this.faraFlux - prevFlux);
-    
-    this.drawFaraday();
-    this.faraAnimReq = requestAnimationFrame(this.animateFaraday);
-  };
-
-  drawFaraday() {
-    if (!this.faradayCanvasRef) {
-      setTimeout(() => this.drawFaraday(), 50);
-      return;
-    }
-    const canvas = this.faradayCanvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    if(!ctx) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    if (canvas.width !== rect.width * 2) {
-      canvas.width = rect.width * 2;
-      canvas.height = rect.height * 2;
-      ctx.scale(2, 2);
-    }
-    
-    const w = rect.width || canvas.width/2 || 600;
-    const h = rect.height || canvas.height/2 || 300;
-    const cy = h / 2;
-    const cx = w / 2;
-    
-    ctx.clearRect(0, 0, w, h);
-    
-    if (!this.faraRunning && this.faraMagnetX === 0) {
-       this.faraMagnetX = w * 0.2;
-    }
-    
-    ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(cx, cy - 80, 40, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = '#555'; ctx.lineWidth = 4; ctx.stroke();
-    
-    ctx.strokeStyle = '#ff3b30';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 60);
-    const angle = (this.faraEmf / 50) * (Math.PI / 4);
-    const clampedAngle = Math.max(-Math.PI/2, Math.min(Math.PI/2, angle));
-    ctx.lineTo(cx + Math.sin(clampedAngle) * 35, cy - 60 - Math.cos(clampedAngle) * 35);
-    ctx.stroke();
-    
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(cx - 20, cy - 50); ctx.lineTo(cx - 40, cy); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx + 20, cy - 50); ctx.lineTo(cx + 40, cy); ctx.stroke();
-    
-    ctx.strokeStyle = '#ffc800';
-    ctx.lineWidth = 4;
-    for (let i = 0; i < this.faraN; i++) {
-        ctx.beginPath();
-        const offsetX = cx - (this.faraN * 5) + (i * 10);
-        const radiusY = 30 + (this.faraArea);
-        ctx.ellipse(offsetX, cy, 15, radiusY, 0, 0, Math.PI*2);
-        ctx.stroke();
-    }
-    
-    const magW = 60;
-    const magH = 30;
-    ctx.fillStyle = '#ff3b30';
-    ctx.fillRect(this.faraMagnetX - magW/2, cy - magH/2, magW/2, magH);
-    ctx.fillStyle = '#00e5ff';
-    ctx.fillRect(this.faraMagnetX, cy - magH/2, magW/2, magH);
-    ctx.fillStyle = '#fff';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('N', this.faraMagnetX - magW/4 - 5, cy + 5);
-    ctx.fillText('S', this.faraMagnetX + magW/4 - 5, cy + 5);
-    
-    ctx.strokeStyle = 'rgba(255, 59, 48, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(this.faraMagnetX - magW/2, cy);
-    ctx.lineTo(this.faraMagnetX - magW, cy);
-    ctx.stroke();
-    
-    if (Math.abs(this.faraEmf) > 0.1) {
-       ctx.fillStyle = '#00ff66';
-       ctx.font = 'bold 20px sans-serif';
-       ctx.fillText(`ε = ${this.faraEmf.toFixed(1)} V`, cx - 30, cy + 70);
-       
-       ctx.strokeStyle = '#00ff66';
-       ctx.lineWidth = 3;
-       ctx.beginPath();
-       if (this.faraEmf > 0) {
-           ctx.moveTo(cx - 30, cy + 30); ctx.lineTo(cx - 10, cy + 30);
-           ctx.lineTo(cx - 15, cy + 25);
-       } else {
-           ctx.moveTo(cx + 30, cy + 30); ctx.lineTo(cx + 10, cy + 30);
-           ctx.lineTo(cx + 15, cy + 25);
-       }
-       ctx.stroke();
-    }
-  }
-
 
   async executeLogout() {
     this.showLogoutConfirm = false;

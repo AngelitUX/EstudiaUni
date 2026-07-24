@@ -480,10 +480,12 @@ export class PaesContentService {
     // this.clearCache(); // Commented out to prevent erasing cache on every reload/hot-reload, reducing Firestore reads.
     
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
-      const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
+      // Forzar uso de mocks locales para desarrollo local (mejora-m1)
+      const useMocks = false;
       this.useMocksMode = useMocks;
       if (useMocks) {
       this.loadDataFromLocalMocks();
+      this.loadProgressFromStorage();
     } else {
       // Don't fetch immediately, wait for auth to resolve to avoid permission denied errors
       // that trigger the local fallbacks prematurely.
@@ -948,16 +950,16 @@ export class PaesContentService {
   // ─── Persistence (localStorage) ───
 
   private saveProgressToStorage(): void {
-    if (!this.currentUid) return;
+    const uid = this.currentUid || 'offline';
     const obj: Record<string, SeccionProgress> = {};
     this._progress().forEach((v, k) => { obj[k] = v; });
-    localStorage.setItem(`paes_progress_${this.currentUid}`, JSON.stringify(obj));
+    localStorage.setItem(`paes_progress_${uid}`, JSON.stringify(obj));
   }
 
   private loadProgressFromStorage(): void {
-    if (!this.currentUid) return;
+    const uid = this.currentUid || 'offline';
     try {
-      const raw = localStorage.getItem(`paes_progress_${this.currentUid}`);
+      const raw = localStorage.getItem(`paes_progress_${uid}`);
       if (raw) {
         const obj = JSON.parse(raw) as Record<string, SeccionProgress>;
         const map = new Map<string, SeccionProgress>();

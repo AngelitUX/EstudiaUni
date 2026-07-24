@@ -3,16 +3,26 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
-import { KatexService } from '../../core/services/katex.service';
+import { MathKatexService } from '../../core/services/math-katex.service';
 import { ToastService } from '../../core/services/toast.service';
 
 
 @Component({
-  selector: 'app-seccion-test',
+  selector: 'app-seccion-test-math',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="test-page" [class.boss-mode]="isBossMode()" [class.final-boss-mode]="isFinalBoss()" [class.taking-damage]="takingDamage()" *ngIf="test() as t">
+    <div class="test-page" *ngIf="test() as t" [ngClass]="'level-' + questionLevel().num">
+      <!-- Watermark Math Ornaments -->
+      <div class="math-bg-ornaments">
+        <div class="math-sym sym-1">∑ xᵢ</div>
+        <div class="math-sym sym-2">π ≈ 3.14</div>
+        <div class="math-sym sym-3">√a² + b²</div>
+        <div class="math-sym sym-4">f(x) = mx + c</div>
+        <div class="math-sym sym-5">x ∈ ℤ</div>
+        <div class="math-sym sym-6">100%</div>
+      </div>
+
       <!-- TOP BAR -->
       <div class="top-bar" [class.boss-bar]="isBossMode()">
         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
@@ -50,8 +60,9 @@ import { ToastService } from '../../core/services/toast.service';
 
       <!-- QUESTION CARD (one at a time) -->
       <div class="question-area">
-        <div class="question-counter">
-          Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}
+        <div class="question-counter" style="display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; position: relative; z-index: 10;">
+          <span>Pregunta {{ currentIndex() + 1 }} de {{ totalQuestions() }}</span>
+          <span class="level-badge" [ngClass]="questionLevel().class">{{ questionLevel().label }}</span>
         </div>
 
         <div class="question-card" [class.boss-card]="isBossMode()" [class.split-layout]="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)" *ngIf="currentQuestion() as q">
@@ -104,17 +115,26 @@ import { ToastService } from '../../core/services/toast.service';
             </button>
           </div>
 
-            <!-- FEEDBACK -->
-            <div class="feedback-bar" *ngIf="showFeedback()"
-              [class.correct]="isCurrentCorrect()"
-              [class.wrong]="!isCurrentCorrect()">
-              <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
-              <div class="feedback-body">
-                <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
-                <p [innerHTML]="parseMixed(isCurrentCorrect() ? currentQuestion()!.feedback_acierto : currentQuestion()!.feedback_error)"></p>
+          <!-- FEEDBACK -->
+          <div class="feedback-bar" *ngIf="showFeedback()"
+            [class.correct]="isCurrentCorrect()"
+            [class.wrong]="!isCurrentCorrect()">
+            <div class="feedback-icon">{{ isCurrentCorrect() ? '✅' : '❌' }}</div>
+            <div class="feedback-body">
+              <strong>{{ isCurrentCorrect() ? '¡Correcto!' : 'Incorrecto' }}</strong>
+              <div *ngIf="isCurrentCorrect()">
+                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
+              </div>
+              <div *ngIf="!isCurrentCorrect()">
+                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_error)"></p>
+                <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
+                  <strong style="color: #166534; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</strong>
+                  <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
+                </div>
               </div>
             </div>
-          </div> <!-- End split-left -->
+          </div> <!-- End feedback-bar -->
+        </div> <!-- End split-left -->
 
           <div class="split-right" *ngIf="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)">
             <img *ngIf="q.preambulo_imagen_url || q.imageUrl" [src]="q.preambulo_imagen_url || q.imageUrl" alt="Imagen de apoyo de física" class="physics-support-img" />
@@ -152,6 +172,7 @@ import { ToastService } from '../../core/services/toast.service';
             class="dot"
             [class.answered]="answers().has(p.id)"
             [class.current]="i === currentIndex()"
+            [ngClass]="getDotLevelClass(p)"
             (click)="!showFeedback() && goToQuestion(i)"></span>
         </div>
 
@@ -532,12 +553,16 @@ import { ToastService } from '../../core/services/toast.service';
     }
   `]
 })
-export class SeccionTestComponent implements OnInit, OnDestroy {
+export class SeccionTestMathComponent implements OnInit, OnDestroy {
+  // Mock de propiedades para ignorar lógica de Boss Mode en Matemáticas
+  livesArray = computed(() => []);
+  isMathModule = computed(() => true);
+
   private platformId = inject(PLATFORM_ID);
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private katex = inject(KatexService);
+  private katex = inject(MathKatexService);
   private sanitizer = inject(DomSanitizer);
   private toastSvc = inject(ToastService);
 
@@ -598,18 +623,24 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return this.timer() >= 300; // More than 5 mins elapsed
   });
 
-  isMathModule = computed(() => {
-    const mId = this.materiaId();
-    return mId ? mId.toLowerCase().includes('mat') : false;
+  questionLevel = computed(() => {
+    const q = this.currentQuestion() as any;
+    const lvl = q?.nivel || 1;
+    if (lvl === 1) return { num: 1, label: '⚡ Nivel 1: Mecánica Directa', class: 'lvl-1' };
+    if (lvl === 2) return { num: 2, label: '💼 Nivel 2: Contexto Cotidiano', class: 'lvl-2' };
+    return { num: 3, label: '🧠 Nivel 3: Análisis y Trampas', class: 'lvl-3' };
   });
+
+  getDotLevelClass(question: any): string {
+    const lvl = question?.nivel || 1;
+    if (lvl === 1) return 'dot-lvl-1';
+    if (lvl === 2) return 'dot-lvl-2';
+    return 'dot-lvl-3';
+  }
 
   isScienceOrMath = computed(() => {
-    const id = this.materiaId().toLowerCase();
-    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica');
+    return true; // Mathematics is always science/math
   });
-
-  maxLives = computed(() => this.isFinalBoss() ? 5 : 3);
-  livesArray = computed(() => Array.from({length: this.maxLives()}, (_, i) => i + 1));
 
   currentQuestion = computed(() => {
     const qList = this.shuffledPreguntas();
@@ -990,7 +1021,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       sessionStorage.removeItem(this.getStorageKey());
     }
     this.paes.submitTest(this.seccionId(), this.answers());
-    this.router.navigate(['/test', this.seccionId(), 'review']);
+    this.router.navigate(['/test-math', this.seccionId(), 'review']);
   }
 
   confirmExit() {

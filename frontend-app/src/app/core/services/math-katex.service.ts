@@ -3,7 +3,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import katex from 'katex';
 
 @Injectable({ providedIn: 'root' })
-export class KatexService {
+export class MathKatexService {
 
   constructor(private sanitizer: DomSanitizer) {
     this.ensureStylesLoaded();

@@ -63,6 +63,18 @@ export const routes: Routes = [
     canActivate: [authGuard, emailVerifiedGuard]
   },
   {
+    path: 'ruta/mat1',
+    data: { materiaId: 'mat1' },
+    loadComponent: () => import('./features/learning-path/materia-math-path.component').then(m => m.MateriaMathPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/mat2',
+    data: { materiaId: 'mat2' },
+    loadComponent: () => import('./features/learning-path/materia-math-path.component').then(m => m.MateriaMathPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
     path: 'ruta/:materiaId',
     loadComponent: () => import('./features/learning-path/materia-path.component').then(m => m.MateriaPathComponent),
     canActivate: [authGuard, emailVerifiedGuard]
@@ -75,6 +87,16 @@ export const routes: Routes = [
   {
     path: 'ruta/:materiaId/:capituloId/:seccionId',
     loadComponent: () => import('./features/learning-path/seccion-detail.component').then(m => m.SeccionDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'test-math/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-test-math.component').then(m => m.SeccionTestMathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'test-math/:seccionId/review',
+    loadComponent: () => import('./features/learning-path/seccion-test-review-math.component').then(m => m.SeccionTestReviewMathComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
   {
