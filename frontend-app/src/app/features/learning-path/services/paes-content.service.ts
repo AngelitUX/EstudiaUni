@@ -481,7 +481,7 @@ export class PaesContentService {
     
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
       // Forzar uso de mocks locales para desarrollo local (mejora-m1)
-      const useMocks = true;
+      const useMocks = false;
       this.useMocksMode = useMocks;
       if (useMocks) {
       this.loadDataFromLocalMocks();
