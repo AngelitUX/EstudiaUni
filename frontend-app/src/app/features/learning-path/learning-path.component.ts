@@ -721,12 +721,14 @@ export class LearningPathComponent implements OnInit, OnDestroy {
 
   userSelectedSubjects = computed(() => {
     const p = this.firestoreService.profileSignal();
-    if (!p) return [];
-    if (Array.isArray(p.selectedSubjects)) {
-      return p.selectedSubjects;
+    if (!p) return ['comp-lectora', 'mat1', 'mat2', 'historia', 'ciencias', 'ciencias-quimica', 'quimica'];
+    if (Array.isArray(p.selectedSubjects) && p.selectedSubjects.length > 0) {
+      // Ensure user always has access to historia and quimica/ciencias on the main path
+      const subs = new Set([...p.selectedSubjects, 'historia', 'ciencias', 'ciencias-quimica', 'quimica']);
+      return Array.from(subs);
     }
     // Default to all subjects if never configured
-    return ['comp-lectora', 'mat1', 'mat2', 'historia', 'ciencias-tp', 'ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica'];
+    return ['comp-lectora', 'mat1', 'mat2', 'historia', 'ciencias-tp', 'ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica', 'ciencias', 'quimica'];
   });
   sortOrder = signal<string>('default');
 
@@ -735,13 +737,10 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     
     // Filter
     const selected = this.userSelectedSubjects();
-    if (selected) {
-      // Auto-include specific science branches if the legacy 'ciencias' is selected
+    if (selected && selected.length > 0) {
       let effectiveSelected = [...selected];
       if (effectiveSelected.includes('ciencias')) {
-        effectiveSelected.push('ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica', 'ciencias-tp');
-        // Remove the legacy 'ciencias' so they don't click the empty generic card
-        effectiveSelected = effectiveSelected.filter(id => id !== 'ciencias');
+        effectiveSelected.push('ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica', 'ciencias-tp', 'quimica');
       }
       list = list.filter(m => effectiveSelected.includes(m.id));
     }
@@ -906,7 +905,13 @@ export class LearningPathComponent implements OnInit, OnDestroy {
   }
 
   goToMateria(m: Materia) {
-    this.router.navigate(['/ruta', m.id]);
+    if (m.id === 'historia') {
+      this.router.navigate(['/ruta/historia']);
+    } else if (m.id === 'quimica' || m.id === 'ciencias-quimica' || m.id === 'ciencias') {
+      this.router.navigate(['/ruta/quimica']);
+    } else {
+      this.router.navigate(['/ruta', m.id]);
+    }
   }
 
   confirmLogout() {
