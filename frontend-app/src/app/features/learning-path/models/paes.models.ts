@@ -54,11 +54,13 @@ export interface Seccion {
   level?: number;
   isBoss?: boolean;
   isPractice?: boolean;
+  isSlideGuide?: boolean;
+  isProTip?: boolean;
   practiceType?: string;
-  gameData?: any;
+  practiceData?: any; // Para guardar configuracion especifica de juegos (match-pairs, categorize)
   imageUrl?: string;
-  svgContent?: string;
-  test: TestPaes;
+  tags?: string[];
+  test?: TestPaes;
 }
 
 export interface TestPaes {

@@ -12,198 +12,7 @@ const LOCAL_MATERIAS: Materia[] = [
   { id: 'ciencias', title: 'Ciencias', slug: 'ciencias', icon: '🧬', order: 5, isActive: true }
 ];
 
-const LOCAL_CAPITULOS: Capitulo[] = [
-  {
-    id: 'cap-lectora-1',
-    materiaId: 'comp-lectora',
-    title: 'Habilidad 1: Localizar',
-    introduccion: 'Localizar es la habilidad de identificar y extraer información explícita de un texto.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-lectora-1',
-        capituloId: 'cap-lectora-1',
-        materiaId: 'comp-lectora',
-        title: '1. Rastrear información explícita',
-        introduccion: 'La respuesta está literal en el texto. Tu misión es encontrar la información exacta.',
-        datos_claves: ['Busca palabras clave', 'La respuesta puede usar sinónimos'],
-        order: 1,
-        test: {
-          id: 'test-lectora-1',
-          seccionId: 'sec-lectora-1',
-          contexto_base: 'Generalmente, el envejecimiento demográfico es visto como una consecuencia inevitable...',
-          preguntas: [
-            {
-              id: 101,
-              enunciado: 'Con respecto al análisis demográfico, ¿cuál es la relación establecida entre el primer y segundo párrafo?',
-              alternativas: {
-                A: 'El primero presenta el problema del envejecimiento; el segundo muestra cómo medirlo.',
-                B: 'El primero explica las tasas; el segundo compara continentes.',
-                C: 'El primero define la transición; el segundo plantea los indicadores.',
-                D: 'El primero categoriza factores; el segundo explica reemplazos.'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Excelente deducción! El primer párrafo establece el marco teórico (qué es la transición), y el segundo detalla cómo se mide.',
-              feedback_error: '¡Ojo con la estructura! Vuelve a leer el inicio de ambos párrafos.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-mat1-1',
-    materiaId: 'mat1',
-    title: 'Números y Proporcionalidad',
-    introduccion: 'Domina los conceptos básicos de conjuntos numéricos y razones.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-mat1-1',
-        capituloId: 'cap-mat1-1',
-        materiaId: 'mat1',
-        title: '1. Porcentajes en la Vida Diaria',
-        introduccion: 'Aprende a calcular descuentos, aumentos e interés simple.',
-        datos_claves: ['Un porcentaje es una fracción de 100', 'Descuento del X% multiplica por (1 - X/100)'],
-        order: 1,
-        test: {
-          id: 'test-mat1-1',
-          seccionId: 'sec-mat1-1',
-          contexto_base: null,
-          preguntas: [
-            {
-              id: 201,
-              enunciado: 'Un pantalón cuesta $25.000, pero está con un 20% de descuento. Si al pagar en caja se aplica un recargo del 5% sobre el precio ya descontado, ¿cuál es el valor final a pagar?',
-              alternativas: {
-                A: '$19.000',
-                B: '$20.000',
-                C: '$21.000',
-                D: '$21.250'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Correcto! Primero calculamos el descuento: $25.000 * 0.8 = $20.000. Luego, aplicamos el recargo del 5% sobre ese monto: $20.000 * 1.05 = $21.000.',
-              feedback_error: 'Revisa los pasos. Primero aplica el descuento al precio original, y luego aplica el recargo al nuevo precio.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-mat2-1',
-    materiaId: 'mat2',
-    title: 'Álgebra Superior y Geometría M2',
-    introduccion: 'Aprende sistemas de ecuaciones complejos, logaritmos y geometría analítica.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-mat2-1',
-        capituloId: 'cap-mat2-1',
-        materiaId: 'mat2',
-        title: '1. Logaritmos y Ecuaciones Exponenciales',
-        introduccion: 'Domina las propiedades de los logaritmos y resolución de ecuaciones exponenciales.',
-        datos_claves: ['log_b(a) = c equivale a b^c = a', 'Propiedades de multiplicación, división y potencias en logaritmos'],
-        order: 1,
-        test: {
-          id: 'test-mat2-1',
-          seccionId: 'sec-mat2-1',
-          contexto_base: null,
-          preguntas: [
-            {
-              id: 301,
-              enunciado: 'Si log_2(x) = 5, ¿cuál es el valor de x?',
-              alternativas: {
-                A: '10',
-                B: '25',
-                C: '32',
-                D: '64'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Excelente! Usando la definición de logaritmo, log_2(x) = 5 es equivalente a 2^5 = x, por lo tanto x = 32.',
-              feedback_error: 'Recuerda que el logaritmo es la operación inversa de la exponenciación. log_b(x) = y implica b^y = x.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-historia-1',
-    materiaId: 'historia',
-    title: 'Historia de Chile y el Mundo',
-    introduccion: 'Analiza los procesos históricos, políticos, económicos y sociales contemporáneos.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-historia-1',
-        capituloId: 'cap-historia-1',
-        materiaId: 'historia',
-        title: '1. El Ciclo del Salitre',
-        introduccion: 'Comprende el impacto económico del salitre tras la Guerra del Pacífico y la Cuestión Social.',
-        datos_claves: ['El salitre generó grandes ingresos al Estado', 'La Cuestión Social refiere a las precarias condiciones laborales'],
-        order: 1,
-        test: {
-          id: 'test-historia-1',
-          seccionId: 'sec-historia-1',
-          contexto_base: 'Durante la época del salitre en Chile (1880-1930), la economía nacional dependió casi exclusivamente de las exportaciones de este mineral...',
-          preguntas: [
-            {
-              id: 401,
-              enunciado: 'Según el texto, ¿cuál fue una consecuencia económica directa para el Estado chileno producto del ciclo salitrero?',
-              alternativas: {
-                A: 'La nacionalización total de las empresas salitreras extranjeras.',
-                B: 'La disminución de la burocracia y el gasto público estatal.',
-                C: 'El aumento de los ingresos fiscales mediante el cobro de impuestos de exportación.',
-                D: 'La erradicación de la pobreza gracias a la equitativa distribución de las ganancias.'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Muy bien! El texto menciona explícitamente que el Estado cobraba un impuesto que multiplicó sus ingresos y permitió expandir el aparato estatal.',
-              feedback_error: 'Vuelve a leer el texto. Fíjate en cómo obtenía dinero el Estado.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-ciencias-1',
-    materiaId: 'ciencias',
-    title: 'Biología Celular y Ecosistemas',
-    introduccion: 'Comprende las diferencias entre células procariontes y eucariontes, y sus organelos.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-ciencias-1',
-        capituloId: 'cap-ciencias-1',
-        materiaId: 'ciencias',
-        title: '1. Tipos de Células',
-        introduccion: 'Aprende a distinguir las características clave de procariontes y eucariontes (animal y vegetal).',
-        datos_claves: ['Las células procariontes no tienen núcleo definido', 'Las células eucariontes vegetales poseen pared celular y cloroplastos'],
-        order: 1,
-        test: {
-          id: 'test-ciencias-1',
-          seccionId: 'sec-ciencias-1',
-          contexto_base: null,
-          preguntas: [
-            {
-              id: 501,
-              enunciado: 'Al observar una muestra de tejido bajo el microscopio, se nota la presencia de una pared celular rígida y grandes vacuolas centrales. ¿A qué tipo de célula pertenece?',
-              alternativas: {
-                A: 'A un animal vertebrado.',
-                B: 'A una bacteria (procarionte).',
-                C: 'A una planta (eucarionte vegetal).',
-                D: 'A un hongo filamentoso.'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Correcto! La pared celular y las grandes vacuolas centrales son características distintivas de las células eucariontes vegetales.',
-              feedback_error: 'Recuerda las diferencias estructurales. Las células animales no tienen pared celular.'
-            }
-          ]
-        }
-      }
-    ]
-  }
-];
+import { CAPITULOS } from '../data/seed-data';
 
 const LOCAL_POOL_PREGUNTAS: any[] = [
   // Competencia Lectora
@@ -480,8 +289,7 @@ export class PaesContentService {
     // this.clearCache(); // Commented out to prevent erasing cache on every reload/hot-reload, reducing Firestore reads.
 
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
-    // Forzar uso de mocks locales para desarrollo local (mejora-m1)
-    const useMocks = false;
+    const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
     this.useMocksMode = useMocks;
     if (useMocks) {
       this.loadDataFromLocalMocks();
@@ -552,13 +360,13 @@ export class PaesContentService {
   }
 
   private async loadDataFromFirestore() {
-    const cacheKey = 'paes_content_cache_v12';
-    const cacheTimeKey = 'paes_content_cache_timestamp_v12';
+    const CACHE_KEY = 'paes_content_cache_v34';
+    const cacheTimeKey = 'paes_content_cache_timestamp_v29';
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
       // 0. Intentar cargar desde caché
-      const cachedDataRaw = localStorage.getItem(cacheKey);
+      const cachedDataRaw = localStorage.getItem(CACHE_KEY);
       const cachedTimeRaw = localStorage.getItem(cacheTimeKey);
 
       if (cachedDataRaw && cachedTimeRaw) {
@@ -678,16 +486,18 @@ export class PaesContentService {
         }
       });
 
-      for (const capDoc of capitulosSnap.docs) {
-        const capData = capDoc.data() as Omit<Capitulo, 'secciones'>;
-        const secciones = seccionesByCapitulo.get(capDoc.id) || [];
+      // 6. Armar los capítulos
+      capitulosSnap.docs.forEach(doc => {
+        const capData = doc.data() as any;
+        const secciones = seccionesByCapitulo.get(doc.id) || [];
+        secciones.sort((a, b) => a.order - b.order);
 
         capitulos.push({
           ...capData,
-          id: capDoc.id,
-          secciones: secciones.sort((a, b) => a.order - b.order)
-        });
-      }
+          id: doc.id,
+          secciones
+        } as Capitulo);
+      });
 
       if (materias.length > 0) {
         // Enforce active status and existence of M2 and Historia
@@ -725,7 +535,7 @@ export class PaesContentService {
             poolPreguntas: finalPool,
             capitulos: sortedCapitulos
           };
-          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+          localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
           localStorage.setItem(cacheTimeKey, Date.now().toString());
 
         } catch (cacheError) {
@@ -925,9 +735,9 @@ export class PaesContentService {
   private loadLocalFallbacks() {
     this._materias.set(LOCAL_MATERIAS);
     this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
-    this.applyHistoriaImageMapping(LOCAL_CAPITULOS);
-    this.enrichHistoriaChapters4And5(LOCAL_CAPITULOS);
-    this._capitulos.set(LOCAL_CAPITULOS);
+    this.applyHistoriaImageMapping(CAPITULOS);
+    this.enrichHistoriaChapters4And5(CAPITULOS);
+    this._capitulos.set(CAPITULOS);
   }
 
   // ─── Queries ───

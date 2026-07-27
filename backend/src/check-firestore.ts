@@ -14,17 +14,17 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-async function cleanAndSeed() {
-  console.log('Cleaning old data...');
+async function check() {
+  console.log('Buscando capitulos de comp-lectora...');
   const caps = await db.collection('lp_capitulos').where('materiaId', '==', 'comp-lectora').get();
   for (const doc of caps.docs) {
-    const secs = await db.collection('lp_capitulos').doc(doc.id).collection('secciones').get();
+    console.log('Capítulo:', doc.id, '-', doc.data().title);
+    const secs = await doc.ref.collection('secciones').get();
+    console.log('  Secciones (' + secs.size + '):');
     for (const sec of secs.docs) {
-      await sec.ref.delete();
+      console.log('    - ' + sec.id + ' (' + sec.data().title + ')');
     }
-    await doc.ref.delete();
   }
-  console.log('Deleted old data.');
 }
 
-cleanAndSeed();
+check();

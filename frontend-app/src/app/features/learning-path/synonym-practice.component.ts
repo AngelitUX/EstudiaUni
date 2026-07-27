@@ -1,7 +1,7 @@
-import { Component, signal, computed, Output, EventEmitter } from '@angular/core';
+import { Component, signal, computed, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-interface SynonymPair {
+export interface SynonymPair {
   id: number;
   word: string;
   synonym: string;
@@ -41,20 +41,20 @@ const SYNONYM_ROUNDS: SynonymPair[][] = [
       <!-- HEADER -->
       <div class="game-header">
         <div class="game-badge">🧠 Mini-Juego</div>
-        <h2 class="game-title">Conecta el Sinónimo</h2>
-        <p class="game-desc">Haz clic en una palabra de la izquierda y luego en su sinónimo de la derecha. ¡Entrena tu ojo para la PAES!</p>
+        <h2 class="game-title">{{ title() }}</h2>
+        <p class="game-desc">{{ description() }}</p>
       </div>
 
       <!-- ROUND INDICATOR -->
       <div class="round-bar" *ngIf="!gameFinished()">
         <div class="round-pills">
-          <div *ngFor="let r of rounds; let i = index" class="round-pill"
+          <div *ngFor="let r of rounds(); let i = index" class="round-pill"
             [class.active]="i === currentRound()"
             [class.done]="i < currentRound()">
             {{ i < currentRound() ? '✓' : i + 1 }}
           </div>
         </div>
-        <span class="round-label">Ronda {{ currentRound() + 1 }} / {{ rounds.length }}</span>
+        <span class="round-label">Ronda {{ currentRound() + 1 }} / {{ rounds().length }}</span>
       </div>
 
       <!-- GAME AREA -->
@@ -81,7 +81,7 @@ const SYNONYM_ROUNDS: SynonymPair[][] = [
 
         <!-- RIGHT COLUMN (synonyms, shuffled) -->
         <div class="match-col">
-          <button *ngFor="let syn of getRightItems()" class="match-btn syn-btn"
+          <button *ngFor="let syn of rightItems()" class="match-btn syn-btn"
             [class.selected]="selectedRight() === syn.id"
             [class.matched]="isMatched(syn.id)"
             [class.wrong-flash]="wrongFlash() === syn.id"
@@ -110,7 +110,7 @@ const SYNONYM_ROUNDS: SynonymPair[][] = [
         <div class="rc-icon">🎉</div>
         <p class="rc-text">¡Ronda completada!</p>
         <button class="btn-next-round" (click)="nextRound()">
-          {{ currentRound() === rounds.length - 1 ? 'Ver Resultados →' : 'Siguiente Ronda →' }}
+          {{ currentRound() === rounds().length - 1 ? 'Ver Resultados →' : 'Siguiente Ronda →' }}
         </button>
       </div>
 
@@ -118,7 +118,7 @@ const SYNONYM_ROUNDS: SynonymPair[][] = [
       <div class="game-finished" *ngIf="gameFinished()">
         <div class="gf-icon">🏆</div>
         <h3>¡Práctica completada!</h3>
-        <p>Acertaste <strong>{{ correctCount() }}</strong> de <strong>{{ totalPairs }}</strong> pares en {{ rounds.length }} rondas.</p>
+        <p>Acertaste <strong>{{ correctCount() }}</strong> de <strong>{{ totalPairs }}</strong> pares en {{ rounds().length }} rondas.</p>
         <div class="gf-msg" *ngIf="correctCount() === totalPairs">
           ¡Perfecto! Dominas los sinónimos como un profesional. 💪
         </div>
@@ -216,11 +216,26 @@ const SYNONYM_ROUNDS: SynonymPair[][] = [
     }
   `]
 })
-export class SynonymPracticeComponent {
+export class SynonymPracticeComponent implements OnInit {
+  @Input() data?: { title: string; description: string; rounds: { pairs: SynonymPair[] }[] };
   @Output() onComplete = new EventEmitter<void>();
 
-  rounds = SYNONYM_ROUNDS;
-  totalPairs = SYNONYM_ROUNDS.reduce((sum, r) => sum + r.length, 0);
+  title = signal('Conecta el Sinónimo');
+  description = signal('Haz clic en una palabra de la izquierda y luego en su sinónimo de la derecha. ¡Entrena tu ojo para la PAES!');
+
+  rounds = signal<SynonymPair[][]>(SYNONYM_ROUNDS);
+  totalPairs = 0;
+
+  ngOnInit() {
+    if (this.data) {
+      if (this.data.title) this.title.set(this.data.title);
+      if (this.data.description) this.description.set(this.data.description);
+      if (this.data.rounds) {
+        this.rounds.set(this.data.rounds.map((r: any) => r.pairs ? r.pairs : r));
+      }
+    }
+    this.totalPairs = this.rounds().reduce((sum, r) => sum + r.length, 0);
+  }
 
   currentRound = signal(0);
   matchedIds = signal<Set<number>>(new Set());
@@ -235,8 +250,9 @@ export class SynonymPracticeComponent {
 
   currentPairs = computed(() => {
     const round = this.currentRound();
-    if (round >= this.rounds.length) return [];
-    return this.rounds[round];
+    const rounds = this.rounds();
+    if (round >= rounds.length) return [];
+    return rounds[round];
   });
   leftItems = computed(() => this.currentPairs());
   rightItems = computed(() => {
@@ -249,39 +265,13 @@ export class SynonymPracticeComponent {
   });
   roundComplete = computed(() => {
     const round = this.currentRound();
-    if (round >= this.rounds.length) return false;
-    const pairs = this.rounds[round];
-    return pairs.every(p => this.matchedIds().has(p.id));
+    if (round >= this.rounds().length) return false;
+    const pairs = this.rounds()[round];
+    return pairs.every((p: SynonymPair) => this.matchedIds().has(p.id));
   });
-  gameFinished = computed(() => this.currentRound() >= this.rounds.length);
+  gameFinished = computed(() => this.currentRound() >= this.rounds().length);
 
-  // Cache shuffled items so they don't re-shuffle on every signal change
-  private _cachedRight: SynonymPair[] = [];
-  private _cachedRound = -1;
 
-  constructor() {
-    // Initialize first round's shuffled items
-    this._shuffleRight();
-  }
-
-  private _shuffleRight() {
-    const round = this.currentRound();
-    if (round >= this.rounds.length) return;
-    const pairs = [...this.rounds[round]];
-    for (let i = pairs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
-    }
-    this._cachedRight = pairs;
-    this._cachedRound = round;
-  }
-
-  getRightItems(): SynonymPair[] {
-    if (this._cachedRound !== this.currentRound()) {
-      this._shuffleRight();
-    }
-    return this._cachedRight;
-  }
 
   isMatched(id: number): boolean {
     return this.matchedIds().has(id);
@@ -329,14 +319,13 @@ export class SynonymPracticeComponent {
   }
 
   nextRound() {
-    if (this.currentRound() >= this.rounds.length - 1) {
-      this.currentRound.set(this.rounds.length);
+    if (this.currentRound() >= this.rounds().length - 1) {
+      this.currentRound.set(this.rounds().length);
       return;
     }
     this.currentRound.update(v => v + 1);
     this.matchedIds.set(new Set());
     this.lastFeedback.set('');
-    this._shuffleRight();
   }
 
   resetGame() {
@@ -349,6 +338,5 @@ export class SynonymPracticeComponent {
     this.streak.set(0);
     this.lastFeedback.set('');
     this.wrongFlash.set(null);
-    this._shuffleRight();
   }
 }

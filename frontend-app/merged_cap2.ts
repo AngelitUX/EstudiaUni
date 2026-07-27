@@ -1,519 +1,4 @@
-import { Materia, Capitulo } from '../models/paes.models';
-
-export const MATERIAS: Materia[] = [
-  { id: 'comp-lectora', title: 'Competencia Lectora', slug: 'competencia-lectora', icon: '📖', order: 1, isActive: true },
-  { id: 'mat1', title: 'Matemática 1', slug: 'matematica-1', icon: '🧮', order: 2, isActive: false },
-  { id: 'historia', title: 'Historia y Cs. Sociales', slug: 'historia', icon: '🏛️', order: 3, isActive: false },
-  { id: 'ciencias', title: 'Ciencias', slug: 'ciencias', icon: '🔬', order: 4, isActive: false },
-];
-
-export const CAPITULOS: Capitulo[] = [
-  // ── CAPÍTULO 1 ──
-  {
-    id: 'cap-1',
-    materiaId: 'comp-lectora',
-    title: 'Habilidad 1: Localizar',
-    introduccion: 'La habilidad de Localizar consiste en identificar y extraer información explícita de un texto. En la PAES, esta habilidad representa cerca del 30% de las preguntas. Aprenderás a rastrear datos exactos, distinguir causas de consecuencias, y reconocer paráfrasis.',
-    order: 1,
-    secciones: [
-         // ── NODO 1: GUÍA INICIAL ──
-      {
-        id: 'sec-1-0-guia', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 1, order: 1, tags: ['subcapitulo:Introducción'],
-        isSlideGuide: true,
-        title: 'Textos Informativos vs Narrativos',
-        introduccion: 'Antes de comenzar a rastrear información, es fundamental distinguir los dos grandes tipos de textos que evaluarás en la PAES.',
-        guia_titulo: '¿Cómo diferenciarlos?',
-        guia_contenido: '<p><strong>Textos Informativos:</strong> Buscan transmitir datos, hechos y conocimientos objetivos. Ejemplos: noticias, artículos científicos, manuales y ensayos. Su lenguaje es claro, directo y estructurado.</p><p><strong>Textos Narrativos:</strong> Cuentan una historia, ya sea real o ficticia, a través de personajes en un tiempo y espacio determinados. Ejemplos: cuentos, novelas, mitos y fábulas. Su lenguaje suele ser más descriptivo y emotivo.</p><p>Al identificar el tipo de texto, sabrás de inmediato si debes enfocarte en hechos duros (informativos) o en acciones y motivaciones de personajes (narrativos). ¡Esta es la base visual de nuestras guías para facilitar tu estudio!</p>',
-        datos_claves: [
-          'Informativos: Transmiten datos y hechos objetivos (ej. noticias, manuales).',
-          'Narrativos: Cuentan historias de personajes en un tiempo y espacio (ej. cuentos, mitos).',
-          'Identificar el tipo de texto te ayuda a saber qué buscar: hechos vs motivaciones.',
-        ],
-        test: {
-          id: 'test-1-0-guia', seccionId: 'sec-1-0-guia',
-          contexto_base: 'Lee el resumen de arriba para responder.',
-          preguntas: [
-            { id: 99, enunciado: 'Según el texto, ¿cuál de los siguientes es un ejemplo de texto narrativo?', alternativas: { A: 'Un artículo científico.', B: 'Una noticia de periódico.', C: 'Un mito.', D: 'Un manual de instrucciones.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! Los mitos cuentan historias con personajes y entran en la categoría narrativa.', feedback_error: 'Revisa la descripción de los Textos Narrativos en la guía. ¿Cuáles son los ejemplos que da?' }
-          ]
-        }
-      },
-      // ── NODO 2: PRÁCTICA CATEGORIZAR ──
-      {
-        id: 'sec-1-1-categorize', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 2, order: 2, tags: ['subcapitulo:Introducción'],
-        title: 'Práctica: Categorizar',
-        introduccion: 'Clasifica los textos según su tipo.',
-        datos_claves: [],
-        isPractice: true,
-        practiceType: 'categorize',
-        practiceData: {
-          title: '¿Informativo o Narrativo?',
-          description: 'Clasifica los siguientes fragmentos arrastrándolos a la categoría correcta.',
-          categories: ['Informativo', 'Narrativo'],
-          items: [
-            { id: 1, text: 'El calentamiento global ha elevado la temperatura promedio del océano en 1.5 grados.', category: 'Informativo' },
-            { id: 2, text: 'Una vez, en un reino muy lejano, existía un dragón que custodiaba un tesoro.', category: 'Narrativo' },
-            { id: 3, text: 'La mitosis es el proceso de división celular que resulta en dos células hijas idénticas.', category: 'Informativo' },
-            { id: 4, text: 'El anciano miró por la ventana, recordando con nostalgia su juventud perdida en el mar.', category: 'Narrativo' },
-            { id: 5, text: 'El Banco Central anunció hoy un recorte en las tasas de interés para estimular la economía.', category: 'Informativo' },
-            { id: 6, text: 'Lucía corrió tan rápido como pudo, pero el tren ya había partido hacia la ciudad.', category: 'Narrativo' }
-          ]
-        }
-      },
-      // ── NODO 3: RASTREAR INFO I (INFORMATIVOS) ──
-      {
-        id: 'sec-1-2-inf', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 3, order: 3, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Rastrear info I (Informativos)',
-        introduccion: 'Busca el dato exacto en un texto que expone información clara.',
-        datos_claves: ['Subraya fechas y nombres', 'Evita leer de corrido; haz un escaneo rápido'],
-        test: {
-          id: 'test-1-2-inf', seccionId: 'sec-1-2-inf',
-          contexto_base: 'El telescopio espacial James Webb (JWST) es un observatorio espacial desarrollado mediante la colaboración de 14 países, siendo construido y operado conjuntamente por la NASA, la Agencia Espacial Europea (ESA) y la Agencia Espacial Canadiense (CSA). Fue lanzado el 25 de diciembre de 2021 a bordo de un cohete Ariane 5 desde el Puerto Espacial de Kourou, en la Guayana Francesa. Su objetivo principal es observar algunos de los eventos y objetos más distantes del universo, como la formación de las primeras galaxias.',
-          preguntas: [
-            { id: 101, enunciado: 'Según el texto, ¿desde dónde fue lanzado el telescopio espacial James Webb?', alternativas: { A: 'Desde la Agencia Espacial Europea.', B: 'Desde el Puerto Espacial de Kourou.', C: 'Desde la Agencia Espacial Canadiense.', D: 'Desde el centro de la NASA.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! Encontraste el dato exacto en el texto.', feedback_error: 'Revisa la segunda oración del texto y busca el lugar desde donde fue lanzado.' },
-            { id: 1011, enunciado: '¿Qué agencias construyeron y operan conjuntamente el telescopio?', alternativas: { A: 'Solo la NASA.', B: 'ESA y CSA exclusivamente.', C: 'NASA, ESA y CSA.', D: '14 países independientes.' }, respuesta_correcta: 'C', feedback_acierto: '¡Exacto! Son tres agencias las que operan el telescopio.', feedback_error: 'Lee la primera oración y fíjate en las siglas mencionadas.' },
-            { id: 1012, enunciado: '¿En qué fecha se realizó el lanzamiento del telescopio?', alternativas: { A: '25 de diciembre de 2021', B: '24 de diciembre de 2021', C: '25 de diciembre de 2022', D: '31 de diciembre de 2021' }, respuesta_correcta: 'A', feedback_acierto: '¡Bien! El scanning funcionó a la perfección.', feedback_error: 'Busca el número "25" o "2021" en el texto.' },
-            { id: 1013, enunciado: '¿Cuál es uno de los objetivos principales del JWST?', alternativas: { A: 'Viajar a otras galaxias.', B: 'Observar la formación de las primeras galaxias.', C: 'Llevar astronautas a la Luna.', D: 'Descubrir nuevos planetas habitables.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente rastreo del objetivo final!', feedback_error: 'Busca la palabra "objetivo" en el texto.' }
-          ]
-        }
-      },
-      // ── NODO 4: RASTREAR INFO I (NARRATIVOS) ──
-      {
-        id: 'sec-1-3-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 3, order: 4, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Rastrear info I (Narrativos)',
-        introduccion: 'Ubica detalles específicos en cuentos o historias.',
-        datos_claves: ['Presta atención a las descripciones físicas', 'Fíjate en dónde ocurre la acción principal'],
-        test: {
-          id: 'test-1-3-nar', seccionId: 'sec-1-3-nar',
-          contexto_base: 'Aquella mañana, el anciano relojero limpió cuidadosamente el cristal del escaparate de su pequeña tienda en la calle de los Olmos. Llevaba puesto su delantal de cuero desgastado, el mismo que le regaló su abuelo hacía cuarenta años. En su mesa de trabajo, un antiguo reloj de bolsillo dorado esperaba ser reparado, marcando las tres en punto con sus manecillas oxidadas.',
-          preguntas: [
-            { id: 102, enunciado: 'En el relato, ¿dónde se ubica la pequeña tienda del relojero?', alternativas: { A: 'En la calle del Cuero.', B: 'Junto a un escaparate dorado.', C: 'En la calle de los Olmos.', D: 'Frente a su mesa de trabajo.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente! En la primera línea se menciona directamente la ubicación.', feedback_error: 'Busca el nombre de la calle en la primera oración del texto.' },
-            { id: 1021, enunciado: '¿Qué prenda llevaba puesta el anciano?', alternativas: { A: 'Un traje dorado.', B: 'Un delantal de cuero desgastado.', C: 'Un abrigo de invierno.', D: 'Un reloj de bolsillo en la solapa.' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien hecho! Rastreaste el detalle de la vestimenta.', feedback_error: 'Lee la segunda oración del texto.' },
-            { id: 1022, enunciado: '¿Quién le regaló esa prenda al relojero y cuándo?', alternativas: { A: 'Su abuelo, hace cuarenta años.', B: 'Su padre, hace veinte años.', C: 'Su esposa, recientemente.', D: 'Un cliente, hace cuarenta años.' }, respuesta_correcta: 'A', feedback_acierto: '¡Perfecto!', feedback_error: 'El texto menciona directamente quién se lo regaló en la segunda línea.' },
-            { id: 1023, enunciado: '¿Qué objeto esperaba sobre la mesa de trabajo?', alternativas: { A: 'Un cristal roto.', B: 'Un nuevo delantal.', C: 'Un antiguo reloj de bolsillo dorado.', D: 'Herramientas oxidadas.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! Rastreaste la acción del final del párrafo.', feedback_error: 'Observa la última oración del fragmento.' }
-          ]
-        }
-      },
-      // ── NODO 5: PRO TIP 1 ──
-      {
-        id: 'sec-1-4-tip', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 4, order: 5, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Pro Tip: Escaneo Visual',
-        isProTip: true,
-        introduccion: '¡No leas todo otra vez! Usa el Scanning.',
-        datos_claves: [
-          'La técnica del Scanning consiste en buscar una palabra clave específica sin leer el resto del texto.',
-          'Si la pregunta dice "¿En qué año...?", tus ojos solo deben buscar números.',
-          'Si la pregunta pregunta por "Juan", tus ojos buscan la letra J mayúscula.',
-          'Usa el dedo o el lápiz para guiar tus ojos rápidamente por las líneas.'
-        ],
-        test: {
-          id: 'test-1-4-tip', seccionId: 'sec-1-4-tip',
-          contexto_base: 'Lee este tip de ninja.',
-          preguntas: [
-            { id: 1000, enunciado: '¿Qué es el Scanning?', alternativas: { A: 'Leer cada palabra lentamente.', B: 'Buscar visualmente palabras clave o números.', C: 'Memorizar todo el texto.', D: 'Ignorar las preguntas.' }, respuesta_correcta: 'B', feedback_acierto: '¡Eso! Es un superpoder de la PAES.', feedback_error: 'Revisa el primer punto.' }
-          ]
-        }
-      },
-      // ── NODO 6: PRÁCTICA RÁPIDA ──
-      {
-        id: 'sec-1-5-rapid', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 5, order: 6, tags: ['subcapitulo:Rastrear Datos'],
-        isPractice: true,
-        practiceType: 'rapid',
-        title: 'Modo Ráfaga: Scanning',
-        introduccion: 'Aplica el Scanning en estos tres mini-textos a toda velocidad.',
-        datos_claves: [],
-        test: {
-          id: 'test-1-5-rapid', seccionId: 'sec-1-5-rapid',
-          contexto_base: 'Texto 1: La Revolución Francesa comenzó en 1789. \nTexto 2: El elemento más abundante en el universo es el hidrógeno. \nTexto 3: María compró manzanas, peras y plátanos en el mercado de San Juan.',
-          preguntas: [
-            { id: 103, enunciado: 'Según el Texto 1, ¿en qué año comenzó la Revolución Francesa?', alternativas: { A: '1798', B: '1789', C: '1889', D: '1898' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien escaneado!', feedback_error: '¡Fíjate bien en el número del texto 1!' },
-            { id: 104, enunciado: 'Según el Texto 2, ¿cuál es el elemento más abundante?', alternativas: { A: 'Oxígeno', B: 'Helio', C: 'Nitrógeno', D: 'Hidrógeno' }, respuesta_correcta: 'D', feedback_acierto: '¡Perfecto!', feedback_error: 'Escanea el texto 2 buscando "elemento".' },
-            { id: 105, enunciado: 'Según el Texto 3, ¿en qué mercado compró María?', alternativas: { A: 'San Juan', B: 'San José', C: 'San Pedro', D: 'San Pablo' }, respuesta_correcta: 'A', feedback_acierto: '¡Excelente, escaneo completado!', feedback_error: 'Escanea el texto 3 buscando la palabra mayúscula después de mercado.' }
-          ]
-        }
-      },
-      // ── NODO 7: RASTREAR INFO II (INFORMATIVOS) ──
-      {
-        id: 'sec-1-6-inf', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 6, order: 7, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Rastrear info II (Informativos)',
-        introduccion: 'Aumentamos la dificultad buscando datos secundarios.',
-        datos_claves: ['Cuidado con los distractores numéricos'],
-        test: {
-          id: 'test-1-6-inf', seccionId: 'sec-1-6-inf',
-          contexto_base: 'La energía eólica en Chile ha experimentado un crecimiento exponencial. En 2014, el país contaba con apenas 836 MW de capacidad instalada eólica. Diez años después, en 2024, esa cifra se quintuplicó, alcanzando los 4.500 MW, lo que representa cerca del 14% de la matriz energética nacional. Gran parte de estos proyectos se concentran en las regiones de Coquimbo y Atacama.',
-          preguntas: [
-            { id: 106, enunciado: 'De acuerdo con el fragmento, ¿cuál era la capacidad instalada eólica en Chile en el año 2014?', alternativas: { A: '14 MW', B: '836 MW', C: '4.500 MW', D: 'Se quintuplicó.' }, respuesta_correcta: 'B', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'Vuelve al texto y busca específicamente la cifra que acompaña al año 2014.' },
-            { id: 1061, enunciado: '¿En qué año la capacidad instalada alcanzó los 4.500 MW?', alternativas: { A: '2014', B: '2019', C: '2024', D: '2030' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente! Escaneaste el año correcto.', feedback_error: 'Busca el año que está junto a la cifra 4.500 MW.' },
-            { id: 1062, enunciado: '¿Qué porcentaje de la matriz energética nacional representa esa cifra?', alternativas: { A: '10%', B: '14%', C: '24%', D: '50%' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien! El distractor 24% no te engañó.', feedback_error: 'Busca el símbolo % en el texto.' },
-            { id: 1063, enunciado: '¿En qué regiones se concentra gran parte de los proyectos?', alternativas: { A: 'Santiago y Valparaíso', B: 'Atacama y Antofagasta', C: 'Coquimbo y Atacama', D: 'Coquimbo y Valparaíso' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! Rastreaste el último dato del texto.', feedback_error: 'Lee la última oración del párrafo.' }
-          ]
-        }
-      },
-      // ── NODO 8: PRO TIP 2 ──
-      {
-        id: 'sec-1-7-tip', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 7, order: 8, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Pro Tip: Trampas Numéricas',
-        isProTip: true,
-        introduccion: 'El DEMRE ama poner todos los números del texto en las alternativas.',
-        datos_claves: [
-          'En el ejercicio anterior vimos: 2014, 836, 10, 2024, 4500, 14.',
-          'Si la pregunta es sobre 2014, debes descartar de inmediato los números asociados a 2024.',
-          'Nunca elijas un número solo porque "sale en el texto".',
-          'Asegúrate de que el número responda a lo que te preguntan exactamente.'
-        ],
-        test: {
-          id: 'test-1-7-tip', seccionId: 'sec-1-7-tip',
-          contexto_base: 'Juan tiene 5 manzanas. Pedro tiene 8. En total hay 13.',
-          preguntas: [
-            { id: 1001, enunciado: '¿Cuántas manzanas tiene Juan?', alternativas: { A: '5', B: '8', C: '13', D: '3' }, respuesta_correcta: 'A', feedback_acierto: '¡Exacto! El 8 y el 13 son distractores que están en el texto.', feedback_error: 'Identifica al sujeto de la pregunta: Juan.' }
-          ]
-        }
-      },
-      // ── NODO 9: RASTREAR INFO II (NARRATIVOS) ──
-      {
-        id: 'sec-1-8-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 6, order: 9, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Rastrear info II (Narrativos)',
-        introduccion: 'Localiza información sobre los sentimientos y reacciones de los personajes.',
-        datos_claves: ['Busca adjetivos que describan la actitud de los personajes'],
-        test: {
-          id: 'test-1-8-nar', seccionId: 'sec-1-8-nar',
-          contexto_base: 'Marta observó la carta cerrada sobre la mesa del comedor. Llevaba el sello lacrado de la universidad. Sus manos temblaban de manera incontrolable, no por frío, sino por una mezcla abrumadora de esperanza y pánico. Si la respuesta era negativa, tendría que volver a trabajar en la panadería de sus tíos, despidiéndose de su sueño de estudiar astronomía.',
-          preguntas: [
-            { id: 107, enunciado: '¿Qué le generaba a Marta la visión de la carta cerrada?', alternativas: { A: 'Un profundo frío en las manos.', B: 'Mucha nostalgia por la panadería.', C: 'Una mezcla abrumadora de esperanza y pánico.', D: 'Desilusión ante la universidad.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! Rastreaste el sentimiento exacto.', feedback_error: 'Lee con atención por qué le temblaban las manos según el texto.' },
-            { id: 1071, enunciado: '¿De dónde provenía la carta?', alternativas: { A: 'De la panadería de sus tíos.', B: 'De la universidad.', C: 'De un observatorio astronómico.', D: 'De un banco.' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien! Detectaste el origen de la carta.', feedback_error: 'Revisa la segunda oración que menciona el sello.' },
-            { id: 1072, enunciado: '¿A qué se tendrían que dedicar Marta si la respuesta fuera negativa?', alternativas: { A: 'A trabajar en la universidad.', B: 'A trabajar en la panadería de sus tíos.', C: 'A estudiar astronomía en otro lado.', D: 'A buscar empleo en la ciudad.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto!', feedback_error: 'El final del texto explica qué pasaría si fuera rechazada.' },
-            { id: 1073, enunciado: '¿Cuál es el sueño de Marta?', alternativas: { A: 'Estudiar astronomía.', B: 'Ser dueña de la panadería.', C: 'Recibir muchas cartas.', D: 'Viajar lejos de sus tíos.' }, respuesta_correcta: 'A', feedback_acierto: '¡Excelente, rastreaste la motivación final!', feedback_error: 'Lee las últimas tres palabras del fragmento.' }
-          ]
-        }
-      },
-      // ── NODO 10: MINIJUEGO SINÓNIMOS ──
-      {
-        id: 'sec-1-9-syn', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 8, order: 10, tags: ['subcapitulo:Vocabulario'],
-        title: 'Práctica: Sinónimos en Contexto',
-        introduccion: 'Rastrear palabras difíciles es común. ¡Entrena tu vocabulario!',
-        datos_claves: [],
-        isPractice: true,
-        practiceType: 'synonyms',
-        practiceData: {
-          title: 'Conecta el Sinónimo',
-          description: 'Aplica el rastreo y une la palabra con el sinónimo que mejor la reemplace.',
-          rounds: [
-            {
-              pairs: [
-                { id: 1, word: 'Impugnado', synonym: 'Cuestionado', hint: 'Rechazar la validez de una idea o decisión.' },
-                { id: 2, word: 'Ambiguas', synonym: 'Confusas', hint: 'Que puede entenderse de varios modos.' },
-                { id: 3, word: 'Estragos', synonym: 'Daños', hint: 'Ruina, daño o destrucción.' }
-              ]
-            },
-            {
-              pairs: [
-                { id: 4, word: 'Abundante', synonym: 'Copioso', hint: 'En gran cantidad.' },
-                { id: 5, word: 'Nostalgia', synonym: 'Añoranza', hint: 'Pena por la ausencia de algo querido.' },
-                { id: 6, word: 'Estimular', synonym: 'Incentivar', hint: 'Impulsar a alguien a hacer algo.' }
-              ]
-            }
-          ]
-        }
-      },
-      // ── NODO 11: RASTREAR INFO III (CAUSAS Y CONSECUENCIAS) ──
-      {
-        id: 'sec-1-10-inf', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 9, order: 11, tags: ['subcapitulo:Causas y Consecuencias'],
-        title: 'Rastrear Causas (Informativos)',
-        introduccion: 'Localiza causas y consecuencias directas en un texto expositivo.',
-        datos_claves: ['Fíjate en conectores como "debido a", "provocó", "como resultado"'],
-        test: {
-          id: 'test-1-10-inf', seccionId: 'sec-1-10-inf',
-          contexto_base: 'El derretimiento del permafrost en el Ártico no solo afecta a las infraestructuras locales, sino que tiene un impacto global. Este fenómeno, causado por el aumento acelerado de las temperaturas, provoca la liberación de enormes cantidades de metano, un gas de efecto invernadero mucho más potente que el dióxido de carbono. Como resultado, se acelera aún más el calentamiento global, creando un ciclo de retroalimentación climática.',
-          preguntas: [
-            { id: 108, enunciado: 'Según el texto, ¿qué causa el derretimiento del permafrost en el Ártico?', alternativas: { A: 'La liberación de enormes cantidades de metano.', B: 'La debilidad de las infraestructuras locales.', C: 'El ciclo de retroalimentación climática.', D: 'El aumento acelerado de las temperaturas.' }, respuesta_correcta: 'D', feedback_acierto: '¡Exacto! El texto dice "...causado por el aumento acelerado de las temperaturas...".', feedback_error: '¡Cuidado! Te están pidiendo la CAUSA del derretimiento, no la consecuencia.' },
-            { id: 1081, enunciado: '¿A qué infraestructuras afecta inicialmente el derretimiento?', alternativas: { A: 'Infraestructuras globales.', B: 'Infraestructuras locales.', C: 'Infraestructuras de transporte.', D: 'Redes eléctricas.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! Encontraste el dato.', feedback_error: 'Revisa la primera línea del texto.' },
-            { id: 1082, enunciado: '¿Qué gas es liberado debido a este fenómeno?', alternativas: { A: 'Dióxido de carbono.', B: 'Oxígeno puro.', C: 'Metano.', D: 'Nitrógeno.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente!', feedback_error: 'Busca el nombre del gas liberado en la segunda oración.' },
-            { id: 1083, enunciado: '¿Cómo es el metano comparado con el dióxido de carbono?', alternativas: { A: 'Menos potente.', B: 'Igual de potente.', C: 'Inofensivo.', D: 'Mucho más potente.' }, respuesta_correcta: 'D', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'Lee cómo se describe el gas de efecto invernadero.' }
-          ]
-        }
-      },
-      // ── NODO 13: RASTREAR INFO III (ORDEN TEMPORAL) ──
-      {
-        id: 'sec-1-12-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 9, order: 12, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Orden Temporal (Narrativos)',
-        introduccion: 'Rastrea detalles sutiles en la secuencia de eventos.',
-        datos_claves: ['Sigue el orden temporal: qué pasó antes y qué después'],
-        test: {
-          id: 'test-1-12-nar', seccionId: 'sec-1-12-nar',
-          contexto_base: 'Al llegar a la cima de la colina, el viajero se detuvo a tomar aire. Atrás dejaba el espeso bosque de robles y el sonido del río caudaloso. Sin perder tiempo, desempacó su libreta de apuntes, esbozó un rápido mapa del valle que se abría a sus pies y finalmente tomó un sorbo de agua de su cantimplora antes de emprender el descenso hacia el pueblo.',
-          preguntas: [
-            { id: 109, enunciado: 'Según la narración, ¿qué fue lo primero que hizo el viajero tras desempacar su libreta de apuntes?', alternativas: { A: 'Se detuvo a tomar aire.', B: 'Esbozó un rápido mapa del valle.', C: 'Tomó un sorbo de agua de su cantimplora.', D: 'Emprendió el descenso hacia el pueblo.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! Encontraste el orden exacto de los eventos.', feedback_error: 'Lee con atención la tercera oración. Fíjate qué acción ocurre inmediatamente después de sacar la libreta.' },
-            { id: 1091, enunciado: '¿Qué dejaba atrás el viajero al llegar a la cima?', alternativas: { A: 'El pueblo y la cantimplora.', B: 'El valle y su libreta.', C: 'El espeso bosque de robles y el sonido del río.', D: 'La montaña nevada.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente rastreo de información!', feedback_error: 'Lee la segunda oración del texto.' },
-            { id: 1092, enunciado: '¿Qué bebió el viajero antes de descender?', alternativas: { A: 'Jugo de frutas.', B: 'Café frío.', C: 'Agua de su cantimplora.', D: 'Agua del río caudaloso.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien!', feedback_error: 'Revisa qué tomó en la última parte del texto.' },
-            { id: 1093, enunciado: '¿Hacia dónde se dirigía al final del relato?', alternativas: { A: 'Hacia el bosque de robles.', B: 'Hacia la cima de la colina.', C: 'Hacia el pueblo.', D: 'Hacia el río caudaloso.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto!', feedback_error: 'La última oración indica su próximo destino.' }
-          ]
-        }
-      },
-      // ── NODO 12: COMPLETAR ORACIONES (CAUSAS Y CONSECUENCIAS) ──
-      {
-        id: 'sec-1-11-fill', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 10, order: 13, tags: ['subcapitulo:Causas y Consecuencias'],
-        title: 'Práctica: Conectores Lógicos',
-        introduccion: 'Identifica la estructura de causa y efecto completando las frases.',
-        datos_claves: [],
-        isPractice: true,
-        practiceType: 'fill-blanks',
-        practiceData: {
-          title: 'Completa la Oración',
-          description: 'Selecciona la palabra o frase correcta para completar el texto, manteniendo el sentido lógico de Causa o Consecuencia.',
-          sentences: [
-            {
-              id: 1,
-              parts: [
-                { type: 'text', text: 'El puente colapsó ' },
-                { type: 'blank', correct: 'debido a', options: ['a pesar de', 'debido a', 'y por lo tanto', 'sin embargo'] },
-                { type: 'text', text: ' los fuertes vientos huracanados.' }
-              ]
-            },
-            {
-              id: 2,
-              parts: [
-                { type: 'text', text: 'Había estudiado toda la semana sin descanso. ' },
-                { type: 'blank', correct: 'En consecuencia', options: ['Por el contrario', 'Sin embargo', 'En consecuencia', 'Aunque'] },
-                { type: 'text', text: ', aprobó el examen con la nota máxima.' }
-              ]
-            },
-            {
-              id: 3,
-              parts: [
-                { type: 'text', text: 'La deforestación masiva del bosque ' },
-                { type: 'blank', correct: 'provocó', options: ['evitó', 'fue causada por', 'provocó', 'resolvió'] },
-                { type: 'text', text: ' la migración forzada de decenas de especies.' }
-              ]
-            }
-          ]
-        }
-      },
-      // ── NODO 14: PRO TIP 3 ──
-      {
-        id: 'sec-1-13-tip', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 10, order: 14, tags: ['subcapitulo:Rastrear Datos'],
-        title: 'Pro Tip: Cronología',
-        isProTip: true,
-        introduccion: 'Cuidado con el orden en que se cuentan las cosas.',
-        datos_claves: [
-          'En los textos narrativos, a veces se cuenta primero el final y luego el inicio (flashbacks).',
-          'Identifica marcadores de tiempo: "antes de", "después", "mientras", "luego".',
-          'Si la pregunta dice "antes de X", busca X y lee la oración que está justo antes o las palabras previas.'
-        ],
-        test: {
-          id: 'test-1-13-tip', seccionId: 'sec-1-13-tip',
-          contexto_base: 'Antes de desayunar, corrí por el parque. Luego de comer, me bañé.',
-          preguntas: [
-            { id: 1002, enunciado: '¿Qué fue lo primero que ocurrió cronológicamente?', alternativas: { A: 'Desayunar', B: 'Bañarse', C: 'Correr', D: 'Comer' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien! El "Antes de" indica que correr fue lo primero.', feedback_error: 'Presta atención a los conectores temporales.' }
-          ]
-        }
-      },
-      // ── NODO 15: PARÁFRASIS I (INFORMATIVOS) ──
-      {
-        id: 'sec-1-14-inf', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 11, order: 15, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Paráfrasis I (Informativos)',
-        introduccion: 'Aprende a reconocer la misma idea escrita con diferentes palabras.',
-        datos_claves: ['El significado original no debe cambiar', 'Cuidado con las alternativas que "dicen casi lo mismo" pero exageran (ej: decir "siempre" en vez de "a veces")'],
-        test: {
-          id: 'test-1-14-inf', seccionId: 'sec-1-14-inf',
-          contexto_base: 'El sedentarismo es uno de los principales factores de riesgo para desarrollar enfermedades cardiovasculares en la edad adulta.',
-          preguntas: [
-            { id: 110, enunciado: '¿Qué opción expresa la misma idea del texto de manera correcta?', alternativas: { A: 'Las enfermedades cardiovasculares suelen aparecer por diversas causas en los adultos, entre ellas el ejercicio.', B: 'La falta de actividad física aumenta considerablemente la probabilidad de sufrir patologías del corazón en los adultos.', C: 'Solo las personas sedentarias desarrollarán problemas cardiovasculares en el futuro.', D: 'El sedentarismo previene las enfermedades crónicas en la etapa de adultez.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto! Has identificado la paráfrasis correcta. "Falta de actividad física" equivale a "sedentarismo".', feedback_error: 'Busca la opción que mantenga el mismo significado sin exagerar ni cambiar la afirmación. La opción C dice "Solo las personas" (es una exageración).' },
-            { id: 1101, enunciado: 'Según el fragmento, ¿en qué etapa de la vida hay riesgo de desarrollar la enfermedad?', alternativas: { A: 'En la infancia.', B: 'En la juventud.', C: 'En la edad adulta.', D: 'En la vejez.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'El texto especifica en la última parte a qué etapa corresponde.' },
-            { id: 1102, enunciado: '¿Qué es el sedentarismo según el contexto de la información entregada?', alternativas: { A: 'Un factor protector.', B: 'Una cura cardiovascular.', C: 'Un riesgo nulo.', D: 'Un factor de riesgo principal.' }, respuesta_correcta: 'D', feedback_acierto: '¡Correcto!', feedback_error: 'El texto indica claramente lo que el sedentarismo representa.' },
-            { id: 1103, enunciado: '¿Qué término podría ser un buen sinónimo para "enfermedades cardiovasculares"?', alternativas: { A: 'Patologías pulmonares.', B: 'Afecciones del corazón y vasos sanguíneos.', C: 'Problemas estomacales.', D: 'Trastornos neurológicos.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente conexión de vocabulario!', feedback_error: 'Cardiovascular está relacionado con el corazón.' }
-          ]
-        }
-      },
-      // ── NODO 16: PARÁFRASIS I (NARRATIVOS) ──
-      {
-        id: 'sec-1-15-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 11, order: 16, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Paráfrasis I (Narrativos)',
-        introduccion: 'Reconoce cómo reformular los pensamientos o acciones de un personaje.',
-        datos_claves: ['Busca sinónimos de las acciones'],
-        test: {
-          id: 'test-1-15-nar', seccionId: 'sec-1-15-nar',
-          contexto_base: 'Al escuchar la noticia, el rostro de Juan palideció súbitamente y sus rodillas cedieron, dejándolo caer pesadamente sobre la vieja silla de madera.',
-          preguntas: [
-            { id: 111, enunciado: '¿Qué opción expresa de manera equivalente la reacción de Juan?', alternativas: { A: 'Juan se sentó tranquilamente en la silla tras oír lo que le decían.', B: 'La noticia provocó en Juan un ataque de furia incontrolable.', C: 'Juan perdió el color de su rostro y se desplomó en el asiento debido al impacto de la noticia.', D: 'Juan decidió arrodillarse frente a la vieja silla de madera.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! Es una excelente reformulación de lo que le sucede físicamente por la sorpresa.', feedback_error: 'Compara la oración original con las alternativas. Palidecer es perder color, ceder las rodillas es desplomarse.' },
-            { id: 1111, enunciado: '¿Qué objeto del mobiliario se describe en el texto?', alternativas: { A: 'Una mesa moderna.', B: 'Un viejo sofá.', C: 'Una vieja silla de madera.', D: 'Un taburete de plástico.' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien! El adjetivo "vieja" y "de madera" lo confirman.', feedback_error: 'Busca cómo se describe la silla.' },
-            { id: 1112, enunciado: '¿Qué le ocurrió al rostro de Juan al escuchar la noticia?', alternativas: { A: 'Se sonrojó levemente.', B: 'Palideció súbitamente.', C: 'Se llenó de lágrimas.', D: 'Mostró una gran sonrisa.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto!', feedback_error: 'El texto señala claramente el verbo que indica lo que le pasa a su rostro.' },
-            { id: 1113, enunciado: '¿Por qué cayó Juan pesadamente?', alternativas: { A: 'Porque sus rodillas cedieron.', B: 'Porque la silla estaba rota.', C: 'Porque alguien lo empujó.', D: 'Porque resbaló con agua.' }, respuesta_correcta: 'A', feedback_acierto: '¡Exacto! Esa fue la causa de su caída.', feedback_error: 'Revisa la acción que ocurre justo antes de que caiga.' }
-          ]
-        }
-      },
-      // ── NODO 17: PRÁCTICA EMPAREJAR (PARÁFRASIS) ──
-      {
-        id: 'sec-1-16-match', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 12, order: 17, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Práctica: Emparejar Paráfrasis',
-        introduccion: 'Conecta cada oración con su paráfrasis correspondiente.',
-        datos_claves: [],
-        isPractice: true,
-        practiceType: 'match-pairs',
-        practiceData: {
-          title: 'Empareja la Paráfrasis',
-          description: 'Selecciona una oración de la izquierda y únea con su paráfrasis exacta de la derecha.',
-          pairs: [
-            { id: 1, left: 'La escasez hídrica es un problema severo.', right: 'La falta de agua representa una dificultad grave.' },
-            { id: 2, left: 'El protagonista sintió pavor extremo.', right: 'El personaje principal experimentó un miedo intenso.' },
-            { id: 3, left: 'Las ventas aumentaron de forma exponencial.', right: 'Los ingresos comerciales crecieron a gran velocidad.' }
-          ]
-        }
-      },
-      // ── NODO 18: PARÁFRASIS II (INFORMATIVOS TÉCNICOS) ──
-      {
-        id: 'sec-1-17-inf', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 13, order: 18, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Paráfrasis Técnica',
-        introduccion: 'Comprende textos expositivos con vocabulario científico o técnico.',
-        datos_claves: ['Traduce mentalmente los términos técnicos a palabras simples (ej: "autótrofo" = fabrica su propio alimento)'],
-        test: {
-          id: 'test-1-17-inf', seccionId: 'sec-1-17-inf',
-          contexto_base: 'La fotosíntesis es un proceso anabólico mediante el cual los organismos autótrofos convierten la energía luminosa en energía química almacenada, sintetizando compuestos orgánicos a partir de sustancias inorgánicas.',
-          preguntas: [
-            { id: 112, enunciado: '¿Cuál de las siguientes afirmaciones parafrasea correctamente el texto?', alternativas: { A: 'Los seres vivos usan compuestos orgánicos para crear luz mediante la fotosíntesis.', B: 'A través de la fotosíntesis, ciertos organismos fabrican su propio alimento orgánico usando luz y elementos inorgánicos.', C: 'La fotosíntesis destruye sustancias químicas para liberar energía luminosa en el ambiente.', D: 'Solo los organismos autótrofos pueden vivir sin consumir materia inorgánica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Muy bien! Captaste la esencia del proceso sin enredarte en los términos técnicos.', feedback_error: 'Recuerda: convertir energía luminosa en compuestos orgánicos significa usar luz para fabricar alimento.' },
-            { id: 1121, enunciado: '¿Qué tipo de proceso es la fotosíntesis según el texto?', alternativas: { A: 'Un proceso destructivo.', B: 'Un proceso catabólico.', C: 'Un proceso inorgánico.', D: 'Un proceso anabólico.' }, respuesta_correcta: 'D', feedback_acierto: '¡Correcto! Encontraste el término técnico.', feedback_error: 'Busca el adjetivo que acompaña a "proceso" en la primera línea.' },
-            { id: 1122, enunciado: '¿Qué tipo de energía se almacena finalmente en este proceso?', alternativas: { A: 'Energía luminosa.', B: 'Energía química.', C: 'Energía solar.', D: 'Energía inorgánica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente! Rastreaste el tipo de energía almacenada.', feedback_error: 'Revisa en qué tipo de energía se convierte la luz.' },
-            { id: 1123, enunciado: 'A partir de qué tipo de sustancias se sintetizan los compuestos orgánicos?', alternativas: { A: 'De sustancias inorgánicas.', B: 'De compuestos orgánicos previos.', C: 'De energía pura.', D: 'De otros organismos.' }, respuesta_correcta: 'A', feedback_acierto: '¡Perfecto!', feedback_error: 'La última parte de la oración lo menciona directamente.' }
-          ]
-        }
-      },
-      // ── NODO 19: PARÁFRASIS II (METÁFORAS) ──
-      {
-        id: 'sec-1-18-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 13, order: 19, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Paráfrasis de Metáforas',
-        introduccion: 'Parafrasea metáforas y expresiones figuradas comunes en narraciones.',
-        datos_claves: ['Identifica la intención detrás de la expresión literaria', 'Nunca interpretes las metáforas de manera literal (al pie de la letra)'],
-        test: {
-          id: 'test-1-18-nar', seccionId: 'sec-1-18-nar',
-          contexto_base: 'La noticia cayó sobre la pequeña aldea como un balde de agua helada en pleno invierno, paralizando el habitual bullicio del mercado matutino.',
-          preguntas: [
-            { id: 113, enunciado: '¿Qué significa la expresión figurada utilizada en el fragmento?', alternativas: { A: 'Que empezó a llover fuertemente y el mercado tuvo que cerrar.', B: 'Que la noticia fue tan impactante y sorpresiva que dejó a todos los habitantes atónitos y en silencio.', C: 'Que los comerciantes reaccionaron con violencia ante el evento inesperado.', D: 'Que alguien derramó agua fría en el centro de la plaza del mercado.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente interpretación! "Balde de agua fría" se refiere a una sorpresa desagradable que paraliza.', feedback_error: 'Es una expresión figurada. No tomarlo de manera literal.' },
-            { id: 1131, enunciado: '¿Sobre qué lugar cayó la noticia?', alternativas: { A: 'Sobre un balde de agua.', B: 'Sobre una gran ciudad.', C: 'Sobre la pequeña aldea.', D: 'Sobre el mercado invernal.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto!', feedback_error: 'El texto menciona el lugar exacto en las primeras palabras.' },
-            { id: 1132, enunciado: '¿Qué actividad fue paralizada por este evento?', alternativas: { A: 'La lluvia de invierno.', B: 'El tráfico en la ciudad.', C: 'El habitual bullicio del mercado matutino.', D: 'El trabajo de los aldeanos.' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien rastreado!', feedback_error: 'Revisa la última parte de la oración.' },
-            { id: 1133, enunciado: '¿En qué época del año se ambienta la comparación?', alternativas: { A: 'En verano.', B: 'En otoño.', C: 'En invierno.', D: 'En primavera.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto!', feedback_error: 'Busca la estación del año mencionada en la metáfora.' }
-          ]
-        }
-      },
-      // ── NODO 20: PRÁCTICA DE EMPAREJAMIENTO DE METÁFORAS ──
-      {
-        id: 'sec-1-19-match', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 14, order: 20, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Práctica: Decodifica la Metáfora',
-        introduccion: 'Empareja la frase figurada con su significado literal.',
-        datos_claves: [],
-        isPractice: true,
-        practiceType: 'match-pairs',
-        practiceData: {
-          title: 'Decodifica la Metáfora',
-          description: 'Empareja la frase figurada con su significado literal o paráfrasis correcta.',
-          pairs: [
-            { id: 4, left: 'Tenía un corazón de piedra.', right: 'Era una persona insensible.' },
-            { id: 5, left: 'Estaba en el ojo del huracán.', right: 'Se encontraba en el centro del problema.' },
-            { id: 6, left: 'Se le hizo agua la boca.', right: 'Sintió un gran deseo de comer.' }
-          ]
-        }
-      },
-      // ── NODO 21: PARÁFRASIS SÍNTESIS ──
-      {
-        id: 'sec-1-20-inf', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 15, order: 21, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Síntesis de Párrafos',
-        introduccion: 'Identifica síntesis completas de párrafos largos.',
-        datos_claves: ['La paráfrasis correcta no debe omitir el punto principal del párrafo', 'Descarta opciones que solo hablen de un detalle menor'],
-        test: {
-          id: 'test-1-20-inf', seccionId: 'sec-1-20-inf',
-          contexto_base: 'El uso indiscriminado de antibióticos tanto en la medicina humana como en la ganadería ha acelerado la aparición de bacterias multirresistentes. Estas "superbacterias" suponen una grave amenaza para la salud pública mundial, ya que infecciones comunes que antes se curaban fácilmente, ahora requieren tratamientos más largos, costosos y con mayor riesgo de mortalidad.',
-          preguntas: [
-            { id: 114, enunciado: '¿Cuál de las siguientes opciones resume adecuadamente el fragmento?', alternativas: { A: 'La ganadería es la principal culpable de la aparición de superbacterias que matan a millones de personas anualmente.', B: 'Los antibióticos modernos son ineficaces, por lo que las enfermedades comunes ya no tienen cura.', C: 'El abuso de los antibióticos ha generado bacterias resistentes, convirtiendo enfermedades simples en peligros sanitarios difíciles de tratar.', D: 'Las infecciones comunes pueden tratarse fácilmente si se disminuye el uso de antibióticos en animales.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! Captura la causa (abuso) y la consecuencia (bacterias resistentes y dificultad de trato).', feedback_error: 'La opción A exagera. La opción D no resume el problema real, es una suposición.' },
-            { id: 1141, enunciado: 'Según el texto, ¿en qué sectores se usan los antibióticos de forma indiscriminada?', alternativas: { A: 'En la agricultura y la minería.', B: 'En la medicina humana y en la ganadería.', C: 'En los hospitales exclusivamente.', D: 'En la industria farmacéutica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto!', feedback_error: 'Lee la primera oración del párrafo.' },
-            { id: 1142, enunciado: '¿Cómo describe el texto a las "superbacterias"?', alternativas: { A: 'Como una leve molestia.', B: 'Como bacterias beneficiosas para la ganadería.', C: 'Como una grave amenaza para la salud pública mundial.', D: 'Como infecciones comunes que se curan fácilmente.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'Busca el término "superbacterias" y lee la descripción que le sigue.' },
-            { id: 1143, enunciado: '¿Qué consecuencia tienen ahora las infecciones comunes?', alternativas: { A: 'Se curan con mayor facilidad.', B: 'Desaparecen por sí solas.', C: 'Requieren tratamientos más rápidos y baratos.', D: 'Requieren tratamientos más largos, costosos y con mayor riesgo.' }, respuesta_correcta: 'D', feedback_acierto: '¡Excelente comprensión!', feedback_error: 'Revisa la última parte del texto donde se habla de las infecciones comunes hoy en día.' }
-          ]
-        }
-      },
-      // ── NODO 22: MOTIVACIONES OCULTAS ──
-      {
-        id: 'sec-1-21-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 15, order: 22, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Motivaciones de Personajes',
-        introduccion: 'Resume las motivaciones profundas o intenciones de los personajes en un texto narrativo.',
-        datos_claves: ['Fíjate en las acciones que delatan lo que el personaje realmente busca (lo implícito)'],
-        test: {
-          id: 'test-1-21-nar', seccionId: 'sec-1-21-nar',
-          contexto_base: 'A pesar de sus constantes quejas sobre el ruido y el tráfico, don Ernesto se negaba rotundamente a vender su casona en el centro para mudarse al campo. En el fondo, el solo pensamiento de despertar sin el bullicio de los vendedores callejeros y sin el eco de los tranvías le provocaba un vacío insoportable en el pecho.',
-          preguntas: [
-            { id: 115, enunciado: '¿Cuál es la verdadera motivación de don Ernesto para no mudarse?', alternativas: { A: 'En realidad, siente un profundo apego emocional al ambiente vibrante y ruidoso de la ciudad.', B: 'Quiere vender su casona a un precio más alto en el futuro.', C: 'Siente desprecio por la vida en el campo y la tranquilidad de la naturaleza.', D: 'Su familia le prohíbe abandonar el centro histórico.' }, respuesta_correcta: 'A', feedback_acierto: '¡Muy bien interpretado! Sus quejas son superficiales, pues realmente necesita ese ruido para no sentirse vacío.', feedback_error: 'Lee la segunda oración del texto. El silencio le provocaba "un vacío insoportable".' },
-            { id: 1151, enunciado: '¿De qué se quejaba constantemente don Ernesto?', alternativas: { A: 'Del clima de la ciudad.', B: 'De su vieja casona.', C: 'Del ruido y el tráfico.', D: 'Del campo y la naturaleza.' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien! Eso era lo que decía superficialmente.', feedback_error: 'Revisa la primera línea de la narración.' },
-            { id: 1152, enunciado: '¿Hacia dónde se negaba a mudarse?', alternativas: { A: 'Al extranjero.', B: 'Al campo.', C: 'A otra ciudad más ruidosa.', D: 'A un departamento en el centro.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto!', feedback_error: 'Busca el destino de mudanza mencionado en la primera oración.' },
-            { id: 1153, enunciado: '¿Qué le provocaba el pensamiento de despertar sin el bullicio?', alternativas: { A: 'Una gran alegría.', B: 'Mucha paz mental.', C: 'Un vacío insoportable en el pecho.', D: 'Ganas de vender la casona.' }, respuesta_correcta: 'C', feedback_acierto: '¡Exacto! Esa es su motivación oculta.', feedback_error: 'Revisa el final de la segunda oración.' }
-          ]
-        }
-      },
-      // ── NODO 23: PRO TIP 4 ──
-      {
-        id: 'sec-1-22-tip', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 16, order: 23, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Pro Tip: Distractores Absolutos',
-        isProTip: true,
-        introduccion: 'Palabras que casi siempre hacen que una alternativa sea FALSA.',
-        datos_claves: [
-          'En las preguntas de Comprensión Lectora, huye de las palabras absolutas: NUNCA, SIEMPRE, TODOS, NINGUNO, ÚNICAMENTE.',
-          'Si el texto dice "Muchos mamíferos vuelan", la alternativa "Todos los mamíferos vuelan" es incorrecta.',
-          'Prefiere las alternativas que usan matices: ALGUNOS, A VECES, FRECUENTEMENTE, LA MAYORÍA.'
-        ],
-        test: {
-          id: 'test-1-22-tip', seccionId: 'sec-1-22-tip',
-          contexto_base: 'La mayoría de los gatos odian el agua, pero algunos disfrutan nadar.',
-          preguntas: [
-            { id: 1003, enunciado: '¿Cuál afirmación es falsa según el texto?', alternativas: { A: 'Ciertos felinos disfrutan del agua.', B: 'Todos los gatos odian el agua.', C: 'Gran parte de los gatos evitan mojarse.', D: 'Existen gatos que saben nadar.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! "Todos" es una palabra absoluta falsa.', feedback_error: 'Busca la palabra que generaliza de manera absoluta.' }
-          ]
-        }
-      },
-      // ── NODO 24: BOSS FINAL ──
-      {
-        id: 'sec-1-23-boss', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 17, order: 24, tags: ['subcapitulo:Evaluación Final'],
-        title: 'Desafío Final',
-        introduccion: '¡Felicidades por llegar al jefe de la Habilidad Localizar! Combina todo lo aprendido.',
-        datos_claves: ['Aplica el scanning, evita números trampa y palabras absolutas.'],
-        test: {
-          id: 'test-1-23-boss', seccionId: 'sec-1-23-boss',
-          contexto_base: 'El hallazgo de los Manuscritos del Mar Muerto en 1947 por unos pastores beduinos representó uno de los descubrimientos arqueológicos más importantes del siglo XX. Estos pergaminos, ocultos en vasijas de barro dentro de cuevas áridas cerca de Qumrán, contienen algunos de los textos bíblicos más antiguos conocidos. Los investigadores estiman que fueron escritos entre el siglo III a.C. y el siglo I d.C. por una secta judía aislada conocida como los esenios, quienes valoraban la purificación ritual y el estudio constante de los textos sagrados.',
-          preguntas: [
-            { id: 116, enunciado: 'Según el texto, ¿dónde estaban ocultos exactamente los manuscritos?', alternativas: { A: 'En el fondo del Mar Muerto.', B: 'En vasijas de barro dentro de cuevas cerca de Qumrán.', C: 'En una biblioteca secreta de los pastores beduinos.', D: 'Bajo las arenas del desierto del siglo XX.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto rastreo de información!', feedback_error: 'Vuelve al texto y busca la palabra "ocultos".' },
-            { id: 117, enunciado: '¿Qué paráfrasis refleja mejor quiénes eran los autores de los textos, de acuerdo a la estimación de los expertos?', alternativas: { A: 'Fueron redactados por pastores beduinos que vivían cerca de Qumrán.', B: 'Fueron creados por una comunidad judía apartada que daba gran importancia a los ritos de pureza y a la lectura de escrituras.', C: 'Fueron inventados por arqueólogos modernos del siglo XX.', D: 'Fueron escritos por un rey antiguo para esconderlos de sus enemigos.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto! Paráfrasis exacta de la descripción de los esenios.', feedback_error: 'Ubica a los "esenios" en el texto y lee sus características.' }
-          ]
-        }
-      }
-    ]
-  },
-
-  // ── CAPÍTULO 2 ──
-  // ── CAPÍTULO 2 ──
-  {
-    id: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    title: 'Habilidad 2: Interpretar',
-    introduccion: 'Interpretar significa ir más allá de la información literal del texto: debes comprender qué quiso decir el autor, para qué sirve cada parte del texto y cuál es la actitud o postura del emisor ante su tema.',
-    order: 2,
-    secciones: [
+[
   {
     id: 'sec-2-0-guia',
     capituloId: 'cap-interpretar',
@@ -566,13 +51,10 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-protip-1',
       contexto_base: null,
-      preguntas: [],
-      seccionId: 'sec-2-protip-1'
+      preguntas: []
     },
     level: 2,
-    order: 2,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 2
   },
   {
     id: 'sec-2-1-inf',
@@ -751,14 +233,10 @@ export const CAPITULOS: Capitulo[] = [
           feedback_acierto: 'Correcto. \'Andén\' y \'puertas cerrando\' son pistas textuales de un tren/metro, y \'ansiosamente\' más \'corrió\' indican atraso.',
           feedback_error: 'Incorrecto. Busca las pistas textuales (\'andén\', \'reloj\').'
         }
-      ],
-      seccionId: 'sec-2-prac-1'
+      ]
     },
     level: 4,
-    order: 4,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 4
   },
   {
     id: 'sec-2-2-inf',
@@ -781,7 +259,7 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-2-inf',
       seccionId: 'sec-2-2-inf',
-      contexto_base: 'La revolución industrial transformó radicalmente las estructuras económicas y sociales de Europa durante el siglo XIX. Las ciudades crecieron de forma acelerada a medida que los trabajadores rurales migraban en busca de empleo en las fábricas.\n\nSin embargo, este crecimiento no trajo aparejado un aumento equivalente en las condiciones de vida: los barrios obreros se caracterizaban por el hacinamiento, la falta de saneamiento y jornadas laborales de hasta dieciséis horas diarias.\n\nComo consecuencia, comenzaron a surgir los primeros movimientos obreros organizados, que reclamaban mejores salarios, reducción de la jornada laboral y protección para mujeres y niños trabajadores.\n\nEstos movimientos, aunque reprimidos en sus inicios, sentarían las bases de los derechos laborales modernos que hoy damos por sentados.',
+      contexto_base: 'La revolución industrial transformó radicalmente las estructuras económicas y sociales de Europa durante el siglo XIX. Las ciudades crecieron de forma acelerada a medida que los trabajadores rurales migraban en busca de empleo en las fábricas. Sin embargo, este crecimiento no trajo aparejado un aumento equivalente en las condiciones de vida: los barrios obreros se caracterizaban por el hacinamiento, la falta de saneamiento y jornadas laborales de hasta dieciséis horas diarias. Como consecuencia, comenzaron a surgir los primeros movimientos obreros organizados, que reclamaban mejores salarios, reducción de la jornada laboral y protección para mujeres y niños trabajadores. Estos movimientos, aunque reprimidos en sus inicios, sentarían las bases de los derechos laborales modernos que hoy damos por sentados.',
       preguntas: [
         {
           id: 209,
@@ -938,14 +416,10 @@ export const CAPITULOS: Capitulo[] = [
           feedback_acierto: 'Excelente. La idea global une el problema (océanos ahogados), la solución disponible (biodegradables) y el obstáculo principal (rentabilidad de las industrias).',
           feedback_error: 'Incorrecto. Debes sintetizar la idea que engloba todo el párrafo, no solo una parte.'
         }
-      ],
-      seccionId: 'sec-2-prac-2'
+      ]
     },
     level: 6,
-    order: 6,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 6
   },
   {
     id: 'sec-2-3-join',
@@ -966,43 +440,62 @@ export const CAPITULOS: Capitulo[] = [
       'EJEMPLIFICACIÓN: por ejemplo, como es el caso de, tal como.',
       'CONCLUSIÓN: en conclusión, en resumen, finalmente, en definitiva.'
     ],
-    isPractice: true,
-    practiceType: 'fill-blanks',
-    practiceData: {
-      title: 'Completar Oraciones',
-      description: 'Selecciona el conector lógico correcto para completar cada oración. Piensa en la relación (causa, consecuencia, contraste, etc.) entre las dos ideas.',
-      items: [
+    test: {
+      id: 'test-2-3-join',
+      seccionId: 'sec-2-3-join',
+      contexto_base: 'Los conectores lógicos son fundamentales para entender cómo se relacionan las ideas en un texto. A continuación, responde las preguntas basándote en el uso correcto de estos conectores.',
+      preguntas: [
         {
-          id: 1,
-          textBefore: 'El alumno estudió toda la noche; ',
-          textAfter: ', reprobó el examen.',
-          options: ['porque', 'por lo tanto', 'además', 'sin embargo'],
-          correctOption: 'sin embargo',
-          hint: 'Introduce un contraste: esperaríamos que el estudio resultara en aprobación, pero ocurrió lo contrario.'
+          id: 225,
+          enunciado: '«El alumno estudió toda la noche; _________, reprobó el examen.» ¿Qué conector establece correctamente la relación entre las ideas?',
+          alternativas: {
+            A: 'porque',
+            B: 'por lo tanto',
+            C: 'además',
+            D: 'sin embargo'
+          },
+          respuesta_correcta: 'D',
+          feedback_acierto: '¡Correcto! \'Sin embargo\' introduce un contraste: esperaríamos que el estudio resultara en aprobación, pero ocurrió lo contrario.',
+          feedback_error: 'Estudiar mucho y reprobar es una situación contradictoria. ¿Qué tipo de conector marca una contradicción o giro inesperado?'
         },
         {
-          id: 2,
-          textBefore: 'La deforestación elimina el hábitat de miles de especies; ',
-          textAfter: ', muchas están en peligro de extinción.',
-          options: ['no obstante', 'por consiguiente', 'aunque', 'por ejemplo'],
-          correctOption: 'por consiguiente',
-          hint: 'Indica que el peligro de extinción es la consecuencia directa de la deforestación.'
+          id: 226,
+          enunciado: '«La deforestación elimina el hábitat de miles de especies; _________, muchas están en peligro de extinción.» ¿Qué conector es más apropiado?',
+          alternativas: {
+            A: 'no obstante',
+            B: 'por consiguiente',
+            C: 'aunque',
+            D: 'por ejemplo'
+          },
+          respuesta_correcta: 'B',
+          feedback_acierto: '¡Perfecto! \'Por consiguiente\' indica que el peligro de extinción es la consecuencia directa de la deforestación. Es una relación causa-efecto.',
+          feedback_error: 'La segunda oración es el resultado lógico de la primera. ¿Qué tipo de conector expresa que algo es consecuencia de lo anterior?'
         },
         {
-          id: 3,
-          textBefore: 'Los pingüinos son aves. ',
-          textAfter: ', no pueden volar.',
-          options: ['Por ende', 'Sin embargo', 'Además', 'Es decir'],
-          correctOption: 'Sin embargo',
-          hint: 'Ser ave generalmente implica volar, los pingüinos son una excepción.'
+          id: 227,
+          enunciado: '«Los pingüinos son aves. _________, no pueden volar.» ¿Qué relación lógica se establece?',
+          alternativas: {
+            A: 'Causa: el hecho de ser aves es la causa de no volar.',
+            B: 'Contraste: ser ave generalmente implica volar, pero los pingüinos son una excepción.',
+            C: 'Conclusión: el no volar es la conclusión lógica de ser ave.',
+            D: 'Adición: se agrega un dato más sobre los pingüinos.'
+          },
+          respuesta_correcta: 'B',
+          feedback_acierto: '¡Brillante! El conector adecuado sería \'sin embargo\', porque ser ave generalmente implica poder volar. Los pingüinos son una excepción que establece un contraste.',
+          feedback_error: 'No volar no es lo \'normal\' en un ave: es la excepción. ¿Qué relación lógica se establece cuando algo contradice lo que esperamos?'
         },
         {
-          id: 4,
-          textBefore: 'Chile tiene una gran variedad de climas. ',
-          textAfter: ', en el norte está el desierto de Atacama y en el sur, la Patagonia.',
-          options: ['En consecuencia', 'Por el contrario', 'Por ejemplo', 'Puesto que'],
-          correctOption: 'Por ejemplo',
-          hint: 'El Atacama y la Patagonia son casos específicos que ilustran la variedad de climas.'
+          id: 228,
+          enunciado: '«Chile tiene una gran variedad de climas. _________, en el norte está el desierto de Atacama y en el sur, la Patagonia.» ¿Cuál conector completa la idea?',
+          alternativas: {
+            A: 'En consecuencia',
+            B: 'Sin embargo',
+            C: 'Por ejemplo',
+            D: 'Puesto que'
+          },
+          respuesta_correcta: 'C',
+          feedback_acierto: '¡Correcto! La segunda parte entrega casos concretos que demuestran la variedad de climas. El conector de ejemplificación \'por ejemplo\' es el adecuado.',
+          feedback_error: 'El Atacama y la Patagonia son casos específicos que ilustran la variedad de climas. ¿Qué conector introduce ejemplos concretos de una afirmación general?'
         }
       ]
     }
@@ -1019,13 +512,10 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-protip-2',
       contexto_base: null,
-      preguntas: [],
-      seccionId: 'sec-2-protip-2'
+      preguntas: []
     },
     level: 8,
-    order: 8,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 8
   },
   {
     id: 'sec-2-4-inf',
@@ -1186,28 +676,28 @@ export const CAPITULOS: Capitulo[] = [
     title: 'Vocabulario en Contexto',
     introduccion: 'Práctica rápida de significado contextual.',
     isPractice: true,
-    practiceType: 'match-pairs',
-    practiceData: {
-      title: 'Conecta el Significado',
-      description: 'Une cada expresión con el sentido que toma en su contexto.',
-      pairs: [
-        { id: 1, left: 'Balde de agua fría', right: 'Sorpresa desagradable', hint: 'Apaga el entusiasmo repentinamente.' },
-        { id: 2, left: 'Dar en el clavo', right: 'Acertar con precisión', hint: 'Dar exactamente en el punto.' },
-        { id: 3, left: 'Echar leña al fuego', right: 'Empeorar la situación', hint: 'Aumentar el conflicto o problema.' },
-        { id: 4, left: 'Ahogarse en un vaso de agua', right: 'Exagerar problema menor', hint: 'Preocuparse demasiado por algo pequeño.' }
+    test: {
+      id: 'test-2-prac-3',
+      contexto_base: 'La decisión del gobierno cayó como un balde de agua fría sobre los manifestantes.',
+      preguntas: [
+        {
+          id: 2003,
+          enunciado: '¿En qué sentido se utiliza la expresión \'cayó como un balde de agua fría\'?',
+          tipo_alternativas: 'texto',
+          alternativas: {
+            A: 'Para indicar que los manifestantes se resfriaron.',
+            B: 'Para expresar que la decisión apagó el entusiasmo o causó decepción abrupta.',
+            C: 'Para mostrar que la decisión fue muy refrescante y positiva.',
+            D: 'Para señalar que llovió durante la manifestación.'
+          },
+          respuesta_correcta: 'B',
+          feedback_acierto: 'Correcto. Es una expresión connotativa que significa una sorpresa desagradable o decepción.',
+          feedback_error: 'Incorrecto. Recuerda analizar el sentido figurado (connotativo) de la frase en el contexto.'
+        }
       ]
     },
-    test: {
-      id: 'test-sec-2-prac-3',
-      seccionId: 'sec-2-prac-3',
-      contexto_base: null,
-      preguntas: []
-    },
     level: 10,
-    order: 10,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 10
   },
   {
     id: 'sec-2-5-join',
@@ -1226,32 +716,62 @@ export const CAPITULOS: Capitulo[] = [
       'Las palabras polisémicas (varios significados) son las más difíciles: \'capital\', \'banco\', \'pata\', \'cabo\'.',
       'El contexto inmediato (la oración) y el contexto amplio (el párrafo) determinan el significado.'
     ],
-    isPractice: true,
-    practiceType: 'synonyms',
-    practiceData: {
-      title: 'Conecta el Sinónimo',
-      description: 'Haz clic en una palabra de la izquierda y luego en el sinónimo de la derecha que mejor la reemplace según el contexto PAES. ¡Entrena tu vocabulario!',
-      rounds: [
+    test: {
+      id: 'test-2-5-join',
+      seccionId: 'sec-2-5-join',
+      contexto_base: 'Determina el significado preciso de la palabra o expresión en MAYÚSCULAS según cómo se usa en cada fragmento.',
+      preguntas: [
         {
-          pairs: [
-            { id: 1, word: 'Lapidario', synonym: 'Contundente', hint: 'Un discurso lapidario es definitivo y no deja lugar a dudas.' },
-            { id: 2, word: 'Implementar', synonym: 'Aplicar', hint: 'Poner en funcionamiento o aplicar métodos.' },
-            { id: 3, word: 'Controversia', synonym: 'Polémica', hint: 'Debate o disputa sobre un tema.' },
-          ]
+          id: 237,
+          enunciado: '«El discurso del presidente fue LAPIDARIO: en tres frases, terminó con cualquier posibilidad de negociación.» El término \'lapidario\' significa en este contexto:',
+          alternativas: {
+            A: 'Relacionado con el trabajo de las piedras preciosas.',
+            B: 'Breve, definitivo y contundente, sin dejar lugar a réplica.',
+            C: 'Relacionado con los epitafios o inscripciones funerarias.',
+            D: 'Lento y pesado como el movimiento de una piedra.'
+          },
+          respuesta_correcta: 'B',
+          feedback_acierto: '¡Correcto! Aunque \'lapidario\' viene de \'lápida\', en este contexto describe un discurso definitivo y contundente que \'terminó con cualquier posibilidad de negociación\'.',
+          feedback_error: 'Sustituye la palabra por cada alternativa. ¿Cuál tiene sentido si el discurso \'terminó con cualquier posibilidad\' en tres frases?'
         },
         {
-          pairs: [
-            { id: 4, word: 'Cabo', synonym: 'Extremo', hint: 'El cabo de un hilo es su punta o extremo.' },
-            { id: 5, word: 'Relevante', synonym: 'Importante', hint: 'Algo que sobresale por su importancia.' },
-            { id: 6, word: 'Escasez', synonym: 'Carencia', hint: 'Falta de lo necesario para subsistir.' },
-          ]
+          id: 238,
+          enunciado: '«La empresa tomó CARTAS EN EL ASUNTO cuando el problema se hizo público.» Esta expresión significa:',
+          alternativas: {
+            A: 'La empresa envió comunicados escritos a sus clientes.',
+            B: 'La empresa decidió intervenir y tomar acción frente al problema.',
+            C: 'La empresa contrató a un equipo de abogados.',
+            D: 'La empresa redactó un informe sobre la situación.'
+          },
+          respuesta_correcta: 'B',
+          feedback_acierto: '¡Perfecto! \'Tomar cartas en el asunto\' es una expresión idiomática que significa intervenir activamente en algo. No tiene relación literal con cartas escritas.',
+          feedback_error: '\'Tomar cartas en el asunto\' es idiomático: su significado no es literal. ¿Qué sugiere el contexto sobre la actitud de la empresa?'
         },
         {
-          pairs: [
-            { id: 7, word: 'Deterioro', synonym: 'Desgaste', hint: 'Empeoramiento del estado o calidad de algo.' },
-            { id: 8, word: 'Predominio', synonym: 'Dominio', hint: 'Tener superioridad o ventaja sobre otros.' },
-            { id: 9, word: 'Arrojar', synonym: 'Producir', hint: 'Arrojar resultados significa revelarlos o producirlos.' },
-          ]
+          id: 239,
+          enunciado: '«La arqueóloga encontró el CABO del hilo que les permitiría desenredar el misterio.» El término \'cabo\' se usa aquí con el significado de:',
+          alternativas: {
+            A: 'Un trozo o fragmento pequeño de algo.',
+            B: 'Un rango militar menor.',
+            C: 'Un accidente geográfico de la costa.',
+            D: 'El extremo o punta de algo que permite continuar.'
+          },
+          respuesta_correcta: 'D',
+          feedback_acierto: '¡Correcto! En este contexto, \'cabo\' es el extremo de un hilo. La metáfora de \'encontrar el cabo del hilo\' significa encontrar el punto de partida para resolver algo complejo.',
+          feedback_error: '\'Cabo\' tiene varios significados. Aquí está combinado con \'hilo\' y \'desenredar el misterio\'. ¿Qué parte de un hilo te permite empezar a desenredarlo?'
+        },
+        {
+          id: 240,
+          enunciado: '«Después de meses de incertidumbre, la investigación científica ARROJÓ resultados sorprendentes.» La palabra \'arrojó\' significa aquí:',
+          alternativas: {
+            A: 'Tiró o lanzó algo con fuerza.',
+            B: 'Demostró valentía en condiciones difíciles.',
+            C: 'Produjo o reveló como resultado.',
+            D: 'Desechó o eliminó información innecesaria.'
+          },
+          respuesta_correcta: 'C',
+          feedback_acierto: '¡Brillante! \'Arrojar\' en contextos científicos significa \'producir como resultado\' o \'revelar\'. La investigación no lanzó nada físicamente: reveló resultados.',
+          feedback_error: 'La investigación \'arrojó resultados\'. Una investigación no puede lanzar nada físicamente. ¿Qué hace una investigación con sus resultados?'
         }
       ]
     }
@@ -1268,13 +788,10 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-protip-3',
       contexto_base: null,
-      preguntas: [],
-      seccionId: 'sec-2-protip-3'
+      preguntas: []
     },
     level: 12,
-    order: 12,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 12
   },
   {
     id: 'sec-2-6-inf',
@@ -1381,32 +898,28 @@ export const CAPITULOS: Capitulo[] = [
     title: 'Tesis vs Detalles',
     introduccion: 'Práctica rápida de jerarquía de ideas.',
     isPractice: true,
-    practiceType: 'categorize',
-    practiceData: {
-      title: 'Clasifica las Ideas',
-      description: 'Basado en un texto hipotético sobre la Inteligencia Artificial, clasifica si la frase es la Tesis Central o un Detalle Accesorio.',
-      categories: [
-        { id: 'tesis', label: 'Idea Principal (Tesis)' },
-        { id: 'detalle', label: 'Idea Accesoria (Detalle)' }
-      ],
-      items: [
-        { id: 1, text: 'La inteligencia artificial ha revolucionado múltiples sectores.', category: 'tesis', hint: 'Es la afirmación global.' },
-        { id: 2, text: 'Algoritmos como Watson ayudan a diagnosticar enfermedades.', category: 'detalle', hint: 'Es un ejemplo específico.' },
-        { id: 3, text: 'Los drones monitorean los cultivos en la agricultura.', category: 'detalle', hint: 'Es otro ejemplo específico.' },
-        { id: 4, text: 'El rápido avance tecnológico plantea desafíos éticos.', category: 'tesis', hint: 'Es una conclusión global.' }
+    test: {
+      id: 'test-2-prac-4',
+      contexto_base: 'La inteligencia artificial ha revolucionado múltiples sectores. Por ejemplo, en la medicina, algoritmos como Watson ayudan a diagnosticar enfermedades raras. En la agricultura, los drones monitorean los cultivos. Sin embargo, su rápido avance plantea desafíos éticos.',
+      preguntas: [
+        {
+          id: 2004,
+          enunciado: '¿Cuál es una idea accesoria en el texto?',
+          tipo_alternativas: 'texto',
+          alternativas: {
+            A: 'La inteligencia artificial trae beneficios pero también retos éticos.',
+            B: 'La inteligencia artificial ha revolucionado múltiples sectores.',
+            C: 'Algoritmos como Watson ayudan a diagnosticar enfermedades raras.',
+            D: 'El avance de la tecnología es demasiado rápido.'
+          },
+          respuesta_correcta: 'C',
+          feedback_acierto: 'Correcto. Mencionar a \'Watson\' es un ejemplo específico (idea accesoria) para apoyar la idea principal de que la IA ha revolucionado la medicina.',
+          feedback_error: 'Incorrecto. Busca el detalle específico o ejemplo, esa es la idea accesoria.'
+        }
       ]
     },
-    test: {
-      id: 'test-sec-2-prac-4',
-      seccionId: 'sec-2-prac-4',
-      contexto_base: null,
-      preguntas: []
-    },
     level: 14,
-    order: 14,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 14
   },
   {
     id: 'sec-2-protip-4',
@@ -1421,13 +934,10 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-protip-4',
       contexto_base: null,
-      preguntas: [],
-      seccionId: 'sec-2-protip-4'
+      preguntas: []
     },
     level: 15,
-    order: 15,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 15
   },
   {
     id: 'sec-2-7-inf',
@@ -1552,14 +1062,10 @@ export const CAPITULOS: Capitulo[] = [
           feedback_acierto: 'Exacto. Es un argumento de autoridad clásico para darle credibilidad a la tesis del autor.',
           feedback_error: 'Incorrecto. Recuerda que las citas de expertos (Dr., Profesor, Universidad) suelen cumplir la función de respaldar o dar autoridad.'
         }
-      ],
-      seccionId: 'sec-2-prac-5'
+      ]
     },
     level: 17,
-    order: 17,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 17
   },
   {
     id: 'sec-2-8-join',
@@ -1636,13 +1142,10 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-protip-5',
       contexto_base: null,
-      preguntas: [],
-      seccionId: 'sec-2-protip-5'
+      preguntas: []
     },
     level: 19,
-    order: 19,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 19
   },
   {
     id: 'sec-2-9',
@@ -1678,41 +1181,38 @@ export const CAPITULOS: Capitulo[] = [
           feedback_acierto: 'Correcto. El uso de comillas en \'maravilloso\' y la exclamación final son claros marcadores de ironía (dice algo positivo pero en realidad está criticando).',
           feedback_error: 'Incorrecto. Lee el contraste entre la calle pavimentada y el hospital sin insumos. Las alabanzas (\'maravilloso\', \'gran gestión\') no son sinceras.'
         }
-      ],
-      seccionId: 'sec-2-9'
+      ]
     },
     level: 20,
-    order: 20,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 20
   },
   {
     id: 'sec-2-prac-6',
     title: 'Identificando el Tono',
     introduccion: 'Práctica rápida de identificación de tonos.',
     isPractice: true,
-    practiceType: 'match-pairs',
-    practiceData: {
-      title: 'Conecta el Tono',
-      description: 'Une cada breve fragmento con el tono predominante del emisor.',
-      pairs: [
-        { id: 1, left: '"¡Qué maravilla que pavimenten la misma calle 3 veces!"', right: 'Irónico', hint: 'Dice algo positivo para criticar.' },
-        { id: 2, left: '"Las emisiones de carbono se redujeron un 2% este año."', right: 'Objetivo', hint: 'Solo entrega un dato sin opinión.' },
-        { id: 3, left: '"Es alarmante y vergonzosa la actitud de los directivos."', right: 'Crítico', hint: 'Emite un juicio de valor negativo explícito.' },
-        { id: 4, left: '"Recordaríamos lo pequeños que somos frente al cosmos."', right: 'Reflexivo', hint: 'Invita a la meditación profunda.' }
+    test: {
+      id: 'test-2-prac-6',
+      contexto_base: 'Tal vez, si nos detuviéramos un momento a mirar el cielo estrellado, recordaríamos lo pequeños que somos frente a la inmensidad del cosmos, y nuestras preocupaciones diarias perderían algo de su abrumador peso.',
+      preguntas: [
+        {
+          id: 2007,
+          enunciado: '¿Qué tono adopta el emisor?',
+          tipo_alternativas: 'texto',
+          alternativas: {
+            A: 'Informativo',
+            B: 'Reflexivo',
+            C: 'Sarcástico',
+            D: 'Agresivo'
+          },
+          respuesta_correcta: 'B',
+          feedback_acierto: 'Correcto. Invita a la meditación y al pensamiento profundo sobre nuestra existencia.',
+          feedback_error: 'Incorrecto. No está entregando datos crudos ni atacando a nadie, está invitando a pensar.'
+        }
       ]
     },
-    test: {
-      id: 'test-sec-2-prac-6',
-      seccionId: 'sec-2-prac-6',
-      contexto_base: null,
-      preguntas: []
-    },
     level: 21,
-    order: 21,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 21
   },
   {
     id: 'sec-2-10-join',
@@ -1740,14 +1240,10 @@ export const CAPITULOS: Capitulo[] = [
           feedback_acierto: 'Exacto. Empieza con un dato objetivo (\'se redujeron un 2%\') y termina emitiendo un juicio (\'insignificante\', \'complacencia alarmante\').',
           feedback_error: 'Incorrecto. Observa la diferencia entre la primera oración (un dato crudo) y las últimas (juicios de valor).'
         }
-      ],
-      seccionId: 'sec-2-10-join'
+      ]
     },
     level: 22,
-    order: 22,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 22
   },
   {
     id: 'sec-2-protip-6',
@@ -1761,13 +1257,10 @@ export const CAPITULOS: Capitulo[] = [
     test: {
       id: 'test-2-protip-6',
       contexto_base: null,
-      preguntas: [],
-      seccionId: 'sec-2-protip-6'
+      preguntas: []
     },
     level: 23,
-    order: 23,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora'
+    order: 23
   },
   {
     id: 'sec-2-prac-7',
@@ -1792,14 +1285,10 @@ export const CAPITULOS: Capitulo[] = [
           feedback_acierto: 'Correcto. El uso de \'Como vecinos del sector\' y las preocupaciones (estética, alcantarillas) marcan la perspectiva de un residente.',
           feedback_error: 'Incorrecto. Lee la primera frase del texto: \'Como vecinos...\'.'
         }
-      ],
-      seccionId: 'sec-2-prac-7'
+      ]
     },
     level: 24,
-    order: 24,
-    capituloId: 'cap-interpretar',
-    materiaId: 'comp-lectora',
-    datos_claves: []
+    order: 24
   },
   {
     id: 'sec-2-boss',
@@ -1959,5 +1448,3 @@ export const CAPITULOS: Capitulo[] = [
     }
   }
 ]
-  }
-];
