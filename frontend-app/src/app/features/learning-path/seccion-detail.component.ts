@@ -73,7 +73,7 @@ import { PhysicsPracticeComponent } from './physics-practice.component';
           <span class="card-icon">🧠</span>
           <h3>{{ sec.guia_titulo || '¿Qué aprenderás?' }}</h3>
         </div>
-        <p class="guide-body" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
+        <div class="guide-body" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></div>
         <div class="sec-image-wrap-large" *ngIf="sec.imageUrl">
           <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image-large">
         </div>
@@ -274,7 +274,11 @@ export class SeccionDetailComponent {
   }
 
   goBack() {
-    window.history.back();
+    if (this.materiaId()) {
+      this.router.navigate(['/ruta', this.materiaId()], { fragment: this.seccionId() });
+    } else {
+      this.router.navigate(['/ruta']);
+    }
   }
 
   goToTest() {
