@@ -552,8 +552,8 @@ export class PaesContentService {
   }
 
   private async loadDataFromFirestore() {
-    const cacheKey = 'paes_content_cache_v11';
-    const cacheTimeKey = 'paes_content_cache_timestamp_v11';
+    const cacheKey = 'paes_content_cache_v12';
+    const cacheTimeKey = 'paes_content_cache_timestamp_v12';
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
