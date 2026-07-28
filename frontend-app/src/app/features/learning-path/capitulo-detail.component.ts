@@ -170,7 +170,13 @@ export class CapituloDetailComponent {
   }
 
   goBack() {
-    window.history.back();
+    if (this.materiaId()) {
+      // Guardar la posición de scroll antes de volver para restaurarla
+      sessionStorage.setItem('ruta_scroll_' + this.materiaId(), String(window.scrollY));
+      this.router.navigate(['/ruta', this.materiaId()], { fragment: this.capituloId() });
+    } else {
+      this.router.navigate(['/ruta']);
+    }
   }
 
   parseMixed(text: string | undefined): SafeHtml {
@@ -191,12 +197,23 @@ export class CapituloDetailComponent {
   }
 
   finishGuide() {
-    this.paes.markSeccionCompleted('guide_' + this.capituloId());
-    const nextUrl = this.paes.getNextNodeUrl(this.materiaId());
-    if (nextUrl) {
-      this.router.navigate(nextUrl);
+    const capId = this.capituloId();
+    this.paes.markSeccionCompleted('guide_' + capId);
+    
+    const cap = this.capitulo();
+    const matId = this.materiaId();
+
+    if (cap && cap.secciones && cap.secciones.length > 0) {
+      const uncompletedSec = cap.secciones.find(s => !this.paes.getSeccionProgress(s.id)?.completed);
+      const targetSec = uncompletedSec || cap.secciones[0];
+      this.router.navigate(['/ruta', matId, cap.id, targetSec.id]);
     } else {
-      this.router.navigate(['/ruta', this.materiaId()]);
+      const nextUrl = this.paes.getNextNodeUrl(matId);
+      if (nextUrl) {
+        this.router.navigate(nextUrl);
+      } else {
+        this.router.navigate(['/ruta', matId]);
+      }
     }
   }
 
@@ -237,6 +254,7 @@ export class CapituloDetailComponent {
 
   private buildDynamicSlides(cap: any): any[] {
     if (!cap?.secciones || cap.secciones.length === 0) return [];
+    const isHistoria = cap.materiaId === 'historia' || (cap.id && cap.id.startsWith('cap-hist'));
     return cap.secciones.map((sec: any, index: number) => {
       const theme = this.getSlideTheme(index);
       return {
@@ -244,7 +262,9 @@ export class CapituloDetailComponent {
         title: sec.title,
         bgGradient: theme.bgGradient,
         iconBg: theme.iconBg,
-        content: this.buildDynamicSlideContent(sec)
+        content: isHistoria
+          ? this.buildHistoriaSummarySlideContent(sec)
+          : this.buildDynamicSlideContent(sec)
       };
     });
   }
@@ -261,6 +281,20 @@ export class CapituloDetailComponent {
     const svgHtml = sec.svgContent ? `<div class="slide-svg-wrap-large">${sec.svgContent}</div>` : '';
     
     return `${intro}${tips}${imgHtml}${svgHtml}`;
+  }
+
+  /**
+   * Resumen ejecutivo para Historia: solo muestra la introducción + imagen.
+   * El detalle (datos_claves, guia_contenido) queda en los niveles individuales.
+   */
+  private buildHistoriaSummarySlideContent(sec: any): string {
+    const intro = sec.introduccion
+      ? `<p class="theory-intro">${sec.introduccion}</p>`
+      : '';
+    const imgHtml = sec.imageUrl
+      ? `<div class="slide-image-wrap-large"><img src="${sec.imageUrl}" class="slide-image-premium" alt="${sec.title}"></div>`
+      : '';
+    return `${intro}${imgHtml}`;
   }
 
   private getSlideIcon(index: number): string {

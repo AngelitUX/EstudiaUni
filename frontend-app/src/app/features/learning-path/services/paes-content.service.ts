@@ -12,198 +12,7 @@ const LOCAL_MATERIAS: Materia[] = [
   { id: 'ciencias', title: 'Ciencias', slug: 'ciencias', icon: '🧬', order: 5, isActive: true }
 ];
 
-const LOCAL_CAPITULOS: Capitulo[] = [
-  {
-    id: 'cap-lectora-1',
-    materiaId: 'comp-lectora',
-    title: 'Habilidad 1: Localizar',
-    introduccion: 'Localizar es la habilidad de identificar y extraer información explícita de un texto.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-lectora-1',
-        capituloId: 'cap-lectora-1',
-        materiaId: 'comp-lectora',
-        title: '1. Rastrear información explícita',
-        introduccion: 'La respuesta está literal en el texto. Tu misión es encontrar la información exacta.',
-        datos_claves: ['Busca palabras clave', 'La respuesta puede usar sinónimos'],
-        order: 1,
-        test: {
-          id: 'test-lectora-1',
-          seccionId: 'sec-lectora-1',
-          contexto_base: 'Generalmente, el envejecimiento demográfico es visto como una consecuencia inevitable...',
-          preguntas: [
-            {
-              id: 101,
-              enunciado: 'Con respecto al análisis demográfico, ¿cuál es la relación establecida entre el primer y segundo párrafo?',
-              alternativas: {
-                A: 'El primero presenta el problema del envejecimiento; el segundo muestra cómo medirlo.',
-                B: 'El primero explica las tasas; el segundo compara continentes.',
-                C: 'El primero define la transición; el segundo plantea los indicadores.',
-                D: 'El primero categoriza factores; el segundo explica reemplazos.'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Excelente deducción! El primer párrafo establece el marco teórico (qué es la transición), y el segundo detalla cómo se mide.',
-              feedback_error: '¡Ojo con la estructura! Vuelve a leer el inicio de ambos párrafos.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-mat1-1',
-    materiaId: 'mat1',
-    title: 'Números y Proporcionalidad',
-    introduccion: 'Domina los conceptos básicos de conjuntos numéricos y razones.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-mat1-1',
-        capituloId: 'cap-mat1-1',
-        materiaId: 'mat1',
-        title: '1. Porcentajes en la Vida Diaria',
-        introduccion: 'Aprende a calcular descuentos, aumentos e interés simple.',
-        datos_claves: ['Un porcentaje es una fracción de 100', 'Descuento del X% multiplica por (1 - X/100)'],
-        order: 1,
-        test: {
-          id: 'test-mat1-1',
-          seccionId: 'sec-mat1-1',
-          contexto_base: null,
-          preguntas: [
-            {
-              id: 201,
-              enunciado: 'Un pantalón cuesta $25.000, pero está con un 20% de descuento. Si al pagar en caja se aplica un recargo del 5% sobre el precio ya descontado, ¿cuál es el valor final a pagar?',
-              alternativas: {
-                A: '$19.000',
-                B: '$20.000',
-                C: '$21.000',
-                D: '$21.250'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Correcto! Primero calculamos el descuento: $25.000 * 0.8 = $20.000. Luego, aplicamos el recargo del 5% sobre ese monto: $20.000 * 1.05 = $21.000.',
-              feedback_error: 'Revisa los pasos. Primero aplica el descuento al precio original, y luego aplica el recargo al nuevo precio.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-mat2-1',
-    materiaId: 'mat2',
-    title: 'Álgebra Superior y Geometría M2',
-    introduccion: 'Aprende sistemas de ecuaciones complejos, logaritmos y geometría analítica.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-mat2-1',
-        capituloId: 'cap-mat2-1',
-        materiaId: 'mat2',
-        title: '1. Logaritmos y Ecuaciones Exponenciales',
-        introduccion: 'Domina las propiedades de los logaritmos y resolución de ecuaciones exponenciales.',
-        datos_claves: ['log_b(a) = c equivale a b^c = a', 'Propiedades de multiplicación, división y potencias en logaritmos'],
-        order: 1,
-        test: {
-          id: 'test-mat2-1',
-          seccionId: 'sec-mat2-1',
-          contexto_base: null,
-          preguntas: [
-            {
-              id: 301,
-              enunciado: 'Si log_2(x) = 5, ¿cuál es el valor de x?',
-              alternativas: {
-                A: '10',
-                B: '25',
-                C: '32',
-                D: '64'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Excelente! Usando la definición de logaritmo, log_2(x) = 5 es equivalente a 2^5 = x, por lo tanto x = 32.',
-              feedback_error: 'Recuerda que el logaritmo es la operación inversa de la exponenciación. log_b(x) = y implica b^y = x.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-historia-1',
-    materiaId: 'historia',
-    title: 'Historia de Chile y el Mundo',
-    introduccion: 'Analiza los procesos históricos, políticos, económicos y sociales contemporáneos.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-historia-1',
-        capituloId: 'cap-historia-1',
-        materiaId: 'historia',
-        title: '1. El Ciclo del Salitre',
-        introduccion: 'Comprende el impacto económico del salitre tras la Guerra del Pacífico y la Cuestión Social.',
-        datos_claves: ['El salitre generó grandes ingresos al Estado', 'La Cuestión Social refiere a las precarias condiciones laborales'],
-        order: 1,
-        test: {
-          id: 'test-historia-1',
-          seccionId: 'sec-historia-1',
-          contexto_base: 'Durante la época del salitre en Chile (1880-1930), la economía nacional dependió casi exclusivamente de las exportaciones de este mineral...',
-          preguntas: [
-            {
-              id: 401,
-              enunciado: 'Según el texto, ¿cuál fue una consecuencia económica directa para el Estado chileno producto del ciclo salitrero?',
-              alternativas: {
-                A: 'La nacionalización total de las empresas salitreras extranjeras.',
-                B: 'La disminución de la burocracia y el gasto público estatal.',
-                C: 'El aumento de los ingresos fiscales mediante el cobro de impuestos de exportación.',
-                D: 'La erradicación de la pobreza gracias a la equitativa distribución de las ganancias.'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Muy bien! El texto menciona explícitamente que el Estado cobraba un impuesto que multiplicó sus ingresos y permitió expandir el aparato estatal.',
-              feedback_error: 'Vuelve a leer el texto. Fíjate en cómo obtenía dinero el Estado.'
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    id: 'cap-ciencias-1',
-    materiaId: 'ciencias',
-    title: 'Biología Celular y Ecosistemas',
-    introduccion: 'Comprende las diferencias entre células procariontes y eucariontes, y sus organelos.',
-    order: 1,
-    secciones: [
-      {
-        id: 'sec-ciencias-1',
-        capituloId: 'cap-ciencias-1',
-        materiaId: 'ciencias',
-        title: '1. Tipos de Células',
-        introduccion: 'Aprende a distinguir las características clave de procariontes y eucariontes (animal y vegetal).',
-        datos_claves: ['Las células procariontes no tienen núcleo definido', 'Las células eucariontes vegetales poseen pared celular y cloroplastos'],
-        order: 1,
-        test: {
-          id: 'test-ciencias-1',
-          seccionId: 'sec-ciencias-1',
-          contexto_base: null,
-          preguntas: [
-            {
-              id: 501,
-              enunciado: 'Al observar una muestra de tejido bajo el microscopio, se nota la presencia de una pared celular rígida y grandes vacuolas centrales. ¿A qué tipo de célula pertenece?',
-              alternativas: {
-                A: 'A un animal vertebrado.',
-                B: 'A una bacteria (procarionte).',
-                C: 'A una planta (eucarionte vegetal).',
-                D: 'A un hongo filamentoso.'
-              },
-              respuesta_correcta: 'C',
-              feedback_acierto: '¡Correcto! La pared celular y las grandes vacuolas centrales son características distintivas de las células eucariontes vegetales.',
-              feedback_error: 'Recuerda las diferencias estructurales. Las células animales no tienen pared celular.'
-            }
-          ]
-        }
-      }
-    ]
-  }
-];
+import { CAPITULOS } from '../data/seed-data';
 
 const LOCAL_POOL_PREGUNTAS: any[] = [
   // Competencia Lectora
@@ -466,7 +275,7 @@ export class PaesContentService {
   private _poolPreguntas = signal<any[]>([]);
 
   private useMocksMode = false;
-  
+
   // Signal para estado de carga
   loading = signal(true);
 
@@ -478,12 +287,11 @@ export class PaesContentService {
 
   constructor() {
     // this.clearCache(); // Commented out to prevent erasing cache on every reload/hot-reload, reducing Firestore reads.
-    
+
     // Por defecto carga de Firestore. Solo carga de Mocks si está explícitamente activado en localStorage.
-      // Forzar uso de mocks locales para desarrollo local (mejora-m1)
-      const useMocks = false;
-      this.useMocksMode = useMocks;
-      if (useMocks) {
+    const useMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
+    this.useMocksMode = useMocks;
+    if (useMocks) {
       this.loadDataFromLocalMocks();
       this.loadProgressFromStorage();
     } else {
@@ -492,11 +300,11 @@ export class PaesContentService {
     }
     // Subscribe to auth state changes to load user-specific progress and fetch fresh firestore data
     this.auth.onAuthStateChanged((user) => {
-        if (this.useMocksMode) return;
+      if (this.useMocksMode) return;
       if (user) {
         const isNewUser = user.uid !== this.currentUid;
         this.currentUid = user.uid;
-        
+
         if (isNewUser) {
           this._progress.set(new Map());
           this.loadProgressFromStorage();
@@ -523,7 +331,7 @@ export class PaesContentService {
   private async loadDataFromLocalMocks() {
     try {
 
-      
+
       // 1. Cargar materias mock (usando ruta absoluta)
       const materiasRes = await fetch('/assets/mocks/materias-mock-local.json');
       if (!materiasRes.ok) throw new Error('materias-mock-local.json not found');
@@ -535,7 +343,7 @@ export class PaesContentService {
       if (!capitulosRes.ok) throw new Error('capitulos-mock-local.json not found');
       const capitulos = await capitulosRes.json() as Capitulo[];
       this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
-      
+
 
     } catch (error) {
       console.warn('⚠️ [EstudiaUni Testing] Failed to load local mocks. Falling back to Firestore...', error);
@@ -552,13 +360,13 @@ export class PaesContentService {
   }
 
   private async loadDataFromFirestore() {
-    const cacheKey = 'paes_content_cache_v12';
-    const cacheTimeKey = 'paes_content_cache_timestamp_v12';
+    const CACHE_KEY = 'paes_content_cache_v35';
+    const cacheTimeKey = 'paes_content_cache_timestamp_v30';
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
       // 0. Intentar cargar desde caché
-      const cachedDataRaw = localStorage.getItem(cacheKey);
+      const cachedDataRaw = localStorage.getItem(CACHE_KEY);
       const cachedTimeRaw = localStorage.getItem(cacheTimeKey);
 
       if (cachedDataRaw && cachedTimeRaw) {
@@ -581,7 +389,7 @@ export class PaesContentService {
 
     try {
 
-      
+
       // 1. Cargar materias
       let materiasSnap;
       try {
@@ -638,7 +446,7 @@ export class PaesContentService {
             .map((pid: string) => poolMap.get(pid))
             .filter((p: any) => !!p);
         }
-        
+
         testsMap.set(doc.id, {
           ...data,
           id: doc.id,
@@ -655,15 +463,20 @@ export class PaesContentService {
         throw err;
       }
       const seccionesByCapitulo = new Map<string, Seccion[]>();
-      
+
       seccionesSnap.docs.forEach(secDoc => {
         const secData = secDoc.data() as any;
         const test = testsMap.get(secData.testId);
+
+        let imageUrl = secData.imageUrl || this.getHistoriaImageUrl(secDoc.id, secData);
+
         const seccion = {
           ...secData,
+          id: secDoc.id,
+          imageUrl,
           test
         } as Seccion;
-        
+
         const capId = secData.capituloId;
         if (capId) {
           if (!seccionesByCapitulo.has(capId)) {
@@ -673,16 +486,18 @@ export class PaesContentService {
         }
       });
 
-      for (const capDoc of capitulosSnap.docs) {
-        const capData = capDoc.data() as Omit<Capitulo, 'secciones'>;
-        const secciones = seccionesByCapitulo.get(capDoc.id) || [];
+      // 6. Armar los capítulos
+      capitulosSnap.docs.forEach(doc => {
+        const capData = doc.data() as any;
+        const secciones = seccionesByCapitulo.get(doc.id) || [];
+        secciones.sort((a, b) => a.order - b.order);
 
         capitulos.push({
           ...capData,
-          id: capDoc.id,
-          secciones: secciones.sort((a, b) => a.order - b.order)
-        });
-      }
+          id: doc.id,
+          secciones
+        } as Capitulo);
+      });
 
       if (materias.length > 0) {
         // Enforce active status and existence of M2 and Historia
@@ -706,6 +521,9 @@ export class PaesContentService {
         const finalPool = poolArray.length > 0 ? poolArray : LOCAL_POOL_PREGUNTAS;
         const sortedCapitulos = capitulos.sort((a, b) => a.order - b.order);
 
+        this.applyHistoriaImageMapping(sortedCapitulos);
+        this.enrichHistoriaChapters4And5(sortedCapitulos);
+
         this._materias.set(sortedMaterias);
         this._poolPreguntas.set(finalPool);
         this._capitulos.set(sortedCapitulos);
@@ -717,7 +535,7 @@ export class PaesContentService {
             poolPreguntas: finalPool,
             capitulos: sortedCapitulos
           };
-          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+          localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
           localStorage.setItem(cacheTimeKey, Date.now().toString());
 
         } catch (cacheError) {
@@ -735,29 +553,217 @@ export class PaesContentService {
     }
   }
 
+  private applyHistoriaImageMapping(capitulos: Capitulo[]) {
+    const HISTORIA_SECTION_IMAGES: Record<string, string> = {
+      '1-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/vyqnyijownlrane4caw2.jpg',
+      '1-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905036/h8krgjj2g5o8nfw0zcb1.jpg',
+      '1-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/zfr8xuvtisumjbojzai9.jpg',
+      '1-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905042/tja4smjac8eqy59wzxhi.jpg',
+      '1-5': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/ti4ukigu1zbauotp2cwi.jpg',
+      '2-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/kzhldetgmmdybpkywibq.jpg',
+      '2-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/t5uq3iqxuroiqc2tzw8j.jpg',
+      '2-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/mp8ayvhpswr76ubywob1.jpg',
+      '2-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/yyb8euucllngapwgxon0.webp',
+      '2-5': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/oxf6xsjvlepxru9btgcp.png',
+      '3-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/ogrrtgtcbzmw2ntpnlxu.jpg',
+      '3-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/jxpyrsxsigferexii71j.webp',
+      '3-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/gw4uepphynwaog3bph4t.jpg',
+      '3-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/eramr3kfqbyrqp6qrpct.jpg',
+      '3-5': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/vtg5txfooop05ulahr7c.jpg',
+      '4-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/y4uzuo3kfgtgfa3mwu0j.jpg',
+      '4-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905040/kei7irgbxklaibqbbxvc.jpg',
+      '4-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905040/elottrpyhfyxth84bsw8.jpg',
+      '4-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905045/ardr8kvu2sis5j2v4kqo.jpg',
+      '5-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/ahfrpvle3kr0rwtekpkw.webp',
+      '5-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/e2y8gqkm53jjo0fql4ko.jpg',
+      '5-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905042/lflmpcg6lybq7elbnvas.png',
+      '5-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/je4etlc1wgnxeuzdewjp.jpg'
+    };
+
+    const histCaps = capitulos.filter(c => c.materiaId === 'historia' || c.materiaId === 'ciencias-historia');
+    histCaps.forEach((cap, cIdx) => {
+      const capNum = cap.order || (cIdx + 1);
+      cap.secciones.forEach((sec, sIdx) => {
+        const secNum = sec.order || (sIdx + 1);
+        const key = `${capNum}-${secNum}`;
+        if (HISTORIA_SECTION_IMAGES[key]) {
+          sec.imageUrl = HISTORIA_SECTION_IMAGES[key];
+        }
+      });
+    });
+  }
+
+  private getHistoriaImageUrl(secId: string, secData?: any): string | undefined {
+    const map: Record<string, string> = {
+      'sec-hist-1-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/vyqnyijownlrane4caw2.jpg',
+      'sec-hist-1-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905036/h8krgjj2g5o8nfw0zcb1.jpg',
+      'sec-hist-1-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/zfr8xuvtisumjbojzai9.jpg',
+      'sec-hist-1-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905042/tja4smjac8eqy59wzxhi.jpg',
+      'sec-hist-1-5': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/ti4ukigu1zbauotp2cwi.jpg',
+      'sec-hist-2-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/kzhldetgmmdybpkywibq.jpg',
+      'sec-hist-2-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/t5uq3iqxuroiqc2tzw8j.jpg',
+      'sec-hist-2-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/mp8ayvhpswr76ubywob1.jpg',
+      'sec-hist-2-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/yyb8euucllngapwgxon0.webp',
+      'sec-hist-2-5': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/oxf6xsjvlepxru9btgcp.png',
+      'sec-hist-3-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/ogrrtgtcbzmw2ntpnlxu.jpg',
+      'sec-hist-3-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/jxpyrsxsigferexii71j.webp',
+      'sec-hist-3-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/gw4uepphynwaog3bph4t.jpg',
+      'sec-hist-3-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/eramr3kfqbyrqp6qrpct.jpg',
+      'sec-hist-3-5': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/vtg5txfooop05ulahr7c.jpg',
+      'sec-hist-4-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/y4uzuo3kfgtgfa3mwu0j.jpg',
+      'sec-hist-4-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905040/kei7irgbxklaibqbbxvc.jpg',
+      'sec-hist-4-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905040/elottrpyhfyxth84bsw8.jpg',
+      'sec-hist-4-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905045/ardr8kvu2sis5j2v4kqo.jpg',
+      'sec-hist-5-1': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/ahfrpvle3kr0rwtekpkw.webp',
+      'sec-hist-5-2': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/e2y8gqkm53jjo0fql4ko.jpg',
+      'sec-hist-5-3': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905042/lflmpcg6lybq7elbnvas.png',
+      'sec-hist-5-4': 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905041/je4etlc1wgnxeuzdewjp.jpg'
+    };
+
+    if (map[secId]) return map[secId];
+    if (secData) {
+      const capId = secData.capituloId || '';
+      const capNum = capId.replace('cap-hist-', '').replace('cap-historia-', '');
+      const order = secData.order || 1;
+      const altKey = `sec-hist-${capNum}-${order}`;
+      if (map[altKey]) return map[altKey];
+      if (map[`${capNum}-${order}`]) return map[`${capNum}-${order}`];
+    }
+    return undefined;
+  }
+
+  private enrichHistoriaChapters4And5(capitulos: Capitulo[]) {
+    const histCaps = capitulos.filter(c => c.materiaId === 'historia' || c.materiaId === 'ciencias-historia');
+
+    histCaps.forEach(cap => {
+      if (cap.id === 'cap-hist-4' || cap.id === 'cap-historia-4' || cap.order === 4) {
+        cap.secciones.forEach(sec => {
+          const secId = sec.id;
+          if (secId.includes('1') || sec.order === 1) {
+            sec.introduccion = 'La democracia moderna no se limita a realizar elecciones periódicas; constituye un sistema político y de convivencia social fundado en la dignidad humana, la soberanía popular y el estricto apego al Estado de Derecho.';
+            sec.guia_contenido = `En Chile, el artículo 5° de la Constitución consagra que la soberanía reside esencialmente en la Nación y se ejerce mediante elecciones periódicas, plebiscitos y por las autoridades que la Constitución establece. Para que una democracia funcione de manera plena, debe garantizar tres pilares fundamentales:<br><br>1. **Soberanía Popular y Representatividad:** El poder político emana del pueblo, quien delega su ejercicio en autoridades electas democráticamente.<br>2. **Estado de Derecho y Primacía Constitucional:** Todas las personas e instituciones, públicas y privadas, están sometidas al marco legal. El artículo 6° de la Carta Magna establece que los órganos del Estado deben adecuar su acción a la Constitución.<br>3. **Pluralismo Político y Separación de Poderes:** Se garantiza la libertad de asociación y el libre debate de ideas. La división de poderes (Ejecutivo, Legislativo y Judicial) junto con organismos autónomos (Contraloría General de la República, Tribunal Constitucional, Banco Central) genera un sistema de pesos y contrapesos (checks and balances) que evita la concentración del poder y la tiranía.`;
+            sec.datos_claves = [
+              '**Soberanía Popular (Art. 5°):** El poder supremo reside en la ciudadanía y se ejerce formalmente a través del voto y de los representantes electos.',
+              '**Estado de Derecho (Art. 6° y 7°):** Las autoridades solo pueden actuar dentro del marco de sus competencias legales. Nadie está por sobre la ley.',
+              '**Pluralismo Político:** Garantía constitucional para la coexistencia de diversas ideologías y la libre formación de partidos políticos.',
+              '**Separación de Poderes:** División del poder estatal en Ejecutivo (Presidente), Legislativo (Congreso Nacional) y Judicial (Tribunales de Justicia).',
+              '**Órganos Autónomos:** Instituciones independientes como la Contraloría (fiscaliza la legalidad del gasto público) y el Tribunal Constitucional.'
+            ];
+          } else if (secId.includes('2') || sec.order === 2) {
+            sec.introduccion = 'El concepto contemporáneo de ciudadanía trasciende el mero acto de votar; abarca el ejercicio constante de derechos y la asunción de responsabilidades cívicas en la esfera pública.';
+            sec.guia_contenido = `La ciudadanía plena se adquiere al cumplir 18 años de edad y no haber sido condenado a pena aflicitiva de presidio. En la democracia actual se promueve la **Ciudadanía Activa**, basada en dos dimensiones primordiales:<br><br>1. **Participación Político-Electoral:** Ejercicio del voto (en Chile, obligatorio con inscripción automática para elecciones populares) y postulación a cargos de elección pública.<br>2. **Participación Social y Civil:** Involucramiento constante en organizaciones no gubernamentales (ONGs), Juntas de Vecinos, Centros de Alumnos, voluntariados y movimientos sociales para la resolución de problemas comunitarios.<br>3. **Transparencia y Rendición de Cuentas (Accountability):** La Ley de Transparencia (N° 20.285) garantiza a los ciudadanos el acceso a la información pública, obligando a los organismos del Estado a transparentar sus actos, sueldos y contrataciones. Asimismo, las autoridades tienen el deber ético e institucional de justificar sus decisiones ante la ciudadanía.`;
+            sec.datos_claves = [
+              '**Requisitos de Ciudadanía:** Tener 18 años de edad y no estar condenado a pena aflicitiva (3 años y un día de cárcel o más).',
+              '**Voto Obligatorio:** Restablecimiento del voto obligatorio con inscripción automática en Chile para fortalecer la participación democrática.',
+              '**Participación No Electoral:** Involucramiento en la sociedad civil (Juntas de Vecinos, ONGs, voluntariados, agrupaciones ambientales).',
+              '**Rendición de Cuentas (Accountability):** Deber de las autoridades públicas de responder, justificar y transparentar su gestión ante la sociedad.',
+              '**Ley de Transparencia (N° 20.285):** Garantiza el derecho de cualquier ciudadano a acceder a la información de los organismos del Estado.'
+            ];
+          } else if (secId.includes('3') || sec.order === 3) {
+            sec.introduccion = 'En la era de la información digital, los medios de comunicación y las redes sociales desempeñan un rol estratégico en la formación de la opinión pública y el debate democrático.';
+            sec.guia_contenido = `Si bien Internet ha democratizado el acceso a la información y ha fortalecido la libertad de expresión, la masificación de las plataformas digitales ha introducido severos riesgos para la salud democrática:<br><br>1. **Fake News y Posverdad:** La propagación deliberada de noticias falsas diseñadas para apelar a las emociones y miedos de las personas, por sobre los hechos objetivos. Su objetivo principal es manipular procesos electorales y polarizar a la sociedad.<br>2. **Cámaras de Eco y Burbujas de Filtro:** Los algoritmos de las redes sociales muestran prioritariamente contenidos que coinciden con los gustos y sesgos previos del usuario. Esto aísla a las personas de opiniones divergentes, intensificando los sesgos de confirmación.<br>3. **Alfabetización Mediática:** Herramienta ciudadana clave para contrastar fuentes, verificar la veracidad de imágenes y textos antes de difundirlos, y fomentar un pensamiento crítico responsable en el entorno digital.`;
+            sec.datos_claves = [
+              '**Libertad de Expresión y Prensa:** Derecho fundamental a buscar, recibir y difundir información sin censura previa.',
+              '**Desinformación y Fake News:** Información falsa creada intencionalmente para engañar, polarizar o influir en elecciones.',
+              '**Cámaras de Eco:** Fenómeno generado por algoritmos que aíslan al usuario en contenido homogéneo, eliminando el debate diverso.',
+              '**Posverdad:** Escenario en el que los datos objetivos influyen menos en la opinión pública que las apelaciones emocionales.',
+              '**Pensamiento Crítico Digital:** Capacidad ciudadana de verificar la fuente, fecha y evidencias antes de compartir cualquier noticia.'
+            ];
+          } else if (secId.includes('4') || sec.order === 4) {
+            sec.introduccion = 'Para asegurar la justicia y proteger los derechos fundamentales frente a abusos, Chile modernizó su administración de justicia mediante la Reforma Procesal Penal.';
+            sec.guia_contenido = `Iniciada en el año 2000, la **Reforma Procesal Penal** reemplazó el antiguo sistema inquisitivo (escrito, secreto y concentrado en un solo juez) por un sistema acusatorio, oral y transparente. En este nuevo modelo, los roles están claramente delimitados:<br><br>1. **Ministerio Público (Fiscalía):** Organismo autónomo encargado de dirigir de forma exclusiva las investigaciones criminales y ejercer la acción penal pública.<br>2. **Defensoría Penal Pública:** Garantiza asesoría legal y defensa gratuita a toda persona imputada por un delito que no pueda costear un abogado privado.<br>3. **Jueces y Tribunales:** Los **Juzgados de Garantía** aseguran el respeto a los derechos constitucionales del imputado durante la investigación, mientras que los **Tribunales de Juicio Oral en lo Penal** escuchan los alegatos orales y dictan sentencia.<br>4. **Garantías Constitucionales:** Destacan la **Presunción de Inocencia** (toda persona es inocente hasta que se pruebe lo contrario), el **Recurso de Protección** (ante privación arbitraria de derechos) y el **Recurso de Amparo / Habeas Corpus** (ante arrestos ilegales o arbitrarios).`;
+            sec.datos_claves = [
+              '**Sistema Acusatorio Oral:** Reemplazó los juicios escritos y secretos por audiencias públicas y orales transmitidas en directo.',
+              '**Ministerio Público (Fiscales):** Dirige la investigación criminal y presenta las pruebas en contra del acusado.',
+              '**Defensoría Penal Pública:** Asegura el derecho irrenunciable a una defensa técnica gratuita para todo imputado.',
+              '**Juez de Garantía:** Vela por los derechos del acusado y la legalidad de los procedimientos durante la investigación.',
+              '**Presunción de Inocencia y Habeas Corpus:** Garantías esenciales para evitar detenciones arbitrarias y condenar sin pruebas.'
+            ];
+          }
+        });
+      }
+
+      if (cap.id === 'cap-hist-5' || cap.id === 'cap-historia-5' || cap.order === 5) {
+        cap.secciones.forEach(sec => {
+          const secId = sec.id;
+          if (secId.includes('1') || sec.order === 1) {
+            sec.introduccion = 'La ciencia económica analiza cómo las sociedades gestionan recursos limitados para satisfacer necesidades humanas ilimitadas.';
+            sec.guia_contenido = `El problema económico central es la **Escasez**. Ante recursos finitos, los agentes económicos deben tomar decisiones evaluando el **Costo de Oportunidad** (aquello a lo que se renuncia al elegir una alternativa). En una economía de libre mercado, los precios se determinan mediante la interacción de la **Oferta** (vendedores) y la **Demanda** (compradores). Sin embargo, el mercado presenta imperfecciones o fallas graves:<br><br>1. **Monopolio y Oligopolio:** Concentración de la oferta en una sola empresa o en un reducido grupo de firmas, eliminando la competencia y perjudicando a los consumidores.<br>2. **Colusión:** Acuerdo ilícito en secreto entre empresas competidoras para fijar precios artificialmente altos o repartirse cuotas de mercado (ejemplos en Chile: farmacias, papel higiénico, pollos).<br>3. **Organismos de Regulación:** La **Fiscalía Nacional Económica (FNE)** y el **Tribunal de Defensa de la Libre Competencia (TDLC)** persiguen los abusos de mercado, mientras el **SERNAC** protege los derechos de los consumidores.`;
+            sec.datos_claves = [
+              '**Problema de la Escasez:** Recursos limitados frente a necesidades humanas ilimitadas y continuas.',
+              '**Costo de Oportunidad:** El valor de la mejor alternativa a la que se renuncia al tomar una decisión económica.',
+              '**Ley de Oferta y Demanda:** Mecanismo que regula los precios según la abundancia o escasez de un producto y su demanda.',
+              '**Colusión de Precios:** Práctica ilegal donde empresas competidoras pactan precios altos para eliminar la competencia.',
+              '**Fiscalía Nacional Económica (FNE):** Organismo encargado de investigar y combatir las prácticas anticompetitivas en Chile.'
+            ];
+          } else if (secId.includes('2') || sec.order === 2) {
+            sec.introduccion = 'Para financiar sus funciones, infraestructura pública y programas sociales, el Estado recauda fondos a través de la política fiscal e impuestos.';
+            sec.guia_contenido = `En Chile, el marco constitucional define un **Estado Subsidiario**, el cual prioriza la iniciativa privada en la producción de bienes y servicios, reservando la intervención estatal para áreas donde los privados no invierten o para regular la actividad económica.<br><br>1. **Impuestos Directos e Indirectos:** Los impuestos directos gravan el ingreso o patrimonio (ej. Impuesto a la Renta, de carácter **progresivo** porque paga más quien más gana). Los impuestos indirectos gravan el consumo (ej. Impuesto al Valor Agregado - **IVA 19%**).<br>2. **Carácter Regresivo del IVA:** Puesto que el IVA afecta por igual a ricos y pobres al comprar un producto, representa un porcentaje proporcionalmente mayor del sueldo de las familias de menores ingresos.<br>3. **Presupuesto Nacional y Gasto Social:** El Estado redistribuir la recaudación fiscal mediante el presupuesto en salud pública, educación, pensiones solidarias y obras públicas.`;
+            sec.datos_claves = [
+              '**Estado Subsidiario:** El Estado interviene en la economía solo cuando el sector privado no puede o no quiere participar.',
+              '**Impuesto Progresivo (Renta):** Gravamen donde la tasa porcentual aumenta a medida que aumenta el nivel de ingreso del contribuyente.',
+              '**Impuesto Regresivo (IVA 19%):** Impuesto indirecto al consumo que afecta proporcionalmente más a las personas de menores ingresos.',
+              '**Servicio de Impuestos Internos (SII):** Institución pública encargada de fiscalizar la correcta recaudación tributaria.',
+              '**Gasto Social:** Inversión pública destinada a reducir la brecha social en salud, educación, vivienda y protección social.'
+            ];
+          } else if (secId.includes('3') || sec.order === 3) {
+            sec.introduccion = 'El trabajo no es solo un factor de producción económica; es un pilar de la dignidad humana que requiere de protección legal frente al poder del empleador.';
+            sec.guia_contenido = `El **Código del Trabajo** regula las relaciones laborales entre trabajadores y empleadores en Chile. El vínculo legal se formaliza mediante el **Contrato de Trabajo**, el cual debe escriturarse en un plazo máximo de 15 días e incluir la naturaleza de las funciones, remuneración, lugar y jornada laboral.<br><br>1. **Derechos Laborales Fundamentales:** Sueldo mínimo vital, jornada laboral de 40 horas semanales, descanso dominical, vacaciones pagadas (15 días hábiles al año) e indemnización por años de servicio.<br>2. **Protección a la Maternidad:** Fuero maternal (protección contra despidos desde el embarazo hasta un año después de expirado el postnatal) y derecho a salas cuna.<br>3. **Organización Sindical y Negociación Colectiva:** Los trabajadores tienen derecho constitucional a constituir sindicatos libres sin autorización previa, negociar colectivamente sus condiciones salariales y ejercer la huelga legal dentro del proceso de negociación.<br>4. **Dirección del Trabajo (DT):** Organismo encargado de fiscalizar el cumplimiento de la legislación laboral y sancionar los abusos de los empleadores.`;
+            sec.datos_claves = [
+              '**Contrato de Trabajo:** Documento obligatorio que establece derechos, obligaciones, sueldo y jornada de trabajo.',
+              '**Jornada Laboral y Sueldo Mínimo:** Normativa legal que limita las horas de trabajo semanales y fija un piso salarial irrenunciable.',
+              '**Fuero Maternal:** Garantía constitucional que protege a las trabajadoras de ser despedidas durante el embarazo y postnatal.',
+              '**Libertad Sindical y Huelga:** Derecho de los trabajadores a organizarse en sindicatos y declararse en huelga legal.',
+              '**Dirección del Trabajo (DT):** Institución fiscalizadora que vela por el cumplimiento de los contratos y normas laborales.'
+            ];
+          } else if (secId.includes('4') || sec.order === 4) {
+            sec.introduccion = 'El gran desafío del siglo XXI es lograr un equilibrio entre el crecimiento económico, la equidad social y la preservación de los ecosistemas del planeta.';
+            sec.guia_contenido = `La globalización ha integrado fuertemente a Chile en los mercados mundiales mediante el modelo exportador de recursos naturales (cobre, litio, productos agrícolas, madera y salmón) y la firma de **Tratados de Libre Comercio (TLCs)** con las principales potencias (EE.UU., China, Unión Europea).<br><br>1. **Desarrollo Sostenible:** Concepto impulsado por la ONU (Agenda 2030) que define el desarrollo como aquel capaz de satisfacer las necesidades de las generaciones presentes sin comprometer la capacidad de las generaciones futuras para satisfacer sus propias necesidades.<br>2. **Desafíos Ambientales de Chile:** Escasez hídrica y megasequía, contaminación en zonas de sacrificio industrial, descarbonización de la matriz energética y gestión de residuos mineros.<br>3. **Economía Circular y Transición Energética:** Cambio desde una economía lineal (extraer, usar, tirar) hacia la reutilización de materiales, la masificación de energías renovables no convencionales (solar y eólica) y la producción de Hidrógeno Verde.`;
+            sec.datos_claves = [
+              '**Integración Global y TLCs:** Apertura comercial de Chile con más de 60 países para exportar materias primas e importar tecnología.',
+              '**Desarrollo Sostenible (ONU):** Crecimiento económico respetuoso con el medio ambiente y justo socialmente.',
+              '**Matriz Energética Limpia:** Transición acelerada hacia energía solar y eólica para reducir las emisiones de carbono.',
+              '**Economía Circular:** Modelo de producción que prioriza reparar, reciclar y reutilizar recursos para minimizar residuos.',
+              '**Zonas de Sacrificio:** Áreas con alta concentración industrial que exigen mayor regulación ambiental para proteger a la población.'
+            ];
+          }
+        });
+      }
+    });
+  }
+
   private loadLocalFallbacks() {
     this._materias.set(LOCAL_MATERIAS);
     this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
-    this._capitulos.set(LOCAL_CAPITULOS);
+    this.applyHistoriaImageMapping(CAPITULOS);
+    this.enrichHistoriaChapters4And5(CAPITULOS);
+    this._capitulos.set(CAPITULOS);
   }
 
   // ─── Queries ───
 
   getMateriaById(id: string): Materia | undefined {
+    if (id === 'quimica' || id === 'ciencias-quimica') {
+      return this._materias().find(m => m.id === 'ciencias-quimica' || m.id === 'quimica') || this._materias().find(m => m.id === 'ciencias');
+    }
     return this._materias().find(m => m.id === id);
   }
 
   getCapitulosByMateria(materiaId: string): Capitulo[] {
+    if (materiaId === 'quimica' || materiaId === 'ciencias-quimica') {
+      const chemistryCaps = this._capitulos().filter(c => c.materiaId === 'ciencias-quimica' || c.materiaId === 'quimica');
+      if (chemistryCaps.length > 0) return chemistryCaps;
+    }
     return this._capitulos().filter(c => c.materiaId === materiaId);
   }
 
   getNextNodeUrl(materiaId: string): string[] | null {
     const capitulos = this.getCapitulosByMateria(materiaId).sort((a, b) => a.order - b.order);
-    
+
     for (const cap of capitulos) {
       const guideProg = this.getSeccionProgress('guide_' + cap.id);
       const isGuideCompleted = guideProg?.completed || false;
-      
+
       if (!isGuideCompleted) {
         return ['/ruta', materiaId, cap.id];
       }
@@ -771,7 +777,7 @@ export class PaesContentService {
         }
       }
     }
-    
+
     return null;
   }
 
@@ -780,7 +786,7 @@ export class PaesContentService {
     if (!cap) return null;
     const secciones = [...cap.secciones].sort((a, b) => a.order - b.order);
     const currentIndex = secciones.findIndex(s => s.id === seccionId);
-    
+
     if (currentIndex >= 0 && currentIndex < secciones.length - 1) {
       return ['/ruta', cap.materiaId, cap.id, secciones[currentIndex + 1].id];
     } else {
@@ -808,7 +814,7 @@ export class PaesContentService {
   }
 
   getCapituloBySeccionId(seccionId: string): Capitulo | undefined {
-    return this._capitulos().find(cap => 
+    return this._capitulos().find(cap =>
       cap.secciones.some(sec => sec.id === seccionId)
     );
   }

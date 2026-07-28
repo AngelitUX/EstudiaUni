@@ -9,7 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
-type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isBoss?: boolean, isProTip?: boolean, isPractice?: boolean };
+type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean };
 
 type PathItem = {
   type: 'chapter' | 'node-row';
@@ -26,7 +26,7 @@ type PathItem = {
 };
 
 @Component({
-  selector: 'app-materia-path',
+  selector: 'app-materia-historia-path',
   standalone: true,
   imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
   template: `
@@ -155,14 +155,14 @@ type PathItem = {
                   <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img src="assets/img/gif.gif" alt="Foco" class="splash-mascot chapter-image-custom" />
+                      <img [src]="item.imageUrl || 'assets/img/gif.gif'" alt="Capítulo" class="splash-mascot chapter-image-custom" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
                         Capítulo {{ getChapterNum(item.capituloId) }} <span *ngIf="getChapterProgress(item.capituloId).pct === 100">✓</span>
                       </span>
                       <h2 class="splash-title">{{ item.title }}</h2>
-                      <p class="splash-desc" *ngIf="item.capituloId === 'cap-localizar'">Identifica y extrae información explícita del texto. Domina sinónimos, paráfrasis y la técnica de escaneo.</p>
+                      <p class="splash-desc" *ngIf="getChapterIntro(item.capituloId)">{{ getChapterIntro(item.capituloId) }}</p>
                       <div class="splash-stats">
                         <div class="ss"><span class="ss-icon">📚</span> {{ getChapterNodeCount(item.capituloId) }} Lecciones</div>
                         <div class="ss" *ngIf="getChapterWeight(item.capituloId)"><span class="ss-icon">📊</span> {{ getChapterWeight(item.capituloId) }}</div>
@@ -225,11 +225,11 @@ type PathItem = {
 
             <!-- SECTION NODE ROW -->
             <div *ngIf="item.type === 'node-row'" class="node-row" 
-                 [style.margin-bottom]="hasTreeLayout() ? '7.5rem' : '6.5rem'">
+                 style="margin-bottom: 7.5rem;">
               
               <!-- SVG CAMINITO CONECTOR -->
               <svg class="path-svg" *ngIf="!isLastPathItem(item)" 
-                   [style.height]="isNextChapter(i) ? '156px' : (hasTreeLayout() ? 'calc(72px + 7.5rem)' : 'calc(72px + 6.5rem)')">
+                   [style.height]="isNextChapter(i) ? '156px' : 'calc(72px + 7.5rem)'">
                 <path *ngFor="let conn of getConnections(i)"
                       [attr.d]="conn.d"
                       [attr.stroke]="conn.color"
@@ -275,35 +275,30 @@ type PathItem = {
                         [class.node-locked]="node.status === 'locked'"
                         (click)="handleNodeClick(node)">
                         <div class="node-inner">
-                          <ng-container *ngIf="node.isBoss">
-                            <svg class="node-icon icon-boss" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2C7.03 2 3 6.03 3 11V14.5C3 15.33 3.67 16 4.5 16H6V20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20V16H19.5C20.33 16 21 15.33 21 14.5V11C21 6.03 16.97 2 12 2ZM8 10C6.9 10 6 9.1 6 8C6 6.9 6.9 6 8 6C9.1 6 10 6.9 10 8C10 9.1 9.1 10 8 10ZM16 10C14.9 10 14 9.1 14 8C14 6.9 14.9 6 16 6C17.1 6 18 6.9 18 8C18 9.1 17.1 10 16 10ZM15 19H9V16H15V19Z" />
-                            </svg>
-                          </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !node.isProTip && isPracticeNode(node)">
-                            <svg class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
-                            </svg>
-                          </ng-container>
-                          <ng-container *ngIf="!node.isBoss && node.isProTip">
-                            <svg class="node-icon icon-pro-tip" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
-                            </svg>
-                          </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !node.isProTip && !isPracticeNode(node)">
-                            <svg class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                          </ng-container>
+                          <!-- CROWN SVG -->
+                          <svg *ngIf="node.isCrown && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-crown" viewBox="0 0 24 24" fill="currentColor" style="color: #ffd700; filter: drop-shadow(0 0 4px rgba(255,215,0,0.5));">
+                            <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.55 18.55 20 18 20H6C5.45 20 5 19.55 5 19V18H19V19Z"/>
+                          </svg>
+                          <!-- PRACTICE SVG -->
+                          <svg *ngIf="!node.isCrown && isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
+                          </svg>
+                          <!-- STAR SVG -->
+                          <svg *ngIf="!node.isCrown && !isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          <!-- LOCK SVG -->
+                          <svg *ngIf="node.status === 'locked'" class="node-icon icon-lock" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                          </svg>
                         </div>
                       </button>
                       <div class="node-title" 
                         [class.text-completed]="node.status === 'completed'"
                         [class.text-active]="node.status === 'active'"
                         [class.historia-title]="hasTreeLayout()"
-                        [class.title-boss]="node.isBoss"
-                        [class.title-practice]="!node.isBoss && !node.isProTip && isPracticeNode(node)"
-                        [class.title-pro-tip]="node.isProTip"
+                        [class.title-crown]="node.isCrown"
+                        [class.title-practice]="!node.isCrown && isPracticeNode(node)"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
                         {{ node.title }}
                       </div>
@@ -889,8 +884,28 @@ type PathItem = {
     .splash-bg-pattern { position: absolute; inset: 0; opacity: 0.04; background-image: radial-gradient(circle at 20% 50%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 80% 20%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 60% 80%, var(--accent-primary) 1px, transparent 1px); background-size: 40px 40px, 60px 60px, 50px 50px; pointer-events: none; }
     .splash-inner { position: relative; padding: 2rem 2rem 1.5rem; }
     .splash-hero { display: flex; align-items: center; gap: 1.5rem; }
-    .splash-mascot-area { flex-shrink: 0; }
-    .splash-mascot { width: 180px; height: 180px; object-fit: contain; animation: mascotFloat 3.5s ease-in-out infinite; }
+    .splash-mascot-area { 
+      flex-shrink: 0; 
+      width: 140px; 
+      height: 140px; 
+      border-radius: 20px; 
+      padding: 4px; 
+      background: #ffffff; 
+      border: 3.5px solid #ffffff; 
+      box-shadow: 0 12px 28px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      position: relative;
+      animation: mascotFloat 3.5s ease-in-out infinite;
+    }
+    .splash-mascot { 
+      width: 100%; 
+      height: 100%; 
+      border-radius: 16px; 
+      object-fit: cover; 
+      display: block;
+    }
     @keyframes mascotFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
     .splash-info { flex: 1; min-width: 0; }
     .splash-badge { display: inline-block; background: var(--accent-primary); color: #fff; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
@@ -975,10 +990,9 @@ type PathItem = {
     .node-title.title-boss { color: #ef4444; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
     .node-title.title-boss.text-completed { color: #ef4444; border: 2.5px solid #ef4444 !important; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
     
-    .icon-practice { color: #58cc02; }
-    .title-practice { color: #58cc02; font-weight: 800; }
-    .icon-pro-tip { color: #ff9600; }
-    .title-pro-tip { color: #ff9600; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; }
+    .node-title.title-crown { color: #d97706; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); font-weight: 900; }
+    .node-title.title-crown.text-completed { color: #d97706; border: 2.5px solid #d97706 !important; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); }
+    
     .node-title.title-practice { color: #0284c7; text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); }
     .node-title.title-practice.text-completed { color: #0284c7; border: 2px solid #0284c7 !important; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15); }
 
@@ -1474,7 +1488,7 @@ type PathItem = {
     }
   `]
 })
-export class MateriaPathComponent implements AfterViewInit, OnDestroy {
+export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -1644,7 +1658,36 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   private offsets = [0, -80, -115, -80, 0, 80, 115, 80];
 
   ngAfterViewInit() {
-    // Initial draw will happen when panel opens
+    setTimeout(() => {
+      const materiaId = this.materiaId();
+
+      // Si el usuario acaba de volver desde un resumen de capítulo,
+      // restaurar la posición exacta de scroll guardada en sessionStorage.
+      const savedScrollKey = 'ruta_scroll_' + materiaId;
+      const savedScroll = sessionStorage.getItem(savedScrollKey);
+      if (savedScroll !== null) {
+        const scrollY = parseInt(savedScroll, 10);
+        sessionStorage.removeItem(savedScrollKey); // limpiar para próximas visitas normales
+        window.scrollTo({ top: scrollY, behavior: 'instant' });
+        return;
+      }
+
+      // Comportamiento normal: scroll al capítulo activo o al fragment
+      const fragment = this.route.snapshot.fragment;
+      let targetEl: HTMLElement | null = null;
+      if (fragment) {
+        targetEl = document.getElementById(fragment);
+      }
+      if (!targetEl) {
+        targetEl = document.querySelector('.active-tooltip')?.parentElement as HTMLElement;
+      }
+      if (!targetEl) {
+        targetEl = document.querySelector('.node-button.status-active')?.parentElement as HTMLElement;
+      }
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 200);
   }
 
   ngOnDestroy() {
@@ -2355,7 +2398,9 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   }
 
   constructor() {
-    this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
+    const paramId = this.route.snapshot.paramMap.get('materiaId');
+    const dataId = this.route.snapshot.data['materiaId'];
+    this.materiaId.set(paramId || dataId || 'historia');
   }
 
   getOffset(index: number): number {
@@ -2370,37 +2415,26 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
 
   getNodeTransform(item: any, nodeIndex: number): string {
-    if (!this.hasTreeLayout() && item.nodes!.length === 1) {
-      if (item.isCentered) return 'none';
-      return `translateX(${this.getOffset(item.rowIndex!)}px)`;
-    }
-    if (item.nodes!.length === 1) return 'none';
-    // For 2 nodes (double branch): always symmetric, no zigzag
-    if (item.nodes!.length === 2) {
-      const shift = nodeIndex === 0 ? -140 : 140;
-      return `translateX(${shift}px)`;
+    if (item.nodes!.length === 1) {
+      return `translateX(${this.getOffset(item.nodes[0].nodeIndex)}px)`;
     }
     const zig = this.getAccordionZigzag(item.rowIndex!);
     if (item.nodes!.length === 3) {
       if (nodeIndex === 0) return `translateX(${zig}px)`;
-      if (nodeIndex === 1) return `none`;
+      if (nodeIndex === 1) return `none`; // Central goes straight down
       if (nodeIndex === 2) return `translateX(${-zig}px)`;
     }
-    return 'none';
+    const shift = nodeIndex === 0 ? zig : -zig;
+    return `translateX(${shift}px)`;
   }
 
   getOffsetsForNodes(item: any): number[] {
     if (!item.nodes) return [0];
-    if (!this.hasTreeLayout() && item.nodes!.length === 1) {
-      if (item.isCentered) return [0];
-      return [this.getOffset(item.rowIndex!)];
-    }
-    if (item.nodes!.length === 1) return [0];
-    // For 2 nodes (double branch): always symmetric at ±140px
-    if (item.nodes!.length === 2) return [-140, 140];
+    if (item.nodes.length === 1) return [this.getOffset(item.nodes[0].nodeIndex)];
+    const zig = this.getAccordionZigzag(item.rowIndex!);
+    if (item.nodes.length === 2) return [-164 + zig, 164 - zig];
     // For 3 nodes: left zigzags, center is 0, right zigzags opposite
-    const zig3 = this.getAccordionZigzag(item.rowIndex!);
-    if (item.nodes!.length === 3) return [-232 + zig3, 0, 232 - zig3];
+    if (item.nodes.length === 3) return [-232 + zig, 0, 232 - zig];
     return [0];
   }
 
@@ -2559,18 +2593,16 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
       let currentGroup: any[] = [];
 
       const sortedSecciones = this.hasTreeLayout()
-        ? [...cap.secciones]
-            .filter(sec => !(sec as any).isSlideGuide)
-            .sort((a, b) => {
-              const lA = a.level !== undefined ? a.level : 1000;
-              const lB = b.level !== undefined ? b.level : 1000;
-              if (lA !== lB) return lA - lB;
+        ? [...cap.secciones].sort((a, b) => {
+            const lA = a.level !== undefined ? a.level : 1000;
+            const lB = b.level !== undefined ? b.level : 1000;
+            if (lA !== lB) return lA - lB;
 
-              // If same level, sort by subcapitulo to maintain consistent columns
-              const subA = (a as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
-              const subB = (b as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
-              return subA.localeCompare(subB);
-            })
+            // If same level, sort by subcapitulo to maintain consistent columns
+            const subA = (a as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
+            const subB = (b as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
+            return subA.localeCompare(subB);
+          })
         : [...cap.secciones].sort((a, b) => (a.order || 0) - (b.order || 0));
 
       sortedSecciones.forEach((sec) => {
@@ -2586,7 +2618,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
       if (currentGroup.length > 0) rows.push(currentGroup);
 
       // 3. Render rows
-      const lastSectionId = sortedSecciones.length > 0 ? sortedSecciones[sortedSecciones.length - 1].id : null;
+      const lastSectionId = cap.secciones.length > 0 ? cap.secciones[cap.secciones.length - 1].id : null;
 
       rows.forEach(group => {
         let allCompletedInRow = true;
@@ -2617,9 +2649,8 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
             status,
             nodeIndex: nodeIndex++,
             tags: sec.tags,
-            isBoss: sec.id === lastSectionId,
-            isProTip: sec.isProTip,
-            isPractice: sec.isPractice
+            isBoss: this.materiaId() === 'mat2' ? false : sec.id === lastSectionId,
+            isCrown: (sec as any).isCrown || false
           } as any;
         });
 
@@ -2718,6 +2749,11 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     const total = cap.secciones.length;
     const completed = cap.secciones.filter(s => this.paes.getSeccionProgress(s.id)?.completed).length;
     return { completed, total, pct: total > 0 ? (completed / total) * 100 : 0 };
+  }
+
+  getChapterIntro(capId: string): string {
+    const cap = this.capitulos().find(c => c.id === capId);
+    return cap?.introduccion || '';
   }
 
   isGuideCompleted(capId: string): boolean {

@@ -253,9 +253,10 @@ export class GuideSlidesComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['quizzes'] || changes['slides']) && this.quizzes) {
-      this.quizStates = {};
       Object.keys(this.quizzes).forEach(id => {
-        this.quizStates[id] = { selected: null, revealed: false };
+        if (!this.quizStates[id]) {
+          this.quizStates[id] = { selected: null, revealed: false };
+        }
       });
     }
   }

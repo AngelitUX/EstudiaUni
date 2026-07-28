@@ -1,16 +1,28 @@
 import { Component, inject, signal, computed, HostListener, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf, NgFor, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
+import { GuideSlidesComponent } from './guide-slides.component';
+import { GUIA_TIPOS_TEXTO_SLIDES, QUIZ_TIPOS_TEXTO } from './guide-slides-data';
 import { SynonymPracticeComponent } from './synonym-practice.component';
-import { PhysicsPracticeComponent } from './physics-practice.component';
+import { MatchPracticeComponent } from './match-practice.component';
+import { CategorizePracticeComponent } from './categorize-practice.component';
+import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
 
 @Component({
   selector: 'app-seccion-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SynonymPracticeComponent, PhysicsPracticeComponent],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    SynonymPracticeComponent, 
+    MatchPracticeComponent, 
+    CategorizePracticeComponent, 
+    FillBlanksPracticeComponent,
+    GuideSlidesComponent
+  ],
   template: `
     <div class="sec-page" *ngIf="seccion() as sec">
       <!-- TOP NAV -->
@@ -55,30 +67,100 @@ import { PhysicsPracticeComponent } from './physics-practice.component';
       </div>
 
       <!-- PRACTICE MODE (Synonym Game etc.) -->
-      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'synonyms'">
+
+
+      <!-- MATCH PAIRS MODE -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'match-pairs'">
         <div class="content-card practice-card">
-          <app-synonym-practice (onComplete)="completePractice()"></app-synonym-practice>
+          <app-match-practice [data]="sec.practiceData" (onComplete)="completePractice()"></app-match-practice>
         </div>
       </ng-container>
 
-      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'physics'">
-        <app-physics-practice [gameData]="sec.gameData" (onComplete)="completePractice()"></app-physics-practice>
+      <!-- CATEGORIZE MODE -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'categorize'">
+        <div class="content-card practice-card">
+          <app-categorize-practice [data]="sec.practiceData" (onComplete)="completePractice()"></app-categorize-practice>
+        </div>
+      </ng-container>
+
+      <!-- FILL IN THE BLANKS MODE -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'fill-blanks'">
+        <div class="content-card practice-card">
+          <app-fill-blanks-practice [data]="sec.practiceData" (onComplete)="completePractice()"></app-fill-blanks-practice>
+        </div>
+      </ng-container>
+
+      <!-- SYNONYM MODE -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'synonyms'">
+        <div class="content-card practice-card">
+          <app-synonym-practice [data]="sec.practiceData" (onComplete)="completePractice()"></app-synonym-practice>
+        </div>
+      </ng-container>
+
+      <!-- RAPID PRACTICE (Generic Practice Nodes) -->
+      <ng-container *ngIf="sec.isPractice && (!sec.practiceType || sec.practiceType === 'rapid')">
+        <div class="content-card generic-practice-card">
+          <div class="practice-header-dynamic">
+            <div class="practice-icon-pulse">⚡</div>
+            <h2>¡Desafío Rápido!</h2>
+            <p>{{ sec.title }}</p>
+          </div>
+          
+          <div class="context-body mt-2" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
+            <div class="context-body-header">
+              <span class="card-icon">📄</span> <b>Texto de Análisis</b>
+            </div>
+            <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
+              <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+              <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
+            </p>
+          </div>
+
+          <div class="cta-section">
+            <div class="cta-card practice-cta">
+              <h3>Modo Ráfaga Activado</h3>
+              <p>Pon a prueba tus reflejos mentales con {{ sec.test?.preguntas?.length || 0 }} pregunta(s) directa(s).</p>
+              <button class="btn-start-test btn-practice-go" (click)="goToTest()">¡Empezar Práctica! ➔</button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- SLIDE GUIDE -->
+      <ng-container *ngIf="sec.isSlideGuide">
+        <app-guide-slides 
+          [slides]="getSlidesForGuide(sec.id)" 
+          [quizzes]="getQuizzesForGuide(sec.id)" 
+          (onFinish)="completePractice()">
+        </app-guide-slides>
       </ng-container>
 
       <!-- NORMAL SECTION CONTENT -->
-      <ng-container *ngIf="!sec.isPractice">
+      <ng-container *ngIf="!sec.isPractice && !sec.isSlideGuide && !sec.isProTip">
       <!-- MINI GUÍA -->
       <div class="content-card guide-card">
         <div class="card-header">
           <span class="card-icon">🧠</span>
           <h3>{{ sec.guia_titulo || '¿Qué aprenderás?' }}</h3>
         </div>
-        <p class="guide-body" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
+        <div class="guide-body" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></div>
         <div class="sec-image-wrap-large" *ngIf="sec.imageUrl">
           <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image-large">
         </div>
-        <div class="sec-svg-wrap-large" *ngIf="sec.svgContent">
-          <div [innerHTML]="renderSvg(sec.svgContent)" class="sec-svg-container"></div>
+      </div>
+
+      <!-- TEXTO BASE -->
+      <div class="content-card context-card" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
+        <div class="card-header">
+          <span class="card-icon">📄</span>
+          <h3>Texto de práctica</h3>
+          <span class="pregunta-count">{{ sec.test?.preguntas?.length || 0 }} {{ (sec.test?.preguntas?.length || 0) === 1 ? 'pregunta' : 'preguntas' }}</span>
+        </div>
+        <div class="context-body">
+          <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
+            <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+            <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
+          </p>
         </div>
       </div>
 
@@ -102,10 +184,10 @@ import { PhysicsPracticeComponent } from './physics-practice.component';
           <span class="card-icon" *ngIf="isScienceOrMath()">📝</span>
           <span class="card-icon" *ngIf="!isScienceOrMath()">📄</span>
           <h3>{{ isScienceOrMath() ? 'Ejemplo Resuelto' : 'Texto de práctica' }}</h3>
-          <span class="pregunta-count" *ngIf="!isScienceOrMath()">{{ sec.test.preguntas.length }} {{ sec.test.preguntas.length === 1 ? 'pregunta' : 'preguntas' }}</span>
+          <span class="pregunta-count" *ngIf="!isScienceOrMath()">{{ sec.test?.preguntas?.length || 0 }} {{ (sec.test?.preguntas?.length || 0) === 1 ? 'pregunta' : 'preguntas' }}</span>
         </div>
         <div class="context-body">
-          <p *ngFor="let p of getFormattedParagraphs(sec.test.contexto_base)">
+          <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
             <span class="p-num" *ngIf="!p.isTitle && !isScienceOrMath()">[{{ p.number }}]</span>
             <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
           </p>
@@ -118,10 +200,34 @@ import { PhysicsPracticeComponent } from './physics-practice.component';
         <div class="cta-card">
           <div class="cta-icon">🚀</div>
           <h3>¿Listo para practicar?</h3>
-          <p>{{ sec.test.preguntas.length }} preguntas te esperan. ¡Debes responder todo correctamente para avanzar!</p>
+          <p>{{ sec.test?.preguntas?.length || 0 }} preguntas te esperan. ¡Debes responder todo correctamente para avanzar!</p>
           <button class="btn-start-test" (click)="goToTest()">Comenzar Test →</button>
         </div>
       </div>
+      </ng-container>
+
+      <!-- PRO TIP UI -->
+      <ng-container *ngIf="sec.isProTip">
+        <div class="content-card pro-tip-card">
+          <div class="pro-tip-header">
+            <div class="pro-tip-icon">💡</div>
+            <h2>¡Pro Tip!</h2>
+          </div>
+          <div class="pro-tip-body">
+            <h3>{{ sec.title }}</h3>
+            <p [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
+          </div>
+          <div class="tips-list" *ngIf="sec.datos_claves?.length">
+            <div *ngFor="let dato of sec.datos_claves; let i = index" class="tip-item tip-item-pro">
+              <div class="tip-num" [style.background]="tipColors[i % tipColors.length]">✔</div>
+              <p [innerHTML]="parseMixed(dato)"></p>
+            </div>
+          </div>
+          
+          <div class="pro-tip-actions">
+            <button class="btn-got-it" (click)="completePractice()">¡Entendido! Avanzar ➔</button>
+          </div>
+        </div>
       </ng-container>
 
       <!-- BACK -->
@@ -223,8 +329,33 @@ import { PhysicsPracticeComponent } from './physics-practice.component';
     .btn-stop { color: #ef4444; border-top: 1px dashed rgba(239,68,68,0.2); margin-top: 0.25rem; border-radius: 0 0 6px 6px; }
     .btn-stop:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
 
+    /* PRO TIP UI */
+    .pro-tip-card { background: linear-gradient(135deg, #fff, rgba(255, 150, 0, 0.05)); border: 2px solid rgba(255, 150, 0, 0.2); animation: fadeSlide 0.5s ease-out; text-align: center; padding: 2.5rem 2rem; }
+    .pro-tip-header { margin-bottom: 1.5rem; }
+    .pro-tip-icon { font-size: 3.5rem; margin-bottom: 0.5rem; animation: ctaBounce 2s ease-in-out infinite; text-shadow: 0 10px 20px rgba(255, 150, 0, 0.3); }
+    .pro-tip-card h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: #ff9600; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pro-tip-body h3 { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0 0 1rem; }
+    .pro-tip-body p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 2rem; }
+    .tip-item-pro { text-align: left; background: #fff; border: 1px solid rgba(0,0,0,0.05); }
+    .btn-got-it { margin-top: 2rem; padding: 1.2rem 3rem; border-radius: 999px; border: none; background: #ff9600; color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 1.15rem; cursor: pointer; box-shadow: 0 5px 0 #cc7800; transition: all 0.2s; }
+    .btn-got-it:hover { transform: translateY(3px); box-shadow: 0 2px 0 #cc7800; }
+
+    /* RAPID PRACTICE UI */
+    .generic-practice-card { background: linear-gradient(135deg, #fff, rgba(88, 204, 2, 0.05)); border: 2px solid rgba(88, 204, 2, 0.2); }
+    .practice-header-dynamic { text-align: center; margin-bottom: 2rem; }
+    .practice-icon-pulse { font-size: 3.5rem; margin-bottom: 0.5rem; animation: pulseGlow 2s infinite; text-shadow: 0 0 20px rgba(88, 204, 2, 0.4); }
+    .practice-header-dynamic h2 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: #58cc02; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    .practice-header-dynamic p { font-size: 1.1rem; color: var(--text-secondary); margin-top: 0.5rem; font-weight: 600; }
+    .context-body-header { margin-bottom: 1rem; color: var(--accent-primary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
+    .mt-2 { margin-top: 1.5rem; }
+    .practice-cta { background: linear-gradient(135deg, rgba(88, 204, 2, 0.1), rgba(88, 204, 2, 0.02)); border-color: rgba(88, 204, 2, 0.3); }
+    .practice-cta h3 { color: #58cc02; }
+    .btn-practice-go { background: #58cc02; box-shadow: 0 5px 0 #4caf00; }
+    .btn-practice-go:hover { transform: translateY(3px); box-shadow: 0 2px 0 #4caf00; }
+
     @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes ctaBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes pulseGlow { 0% { transform: scale(1); text-shadow: 0 0 10px rgba(88, 204, 2, 0.3); } 50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(88, 204, 2, 0.7); } 100% { transform: scale(1); text-shadow: 0 0 10px rgba(88, 204, 2, 0.3); } }
     @keyframes testPulse { 0%, 100% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 10px rgba(133,92,214,0); } }
     @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } .voice-dropdown-menu { right: auto; left: 0; } }
   `]
@@ -274,7 +405,11 @@ export class SeccionDetailComponent {
   }
 
   goBack() {
-    window.history.back();
+    if (this.materiaId()) {
+      this.router.navigate(['/ruta', this.materiaId()], { fragment: this.seccionId() });
+    } else {
+      this.router.navigate(['/ruta']);
+    }
   }
 
   goToTest() {
@@ -294,7 +429,9 @@ export class SeccionDetailComponent {
     const renderedSafe = this.katexSvc.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
     const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong style="color:var(--accent-primary)">$1</strong>');
-    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    let withBreaks = bolded.replace(/&lt;br&gt;/gi, '<br>');
+    withBreaks = withBreaks.replace(/&lt;(b|i|u|strong|em)&gt;/gi, '<$1>');
+    withBreaks = withBreaks.replace(/&lt;\/(b|i|u|strong|em)&gt;/gi, '</$1>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 
@@ -339,6 +476,16 @@ export class SeccionDetailComponent {
     } else {
       this.router.navigate(['/ruta', this.materiaId()]);
     }
+  }
+
+  getSlidesForGuide(id: string) {
+    if (id === 'sec-1-0-guia') return GUIA_TIPOS_TEXTO_SLIDES;
+    return [];
+  }
+
+  getQuizzesForGuide(id: string): any {
+    if (id === 'sec-1-0-guia') return { quiz_tipos_texto: QUIZ_TIPOS_TEXTO };
+    return {};
   }
 
   // ==========================================

@@ -75,6 +75,30 @@ export const routes: Routes = [
     canActivate: [authGuard, emailVerifiedGuard]
   },
   {
+    path: 'ruta/historia',
+    data: { materiaId: 'historia' },
+    loadComponent: () => import('./features/learning-path/materia-historia-path.component').then(m => m.MateriaHistoriaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/quimica',
+    data: { materiaId: 'quimica' },
+    loadComponent: () => import('./features/learning-path/materia-quimica-path.component').then(m => m.MateriaQuimicaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-quimica',
+    data: { materiaId: 'ciencias-quimica' },
+    loadComponent: () => import('./features/learning-path/materia-quimica-path.component').then(m => m.MateriaQuimicaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias',
+    data: { materiaId: 'ciencias' },
+    loadComponent: () => import('./features/learning-path/materia-quimica-path.component').then(m => m.MateriaQuimicaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
     path: 'ruta/:materiaId',
     loadComponent: () => import('./features/learning-path/materia-path.component').then(m => m.MateriaPathComponent),
     canActivate: [authGuard, emailVerifiedGuard]
