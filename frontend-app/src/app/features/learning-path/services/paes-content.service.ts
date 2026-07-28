@@ -360,8 +360,8 @@ export class PaesContentService {
   }
 
   private async loadDataFromFirestore() {
-    const CACHE_KEY = 'paes_content_cache_v34';
-    const cacheTimeKey = 'paes_content_cache_timestamp_v29';
+    const CACHE_KEY = 'paes_content_cache_v35';
+    const cacheTimeKey = 'paes_content_cache_timestamp_v30';
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
@@ -634,7 +634,7 @@ export class PaesContentService {
 
   private enrichHistoriaChapters4And5(capitulos: Capitulo[]) {
     const histCaps = capitulos.filter(c => c.materiaId === 'historia' || c.materiaId === 'ciencias-historia');
-    
+
     histCaps.forEach(cap => {
       if (cap.id === 'cap-hist-4' || cap.id === 'cap-historia-4' || cap.order === 4) {
         cap.secciones.forEach(sec => {
