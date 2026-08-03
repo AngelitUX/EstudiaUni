@@ -59,8 +59,15 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
+        <div style="width:44px"></div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -391,8 +398,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
     
     /* MOBILE HEADER */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
     .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
     .mobile-overlay.open { display: block; }
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
@@ -491,15 +499,28 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     @media (max-width: 1024px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; padding: 0 !important; padding-top: 60px !important; max-width: 100vw !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header { height: auto !important; padding: 1.25rem 1rem 0.75rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header .welcome-actions { display: none !important; }
+      .dashboard-body { padding: 1rem 1rem 2rem !important; width: 100% !important; box-sizing: border-box !important; }
       .calculator-grid { grid-template-columns: 1fr; }
     }
     
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .mobile-header { display: flex; }
-      .main-content { margin-left: 0; padding: 80px 1rem 2rem; max-width: 100%; }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; padding: 0 !important; padding-top: 60px !important; max-width: 100vw !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header { height: auto !important; padding: 1rem 0.85rem 0.5rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header .welcome-actions { display: none !important; }
+      .dashboard-body { padding: 0.85rem 0.85rem 2rem !important; width: 100% !important; box-sizing: border-box !important; }
       .input-grid { grid-template-columns: 1fr; gap: 1rem; }
       .target-inputs { flex-direction: column; align-items: stretch; }
+    }
+
+    @media (max-width: 480px) {
+      .main-content { padding-top: 60px !important; }
     }
   `]
 })

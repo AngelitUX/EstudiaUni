@@ -71,8 +71,15 @@ interface PlayedQuestion {
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
+        <div style="width:44px"></div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -626,11 +633,12 @@ interface PlayedQuestion {
     .logout-btn-sidebar:hover { background: rgba(248, 113, 113, 0.15) !important; }
 
     /* MOBILE HEADER */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
     .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
     .mobile-overlay.open { display: block; }
-    .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; max-width: 85vw; height: 100vh; background: #0d0f17; padding: 0; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.5); z-index: 10000; display: flex; flex-direction: column; }
 
     /* MAIN CONTENT */
     .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); }
@@ -976,12 +984,30 @@ interface PlayedQuestion {
     .btn-outline-lg:hover { background: var(--accent-primary); color: #ffffff; box-shadow: 0 4px 0 #6b46b8; transform: translateY(-2px); }
 
     @media (max-width: 1024px) {
-      .main-content { padding: 2rem; }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; padding-top: 60px !important; box-sizing: border-box !important; }
+      .dashboard-header { height: auto !important; padding: 1.25rem 1rem 0.75rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header .welcome-actions { display: none !important; }
+      .dashboard-header .subtitle { font-size: 0.85rem !important; line-height: 1.35 !important; }
+      .dashboard-body { padding: 1rem 1rem 2rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .setup-card { padding: 1.25rem 1rem !important; border-radius: 16px !important; }
+      .setup-section-title { flex-wrap: wrap !important; gap: 0.5rem !important; justify-content: space-between !important; }
+      .setup-section-title h3 { font-size: 1.1rem !important; flex: 1 !important; min-width: 130px !important; }
+      .btn-select-all { padding: 0.4rem 0.75rem !important; font-size: 0.75rem !important; }
     }
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .mobile-header { display: flex; }
-      .main-content { margin-left: 0; padding: 80px 1rem 2rem; max-width: 100%; }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; padding-top: 60px !important; box-sizing: border-box !important; }
+      .dashboard-header { height: auto !important; padding: 1rem 0.85rem 0.5rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header .welcome-actions { display: none !important; }
+      .dashboard-header .subtitle { font-size: 0.82rem !important; line-height: 1.35 !important; }
+      .dashboard-body { padding: 0.85rem 0.85rem 2rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .setup-card { padding: 1rem 0.85rem !important; border-radius: 16px !important; }
+      .setup-section-title { flex-wrap: wrap !important; gap: 0.5rem !important; justify-content: space-between !important; }
+      .setup-section-title h3 { font-size: 1.05rem !important; flex: 1 !important; min-width: 120px !important; }
+      .btn-select-all { padding: 0.35rem 0.65rem !important; font-size: 0.72rem !important; }
       .hud { flex-direction: row; gap: 0.5rem; padding: 0.6rem 0.75rem; justify-content: space-between; border-radius: 16px 16px 0 0; }
       .hud-left, .hud-right { gap: 0.35rem; }
       .hud-stat-pill { padding: 0.3rem 0.5rem; }

@@ -111,6 +111,47 @@ type ExamMode = 'real' | 'asistido';
         </div>
       </aside>
 
+      <!-- MOBILE HEADER -->
+      <div class="mobile-header">
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
+        <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+          <span class="profile-avatar-wrap">
+            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileE" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+            <ng-template #avatarMobileE><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+          </span>
+        </button>
+      </div>
+      <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
+        <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div style="padding: 1.5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+            <span class="text-gradient" style="font-size: 1.5rem; font-weight: 900; font-family: var(--font-heading);">EstudiaUni</span>
+            <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
+          </div>
+          <nav class="sidebar-nav">
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item active" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <div class="sidebar-section-title">HERRAMIENTAS</div>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+          </nav>
+          <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+          </div>
+        </div>
+      </div>
+
       <!-- MAIN CONTENT -->
       <main class="main-content animate-fade-in-down">
         <!-- HEADER -->
@@ -678,9 +719,9 @@ type ExamMode = 'real' | 'asistido';
       inset: 0;
       background: rgba(0, 0, 0, 0.75);
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 20000;
       padding: 1.5rem;
       overflow-y: auto;
       animation: fadeIn 0.25s ease;
@@ -693,10 +734,10 @@ type ExamMode = 'real' | 'asistido';
       background: #ffffff;
       border: 2px solid rgba(0,0,0,0.06);
       border-radius: 20px;
-      padding: 2.5rem;
+      padding: 2.5rem 1.5rem 1.5rem;
       max-width: 560px;
       width: 100%;
-      max-height: calc(100vh - 3rem);
+      max-height: 88vh;
       overflow-y: auto;
       position: relative;
       display: flex;
@@ -711,20 +752,22 @@ type ExamMode = 'real' | 'asistido';
     }
     .modal-close {
       position: absolute;
-      top: 1.25rem;
-      right: 1.25rem;
-      background: rgba(0, 0, 0, 0.05);
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.08);
       border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      font-size: 1.5rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 1.3rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
+      line-height: 1;
     }
     .modal-close:hover {
       background: rgba(0, 0, 0, 0.1);
@@ -1138,24 +1181,41 @@ type ExamMode = 'real' | 'asistido';
       box-shadow: var(--shadow-lg);
     }
 
+    /* MOBILE HEADER */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
+    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 200; }
+    .mobile-overlay.open { display: block; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 290px; max-width: 85vw; height: 100vh; background: #0d0f17; overflow-y: auto; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.5); z-index: 10000; }
+
     /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+      /* Ocultar dashboard-header interno en mobile (la barra top ya lo reemplaza) */
+      .dashboard-header { display: none !important; }
+      .dashboard-body { padding: 1rem 1rem 2rem !important; padding-top: 72px !important; }
+      .pruebas-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    }
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { 
-        margin-left: 0; 
-        padding: 1.5rem;
-      }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+      .dashboard-header { display: none !important; }
+      .dashboard-body { padding: 1rem 0.85rem 2rem !important; padding-top: 72px !important; }
       .title { font-size: 1.8rem; }
-      .pruebas-grid {
-        grid-template-columns: 1fr;
-      }
-      .modal-content {
-        padding: 2rem;
-        border-radius: 16px;
-      }
-      .prueba-detalles {
-        grid-template-columns: 1fr;
-      }
+      .pruebas-grid { grid-template-columns: 1fr; }
+      .modal-preparacion { padding: 1rem 0.5rem !important; align-items: center !important; z-index: 20000 !important; }
+      .modal-content { padding: 2.5rem 1.25rem 1.25rem !important; margin: auto !important; max-height: 86vh !important; border-radius: 16px !important; }
+      .modal-close { top: 0.75rem !important; right: 0.75rem !important; width: 36px !important; height: 36px !important; }
+      .prueba-detalles { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .dashboard-body { padding: 0.85rem !important; padding-top: 70px !important; }
+      .prueba-card { padding: 1.5rem; }
+      .card-title { font-size: 1.4rem; }
     }
   `]
 })
@@ -1176,6 +1236,7 @@ export class EnsayosListComponent implements OnInit {
   }
 
   isCollapsible = false;
+  mobileOpen = false;
 
   pruebas: Prueba[] = [
     {

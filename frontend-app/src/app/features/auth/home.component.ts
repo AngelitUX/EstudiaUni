@@ -85,7 +85,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="hero-glow-blob hero-blob-purple"></div>
           <div class="hero-glow-blob hero-blob-blue"></div>
           
-          <!-- Floating Science & Math outline symbols (strictly background decor, static on scroll) -->
+          <!-- Floating Science & Math outline symbols -->
           <div class="floating-symbol sym-1">√x</div>
           <div class="floating-symbol sym-2">∫</div>
           <div class="floating-symbol sym-3">H₂O</div>
@@ -96,57 +96,178 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="floating-symbol sym-8">F = m·a</div>
         </div>
 
-        <div class="hero-content">
-          <h1 class="hero-title">
-            <div class="title-float">
-              Prepárate para la <span class="text-gradient">PAES</span><br>con <span class="ai-robotic-text" data-text="Inteligencia Artificial">Inteligencia Artificial</span>
+        <div class="hero-grid">
+          <!-- LEFT COLUMN: Main title, subtitle, CTAs, Benefits & Social Proof -->
+          <div class="hero-left-content">
+            <div class="hero-badge-tag">
+              <span class="sparkle-icon">✨</span> Tu tutor de IA para la PAES
             </div>
-          </h1>
-          
-          <p class="hero-subtitle">
-            La única plataforma chilena que incluye un tutor con IA en tiempo real para guiarte durante cada ensayo.
-          </p>
-          
-          <div class="hero-actions">
-            <ng-container *ngIf="!isLoggedIn(); else heroLoggedIn">
-              <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/register')">
-                🚀 Comenzar Gratis
-              </button>
-              <button class="btn btn-outline btn-large" (click)="goTo('/login')">
-                Iniciar Sesión →
-              </button>
-            </ng-container>
-            <ng-template #heroLoggedIn>
-              <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/dashboard')">
-                ⚡ Ir a mi Dashboard
-              </button>
-            </ng-template>
-          </div>
-        </div>
 
-        <!-- HERO STATS -->
-        <div class="hero-stats">
-            <div class="stat-item">
-              <div class="stat-icon">📈</div>
-              <div class="stat-text">
-                <div class="stat-number">5000+</div>
-                <div class="stat-label">Preguntas</div>
+            <h1 class="hero-title">
+              Prepárate para la <span class="text-gradient">PAES</span> con<br>
+              <span class="ai-robotic-text" [class.ai-sparkle-flash]="heroSimStep === 4" data-text="Inteligencia Artificial">Inteligencia Artificial</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              Ensaya como en la prueba real. Nuestra IA detecta tus errores, te explica cada respuesta y crea un plan de estudio personalizado para mejorar tu puntaje.
+            </p>
+            
+            <div class="hero-actions">
+              <ng-container *ngIf="!isLoggedIn(); else heroLoggedIn">
+                <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/register')">
+                  🚀 Comenzar Gratis
+                </button>
+                <button class="btn btn-outline btn-large" (click)="goTo('/login')">
+                  Iniciar Sesión →
+                </button>
+              </ng-container>
+              <ng-template #heroLoggedIn>
+                <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/dashboard')">
+                  ⚡ Ir a mi Dashboard
+                </button>
+              </ng-template>
+            </div>
+
+            <!-- MODERN BENEFITS BAR (Replaces stats) -->
+            <div class="hero-benefits-bar">
+              <div class="benefit-chip">
+                <div class="chip-icon">🎯</div>
+                <div class="chip-info">
+                  <strong>Adaptativo</strong>
+                  <span>La IA crea tu plan de estudio</span>
+                </div>
+              </div>
+              <div class="benefit-chip">
+                <div class="chip-icon">⚡</div>
+                <div class="chip-info">
+                  <strong>En tiempo real</strong>
+                  <span>Explicaciones al instante mientras ensayas</span>
+                </div>
+              </div>
+              <div class="benefit-chip">
+                <div class="chip-icon">🛡️</div>
+                <div class="chip-info">
+                  <strong>100% enfocado</strong>
+                  <span>Solo contenido oficial PAES</span>
+                </div>
               </div>
             </div>
-            <div class="stat-item">
-              <div class="stat-icon">🎓</div>
-              <div class="stat-text">
-                <div class="stat-number">1000+</div>
-                <div class="stat-label">Estudiantes</div>
+
+            <!-- COMPACT SOCIAL PROOF ROW -->
+            <div class="hero-social-proof">
+              <div class="avatar-stack">
+                <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                <img src="assets/img/seccion opiniones/2.png" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+              </div>
+              <div class="proof-text">
+                <div class="star-rating">⭐⭐⭐⭐⭐</div>
+                <span>Únete a miles de estudiantes que ya están mejorando sus puntajes con IA</span>
               </div>
             </div>
-            <div class="stat-item">
-              <div class="stat-icon">⭐</div>
-              <div class="stat-text">
-                <div class="stat-number">95%</div>
-                <div class="stat-label">Satisfacción</div>
+          </div>
+
+          <!-- RIGHT COLUMN: Enhanced Live SaaS Interactive Simulation Card -->
+          <div class="hero-right-preview">
+            <div class="hero-sim-card glass-card">
+              <!-- Top bar header -->
+              <div class="sim-card-header">
+                <div class="sim-header-left">
+                  <span class="sim-badge-live"><span class="live-dot"></span> ENSAYO PAES</span>
+                  <span class="sim-subject-pill">{{ currentSimExercise.subject }}</span>
+                </div>
+                <div class="sim-header-right">
+                  <span class="sim-timer">⏱️ {{ currentSimExercise.timer }}</span>
+                  <span class="sim-q-num">{{ currentSimExercise.questionNum }}</span>
+                </div>
               </div>
+
+              <!-- Progress bar -->
+              <div class="sim-progress-bar-wrap">
+                <div class="sim-progress-bar-fill" [style.width]="currentSimExercise.progress"></div>
+              </div>
+
+              <!-- Question Box -->
+              <div class="sim-question-box">
+                <p class="sim-q-text">{{ currentSimExercise.text }}</p>
+
+                <!-- Options -->
+                <div class="sim-options-list">
+                  <div 
+                    *ngFor="let opt of currentSimExercise.options; let idx = index" 
+                    class="sim-option-item"
+                    [class.selected]="heroSimStep >= 1 && idx === currentSimExercise.correctIndex"
+                  >
+                    <span class="sim-opt-key">{{ opt.key }}</span>
+                    <span class="sim-opt-val">{{ opt.val }}</span>
+                    <span class="sim-opt-check" *ngIf="heroSimStep >= 1 && idx === currentSimExercise.correctIndex">✓</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI TUTOR LIVE SPLIT PANEL -->
+              <div class="sim-ai-split-panel">
+                <!-- Left: AI Tutor Explanation -->
+                <div class="sim-tutor-main">
+                  <div class="tutor-header-bar">
+                    <span class="tutor-sparkle">✨</span>
+                    <strong>Tutor IA</strong>
+                  </div>
+
+                  <!-- Analyzing state -->
+                  <div class="sim-analyzing-bar" *ngIf="heroSimStep === 2">
+                    <div class="sim-analyzing-spinner"></div>
+                    <span>Analizando tu respuesta... 85%</span>
+                  </div>
+
+                  <!-- Foco AI Tutor typed response -->
+                  <div class="sim-foco-feedback" *ngIf="heroSimStep >= 3">
+                    <p class="foco-typed-text">
+                      {{ heroSimTypedText }}<span class="typing-cursor" *ngIf="heroSimStep === 3">|</span>
+                    </p>
+
+                    <!-- Math Breakdown Box -->
+                    <div class="foco-step-box" *ngIf="heroSimStep >= 4">
+                      <code>{{ currentSimExercise.stepBreakdown }}</code>
+                    </div>
+
+                    <!-- AI Recommendation Chip -->
+                    <div class="foco-recommend-chip" *ngIf="heroSimStep >= 4">
+                      {{ currentSimExercise.recommendation }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: Progress Donut & Strengths/Weaknesses -->
+                <div class="sim-tutor-side">
+                  <div class="side-block">
+                    <span class="side-title">Tu progreso</span>
+                    <div class="donut-chart-wrap">
+                      <div class="donut-chart">
+                        <span class="donut-val">{{ currentSimExercise.overallProgress }}</span>
+                      </div>
+                      <span class="donut-sub">del ensayo</span>
+                    </div>
+                  </div>
+
+                  <div class="side-block">
+                    <span class="side-title color-success">Fortalezas</span>
+                    <ul class="tag-list">
+                      <li *ngFor="let st of currentSimExercise.strengths">✓ {{ st }}</li>
+                    </ul>
+                  </div>
+
+                  <div class="side-block">
+                    <span class="side-title color-warning">A reforzar</span>
+                    <ul class="tag-list warning">
+                      <li *ngFor="let wk of currentSimExercise.weaknesses">⚠️ {{ wk }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
             </div>
+          </div>
         </div>
       </section>
 
@@ -350,7 +471,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   </svg>
                 </div>
 
-                <img src="assets/img/gif.gif" alt="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()">
+                <img src="assets/img/gif.gif" alt="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" loading="lazy" decoding="async">
               </div>
             </div>
           </div>
@@ -559,6 +680,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   loop 
                   muted 
                   playsinline 
+                  preload="metadata"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -730,7 +852,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="testimonial-card testimonial-card-1">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante Mati">
+                <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante Mati" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -758,7 +880,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="testimonial-card featured testimonial-card-2">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/img/seccion opiniones/2.png" alt="Estudiante ValeRojas">
+                <img src="assets/img/seccion opiniones/2.png" alt="Estudiante ValeRojas" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -784,7 +906,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="testimonial-card testimonial-card-3">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante Seba">
+                <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante Seba" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -1067,7 +1189,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <div class="news-card glass-card" *ngFor="let item of news">
               <div class="news-header-img">
                 <div class="news-img-skeleton" *ngIf="!item.isLoaded"></div>
-                <img [src]="item.imageUrl" (load)="item.isLoaded = true" [class.loaded]="item.isLoaded" alt="Portada de la noticia" class="news-cover-img" />
+                <img [src]="item.imageUrl" (load)="item.isLoaded = true" [class.loaded]="item.isLoaded" alt="Portada de la noticia" class="news-cover-img" loading="lazy" decoding="async" />
                 <div class="news-img-overlay" [style.background]="item.gradient"></div>
                 <span class="news-badge">{{ item.tag }}</span>
               </div>
@@ -1314,6 +1436,8 @@ import { PaymentService } from '../../core/services/payment.service';
       z-index: -1;
       pointer-events: none;
       background: #fafafa;
+      contain: strict;
+      transform: translateZ(0);
     }
     .blob {
       position: absolute;
@@ -1321,6 +1445,9 @@ import { PaymentService } from '../../core/services/payment.service';
       border-radius: 50%;
       opacity: 0.5;
       animation: morph-blob 20s infinite alternate ease-in-out;
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
     .blob-purple {
       width: 50vw;
@@ -1346,29 +1473,33 @@ import { PaymentService } from '../../core/services/payment.service';
       animation-delay: -10s;
     }
     @keyframes morph-blob {
-      0% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(8vw, -8vh) scale(1.1); }
-      66% { transform: translate(-5vw, 5vh) scale(0.9); }
-      100% { transform: translate(0, 0) scale(1); }
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      33% { transform: translate3d(8vw, -8vh, 0) scale(1.1); }
+      66% { transform: translate3d(-5vw, 5vh, 0) scale(0.9); }
+      100% { transform: translate3d(0, 0, 0) scale(1); }
     }
 
 
     .home-container {
       background: transparent;
+      width: 100% !important;
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
+      position: relative;
     }
 
     /* ===== VARIABLES & BASE ===== */
     .home-container { min-height: 100vh; }
     .section-title, .bento-card, .faq-item, .foco-visual {
       opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-      will-change: transform, opacity;
+      transform: translate3d(0, 30px, 0);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      backface-visibility: hidden;
     }
     
     .is-visible {
       opacity: 1 !important;
-      transform: translateY(0) !important;
+      transform: translate3d(0, 0, 0) !important;
     }
 
     .w-full { width: 100%; }
@@ -1763,13 +1894,448 @@ import { PaymentService } from '../../core/services/payment.service';
       position: relative;
       z-index: 1;
       width: 100%;
-      padding-top: 10rem;
-      text-align: center;
+      padding-top: 9rem;
+      padding-bottom: 3rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
       overflow: hidden;
+    }
+    
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 3rem;
+      align-items: center;
+      width: 100%;
+      max-width: 1240px;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .hero-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(133, 92, 214, 0.08);
+      border: 1px solid rgba(133, 92, 214, 0.22);
+      color: #855cd6;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      margin-bottom: 1.25rem;
+      backdrop-filter: blur(10px);
+    }
+    .sparkle-icon {
+      font-size: 0.95rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.1rem;
+      color: #111827;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+      color: #4b5563;
+      line-height: 1.55;
+      margin-bottom: 1.8rem;
+      max-width: 580px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== MODERN BENEFITS BAR ===== */
+    .hero-benefits-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(133, 92, 214, 0.16);
+      border-radius: 16px;
+      padding: 0.85rem 1rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      margin-bottom: 1.5rem;
+    }
+    .benefit-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .chip-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .chip-info {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .chip-info strong {
+      font-size: 0.82rem;
+      color: #111827;
+      font-weight: 700;
+    }
+    .chip-info span {
+      font-size: 0.73rem;
+      color: #6b7280;
+      line-height: 1.2;
+    }
+
+    /* ===== SOCIAL PROOF ROW ===== */
+    .hero-social-proof {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.2rem 0;
+    }
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+    }
+    .avatar-stack img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      margin-left: -8px;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .avatar-stack img:first-child {
+      margin-left: 0;
+    }
+    .proof-text {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .star-rating {
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+    }
+    .proof-text span {
+      font-size: 0.78rem;
+      color: #4b5563;
+      font-weight: 600;
+    }
+
+    /* ===== SIMULATION CARD ENHANCEMENTS ===== */
+    .sim-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.65rem;
+    }
+    .sim-badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #059669;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+    }
+    .sim-subject-pill {
+      background: rgba(133, 92, 214, 0.08);
+      border: 1px solid rgba(133, 92, 214, 0.2);
+      color: #855cd6;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+    }
+    .sim-header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.78rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .sim-progress-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: #f3f4f6;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 0.9rem;
+    }
+    .sim-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #855cd6, #3b82f6);
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+
+    .sim-question-box {
+      background: #ffffff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 0.95rem 1rem;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    .sim-q-text {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+    .sim-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .sim-option-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      border: 1.5px solid #f3f4f6;
+      background: #fafafa;
+      font-size: 0.84rem;
+      color: #374151;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sim-opt-key {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: #e5e7eb;
+      color: #4b5563;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .sim-opt-val {
+      flex: 1;
+      font-weight: 500;
+    }
+    .sim-opt-check {
+      color: #10b981;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .sim-option-item.selected {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.06);
+      color: #065f46;
+      font-weight: 600;
+      transform: translateX(4px);
+    }
+    .sim-option-item.selected .sim-opt-key {
+      background: #10b981;
+      color: white;
+    }
+
+    /* ===== AI TUTOR SPLIT PANEL ===== */
+    .sim-ai-split-panel {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 0.75rem;
+      background: #f9fafb;
+      border: 1.5px solid rgba(133, 92, 214, 0.18);
+      border-radius: 14px;
+      padding: 0.85rem;
+    }
+
+    /* Magic Flash on "Inteligencia Artificial" when AI Tutor completes */
+    .ai-robotic-text.ai-sparkle-flash {
+      animation: ai-title-glow-pulse 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes ai-title-glow-pulse {
+      0% { text-shadow: 0 0 0 rgba(133, 92, 214, 0); transform: scale(1); }
+      40% { text-shadow: 0 0 25px rgba(133, 92, 214, 0.9), 0 0 45px rgba(59, 130, 246, 0.7); transform: scale(1.03); color: #855cd6; }
+      100% { text-shadow: 0 0 0 rgba(133, 92, 214, 0); transform: scale(1); }
+    }
+
+    .foco-recommend-chip {
+      display: inline-block;
+      margin-top: 0.45rem;
+      background: linear-gradient(135deg, rgba(133, 92, 214, 0.1), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(133, 92, 214, 0.25);
+      color: #855cd6;
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      animation: simSlideUp 0.3s ease;
+    }
+
+    .sim-tutor-main {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .tutor-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      color: #855cd6;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .tutor-sparkle {
+      font-size: 0.9rem;
+    }
+
+    .sim-analyzing-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.75rem;
+      background: linear-gradient(135deg, rgba(133, 92, 214, 0.08), rgba(59, 130, 246, 0.08));
+      border: 1px solid rgba(133, 92, 214, 0.2);
+      border-radius: 8px;
+      color: #855cd6;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .sim-analyzing-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(133, 92, 214, 0.2);
+      border-top-color: #855cd6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .sim-foco-feedback {
+      animation: simSlideUp 0.3s ease;
+    }
+    .foco-typed-text {
+      font-size: 0.8rem;
+      color: #374151;
+      line-height: 1.4;
+      margin: 0 0 0.5rem 0;
+    }
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      color: #855cd6;
+      font-weight: 900;
+      animation: blink-cursor 0.7s infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .foco-step-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 0.4rem 0.6rem;
+      text-align: center;
+    }
+    .foco-step-box code {
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #166534;
+      font-weight: 700;
+    }
+
+    /* RIGHT SIDEBAR INSIDE CARD */
+    .sim-tutor-side {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .side-block {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 0.6rem;
+      text-align: left;
+    }
+    .side-title {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #374151;
+      margin-bottom: 0.3rem;
+    }
+    .side-title.color-success { color: #059669; }
+    .side-title.color-warning { color: #d97706; }
+
+    .donut-chart-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .donut-chart {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: conic-gradient(#855cd6 0% 72%, #e5e7eb 72% 100%);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .donut-chart::before {
+      content: '';
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ffffff;
+      position: absolute;
+    }
+    .donut-val {
+      position: relative;
+      z-index: 2;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #111827;
+    }
+    .donut-sub {
+      font-size: 0.68rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .tag-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .tag-list li {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #059669;
+    }
+    .tag-list.warning li {
+      color: #d97706;
     }
     
     .hero-content {
@@ -4607,29 +5173,125 @@ import { PaymentService } from '../../core/services/payment.service';
       .foco-badge { right: 0; }
     }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 1024px) {
-      .bento-grid { grid-template-columns: repeat(2, 1fr); }
-      .bento-large { grid-column: span 2; }
-      .testimonials-grid { grid-template-columns: 1fr; max-width: 500px; }
-      .testimonial-card.featured { transform: none; }
-    }
+    /* ===== RESPONSIVE ENHANCEMENTS ===== */
     @media (max-width: 1200px) {
       .nav-links { position: static; transform: none; gap: 1.5rem; }
     }
+    @media (max-width: 1024px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      .bento-large { grid-column: span 2; }
+      .testimonials-grid { grid-template-columns: 1fr; max-width: 500px; margin: 0 auto; }
+      .testimonial-card.featured { transform: none; }
+    }
+    @media (max-width: 992px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        text-align: center;
+      }
+      .hero-left-content {
+        align-items: center;
+        text-align: center;
+      }
+      .hero-subtitle {
+        text-align: center;
+      }
+      .hero-actions {
+        justify-content: center;
+      }
+      .hero-right-preview {
+        max-width: 540px;
+        margin: 0 auto;
+      }
+    }
+    @media (max-width: 640px) {
+      .hero-benefits-bar {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+      .sim-ai-split-panel {
+        grid-template-columns: 1fr;
+      }
+      .hero-social-proof {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .proof-text {
+        align-items: center;
+      }
+    }
     @media (max-width: 768px) {
-      .nav-links, .nav-actions { display: none; }
-      .mobile-menu-btn { display: flex; }
-      .hero-title { font-size: 2.5rem; }
-      .hero-subtitle { font-size: 1.1rem; }
-      .stats { gap: 2rem; }
+      .nav-links, .nav-actions { display: none !important; }
+      .mobile-menu-btn { display: flex !important; align-items: center; justify-content: center; }
+      .navbar {
+        width: calc(100% - 1.5rem) !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin: 0 auto !important;
+        transform: none !important;
+        top: 0.75rem !important;
+        padding: 0.6rem 1rem !important;
+        border-radius: 20px !important;
+      }
+      .navbar.navbar-hidden {
+        transform: translateY(-150%) !important;
+      }
+      .nav-container {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+      }
+      .hero-section { padding-top: 6.5rem; overflow: hidden; }
+      .hero-title { font-size: clamp(1.8rem, 6vw, 2.6rem); }
+      .hero-subtitle { font-size: 1rem; }
+      .hero-actions { flex-direction: column; width: 100%; max-width: 320px; margin: 0 auto; gap: 0.75rem; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
       .bento-grid { grid-template-columns: 1fr; }
       .bento-large { grid-column: span 1; }
-      .videos-grid { grid-template-columns: 1fr; max-width: 400px; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      .section-title { font-size: 2rem; }
-      .mockup-body { min-height: 200px; }
-      .mockup-sidebar { display: none; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+      .section-title { font-size: 1.85rem; }
+
+      /* Foco Speech Bubble on Mobile */
+      .foco-speech-bubble {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 90vw !important;
+        margin: 0 auto 1.5rem !important;
+        text-align: center;
+      }
+      .foco-speech-bubble .bubble-arrow { display: none !important; }
+    }
+    @media (max-width: 640px) {
+      .floating-symbol { display: none !important; }
+      .hero-stats { flex-direction: column; width: 100%; max-width: 300px; margin: 2rem auto 0; gap: 0.85rem; }
+      .stat-item { width: 100%; justify-content: center; padding: 0.75rem 1.25rem; }
+      .tabs-buttons {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 0.5rem;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .tabs-buttons::-webkit-scrollbar { display: none; }
+      .tab-btn { flex-shrink: 0; white-space: nowrap; font-size: 0.88rem; padding: 0.7rem 1.1rem; }
+      .news-card { min-width: 85vw; max-width: 85vw; }
+      .news-carousel-container { padding: 0 0.5rem; }
+      .bento-card { padding: 1.5rem 1.25rem; }
+      .roadmap-visual { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+    }
+    @media (max-width: 480px) {
+      .navbar { padding: 0.45rem 0.75rem; }
+      .nav-logo { font-size: 1.2rem; }
+      .pricing-card { padding: 1.5rem 1.25rem; }
+      .legal-modal-content { width: 95%; padding: 1.25rem; max-height: 85vh; }
+      .legal-modal-header .close-btn { width: 44px; height: 44px; font-size: 1.3rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-badge,
@@ -4959,9 +5621,130 @@ export class HomeComponent implements AfterViewInit, OnInit {
     window.requestAnimationFrame(step);
   }
 
+  // Hero Live Interactive SaaS Simulation Dataset & State Machine
+  heroSimExercises = [
+    {
+      subject: '✏️ Matemáticas',
+      questionNum: 'Pregunta 12/65',
+      timer: '01:24:37',
+      progress: '28%',
+      text: '¿Cuál es el valor de x en la ecuación 3x + 6 = 18?',
+      options: [
+        { key: 'A', val: 'x = 2' },
+        { key: 'B', val: 'x = 4' },
+        { key: 'C', val: 'x = 5' },
+        { key: 'D', val: 'x = 6' }
+      ],
+      correctIndex: 1,
+      explanation: '¡Excelente! 🎉 Despejaste correctamente la ecuación. Recuerda dividir ambos lados por el coeficiente de x.',
+      stepBreakdown: '3x + 6 = 18  →  3x = 12  →  x = 4',
+      recommendation: '🎯 Tema recomendado: Despeje de Ecuaciones de 1° Grado',
+      overallProgress: '72%',
+      strengths: ['Álgebra', 'Ecuaciones', 'Funciones'],
+      weaknesses: ['Geometría', 'Probabilidad']
+    },
+    {
+      subject: '📖 Competencia Lectora',
+      questionNum: 'Pregunta 28/65',
+      timer: '01:10:45',
+      progress: '43%',
+      text: 'En el párrafo 3, ¿con qué intención el autor utiliza la expresión "el reloj de arena"?',
+      options: [
+        { key: 'A', val: 'Describir un instrumento histórico.' },
+        { key: 'B', val: 'Enfatizar la urgencia de actuar antes del límite.' },
+        { key: 'C', val: 'Criticar la falta de puntualidad.' },
+        { key: 'D', val: 'Explicar la medición del tiempo.' }
+      ],
+      correctIndex: 1,
+      explanation: '¡Bien deducido! 💡 La metáfora enfatiza la urgencia y el paso del tiempo límite.',
+      stepBreakdown: 'Texto literal  →  Sentido figurado  →  Inferir intención',
+      recommendation: '🎯 Habilidad recomendada: Interpretación de Figuras Literarias',
+      overallProgress: '64%',
+      strengths: ['Comprensión', 'Inferencia', 'Vocabulario'],
+      weaknesses: ['Síntesis', 'Evaluación']
+    },
+    {
+      subject: '🧪 Ciencias - Química',
+      questionNum: 'Pregunta 09/80',
+      timer: '01:45:00',
+      progress: '11%',
+      text: '¿Qué tipo de enlace químico predomina en la molécula de agua (H₂O)?',
+      options: [
+        { key: 'A', val: 'Enlace Iónico' },
+        { key: 'B', val: 'Enlace Covalente Polar' },
+        { key: 'C', val: 'Enlace Metálico' },
+        { key: 'D', val: 'Enlace Covalente Apolar' }
+      ],
+      correctIndex: 1,
+      explanation: '¡Muy bien! ⚡ La diferencia de electronegatividad genera momentos dipolares polares.',
+      stepBreakdown: 'Δ Electronegatividad (O-H) > 0.4  →  Covalente Polar',
+      recommendation: '🎯 Tema recomendado: Geometría Molecular y Polaridad',
+      overallProgress: '81%',
+      strengths: ['Estructura atómica', 'Enlaces', 'Soluciones'],
+      weaknesses: ['Estequiometría', 'Termoquímica']
+    }
+  ];
+
+  heroSimIndex = 0;
+  heroSimStep = 0; // 0: Start, 1: Selection, 2: Analyzing, 3: Typing Foco, 4: Concept show
+  heroSimTypedText = '';
+  heroSimTypingTimer: any = null;
+  heroSimCycleTimer: any = null;
+
+  get currentSimExercise() {
+    return this.heroSimExercises[this.heroSimIndex];
+  }
+
+  startHeroSimulation() {
+    this.runHeroSimCycle();
+  }
+
+  runHeroSimCycle() {
+    this.heroSimStep = 0;
+    this.heroSimTypedText = '';
+    if (this.heroSimTypingTimer) clearInterval(this.heroSimTypingTimer);
+    if (this.heroSimCycleTimer) clearTimeout(this.heroSimCycleTimer);
+
+    // Step 1 (t = 2.2s): Select Option
+    this.heroSimCycleTimer = setTimeout(() => {
+      this.heroSimStep = 1;
+
+      // Step 2 (t = 3.8s): Analyzing Response
+      setTimeout(() => {
+        this.heroSimStep = 2;
+
+        // Step 3 (t = 5.2s): Start Typewriter
+        setTimeout(() => {
+          this.heroSimStep = 3;
+          const fullText = this.currentSimExercise.explanation;
+          let charIdx = 0;
+          this.heroSimTypingTimer = setInterval(() => {
+            if (charIdx < fullText.length) {
+              this.heroSimTypedText += fullText.charAt(charIdx);
+              charIdx++;
+            } else {
+              clearInterval(this.heroSimTypingTimer);
+              // Step 4 (t = +1s): Show Concept Pill
+              setTimeout(() => {
+                this.heroSimStep = 4;
+
+                // Step 5 (t = +3.2s): Transition to next exercise
+                setTimeout(() => {
+                  this.heroSimIndex = (this.heroSimIndex + 1) % this.heroSimExercises.length;
+                  this.runHeroSimCycle();
+                }, 3200);
+              }, 900);
+            }
+          }, 32);
+        }, 1500);
+      }, 1600);
+    }, 2200);
+  }
+
   ngOnInit() {
     this.firestoreService.getUserProfile().subscribe();
     this.loadFirestoreNews();
+    this.startHeroSimulation();
   }
 
   async loadFirestoreNews() {
@@ -4980,39 +5763,45 @@ export class HomeComponent implements AfterViewInit, OnInit {
       this.animationsReady = true;
     });
 
-    // Registrar eventos de mouse en la zona externa de Angular para cero lag (mutación directa del DOM)
+    // Registrar eventos en zona externa de Angular (cero lag y sin layout thrashing)
     this.zone.runOutsideAngular(() => {
+      const sectionEl = document.getElementById('foco-tutor');
+      const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
+
+      let sectionRect: DOMRect | null = null;
+      let mascotRect: DOMRect | null = null;
+
+      const updateRects = () => {
+        if (sectionEl) sectionRect = sectionEl.getBoundingClientRect();
+        if (mascotEl) mascotRect = mascotEl.getBoundingClientRect();
+      };
+
+      updateRects();
+      window.addEventListener('resize', updateRects, { passive: true });
+      window.addEventListener('scroll', updateRects, { passive: true });
+
       let mouseTicking = false;
       document.addEventListener('mousemove', (e: MouseEvent) => {
-        if (this.hoveredBenefitIndex !== null) return;
+        if (this.hoveredBenefitIndex !== null || !sectionEl || !mascotEl) return;
 
         if (!mouseTicking) {
           window.requestAnimationFrame(() => {
-            const sectionEl = document.getElementById('foco-tutor');
-            if (!sectionEl) {
-              mouseTicking = false;
-              return;
+            if (!sectionRect || !mascotRect) {
+              updateRects();
             }
 
-            const sectionRect = sectionEl.getBoundingClientRect();
-            const isInsideSection = e.clientX >= sectionRect.left && e.clientX <= sectionRect.right &&
+            const isInsideSection = sectionRect &&
+              e.clientX >= sectionRect.left && e.clientX <= sectionRect.right &&
               e.clientY >= sectionRect.top && e.clientY <= sectionRect.bottom;
 
-            const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
-            if (!mascotEl) {
-              mouseTicking = false;
-              return;
-            }
-
             if (!isInsideSection) {
-              mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
+              mascotEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
               mouseTicking = false;
               return;
             }
 
-            const rect = mascotEl.getBoundingClientRect();
-            const mascotCenterX = rect.left + rect.width / 2;
-            const mascotCenterY = rect.top + rect.height / 2;
+            const mascotCenterX = mascotRect!.left + mascotRect!.width / 2;
+            const mascotCenterY = mascotRect!.top + mascotRect!.height / 2;
 
             const deltaX = e.clientX - mascotCenterX;
             const deltaY = e.clientY - mascotCenterY;
@@ -5024,12 +5813,12 @@ export class HomeComponent implements AfterViewInit, OnInit {
             const translateX = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaX / sensitivity) * maxDisplacement));
             const translateY = Math.max(-maxDisplacement, Math.min(maxDisplacement, (deltaY / sensitivity) * maxDisplacement));
 
-            const isHovered = e.clientX >= rect.left && e.clientX <= rect.right &&
-              e.clientY >= rect.top && e.clientY <= rect.bottom;
+            const isHovered = e.clientX >= mascotRect!.left && e.clientX <= mascotRect!.right &&
+              e.clientY >= mascotRect!.top && e.clientY <= mascotRect!.bottom;
 
             const scale = isHovered ? 1.06 : 1.0;
 
-            mascotEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            mascotEl.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
             mouseTicking = false;
           });
           mouseTicking = true;
@@ -5037,9 +5826,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
       }, { passive: true });
 
       document.addEventListener('mouseleave', () => {
-        const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
         if (mascotEl) {
-          mascotEl.style.transform = 'translate(0px, 0px) scale(1)';
+          mascotEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
         }
       }, { passive: true });
 
@@ -5056,13 +5844,13 @@ export class HomeComponent implements AfterViewInit, OnInit {
           window.requestAnimationFrame(() => {
             // Parallax updates
             if (gridOverlay) {
-              gridOverlay.style.transform = `translateY(${currentScrollY * 0.22}px)`;
+              gridOverlay.style.transform = `translate3d(0, ${currentScrollY * 0.22}px, 0)`;
             }
             if (blobPurple) {
-              blobPurple.style.transform = `translateY(${currentScrollY * 0.26}px) scale(${1 + currentScrollY * 0.00015})`;
+              blobPurple.style.transform = `translate3d(0, ${currentScrollY * 0.26}px, 0) scale(${1 + currentScrollY * 0.00015})`;
             }
             if (blobBlue) {
-              blobBlue.style.transform = `translateY(${currentScrollY * 0.2}px) scale(${1 - currentScrollY * 0.0001})`;
+              blobBlue.style.transform = `translate3d(0, ${currentScrollY * 0.2}px, 0) scale(${1 - currentScrollY * 0.0001})`;
             }
 
             // Navbar state updates (only trigger Angular zone if state changes)
@@ -5083,7 +5871,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
       }, { passive: true });
     });
 
-    // Scroll Reveal Animation Logic
+    // Scroll Reveal Animation Logic (Unobserve once revealed for maximum performance)
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -50px 0px'
@@ -5096,8 +5884,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
           if (entry.target.classList.contains('hero-stats')) {
             this.animateCounters();
           }
-        } else {
-          entry.target.classList.remove('is-visible');
+          observer.unobserve(entry.target);
         }
       });
     }, observerOptions);
