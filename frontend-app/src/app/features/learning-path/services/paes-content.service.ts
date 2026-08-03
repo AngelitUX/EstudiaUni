@@ -339,7 +339,7 @@ export class PaesContentService {
       this._materias.set(materias.sort((a, b) => a.order - b.order));
 
       // 2. Cargar capítulos mock (usando ruta absoluta)
-      const capitulosRes = await fetch('/assets/mocks/capitulos-mock-local.json');
+      const capitulosRes = await fetch('/assets/mocks/capitulos-mock-local.json?v=' + Date.now());
       if (!capitulosRes.ok) throw new Error('capitulos-mock-local.json not found');
       const capitulos = await capitulosRes.json() as Capitulo[];
       this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
