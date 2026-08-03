@@ -1,4 +1,4 @@
-import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit, NgZone } from '@angular/core';
+import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit, NgZone, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
@@ -99,8 +99,24 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="hero-grid">
           <!-- LEFT COLUMN: Main title, subtitle, CTAs, Benefits & Social Proof -->
           <div class="hero-left-content">
-            <div class="hero-badge-tag">
-              <span class="sparkle-icon">✨</span> Tu tutor de IA para la PAES
+            <div class="hero-top-badges">
+              <div class="active-students-badge">
+                <span class="live-dot-pulse">
+                  <span class="live-dot-core"></span>
+                  <span class="live-dot-ring"></span>
+                </span>
+                <span class="students-count-text">
+                  <strong>{{ activeStudentsCount }}</strong> estudiantes activos ahora
+                </span>
+              </div>
+
+              <div class="hero-offer-badge" (click)="scrollTo('pricing')">
+                <span class="offer-discount-chip">41% OFF</span>
+                <span class="offer-divider">|</span>
+                <span class="offer-text">Descuento en planes Premium</span>
+                <span class="offer-dot">•</span>
+                <span class="offer-tag-highlight">POR TIEMPO LIMITADO</span>
+              </div>
             </div>
 
             <h1 class="hero-title">
@@ -673,14 +689,14 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- Tab 1: Ruta de aprendizaje -->
             <div *ngIf="activeTab === 0" class="tab-pane fade-in">
               <div class="tab-visual tab-dashboard-wrapper">
-                <!-- Premium Glassmorphic Video Player Placeholder -->
                 <video 
-                  src="assets/videos/rutaDeAprendizajeTest.mp4" 
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742570/decoraciones/como_funciona/1_ruta.mp4" 
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742570/decoraciones/como_funciona/1_ruta.gif"
                   autoplay 
                   loop 
                   muted 
                   playsinline 
-                  preload="metadata"
+                  preload="auto"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -690,58 +706,34 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- Tab 2: Ensayos PAES -->
             <div *ngIf="activeTab === 1" class="tab-pane fade-in">
               <div class="tab-visual tab-exam-wrapper">
-                <!-- Premium Glassmorphic Video Player Placeholder -->
-                <div class="mock-video-player">
-                  <div class="video-play-btn">
-                    <span class="play-arrow">▶</span>
-                  </div>
-                  <div class="video-controls-overlay">
-                    <div class="controls-left">
-                      <span class="control-icon">⏸</span>
-                      <span class="control-time">01:20 / 03:00</span>
-                    </div>
-                    <div class="controls-timeline">
-                      <div class="timeline-track">
-                        <div class="timeline-fill" style="width: 44%"></div>
-                        <div class="timeline-handle" style="left: 44%"></div>
-                      </div>
-                    </div>
-                    <div class="controls-right">
-                      <span class="control-icon">🔊</span>
-                      <span class="control-icon">⚙️</span>
-                      <span class="control-icon">⛶</span>
-                    </div>
-                  </div>
-                </div>
+                <video 
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742574/decoraciones/como_funciona/2_ensayos.mp4" 
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742574/decoraciones/como_funciona/2_ensayos.gif"
+                  autoplay 
+                  loop 
+                  muted 
+                  playsinline 
+                  preload="auto"
+                  class="real-video-player"
+                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
+                ></video>
               </div>
             </div>
             
             <!-- Tab 3: Consulta al tutor IA -->
             <div *ngIf="activeTab === 2" class="tab-pane fade-in">
               <div class="tab-visual tab-chat-wrapper">
-                <!-- Premium Glassmorphic Video Player Placeholder -->
-                <div class="mock-video-player">
-                  <div class="video-play-btn">
-                    <span class="play-arrow">▶</span>
-                  </div>
-                  <div class="video-controls-overlay">
-                    <div class="controls-left">
-                      <span class="control-icon">⏸</span>
-                      <span class="control-time">00:15 / 01:45</span>
-                    </div>
-                    <div class="controls-timeline">
-                      <div class="timeline-track">
-                        <div class="timeline-fill" style="width: 14%"></div>
-                        <div class="timeline-handle" style="left: 14%"></div>
-                      </div>
-                    </div>
-                    <div class="controls-right">
-                      <span class="control-icon">🔊</span>
-                      <span class="control-icon">⚙️</span>
-                      <span class="control-icon">⛶</span>
-                    </div>
-                  </div>
-                </div>
+                <video 
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742576/decoraciones/como_funciona/3_consulta.mp4" 
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742576/decoraciones/como_funciona/3_consulta.gif"
+                  autoplay 
+                  loop 
+                  muted 
+                  playsinline 
+                  preload="auto"
+                  class="real-video-player"
+                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
+                ></video>
               </div>
             </div>
           </div>
@@ -1915,22 +1907,130 @@ import { PaymentService } from '../../core/services/payment.service';
       z-index: 10;
     }
 
-    .hero-badge-tag {
+    /* ===== HERO TOP BADGES ===== */
+    .hero-top-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: nowrap;
+      margin-bottom: 1.35rem;
+      max-width: 100%;
+    }
+
+    .active-students-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      background: rgba(133, 92, 214, 0.08);
-      border: 1px solid rgba(133, 92, 214, 0.22);
-      color: #855cd6;
-      font-size: 0.82rem;
-      font-weight: 700;
+      gap: 0.5rem;
+      background: rgba(16, 185, 129, 0.09);
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      color: #065f46;
+      font-size: 0.81rem;
+      font-weight: 600;
       padding: 0.35rem 0.85rem;
       border-radius: 999px;
-      margin-bottom: 1.25rem;
       backdrop-filter: blur(10px);
+      box-shadow: 0 2px 12px rgba(16, 185, 129, 0.08);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-    .sparkle-icon {
-      font-size: 0.95rem;
+    .active-students-badge strong {
+      font-weight: 800;
+      color: #047857;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .live-dot-pulse {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 9px;
+      height: 9px;
+      flex-shrink: 0;
+    }
+    .live-dot-core {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
+    }
+    .live-dot-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: rgba(16, 185, 129, 0.65);
+      animation: live-pulse-ring 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes live-pulse-ring {
+      0% { transform: scale(0.9); opacity: 0.85; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    .hero-offer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(17, 24, 39, 0.94);
+      border: 1.5px solid rgba(245, 158, 11, 0.45);
+      color: #f9fafb;
+      font-size: 0.79rem;
+      font-weight: 500;
+      padding: 0.32rem 0.8rem;
+      border-radius: 999px;
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hero-offer-badge:hover {
+      transform: translateY(-1.5px);
+      border-color: rgba(245, 158, 11, 0.8);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.25);
+    }
+    .offer-discount-chip {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.12rem 0.5rem;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .offer-divider {
+      color: rgba(255, 255, 255, 0.25);
+      font-weight: 300;
+    }
+    .offer-text {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+    .offer-dot {
+      color: rgba(255, 255, 255, 0.35);
+      font-size: 0.7rem;
+    }
+    .offer-tag-highlight {
+      color: #10b981;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-size: 0.75rem;
+    }
+
+    @media (max-width: 1250px) {
+      .offer-dot, .offer-tag-highlight {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-top-badges {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
     }
 
     .hero-title {
@@ -5339,7 +5439,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .legal-modal-body p { color: var(--text-secondary, #4b5563); line-height: 1.6; font-size: 0.95rem; }
   `]
 })
-export class HomeComponent implements AfterViewInit, OnInit {
+export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   public firestoreService = inject(FirestoreService);
@@ -5445,6 +5545,9 @@ export class HomeComponent implements AfterViewInit, OnInit {
       behavior: 'smooth'
     });
   }
+
+  activeStudentsCount = 767;
+  private activeStudentsTimer: any = null;
 
   count1 = 0;
   count2 = 0;
@@ -5745,6 +5848,38 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.firestoreService.getUserProfile().subscribe();
     this.loadFirestoreNews();
     this.startHeroSimulation();
+    this.startActiveStudentsFluctuation();
+  }
+
+  ngOnDestroy() {
+    if (this.activeStudentsTimer) {
+      clearInterval(this.activeStudentsTimer);
+    }
+  }
+
+  startActiveStudentsFluctuation() {
+    this.updateActiveStudentsCount();
+    this.activeStudentsTimer = setInterval(() => {
+      const change = Math.floor((Math.random() - 0.47) * 9);
+      this.activeStudentsCount = Math.max(115, this.activeStudentsCount + change);
+    }, 5000);
+  }
+
+  updateActiveStudentsCount() {
+    const now = new Date();
+    const hour = now.getHours() + now.getMinutes() / 60;
+
+    // Modelación senoidal: mínimo en la madrugada (04:00 hrs ~140 - 280), pico en la tarde/noche (18:00 - 21:00 hrs ~750 - 980)
+    const rad = ((hour - 4) / 24) * 2 * Math.PI;
+    const timeFactor = (Math.sin(rad - Math.PI / 2) + 1) / 2;
+
+    const minStudents = 140;
+    const maxStudents = 950;
+    const baseCalculated = minStudents + Math.round((maxStudents - minStudents) * Math.pow(timeFactor, 1.15));
+
+    const minuteVariance = Math.round(Math.sin((now.getMinutes() + now.getSeconds() / 60) * 0.4) * 25);
+
+    this.activeStudentsCount = Math.max(120, baseCalculated + minuteVariance);
   }
 
   async loadFirestoreNews() {

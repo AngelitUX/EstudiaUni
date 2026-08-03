@@ -11,6 +11,7 @@ import { SubscriptionsService } from './subscriptions.service';
 import { WebpayService } from './webpay.service';
 import { CheckCreditsDto } from './dto/change-plan.dto';
 import { CreateWebpayTransactionDto, CommitWebpayTransactionDto, ValidateCouponDto } from './dto/webpay.dto';
+import { SubmitTransferDto } from './dto/manual-payment.dto';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import {
   CurrentUser,
@@ -82,5 +83,14 @@ export class SubscriptionsController {
     @Body() dto: CommitWebpayTransactionDto,
   ) {
     return this.webpayService.commitTransaction(user.uid, dto.token);
+  }
+
+  @Post('transfer/submit')
+  @HttpCode(HttpStatus.OK)
+  async submitTransfer(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: SubmitTransferDto,
+  ) {
+    return this.subscriptionsService.submitManualTransfer(user.uid, dto);
   }
 }

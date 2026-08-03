@@ -10,28 +10,31 @@ export class FirebaseService implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
-    const projectId = this.configService.get<string>('FIREBASE_PROJECT_ID');
+    if (admin.apps.length > 0) {
+      this.app = admin.apps[0]!;
+      this.logger.log(`Using existing Firebase app for project: ${this.app.options.projectId || 'estudiauni'}`);
+      return;
+    }
+
+    const projectId = this.configService.get<string>('FIREBASE_PROJECT_ID') || 'estudiauni';
     const privateKey = this.configService
       .get<string>('FIREBASE_PRIVATE_KEY', '')
       .replace(/\\n/g, '\n');
     const clientEmail = this.configService.get<string>('FIREBASE_CLIENT_EMAIL');
 
-    if (!projectId || !clientEmail) {
-      this.logger.warn(
-        'Firebase credentials not fully configured. Some features will not work.',
-      );
-      return;
+    if (clientEmail && privateKey) {
+      this.app = admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId,
+          privateKey,
+          clientEmail,
+        }),
+      });
+      this.logger.log(`Firebase initialized with cert credentials for project: ${projectId}`);
+    } else {
+      this.app = admin.initializeApp({ projectId });
+      this.logger.log(`Firebase initialized in default mode for project: ${projectId}`);
     }
-
-    this.app = admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        privateKey,
-        clientEmail,
-      }),
-    });
-
-    this.logger.log(`Firebase initialized for project: ${projectId}`);
   }
 
   get auth(): admin.auth.Auth {

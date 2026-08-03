@@ -442,7 +442,7 @@ import { PaymentService } from '../../core/services/payment.service';
       </aside>
 
       <!-- FLOATING BOT FAB BUTTON -->
-      <button class="ai-fab-btn" (click)="toggleAi()" [class.active]="isAiOpen()" title="Hablar con Foco AI">
+      <button class="ai-fab-btn" (click)="toggleAi()" *ngIf="!isAiOpen()" title="Hablar con Foco AI">
         <span class="fab-emoji">🐙</span>
         <span class="fab-text">Hablar con Foco</span>
       </button>

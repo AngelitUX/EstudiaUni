@@ -9,8 +9,8 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
-    "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
@@ -21,5 +21,7 @@
       "@common/*": ["src/common/*"],
       "@firebase/*": ["src/firebase/*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "scratch", "**/*.spec.ts"]
 }
