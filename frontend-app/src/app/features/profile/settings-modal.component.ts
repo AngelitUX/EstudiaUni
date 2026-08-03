@@ -113,7 +113,7 @@ import { NotificationService } from '../../core/services/notification.service';
     .section-header p{margin:0;color:var(--text-secondary);font-size:.9rem;font-weight:500}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
     label{display:block;margin-bottom:.7rem;font-size:.9rem;color:var(--text-primary);font-weight:700}
-    input,textarea,select{width:100%;margin-top:.25rem;border-radius:9px;border:2px solid var(--glass-border);background:#ffffff;color:var(--text-primary);padding:.58rem .65rem;font:inherit;box-sizing:border-box}
+    input,textarea,select{width:100%;margin-top:.25rem;border-radius:9px;border:2px solid var(--glass-border);background:#ffffff;color:var(--text-primary);padding:.58rem .65rem;font:inherit;font-size:16px !important;box-sizing:border-box}
     input:focus,select:focus{outline:none;border-color:var(--accent-primary);box-shadow:0 0 0 2px rgba(133,92,214,0.2)}
     .switch{display:flex;align-items:center;gap:.5rem;margin-top:.25rem}
     .switch input{width:auto;margin:0}

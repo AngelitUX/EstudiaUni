@@ -63,8 +63,15 @@ import { PaymentService } from '../../core/services/payment.service';
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
+        <div style="width:44px"></div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -433,6 +440,12 @@ import { PaymentService } from '../../core/services/payment.service';
           </button>
         </div>
       </aside>
+
+      <!-- FLOATING BOT FAB BUTTON -->
+      <button class="ai-fab-btn" (click)="toggleAi()" [class.active]="isAiOpen()" title="Hablar con Foco AI">
+        <span class="fab-emoji">🐙</span>
+        <span class="fab-text">Hablar con Foco</span>
+      </button>
     </div>
 
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
@@ -591,11 +604,12 @@ import { PaymentService } from '../../core/services/payment.service';
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MOBILE HEADER */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
     .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
     .mobile-overlay.open { display: block; }
-    .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; max-width: 85vw; height: 100vh; background: #0d0f17; padding: 0; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.5); z-index: 10000; display: flex; flex-direction: column; }
 
     /* MAIN CONTENT */
     .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); }
@@ -990,20 +1004,59 @@ import { PaymentService } from '../../core/services/payment.service';
       to { bottom: 2rem; opacity: 1; }
     }
 
-    @media (max-width: 1024px) {
-      .form-grid { grid-template-columns: 1fr 1fr; }
-      .ai-promo-text span { display: none; } /* Hide extra text on small screens */
-      .favorites-wrapper { position: relative; width: 100%; margin-bottom: 1.5rem; }
+    .ai-fab-btn {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+      cursor: pointer;
+      z-index: 9999;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ai-fab-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
     }
 
+    @media (max-width: 1024px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; padding: 0 !important; padding-top: 60px !important; max-width: 100vw !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header { height: auto !important; padding: 1.25rem 1rem 0.75rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header .welcome-actions { display: none !important; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .ai-promo-text span { display: none; }
+      .favorites-wrapper { position: relative; width: 100%; margin-bottom: 1.5rem; }
+      .ai-panel { width: 100vw !important; max-width: 100vw !important; right: -100vw !important; z-index: 10000 !important; }
+      .ai-panel.open { right: 0 !important; }
+    }
 
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .mobile-header { display: flex; }
-      .main-content { margin-left: 0; padding: 80px 1.5rem 2rem; max-width: 100%; }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; padding: 0 !important; padding-top: 60px !important; max-width: 100vw !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header { height: auto !important; padding: 1rem 0.85rem 0.5rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .dashboard-header .welcome-actions { display: none !important; }
       .form-grid { grid-template-columns: 1fr; }
       .page-header h1 { font-size: 2.2rem; }
       .careers-grid { grid-template-columns: 1fr; }
+      .ai-fab-btn { bottom: 1rem; right: 1rem; padding: 0.65rem 1rem; font-size: 0.85rem; }
+    }
+
+    @media (max-width: 480px) {
+      .main-content { padding-top: 60px !important; }
+      .page-header h1 { font-size: 1.8rem; }
+      .form-grid { grid-template-columns: 1fr; gap: 0.85rem; }
     }
   `]
 })
@@ -1055,7 +1108,6 @@ export class CareerFinderComponent implements OnInit {
   showLocDropdown = signal<boolean>(false);
   showUniDropdown = signal<boolean>(false);
 
-  // AI Assistant state
   isAiOpen = signal<boolean>(false);
   aiMessages = signal<ChatMessage[]>([]);
   aiLoading = false;
