@@ -228,6 +228,11 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
   {
+    path: 'admin/suscripciones',
+    loadComponent: () => import('./features/admin/admin-subscriptions.component').then(m => m.AdminSubscriptionsComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
     path: 'encuentra-tu-carrera',
     loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
     canActivate: [authGuard, emailVerifiedGuard]

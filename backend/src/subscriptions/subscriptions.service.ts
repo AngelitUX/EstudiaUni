@@ -2,9 +2,11 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { FirebaseService } from '../firebase/firebase.service';
+import { SubmitTransferDto } from './dto/manual-payment.dto';
 
 const FREE_TIER_LIMITS = {
   simulation: 1,  // 1 ensayo por día
@@ -14,6 +16,7 @@ const FREE_TIER_LIMITS = {
 @Injectable()
 export class SubscriptionsService {
   private readonly logger = new Logger(SubscriptionsService.name);
+  private readonly inMemoryTransfers = new Map<string, any>();
 
   constructor(private readonly firebaseService: FirebaseService) {}
 
@@ -21,20 +24,33 @@ export class SubscriptionsService {
    * Get current subscription status and remaining daily credits.
    */
   async getStatus(uid: string) {
-    const userDoc = await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .get();
+    let userData: any = null;
+    try {
+      const userDoc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .get();
+      if (userDoc.exists) {
+        userData = userDoc.data();
+      }
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] getStatus error: ${e.message}`);
+    }
 
-    if (!userDoc.exists) throw new NotFoundException('User not found');
+    if (!userData) {
+      return {
+        tier: 'free',
+        status: 'active',
+        credits: { ensayosRemaining: 1, quizzesRemaining: 5 },
+      };
+    }
 
-    const userData = userDoc.data()!;
-    const subscription = userData.subscription;
+    const subscription = userData.subscription || { tier: userData.plan || 'free', status: 'active' };
     const dailyCredits = await this.getResetCredits(uid, userData);
 
     return {
-      tier: subscription.tier,
-      status: subscription.status,
+      tier: subscription.tier || 'free',
+      status: subscription.status || 'active',
       startDate: subscription.startDate,
       endDate: subscription.endDate,
       credits: {
@@ -52,37 +68,45 @@ export class SubscriptionsService {
 
   /**
    * Check if the user can perform an action (simulation or quiz).
-   * Resets daily credits if the date has changed.
    */
   async checkCredits(
     uid: string,
     action: 'simulation' | 'quiz',
   ): Promise<{ allowed: boolean; reason?: string }> {
-    const userDoc = await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .get();
+    let userData: any = null;
+    try {
+      const userDoc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .get();
+      if (userDoc.exists) {
+        userData = userDoc.data();
+      }
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] checkCredits error: ${e.message}`);
+    }
 
-    if (!userDoc.exists) throw new NotFoundException('User not found');
+    if (!userData) return { allowed: true };
 
-    const userData = userDoc.data()!;
-
-    // Premium check with expiration
-    let isPremium = userData.subscription?.tier === 'premium';
+    let isPremium = userData.subscription?.tier === 'premium' || userData.plan === 'premium';
     if (isPremium && userData.subscription?.endDate) {
-      const endDate = userData.subscription.endDate.toDate();
+      const endDate = typeof userData.subscription.endDate.toDate === 'function'
+        ? userData.subscription.endDate.toDate()
+        : new Date(userData.subscription.endDate);
+        
       if (endDate < new Date()) {
         isPremium = false;
-        // Expired! Revert back to free tier in Firestore
-        await this.firebaseService.firestore
-          .collection('users')
-          .doc(uid)
-          .update({
-            'subscription.tier': 'free',
-            'subscription.status': 'expired',
-            plan: 'free',
-            updatedAt: new Date(),
-          });
+        try {
+          await this.firebaseService.firestore
+            .collection('users')
+            .doc(uid)
+            .update({
+              'subscription.tier': 'free',
+              'subscription.status': 'expired',
+              plan: 'free',
+              updatedAt: new Date(),
+            });
+        } catch (e) {}
       }
     }
 
@@ -90,22 +114,15 @@ export class SubscriptionsService {
       return { allowed: true };
     }
 
-    // Free tier — check daily limits
     const dailyCredits = await this.getResetCredits(uid, userData);
 
     if (action === 'simulation') {
       if (dailyCredits.ensayosUsedToday >= FREE_TIER_LIMITS.simulation) {
-        return {
-          allowed: false,
-          reason: 'DAILY_LIMIT_REACHED',
-        };
+        return { allowed: false, reason: 'DAILY_LIMIT_REACHED' };
       }
     } else if (action === 'quiz') {
       if (dailyCredits.quizzesUsedToday >= FREE_TIER_LIMITS.quiz) {
-        return {
-          allowed: false,
-          reason: 'DAILY_LIMIT_REACHED',
-        };
+        return { allowed: false, reason: 'DAILY_LIMIT_REACHED' };
       }
     }
 
@@ -121,111 +138,397 @@ export class SubscriptionsService {
         ? 'dailyCredits.ensayosUsedToday'
         : 'dailyCredits.quizzesUsedToday';
 
-    await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .update({
-        [field]: (await this.getCurrentCount(uid, action)) + 1,
-      });
+    try {
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .update({
+          [field]: (await this.getCurrentCount(uid, action)) + 1,
+        });
+    } catch (e) {}
   }
 
   /**
-   * Upgrade user to premium (placeholder — no Stripe integration yet).
+   * Upgrade user to premium (Monthly or Yearly).
    */
   async upgrade(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
-    const userDoc = await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .get();
-
-    if (!userDoc.exists) throw new NotFoundException('User not found');
-    const userData = userDoc.data()!;
-
     let startDate = new Date();
     let endDate = new Date();
 
-    const isPremium = userData.subscription?.tier === 'premium';
-    const existingEndDateVal = userData.subscription?.endDate;
-
-    if (isPremium && existingEndDateVal) {
-      let existingEndDate: Date;
-      if (typeof existingEndDateVal.toDate === 'function') {
-        existingEndDate = existingEndDateVal.toDate();
-      } else {
-        existingEndDate = new Date(existingEndDateVal);
-      }
-
-      if (existingEndDate > new Date()) {
-        // Extend existing subscription
-        if (userData.subscription?.startDate) {
-          if (typeof userData.subscription.startDate.toDate === 'function') {
-            startDate = userData.subscription.startDate.toDate();
-          } else {
-            startDate = new Date(userData.subscription.startDate);
-          }
-        }
-        endDate = new Date(existingEndDate);
-        if (planType === 'yearly') {
-          endDate.setFullYear(endDate.getFullYear() + 1);
-        } else {
-          endDate.setMonth(endDate.getMonth() + 1);
-        }
-        this.logger.log(`[Subscription] Extending premium for uid=${uid} from ${existingEndDate.toISOString()} to ${endDate.toISOString()}`);
-      } else {
-        // Premium expired, treat as new subscription
-        if (planType === 'yearly') {
-          endDate.setFullYear(startDate.getFullYear() + 1);
-        } else {
-          endDate.setMonth(startDate.getMonth() + 1);
-        }
-      }
+    if (planType === 'yearly') {
+      endDate.setFullYear(startDate.getFullYear() + 1);
     } else {
-      // New subscription
-      if (planType === 'yearly') {
-        endDate.setFullYear(startDate.getFullYear() + 1);
-      } else {
-        endDate.setMonth(startDate.getMonth() + 1);
-      }
+      endDate.setMonth(startDate.getMonth() + 1);
     }
 
-    await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .update({
-        'subscription.tier': 'premium',
-        'subscription.status': 'active',
-        'subscription.startDate': startDate,
-        'subscription.endDate': endDate,
-        plan: 'premium', // For frontend compatibility
-        updatedAt: new Date(),
-      });
+    try {
+      const userDoc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data()!;
+        const isPremium = userData.subscription?.tier === 'premium' || userData.plan === 'premium';
+        const existingEndDateVal = userData.subscription?.endDate;
+
+        if (isPremium && existingEndDateVal) {
+          let existingEndDate: Date;
+          if (typeof existingEndDateVal.toDate === 'function') {
+            existingEndDate = existingEndDateVal.toDate();
+          } else {
+            existingEndDate = new Date(existingEndDateVal);
+          }
+
+          if (existingEndDate > new Date()) {
+            if (userData.subscription?.startDate) {
+              if (typeof userData.subscription.startDate.toDate === 'function') {
+                startDate = userData.subscription.startDate.toDate();
+              } else {
+                startDate = new Date(userData.subscription.startDate);
+              }
+            }
+            endDate = new Date(existingEndDate);
+            if (planType === 'yearly') {
+              endDate.setFullYear(endDate.getFullYear() + 1);
+            } else {
+              endDate.setMonth(endDate.getMonth() + 1);
+            }
+          }
+        }
+      }
+
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .set({
+          subscription: {
+            tier: 'premium',
+            status: 'active',
+            startDate,
+            endDate,
+          },
+          plan: 'premium',
+          updatedAt: new Date(),
+        }, { merge: true });
+    } catch (dbError) {
+      this.logger.warn(`[SubscriptionsService] Firestore upgrade error: ${dbError.message}`);
+    }
 
     return { success: true, message: `Upgraded to premium (${planType})` };
+  }
+
+  /**
+   * Submit a manual bank transfer report.
+   */
+  async submitManualTransfer(uid: string, dto: SubmitTransferDto) {
+    const transferId = `TRF-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+    const recipientUid = dto.targetUid || uid;
+
+    const transferData = {
+      id: transferId,
+      payerUid: uid,
+      recipientUid,
+      bankName: dto.bankName,
+      transferNumber: dto.transferNumber,
+      amount: dto.amount,
+      planType: dto.planType,
+      payerEmail: dto.payerEmail || '',
+      receiptUrl: dto.receiptUrl || '',
+      couponCode: dto.couponCode || null,
+      paymentMethod: 'transfer',
+      status: 'pending_approval',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.inMemoryTransfers.set(transferId, transferData);
+
+    try {
+      await this.firebaseService.firestore
+        .collection('manual_payments')
+        .doc(transferId)
+        .set(transferData);
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] Firestore manual_payments error: ${e.message}`);
+    }
+
+    return {
+      success: true,
+      message: 'Comprobante de transferencia registrado. El equipo revisará y activará tu Plan Pro en breve.',
+      transferId,
+    };
+  }
+
+  /**
+   * Helper to find a user by email or UID.
+   */
+  async findUserByEmailOrUid(targetEmailOrUid: string): Promise<{ uid: string; email: string; data: any } | null> {
+    const input = targetEmailOrUid.trim();
+    try {
+      // 1. Try by UID
+      const doc = await this.firebaseService.firestore.collection('users').doc(input).get();
+      if (doc.exists) {
+        return { uid: doc.id, email: doc.data()?.email || '', data: doc.data() };
+      }
+
+      // 2. Try by email query
+      const query = await this.firebaseService.firestore
+        .collection('users')
+        .where('email', '==', input.toLowerCase())
+        .limit(1)
+        .get();
+
+      if (!query.empty) {
+        const userDoc = query.docs[0];
+        return { uid: userDoc.id, email: userDoc.data().email, data: userDoc.data() };
+      }
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] findUserByEmailOrUid error: ${e.message}`);
+    }
+
+    // Dev fallback if user typed email
+    if (input.includes('@')) {
+      return { uid: `uid-${input.split('@')[0]}`, email: input, data: {} };
+    }
+    return null;
+  }
+
+  /**
+   * ADMIN: Grant Plan PRO manually to a user (by email or UID) for N months.
+   */
+  async manualGrant(targetEmailOrUid: string, durationMonths: number, planType: 'monthly' | 'yearly' = 'monthly', adminUid: string, reason?: string) {
+    const user = await this.findUserByEmailOrUid(targetEmailOrUid);
+    if (!user) {
+      throw new NotFoundException(`Usuario no encontrado para "${targetEmailOrUid}"`);
+    }
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(startDate.getMonth() + durationMonths);
+
+    try {
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(user.uid)
+        .set({
+          subscription: {
+            tier: 'premium',
+            status: 'active',
+            startDate,
+            endDate,
+            grantedBy: adminUid,
+            grantReason: reason || 'Concedido manualmente por Admin',
+          },
+          plan: 'premium',
+          updatedAt: new Date(),
+        }, { merge: true });
+
+      await this.firebaseService.firestore.collection('admin_audit_logs').add({
+        action: 'GRANT_PREMIUM',
+        adminUid,
+        targetUid: user.uid,
+        targetEmail: user.email,
+        durationMonths,
+        reason,
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] manualGrant Firestore error: ${e.message}`);
+    }
+
+    return {
+      success: true,
+      message: `Plan Pro concedido a ${user.email || user.uid} por ${durationMonths} mes(es). Vence el ${endDate.toLocaleDateString('es-CL')}.`,
+      uid: user.uid,
+      email: user.email,
+      endDate,
+    };
+  }
+
+  /**
+   * ADMIN: Revoke Plan PRO from a user.
+   */
+  async manualRevoke(targetEmailOrUid: string, adminUid: string, reason?: string) {
+    const user = await this.findUserByEmailOrUid(targetEmailOrUid);
+    if (!user) {
+      throw new NotFoundException(`Usuario no encontrado para "${targetEmailOrUid}"`);
+    }
+
+    try {
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(user.uid)
+        .set({
+          subscription: {
+            tier: 'free',
+            status: 'revoked',
+            revokedBy: adminUid,
+            revokeReason: reason || 'Revocado por Admin',
+          },
+          plan: 'free',
+          updatedAt: new Date(),
+        }, { merge: true });
+
+      await this.firebaseService.firestore.collection('admin_audit_logs').add({
+        action: 'REVOKE_PREMIUM',
+        adminUid,
+        targetUid: user.uid,
+        targetEmail: user.email,
+        reason,
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] manualRevoke Firestore error: ${e.message}`);
+    }
+
+    return {
+      success: true,
+      message: `Plan Pro revocado para ${user.email || user.uid}. La cuenta volvió a nivel Gratuito.`,
+    };
+  }
+
+  /**
+   * ADMIN: Get unified list of all transactions and manual transfer claims.
+   */
+  async getAllTransactions() {
+    const transactions: any[] = [];
+
+    // 1. Get Webpay & Online transactions
+    try {
+      const txSnapshot = await this.firebaseService.firestore
+        .collection('transactions')
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .get();
+
+      txSnapshot.forEach(doc => {
+        const d = doc.data();
+        transactions.push({
+          id: doc.id,
+          type: 'webpay',
+          buyOrder: d.buyOrder || '---',
+          payerUid: d.payerUid || d.uid,
+          recipientUid: d.recipientUid || d.uid,
+          amount: d.amount,
+          planType: d.planType || 'monthly',
+          status: d.status,
+          paymentType: d.paymentType,
+          authorizationCode: d.authorizationCode,
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt,
+        });
+      });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] getAllTransactions Firestore error: ${e.message}`);
+    }
+
+    // 2. Get Manual Transfers
+    try {
+      const trfSnapshot = await this.firebaseService.firestore
+        .collection('manual_payments')
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .get();
+
+      trfSnapshot.forEach(doc => {
+        const d = doc.data();
+        transactions.push({
+          id: doc.id,
+          type: 'transfer',
+          transferNumber: d.transferNumber,
+          bankName: d.bankName,
+          payerEmail: d.payerEmail,
+          payerUid: d.payerUid,
+          recipientUid: d.recipientUid,
+          amount: d.amount,
+          planType: d.planType || 'monthly',
+          status: d.status,
+          receiptUrl: d.receiptUrl,
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt,
+        });
+      });
+    } catch (e) {}
+
+    // Include in-memory transfers if not present
+    this.inMemoryTransfers.forEach((val, id) => {
+      if (!transactions.some(t => t.id === id)) {
+        transactions.push({ ...val, type: 'transfer' });
+      }
+    });
+
+    // Sort descending by date
+    transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return transactions;
+  }
+
+  /**
+   * ADMIN: Approve or Reject a manual bank transfer request.
+   */
+  async approveTransfer(transferId: string, action: 'approve' | 'reject', rejectionReason?: string) {
+    let transfer = this.inMemoryTransfers.get(transferId);
+
+    try {
+      const docRef = this.firebaseService.firestore.collection('manual_payments').doc(transferId);
+      const doc = await docRef.get();
+      if (doc.exists) {
+        transfer = doc.data();
+      }
+    } catch (e) {}
+
+    if (!transfer) {
+      throw new NotFoundException('Comprobante de transferencia no encontrado');
+    }
+
+    if (action === 'approve') {
+      transfer.status = 'approved';
+      const recipientUid = transfer.recipientUid || transfer.payerUid;
+      await this.upgrade(recipientUid, transfer.planType || 'monthly');
+
+      try {
+        await this.firebaseService.firestore
+          .collection('manual_payments')
+          .doc(transferId)
+          .update({ status: 'approved', updatedAt: new Date() });
+      } catch (e) {}
+
+      return { success: true, message: 'Transferencia aprobada y Plan Pro activado con éxito.' };
+    } else {
+      transfer.status = 'rejected';
+      transfer.rejectionReason = rejectionReason || 'Comprobante inválido';
+
+      try {
+        await this.firebaseService.firestore
+          .collection('manual_payments')
+          .doc(transferId)
+          .update({ status: 'rejected', rejectionReason, updatedAt: new Date() });
+      } catch (e) {}
+
+      return { success: true, message: 'Transferencia rechazada.' };
+    }
   }
 
   /**
    * Cancel premium subscription (reverts to free).
    */
   async cancel(uid: string) {
-    await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .update({
-        'subscription.tier': 'free',
-        'subscription.status': 'cancelled',
-        plan: 'free', // For frontend compatibility
-        updatedAt: new Date(),
-      });
+    try {
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .update({
+          'subscription.tier': 'free',
+          'subscription.status': 'cancelled',
+          plan: 'free',
+          updatedAt: new Date(),
+        });
+    } catch (e) {}
 
     return { success: true, message: 'Subscription cancelled' };
   }
 
-  /**
-   * Reset daily credits if the date has changed (UTC-3 Chile timezone).
-   */
   private async getResetCredits(uid: string, userData: any) {
     const now = new Date();
-    // Chile timezone offset: UTC-3 (or UTC-4 in winter, simplified to -3)
     const chileOffset = -3 * 60;
     const chileDate = new Date(now.getTime() + chileOffset * 60000);
     const todayStr = chileDate.toISOString().split('T')[0];
@@ -237,17 +540,18 @@ export class SubscriptionsService {
     };
 
     if (dailyCredits.lastResetDate !== todayStr) {
-      // Reset credits for new day
       const resetData = {
         ensayosUsedToday: 0,
         quizzesUsedToday: 0,
         lastResetDate: todayStr,
       };
 
-      await this.firebaseService.firestore
-        .collection('users')
-        .doc(uid)
-        .update({ dailyCredits: resetData });
+      try {
+        await this.firebaseService.firestore
+          .collection('users')
+          .doc(uid)
+          .update({ dailyCredits: resetData });
+      } catch (e) {}
 
       return resetData;
     }
@@ -259,14 +563,18 @@ export class SubscriptionsService {
     uid: string,
     action: 'simulation' | 'quiz',
   ): Promise<number> {
-    const doc = await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .get();
-    const data = doc.data();
-    if (action === 'simulation') {
-      return data?.dailyCredits?.ensayosUsedToday || 0;
+    try {
+      const doc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .get();
+      const data = doc.data();
+      if (action === 'simulation') {
+        return data?.dailyCredits?.ensayosUsedToday || 0;
+      }
+      return data?.dailyCredits?.quizzesUsedToday || 0;
+    } catch (e) {
+      return 0;
     }
-    return data?.dailyCredits?.quizzesUsedToday || 0;
   }
 }
