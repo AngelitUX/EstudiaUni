@@ -18,6 +18,9 @@ export interface GuideSlide {
   content: string;
   interactive?: boolean;
   quizId?: string;
+  imageUrl?: string;
+  svgContent?: string;
+  resourcesContent?: string;
 }
 
 export interface QuizAlt {
@@ -49,6 +52,7 @@ export interface Seccion {
   introduccion: string;
   guia_titulo?: string;
   guia_contenido?: string;
+  svgContent?: string;
   datos_claves: string[];
   order: number;
   level?: number;

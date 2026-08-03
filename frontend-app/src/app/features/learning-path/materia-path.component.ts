@@ -880,17 +880,18 @@ type PathItem = {
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; }
 
     /* CHAPTER SPLASH BANNER */
-    .chapter-splash { width: 100%; max-width: 600px; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 1.5px solid rgba(133,92,214,0.25); box-shadow: 0 16px 40px rgba(133,92,214,0.12), inset 0 2px 4px rgba(255,255,255,0.8); background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 100%); transition: all 0.3s ease; }
+    .chapter-splash { width: 100%; max-width: 600px; position: relative; z-index: 15; border-radius: 28px; overflow: visible; border: 1.5px solid rgba(133,92,214,0.25); box-shadow: 0 16px 40px rgba(133,92,214,0.12), inset 0 2px 4px rgba(255,255,255,0.8); background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 100%); transition: all 0.3s ease; }
     .chapter-splash.chapter-completed { border: 2px solid #58cc02 !important; box-shadow: 0 16px 40px rgba(88,204,2,0.2), inset 0 2px 4px rgba(255,255,255,0.8) !important; background: linear-gradient(135deg, #f0ffeb 0%, #dcfce7 100%) !important; }
     .chapter-splash.chapter-completed .splash-badge { background: #58cc02 !important; }
     .chapter-splash.cap-localizar { background: linear-gradient(150deg, #f3eeff 0%, #e8dff8 40%, #f0ebff 100%); }
     .chapter-splash.cap-interpretar { background: linear-gradient(150deg, #e8f4fd 0%, #d6ecfa 40%, #eaf6ff 100%); }
     .chapter-splash.cap-evaluar { background: linear-gradient(150deg, #e8fde8 0%, #d6f5d6 40%, #eaffea 100%); }
-    .splash-bg-pattern { position: absolute; inset: 0; opacity: 0.04; background-image: radial-gradient(circle at 20% 50%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 80% 20%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 60% 80%, var(--accent-primary) 1px, transparent 1px); background-size: 40px 40px, 60px 60px, 50px 50px; pointer-events: none; }
+    .splash-bg-pattern { position: absolute; inset: 0; opacity: 0.04; border-radius: inherit; background-image: radial-gradient(circle at 20% 50%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 80% 20%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 60% 80%, var(--accent-primary) 1px, transparent 1px); background-size: 40px 40px, 60px 60px, 50px 50px; pointer-events: none; }
     .splash-inner { position: relative; padding: 2rem 2rem 1.5rem; }
     .splash-hero { display: flex; align-items: center; gap: 1.5rem; }
-    .splash-mascot-area { flex-shrink: 0; }
+    .splash-mascot-area { flex-shrink: 0; width: 180px; height: 180px; position: relative; display: flex; align-items: center; justify-content: center; }
     .splash-mascot { width: 180px; height: 180px; object-fit: contain; animation: mascotFloat 3.5s ease-in-out infinite; }
+    
     @keyframes mascotFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
     .splash-info { flex: 1; min-width: 0; }
     .splash-badge { display: inline-block; background: var(--accent-primary); color: #fff; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
@@ -1626,7 +1627,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
   hasTreeLayout(): boolean {
     const id = this.materiaId();
-    return id === 'historia' || id === 'fisica' || id === 'ciencias-fisica';
+    return id === 'historia' || id === 'fisica' || id === 'ciencias-fisica' || id === 'ciencias-biologia';
   }
 
   getSubcapituloTitle(node: any): string {
@@ -1637,7 +1638,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   }
 
   isPracticeNode(node: any): boolean {
-    return node.title.toLowerCase().includes('práctica') || node.title.toLowerCase().includes('practica');
+    return node.isPractice || node.title.toLowerCase().includes('práctica') || node.title.toLowerCase().includes('practica');
   }
 
   // Pattern for horizontal zigzag staggering

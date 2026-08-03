@@ -123,21 +123,7 @@ import { ToastService } from '../../core/services/toast.service';
         </div>
       </div>
 
-      <!-- CONTEXTO BASE (Bottom for Physics) -->
-      <div class="context-section physics-bottom-context" *ngIf="t.contexto_base && isPhysics()">
-        <button class="context-toggle physics-context-btn" (click)="togglePhysicsContext($event)">
-          <span>📖 Ejemplo de ejercicio resuelto</span>
-          <span class="toggle-arrow" [style.transform]="contextCollapsed ? 'rotate(0)' : 'rotate(180deg)'">▼</span>
-        </button>
-        <div class="context-wrapper" [class.collapsed]="contextCollapsed">
-          <div class="context-body" style="background: #fff; padding: 1.2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <p *ngFor="let p of getFormattedParagraphs(getActiveContexto(t))">
-              <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
-              <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       <!-- BOTTOM BAR -->
       <div class="bottom-bar">
@@ -251,7 +237,7 @@ import { ToastService } from '../../core/services/toast.service';
 
     /* SPLIT LAYOUT PARA FÍSICA */
     .question-card.split-layout { display: flex; flex-direction: row; gap: 2rem; align-items: stretch; max-width: 1200px; padding: 0; overflow: hidden; }
-    .question-card.split-layout .split-left { flex: 1; padding: 2rem; display: flex; flex-direction: column; }
+    .question-card.split-layout .split-left { flex: 1; padding: 2rem 2rem 2rem 3.5rem; display: flex; flex-direction: column; }
     .question-card.split-layout .split-right { flex: 1; background: #f0f4f8; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 1rem; border-left: 2px dashed rgba(0,0,0,0.08); }
     .physics-support-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .physics-support-svg { width: 100%; display: flex; align-items: center; justify-content: center; }

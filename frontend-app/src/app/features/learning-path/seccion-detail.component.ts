@@ -106,7 +106,7 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
             <p>{{ sec.title }}</p>
           </div>
           
-          <div class="context-body mt-2" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
+          <div class="context-body mt-2" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia' && materiaId() !== 'ciencias-biologia'">
             <div class="context-body-header">
               <span class="card-icon">📄</span> <b>Texto de Análisis</b>
             </div>
@@ -147,20 +147,8 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
         <div class="sec-image-wrap-large" *ngIf="sec.imageUrl">
           <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image-large">
         </div>
-      </div>
-
-      <!-- TEXTO BASE -->
-      <div class="content-card context-card" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
-        <div class="card-header">
-          <span class="card-icon">📄</span>
-          <h3>Texto de práctica</h3>
-          <span class="pregunta-count">{{ sec.test?.preguntas?.length || 0 }} {{ (sec.test?.preguntas?.length || 0) === 1 ? 'pregunta' : 'preguntas' }}</span>
-        </div>
-        <div class="context-body">
-          <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
-            <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
-            <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
-          </p>
+        <div class="sec-svg-wrap-large" *ngIf="sec.svgContent">
+          <div class="sec-svg-container" [innerHTML]="renderSvg(sec.svgContent)"></div>
         </div>
       </div>
 
@@ -264,7 +252,8 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
     
     .sec-image-wrap-large, .sec-svg-wrap-large { margin: 2rem 0; text-align: center; display: flex; justify-content: center; }
     .sec-image-large { max-width: 100%; width: 500px; border-radius: 16px; border: 4px solid rgba(133,92,214,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    .sec-svg-container { max-width: 100%; width: 500px; }
+    .sec-svg-container { max-width: 100%; width: 650px; }
+    ::ng-deep .sec-svg-container svg { width: 100%; height: 100%; display: block; overflow: visible; }
     
     /* CONTEXT */
     .context-body { background: rgba(133,92,214,0.03); border-left: 4px solid var(--accent-primary); border-radius: 0 12px 12px 0; padding: 1.25rem; }
@@ -378,7 +367,7 @@ export class SeccionDetailComponent {
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
   isScienceOrMath = computed(() => {
     const id = this.materiaId().toLowerCase();
-    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica');
+    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica') || id.includes('bio') || id.includes('qui');
   });
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
@@ -424,14 +413,17 @@ export class SeccionDetailComponent {
     this.router.navigate(['/ruta', this.materiaId()]);
   }
 
-  parseMixed(text: string | null | undefined): SafeHtml {
+    parseMixed(text: string | null | undefined): SafeHtml {
     if (!text) return '';
     const renderedSafe = this.katexSvc.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
     const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong style="color:var(--accent-primary)">$1</strong>');
     let withBreaks = bolded.replace(/&lt;br&gt;/gi, '<br>');
-    withBreaks = withBreaks.replace(/&lt;(b|i|u|strong|em)&gt;/gi, '<$1>');
-    withBreaks = withBreaks.replace(/&lt;\/(b|i|u|strong|em)&gt;/gi, '</$1>');
+    withBreaks = withBreaks.replace(/&lt;(b|i|u|strong|em|div|span|h[1-6]|p|table|tbody|thead|tr|th|td|ul|ol|li)(.*?)&gt;/gi, (match: string, tag: string, attrs: string) => {
+      const unescapedAttrs = attrs.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+      return `<${tag}${unescapedAttrs}>`;
+    });
+    withBreaks = withBreaks.replace(/&lt;\/(b|i|u|strong|em|div|span|h[1-6]|p|table|tbody|thead|tr|th|td|ul|ol|li)&gt;/gi, '</$1>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 

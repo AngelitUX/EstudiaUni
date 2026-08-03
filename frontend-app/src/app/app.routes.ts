@@ -13,6 +13,15 @@ import { authGuard } from './core/guards/auth.guard';
 import { emailVerifiedGuard } from './core/guards/email-verified.guard';
 import { adminGuard } from './core/guards/admin.guard';
 
+
+import { MateriaBiologiaPathComponent } from './features/learning-path/materia-biologia-path.component';
+import { CapituloBiologiaDetailComponent } from './features/learning-path/capitulo-biologia-detail.component';
+import { SeccionBiologiaDetailComponent } from './features/learning-path/seccion-biologia-detail.component';
+
+import { MateriaFisicaPathComponent } from './features/learning-path/materia-fisica-path.component';
+import { CapituloFisicaDetailComponent } from './features/learning-path/capitulo-fisica-detail.component';
+import { SeccionFisicaDetailComponent } from './features/learning-path/seccion-fisica-detail.component';
+
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
@@ -80,6 +89,75 @@ export const routes: Routes = [
     loadComponent: () => import('./features/learning-path/materia-historia-path.component').then(m => m.MateriaHistoriaPathComponent),
     canActivate: [authGuard, emailVerifiedGuard]
   },
+  
+  // BIOLOGIA AISLADA
+  {
+    path: 'ruta/biologia',
+    data: { materiaId: 'biologia' },
+    loadComponent: () => import('./features/learning-path/materia-biologia-path.component').then(m => m.MateriaBiologiaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-biologia',
+    data: { materiaId: 'ciencias-biologia' },
+    loadComponent: () => import('./features/learning-path/materia-biologia-path.component').then(m => m.MateriaBiologiaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/biologia/:capituloId',
+    loadComponent: () => import('./features/learning-path/capitulo-biologia-detail.component').then(m => m.CapituloBiologiaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-biologia/:capituloId',
+    loadComponent: () => import('./features/learning-path/capitulo-biologia-detail.component').then(m => m.CapituloBiologiaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/biologia/:capituloId/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-biologia-detail.component').then(m => m.SeccionBiologiaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-biologia/:capituloId/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-biologia-detail.component').then(m => m.SeccionBiologiaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+
+  // FISICA AISLADA
+  {
+    path: 'ruta/fisica',
+    data: { materiaId: 'fisica' },
+    loadComponent: () => import('./features/learning-path/materia-fisica-path.component').then(m => m.MateriaFisicaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-fisica',
+    data: { materiaId: 'ciencias-fisica' },
+    loadComponent: () => import('./features/learning-path/materia-fisica-path.component').then(m => m.MateriaFisicaPathComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/fisica/:capituloId',
+    loadComponent: () => import('./features/learning-path/capitulo-fisica-detail.component').then(m => m.CapituloFisicaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-fisica/:capituloId',
+    loadComponent: () => import('./features/learning-path/capitulo-fisica-detail.component').then(m => m.CapituloFisicaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/fisica/:capituloId/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-fisica-detail.component').then(m => m.SeccionFisicaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+  {
+    path: 'ruta/ciencias-fisica/:capituloId/:seccionId',
+    loadComponent: () => import('./features/learning-path/seccion-fisica-detail.component').then(m => m.SeccionFisicaDetailComponent),
+    canActivate: [authGuard, emailVerifiedGuard]
+  },
+
   {
     path: 'ruta/quimica',
     data: { materiaId: 'quimica' },

@@ -143,21 +143,7 @@ import { ToastService } from '../../core/services/toast.service';
         </div>
       </div>
 
-      <!-- CONTEXTO BASE (Bottom for Physics) -->
-      <div class="context-section physics-bottom-context" *ngIf="t.contexto_base && isPhysics()">
-        <button class="context-toggle physics-context-btn" (click)="togglePhysicsContext($event)">
-          <span>📖 Ejemplo de ejercicio resuelto</span>
-          <span class="toggle-arrow" [style.transform]="contextCollapsed ? 'rotate(0)' : 'rotate(180deg)'">▼</span>
-        </button>
-        <div class="context-wrapper" [class.collapsed]="contextCollapsed">
-          <div class="context-body" style="background: #fff; padding: 1.2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <p *ngFor="let p of getFormattedParagraphs(getActiveContexto(t))">
-              <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
-              <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       <!-- BOTTOM BAR -->
       <div class="bottom-bar">
