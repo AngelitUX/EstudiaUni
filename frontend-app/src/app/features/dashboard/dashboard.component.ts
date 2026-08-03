@@ -94,11 +94,32 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">☰</button>
-        <span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span>
+        <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Abrir menu">
+          <span style="display:flex;flex-direction:column;gap:4px;width:18px">
+            <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <span class="text-gradient mobile-logo-text" [class.pro-logo]="isProPlan()">EstudiaUni</span>
+        <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0">
+          <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" style="font-size:0.72rem;padding:0.3rem 0.65rem" (click)="paymentService.openPricingModal()">PRO ⚡</button>
+          <button class="profile-trigger" (click)="openProfileModal('')" style="background:none;border:none;cursor:pointer;padding:0">
+            <span class="profile-avatar-wrap">
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobile" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+              <ng-template #avatarMobile><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.85rem">{{ profileInitial() }}</span></ng-template>
+            </span>
+          </button>
+        </div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileMenuOpen" (click)="mobileMenuOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div class="mobile-menu-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.12);">
+            <a routerLink="/dashboard" (click)="mobileMenuOpen = false" style="text-decoration:none;">
+              <span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-size: 1.4rem; font-weight: 900; font-family: var(--font-heading);">EstudiaUni</span>
+            </a>
+            <button class="mobile-close-btn" (click)="mobileMenuOpen = false" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+          </div>
           <nav class="sidebar-nav">
             <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false">
               <span class="nav-icon">🏠</span>
@@ -797,11 +818,13 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .btn-danger { background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239,68,68,0.25) !important; }
 
     /* MOBILE */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #0F1018; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
-    .mobile-overlay.open { display: block; }
-    .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0F1018; padding: 2rem 1rem; }
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #0F1018; border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 0.85rem; align-items: center; justify-content: space-between; z-index: 101; gap: 0.5rem; box-sizing: border-box; }
+    .mobile-logo-text { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 900; flex: 1; text-align: center; margin: 0 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; box-sizing: border-box; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.2); }
+    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; }
+    .mobile-overlay.open { display: block !important; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; max-width: 82vw; height: 100vh; background: #0F1018; padding: 1.25rem 1rem; overflow-y: auto; box-shadow: 6px 0 30px rgba(0,0,0,0.7); border-right: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; box-sizing: border-box; z-index: 10000; }
 
     /* MAIN */
     .main-content { flex: 1; margin-left: 260px; max-width: calc(100% - 260px); padding: 0; display: flex; flex-direction: column; background: #0F1018; }
@@ -1795,6 +1818,46 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
     /* RESPONSIVE */
     @media (max-width: 1024px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding-top: 60px !important; box-sizing: border-box !important; }
+      .dashboard-header {
+        height: auto !important;
+        padding: 0.5rem 1rem 0.25rem !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .dashboard-header .btn-primary { display: none !important; }
+      .dashboard-header .welcome-actions app-streak-icon { display: none !important; }
+      .dashboard-header .welcome-actions .plan-badge { display: none !important; }
+      .dashboard-header .welcome-actions .btn-upgrade-pro { display: none !important; }
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      .header-greeting {
+        font-size: clamp(1.4rem, 5.2vw, 2.1rem) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+        gap: 0.35rem !important;
+      }
+      .welcome-actions {
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 0.5rem !important;
+      }
+      .welcome-actions .btn-primary {
+        margin-right: 0 !important;
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.7rem !important;
+      }
       .welcome-widgets-row {
         flex-direction: column;
         align-items: stretch;
@@ -1809,28 +1872,106 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       .ai-hero-actions { flex-direction: row; justify-content: center; }
     }
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .mobile-header { display: flex; }
-      .main-content { margin-left: 0; padding-top: 80px; }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding-top: 60px !important; box-sizing: border-box !important; }
       .dashboard-header {
-        height: auto;
-        padding: 1.5rem;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.25rem;
+        height: auto !important;
+        padding: 0.5rem 1rem 0.25rem !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
+      .dashboard-header .btn-primary { display: none !important; }
+      .dashboard-header .welcome-actions .plan-badge { display: none !important; }
+      .dashboard-header .welcome-actions .btn-upgrade-pro { display: none !important; }
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      .dashboard-header .welcome-actions { display: flex !important; align-items: center !important; gap: 0.5rem !important; }
       .header-greeting {
-        font-size: 1.8rem;
+        font-size: clamp(1.4rem, 5.2vw, 2.1rem) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+        gap: 0.35rem !important;
       }
       .dashboard-body {
-        padding: 1.5rem;
+        padding: 1rem 0.85rem 2rem;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        width: 100%;
+        box-sizing: border-box;
       }
-      .welcome-actions { width: 100%; justify-content: space-between; }
-      .ai-hero { padding: 1rem; }
-      .ai-hero-text h3 { font-size: 1rem; }
-      .paes-goal-bar { padding: 1rem; }
-      .goal-current { font-size: 1.4rem; }
+      .welcome-actions {
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 0.5rem !important;
+      }
+      .countdown-row {
+        width: 100%;
+        justify-content: space-between;
+        height: auto;
+        min-height: 54px;
+        padding: 0.5rem 0.85rem;
+        box-sizing: border-box;
+      }
+      .ai-hero { padding: 1rem 0.85rem; width: 100%; box-sizing: border-box; }
+      .ai-hero-text h3 { font-size: 0.98rem; }
+      .paes-goal-bar { padding: 1rem 0.85rem; width: 100%; box-sizing: border-box; }
+      .goal-current { font-size: 1.35rem; }
       .week-day-dot { width: 24px; height: 24px; font-size: 0.6rem; }
+    }
+    @media (max-width: 480px) {
+      .dashboard-header {
+        padding: 1rem 0.85rem;
+      }
+      .header-greeting {
+        font-size: 1.45rem;
+      }
+      .welcome-actions {
+        gap: 0.5rem;
+      }
+      .btn-upgrade-pro {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+      }
+      .plan-badge {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.75rem;
+      }
+      .profile-trigger {
+        width: 44px;
+        height: 44px;
+      }
+      .profile-avatar-wrap, .profile-avatar {
+        width: 36px;
+        height: 36px;
+      }
+      .profile-emoji-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 0.75rem;
+      }
+      .welcome-widgets-row .kpis-row-sidebar-top {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+      }
+      .goal-footer-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .modal-container {
+        width: 95vw !important;
+        max-height: 90vh !important;
+        border-radius: 16px !important;
+      }
     }
   `]
 })

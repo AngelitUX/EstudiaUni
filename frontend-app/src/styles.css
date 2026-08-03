@@ -459,49 +459,43 @@ body.font-xlarge h4 { font-size: 1.45rem !important; }
 
 /* 2. Width Breakpoint Upgrade: Switch to mobile layout at 1024px instead of 768px */
 @media (max-width: 1024px) {
-  .sidebar {
+  aside.sidebar, .sidebar {
     display: none !important;
   }
   .mobile-header {
-    display: none !important;
+    display: flex !important;
   }
   .mobile-menu-btn {
-    display: none !important;
-  }
-  .mobile-overlay {
-    display: none !important;
+    display: flex !important;
   }
   .mobile-overlay.open {
-    display: none !important;
+    display: block !important;
   }
   .main-content {
     margin-left: 0 !important;
-    padding: 1.5rem 1rem 2rem !important;
     max-width: 100% !important;
+    width: 100% !important;
   }
 }
 
 /* 2b. Portrait screens: force mobile layout to avoid sidebar overlap */
 @media (orientation: portrait) and (min-width: 768px) {
-  .sidebar {
+  aside.sidebar, .sidebar {
     display: none !important;
   }
   .mobile-header {
-    display: none !important;
+    display: flex !important;
   }
   .mobile-menu-btn {
-    display: none !important;
-  }
-  .mobile-overlay {
-    display: none !important;
+    display: flex !important;
   }
   .mobile-overlay.open {
-    display: none !important;
+    display: block !important;
   }
   .main-content {
     margin-left: 0 !important;
-    padding: 1.5rem 1rem 2rem !important;
     max-width: 100% !important;
+    width: 100% !important;
   }
 }
 

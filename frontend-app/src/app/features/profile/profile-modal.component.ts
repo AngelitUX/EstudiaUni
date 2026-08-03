@@ -534,10 +534,48 @@ import { CareerService, Career } from '../../core/services/career.service';
     .emoji-option{border:2px solid var(--glass-border);background:var(--bg-color);color:var(--text-primary);border-radius:8px;padding:.35rem .48rem;cursor:pointer;line-height:1;font-size:1.2rem;transition:all .2s;display:grid;place-items:center}
     .emoji-option.active{border-color:var(--accent-primary);background:rgba(133,92,214,0.1)}
 
+    .action-bar {
+      padding: 0.75rem 1.25rem 1.25rem;
+      background: transparent;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+    .action-bar button.primary {
+      background: var(--accent-primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.75rem 1.75rem;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(133, 92, 214, 0.35);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .action-bar button.primary:hover:not([disabled]) {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(133, 92, 214, 0.45);
+    }
+    .action-bar button.primary[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
     @media(max-width:720px){
-      .profile-shell{grid-template-columns:1fr}
-      .emoji-grid{grid-template-columns:repeat(5,minmax(40px,1fr))}
-      .grid{grid-template-columns:1fr}
+      .modal-container { width: 95vw !important; max-height: 90vh !important; border-radius: 16px !important; }
+      .profile-shell { grid-template-columns: 1fr !important; }
+      .profile-sidebar { position: static !important; }
+      .emoji-grid { grid-template-columns: repeat(5, minmax(40px, 1fr)); }
+      .grid { grid-template-columns: 1fr; }
+      input, select, textarea { font-size: 16px !important; }
+      .action-bar { padding: 0.75rem 0.85rem 1rem !important; background: transparent !important; border: none !important; box-shadow: none !important; }
+      .action-bar button.primary { width: 100% !important; padding: 0.85rem 1rem !important; }
     }
 
     /* PAES GOAL SECTION */
