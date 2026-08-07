@@ -280,6 +280,9 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     .pricing-modal-overlay {
       position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center;
       justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(16px);
