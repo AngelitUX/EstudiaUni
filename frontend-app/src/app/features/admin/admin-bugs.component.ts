@@ -1,0 +1,227 @@
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { AdminService } from './services/admin.service';
+
+@Component({
+  selector: 'app-admin-bugs',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  providers: [DatePipe],
+  template: `
+    <div class="admin-layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="adminSvc.isAdmin() ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
+          <div class="admin-panel-tag">ADMIN PANEL</div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a routerLink="/admin" class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Pool de Preguntas</span>
+          </a>
+          <a routerLink="/admin/pregunta/nueva" class="nav-item">
+            <span class="nav-icon">➕</span>
+            <span class="nav-text">Nueva Pregunta</span>
+          </a>
+          <a routerLink="/admin/suscripciones" class="nav-item">
+            <span class="nav-icon">💳</span>
+            <span class="nav-text">Suscripciones y Pagos</span>
+          </a>
+          <a routerLink="/admin/recursos" class="nav-item">
+            <span class="nav-icon">📂</span>
+            <span class="nav-text">Recursos</span>
+          </a>
+          <a routerLink="/admin/bugs" class="nav-item active">
+            <span class="nav-icon">🐛</span>
+            <span class="nav-text">Reportes de Bug</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer" style="padding: 1.25rem 0.75rem;">
+          <a class="nav-item logout-btn-sidebar" routerLink="/dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content animate-fade-in-down">
+        <header class="content-header">
+          <div class="header-left">
+            <h1>Reportes de Bugs y Sugerencias</h1>
+            <p class="subtitle">Gestiona los problemas y comentarios reportados por los usuarios</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-refresh" (click)="loadReports()" [disabled]="loading()">
+              {{ loading() ? '⏳' : '🔄' }} Actualizar
+            </button>
+          </div>
+        </header>
+
+        <!-- LOADING -->
+        <div class="loading-state" *ngIf="loading()">
+          <div class="spinner"></div>
+          <p>Cargando reportes...</p>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state glass-card" *ngIf="!loading() && reports().length === 0">
+          <div class="empty-icon">🎉</div>
+          <h3>Todo en orden</h3>
+          <p>No hay reportes ni sugerencias pendientes.</p>
+        </div>
+
+        <!-- REPORTS LIST -->
+        <div class="report-list" *ngIf="!loading() && reports().length > 0">
+          <div class="report-card glass-card-simple" *ngFor="let rep of reports()">
+            <div class="card-header">
+              <div class="card-badges">
+                <span class="badge-type" [class.badge-bug]="rep.type === 'Bug'" [class.badge-sug]="rep.type === 'Sugerencia'" [class.badge-otro]="rep.type === 'Otro'">
+                  {{ getIcon(rep.type) }} {{ rep.type }}
+                </span>
+                <span class="badge-status" [class.status-resolved]="rep.status === 'Resuelto'" [class.status-pending]="rep.status === 'Pendiente'">
+                  {{ rep.status }}
+                </span>
+              </div>
+              <div class="card-actions">
+                <button *ngIf="rep.status === 'Pendiente'" class="btn-icon" title="Marcar como Resuelto" (click)="resolveReport(rep.id)">✅</button>
+                <button class="btn-icon btn-danger" title="Eliminar" (click)="deleteReport(rep.id)">🗑️</button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <h3 class="report-title">{{ rep.title }}</h3>
+              <p class="report-desc">{{ rep.description }}</p>
+            </div>
+
+            <div class="card-footer">
+              <span class="card-date">📅 {{ formatDate(rep.timestamp) }}</span>
+              <span class="card-uid">👤 UID: {{ rep.uid }}</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  `,
+  styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    
+    :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); }
+    
+    .admin-layout { display: flex; min-height: 100vh; }
+    
+    /* SIDEBAR */
+    .sidebar { width: 260px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-right: 1px solid rgba(133,92,214,0.15); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; flex-direction: column; }
+    .admin-panel-tag { font-size: 0.65rem; background: rgba(139, 92, 246, 0.25); color: #c084fc; padding: 0.2rem 0.6rem; border-radius: 99px; margin-top: 0.5rem; font-weight: 800; letter-spacing: 0.08em; display: inline-block; }
+    
+    .sidebar-nav { padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; overflow-y: auto; }
+    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: var(--text-primary); text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 1.05rem; font-weight: 500; }
+    .nav-item:hover { background: rgba(133,92,214,0.08); transform: translateX(4px); }
+    .nav-item.active { background: rgba(133,92,214,0.15); color: var(--accent-primary); border-left: 3.5px solid var(--accent-primary); box-shadow: 0 4px 12px rgba(133,92,214,0.12); font-weight: 700; }
+    .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    
+    .logout-btn-sidebar { color: #ef4444; opacity: 0.8; }
+    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.08); color: #ef4444; opacity: 1; }
+
+    /* MAIN CONTENT */
+    .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; background: #fafafa; }
+    .content-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; gap: 1.5rem; }
+    .content-header h1 { font-family: var(--font-heading); font-size: 2.8rem; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.03em; }
+    .subtitle { font-size: 1.15rem; color: var(--text-secondary); margin: 0.5rem 0 0; font-weight: 500; }
+    
+    .btn-refresh { padding: 0.75rem 1.25rem; border-radius: 12px; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-secondary); font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+    .btn-refresh:hover { border-color: rgba(133,92,214,0.4); color: var(--accent-primary); box-shadow: var(--shadow-sm); }
+    
+    /* LOADING & SPIN */
+    .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6rem 2rem; color: var(--text-secondary); }
+    .spinner { width: 44px; height: 44px; border: 4px solid rgba(133,92,214,0.15); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 5rem 2rem; }
+    .empty-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.8; }
+    .empty-state h3 { font-size: 1.5rem; margin: 0 0 0.5rem; color: var(--text-primary); font-weight: 800; }
+    .empty-state p { font-size: 1rem; color: var(--text-secondary); margin: 0; font-weight: 500; }
+
+    /* REPORT CARDS */
+    .report-list { display: flex; flex-direction: column; gap: 1.25rem; }
+    .glass-card-simple { background: #ffffff; border: 2px solid var(--glass-border); border-radius: 20px; padding: 1.75rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-sm); }
+    .glass-card-simple:hover { border-color: rgba(133,92,214,0.35); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+    .card-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--glass-border); margin-bottom: 1.25rem; gap: 1rem; }
+    .card-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    
+    .badge-type, .badge-status { font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.8rem; border-radius: 8px; }
+    .badge-bug { background: rgba(239,68,68,0.12); color: #dc2626; }
+    .badge-sug { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-otro { background: rgba(107,114,128,0.12); color: #4b5563; }
+    
+    .status-pending { background: rgba(245,158,11,0.12); color: #d97706; border: 1px solid rgba(245,158,11,0.2); }
+    .status-resolved { background: rgba(16,185,129,0.12); color: #059669; border: 1px solid rgba(16,185,129,0.2); }
+
+    .card-actions { display: flex; gap: 0.5rem; }
+    .btn-icon { width: 36px; height: 36px; border-radius: 10px; border: 2px solid var(--glass-border); background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; }
+    .btn-icon:hover { background: var(--bg-secondary); border-color: rgba(0,0,0,0.15); transform: scale(1.05); }
+    .btn-icon.btn-danger:hover { background: #fee2e2; border-color: #fca5a5; color: #ef4444; }
+
+    .card-body { margin-bottom: 1.25rem; }
+    .report-title { font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem; }
+    .report-desc { font-size: 0.95rem; color: var(--text-secondary); margin: 0; line-height: 1.6; white-space: pre-wrap; }
+
+    .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px dashed var(--glass-border); font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+  `]
+})
+export class AdminBugsComponent implements OnInit {
+  adminSvc = inject(AdminService);
+  datePipe = inject(DatePipe);
+
+  reports = signal<any[]>([]);
+  loading = signal(false);
+
+  ngOnInit() {
+    this.loadReports();
+  }
+
+  async loadReports() {
+    this.loading.set(true);
+    const data = await this.adminSvc.getBugReports();
+    this.reports.set(data);
+    this.loading.set(false);
+  }
+
+  async resolveReport(id: string) {
+    if (confirm('¿Marcar como resuelto?')) {
+      await this.adminSvc.updateBugReportStatus(id, 'Resuelto');
+      this.loadReports();
+    }
+  }
+
+  async deleteReport(id: string) {
+    if (confirm('¿Estás seguro de eliminar este reporte?')) {
+      await this.adminSvc.deleteBugReport(id);
+      this.loadReports();
+    }
+  }
+
+  getIcon(type: string): string {
+    if (type === 'Bug') return '🐛';
+    if (type === 'Sugerencia') return '💡';
+    return '📝';
+  }
+
+  formatDate(timestamp: any): string {
+    if (!timestamp) return '';
+    let d: Date;
+    if (typeof timestamp.toDate === 'function') d = timestamp.toDate();
+    else d = new Date(timestamp);
+    return this.datePipe.transform(d, 'dd MMM yyyy, HH:mm') || '';
+  }
+}

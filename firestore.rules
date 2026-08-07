@@ -116,5 +116,12 @@ service cloud.firestore {
       // Solo admins pueden crear/editar noticias
       allow write: if isAdmin();
     }
+
+    // ============ BUG REPORTS ============
+    match /bug_reports/{reportId} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
   }
 }
+

@@ -146,7 +146,8 @@ interface AiMessage {
                 <button class="focus-btn" 
                         (click)="toggleFocus('reading')" 
                         [title]="focusedPanel === 'reading' ? 'Ver ambos' : 'Expandir texto'">
-                  {{ focusedPanel === 'reading' ? '🔲' : '🔳' }}
+                  <span style="font-size: 1.1rem; line-height: 1;">{{ focusedPanel === 'reading' ? '◨' : '⛶' }}</span>
+                  {{ focusedPanel === 'reading' ? 'Dividir' : 'Ampliar Texto' }}
                 </button>
               </div>
             </div>
@@ -175,7 +176,8 @@ interface AiMessage {
                   <button class="focus-btn" 
                           (click)="toggleFocus('question')" 
                           [title]="focusedPanel === 'question' ? 'Ver ambos' : 'Expandir pregunta'">
-                    {{ focusedPanel === 'question' ? '🔲' : '🔳' }}
+                    <span style="font-size: 1.1rem; line-height: 1;">{{ focusedPanel === 'question' ? '◧' : '⛶' }}</span>
+                    {{ focusedPanel === 'question' ? 'Dividir' : 'Ampliar Pregunta' }}
                   </button>
                   <!-- AI quick toggle only when collapsed in language module -->
                   <button 
@@ -183,14 +185,14 @@ interface AiMessage {
                     class="btn-ai-float"
                     (click)="toggleAi()"
                     title="Abrir Tutor Foco">
-                    🐙 Foco
+                    Consultar a Foco
                   </button>
                   <button
                     *ngIf="isAssisted && !isAiCollapsed"
                     class="btn-ai-float active"
                     (click)="toggleAi()"
                     title="Cerrar Tutor Foco">
-                    🐙 Cerrar
+                    ✕ Cerrar Foco
                   </button>
                 </div>
               </div>
@@ -620,16 +622,20 @@ interface AiMessage {
       border-radius: 16px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
+      padding: 1.5rem;
     }
 
     .reading-text-header {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 1.5rem;
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
+      min-height: 68px;
+      border-radius: 12px 12px 0 0;
+      margin-bottom: 1.5rem;
     }
 
     .reading-text-header h4 {
@@ -672,20 +678,20 @@ interface AiMessage {
     }
 
     .focus-btn {
-      background: #e2e8f0;
-      border: 1px solid #cbd5e1;
-      width: 30px;
-      height: 30px;
-      border-radius: 6px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      font-size: 1rem;
+      gap: 0.4rem;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #475569;
       cursor: pointer;
       transition: all 0.2s;
-      flex-shrink: 0;
     }
-    .focus-btn:hover { background: #bfdbfe; border-color: #93c5fd; }
+    .focus-btn:hover { background: #e2e8f0; color: #0f172a; }
 
 
 
@@ -782,10 +788,8 @@ interface AiMessage {
       border-radius: 16px;
       background: #ffffff;
       border: 2px solid var(--glass-border);
-      height: calc(100vh - 130px);
-      max-height: 750px;
-      position: sticky;
-      top: 80px;
+      height: fit-content;
+      max-height: 600px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1032,7 +1036,12 @@ interface AiMessage {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      border-radius: 12px 12px 0 0;
+      min-height: 68px;
     }
     .question-number {
       font-size: 0.9rem;
@@ -1044,20 +1053,30 @@ interface AiMessage {
     .btn-ai-float {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.7rem;
+      gap: 0.4rem;
+      padding: 0.45rem 1rem;
       border-radius: 20px;
-      border: 1px solid #bfdbfe;
-      background: #eff6ff;
-      color: #3b82f6;
-      font-size: 0.78rem;
-      font-weight: 600;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
       white-space: nowrap;
     }
-    .btn-ai-float:hover { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-    .btn-ai-float.active { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+    .btn-ai-float:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+      filter: brightness(1.1);
+    }
+    .btn-ai-float.active {
+      background: #f1f5f9;
+      color: #64748b;
+      box-shadow: none;
+      border: 1px solid #cbd5e1;
+    }
     .flag-btn {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;

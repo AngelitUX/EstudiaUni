@@ -20,8 +20,10 @@ import { PaymentService } from '../../core/services/payment.service';
     <div class="lp-layout">
       <!-- SIDEBAR -->
       <aside class="sidebar">
-        <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <div class="sidebar-header" style="cursor: pointer" routerLink="/dashboard">
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -61,8 +63,10 @@ import { PaymentService } from '../../core/services/payment.service';
 
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <button class="mobile-menu-btn" (click)="mobileOpen = true">☰</button>
+        <a routerLink="/dashboard" style="text-decoration:none; display: flex; align-items: center;">
+          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="mobile-logo-img" />
+        </a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -102,7 +106,7 @@ import { PaymentService } from '../../core/services/payment.service';
         <header class="dashboard-header">
           <div class="header-welcome-text">
             <h1 class="header-greeting"><span class="text-gradient">Ruta de Aprendizaje</span></h1>
-            <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Elige una materia para empezar tu camino PAES 🚀</p>
+            <p class="subtitle" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-weight: 500;">Elige una materia para empezar tu camino PAES</p>
           </div>
           <div class="welcome-actions">
             <app-streak-icon></app-streak-icon>
@@ -155,7 +159,7 @@ import { PaymentService } from '../../core/services/payment.service';
               <div class="filters-row">
                 <div class="filter-group">
                   <label for="sortOrder">Ordenar por:</label>
-                  <select id="sortOrder" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
+                  <select id="sortOrder" [ngModel]="sortOrder()" (ngModelChange)="onSortChange($event)">
                     <option value="default">Por Defecto</option>
                     <option value="progress-desc">Más Avanzado a Menos Avanzado</option>
                     <option value="progress-asc">Menos Avanzado a Más Avanzado</option>
@@ -285,13 +289,16 @@ import { PaymentService } from '../../core/services/payment.service';
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
     .lp-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
     .sidebar-logo { 
       font-family: var(--font-heading); 
       font-size: 2.2rem; 
@@ -730,7 +737,12 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     // Default to all subjects if never configured
     return ['comp-lectora', 'mat1', 'mat2', 'historia', 'ciencias-tp', 'ciencias-biologia', 'ciencias-fisica', 'ciencias-quimica', 'ciencias', 'quimica'];
   });
-  sortOrder = signal<string>('default');
+  sortOrder = signal<string>(localStorage.getItem('lp_sort_order') || 'default');
+
+  onSortChange(val: string) {
+    this.sortOrder.set(val);
+    localStorage.setItem('lp_sort_order', val);
+  }
 
   filteredAndSortedMaterias = computed(() => {
     let list = [...this.paes.materias()];
@@ -747,11 +759,23 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     
     // Sort
     const s = this.sortOrder();
-    if (s === 'progress-desc') {
-      list.sort((a, b) => this.getMateriaProgress(b.id).percentage - this.getMateriaProgress(a.id).percentage);
-    } else if (s === 'progress-asc') {
-      list.sort((a, b) => this.getMateriaProgress(a.id).percentage - this.getMateriaProgress(b.id).percentage);
-    }
+    list.sort((a, b) => {
+      const pA = this.getMateriaProgress(a.id).percentage;
+      const pB = this.getMateriaProgress(b.id).percentage;
+      
+      const aCompleted = pA === 100;
+      const bCompleted = pB === 100;
+      
+      if (aCompleted && !bCompleted) return 1;
+      if (!aCompleted && bCompleted) return -1;
+      
+      if (s === 'progress-desc') {
+        return pB - pA;
+      } else if (s === 'progress-asc') {
+        return pA - pB;
+      }
+      return (a.order || 0) - (b.order || 0);
+    });
     
     return list;
   });
@@ -825,19 +849,20 @@ export class LearningPathComponent implements OnInit, OnDestroy {
     'mat1': {
       desc: 'Domina los conceptos fundamentales de números, álgebra, geometría y probabilidad para asegurar un alto puntaje en la prueba M1.',
       topics: ['Números', 'Álgebra', 'Geometría', 'Probabilidad'],
-      img: 'assets/images/subjects/mat1-v3.png',
-      bgColor: '#A5B4FC'
+      img: 'assets/images/subjects/matematica1.png',
+      bgColor: '#9DB6DF'
     },
     'mat2': {
       desc: 'Enfréntate al temario de profundización de la prueba M2 con contenidos avanzados de números reales, logaritmos, trigonometría, geometría y estadística.',
       topics: ['Reales y Logaritmos', 'Trigonometría', 'Circunferencia', 'Dispersión y Modelos'],
-      img: 'assets/images/subjects/mat1-v3.png',
-      bgColor: '#C7D2FE'
+      img: 'assets/images/subjects/matematica2.png',
+      bgColor: '#DFF2F8'
     },
     'historia': {
       desc: 'Domina la Historia de Chile, los grandes procesos del mundo contemporáneo y los fundamentos de Formación Ciudadana. Aprenderás a analizar el territorio, la economía y tus derechos constitucionales para asegurar un excelente puntaje en la PAES.',
       topics: ['Historia de Chile', 'Historia Universal', 'Formación Ciudadana'],
-      img: 'https://res.cloudinary.com/dqm3syhwr/image/upload/v1783834829/wi0iolyulfk6sxiq0jwt.gif'
+      img: 'assets/images/subjects/historia.png',
+      bgColor: '#FEC9A7'
     },
     'ciencias-fisica': {
       desc: 'Domina los conceptos de ondas, mecánica, energía y electricidad para resolver problemas de física aplicada.',

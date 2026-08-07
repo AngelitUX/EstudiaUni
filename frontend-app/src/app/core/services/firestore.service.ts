@@ -48,6 +48,7 @@ export interface UserProfile {
   dyslexiaFont?: boolean;
   highContrast?: boolean;
   fontSize?: 'normal' | 'large' | 'xlarge';
+  textSpacing?: 'normal' | 'wide' | 'xwide';
   linkedinUrl?: string;
   school?: string;
   favoriteCareers?: any[];
@@ -525,4 +526,17 @@ export class FirestoreService {
       });
     }
   }
+
+  async submitBugReport(report: any): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No auth');
+    
+    await addDoc(collection(this.firestore, 'bug_reports'), {
+      ...report,
+      uid: user.uid,
+      status: 'Pendiente',
+      timestamp: Timestamp.now()
+    });
+  }
 }
+

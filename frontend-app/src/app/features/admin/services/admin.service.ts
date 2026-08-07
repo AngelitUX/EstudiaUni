@@ -242,4 +242,25 @@ export class AdminService {
   getMateriaIcon(materiaId: string): string {
     return this.materiasDisponibles.find(m => m.id === materiaId)?.icon || '📚';
   }
+
+  async getBugReports(): Promise<any[]> {
+    try {
+      const snap = await getDocs(
+        query(collection(this.firestore, 'bug_reports'), orderBy('timestamp', 'desc'))
+      );
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.error('Error fetching bug reports:', error);
+      return [];
+    }
+  }
+
+  async updateBugReportStatus(id: string, status: string): Promise<void> {
+    await updateDoc(doc(this.firestore, 'bug_reports', id), { status });
+  }
+
+  async deleteBugReport(id: string): Promise<void> {
+    await deleteDoc(doc(this.firestore, 'bug_reports', id));
+  }
 }
+
