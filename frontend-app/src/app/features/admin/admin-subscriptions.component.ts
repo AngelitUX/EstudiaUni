@@ -11,9 +11,11 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
   template: `
     <div class="admin-layout">
       <!-- SIDEBAR -->
-      <aside class="sidebar">
+            <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img src="assets/img/LogoEstudiaUni.png" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
           <div class="admin-panel-tag">ADMIN PANEL</div>
         </div>
 
@@ -29,6 +31,10 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
           <a routerLink="/admin/recursos" class="nav-item">
             <span class="nav-icon">📂</span>
             <span class="nav-text">Recursos</span>
+          </a>
+          <a routerLink="/admin/bugs" class="nav-item">
+            <span class="nav-icon">🐛</span>
+            <span class="nav-text">Reportes de Bug</span>
           </a>
         </nav>
 
@@ -179,13 +185,16 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
     .admin-layout { display: flex; min-height: 100vh; }
     .sidebar { width: 260px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-right: 1px solid rgba(133,92,214,0.15); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 1.5rem; border-bottom: 1px solid rgba(133,92,214,0.15); text-align: center; }
-    .sidebar-logo { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .admin-panel-tag { font-size: 0.65rem; background: rgba(139, 92, 246, 0.25); color: #c084fc; padding: 0.2rem 0.6rem; border-radius: 99px; margin-top: 0.5rem; font-weight: 800; }
     
     .sidebar-nav { padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
