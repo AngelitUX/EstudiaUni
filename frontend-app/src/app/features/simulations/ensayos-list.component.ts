@@ -44,8 +44,8 @@ type ExamMode = 'real' | 'asistido';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;">
-            <span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         
@@ -192,8 +192,9 @@ type ExamMode = 'real' | 'asistido';
             </div>
 
             <!-- TEMARIO BADGE -->
-            <div class="temario-badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 0.4rem 1rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-right: auto;">
-              <span>✨</span> Actualizado con temario PAES oficial 2026
+            <div class="temario-badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 2px solid rgba(34, 197, 94, 0.3); padding: 0.6rem 1.25rem; border-radius: 99px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-right: auto;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> 
+              Actualizado con temario PAES oficial 2026
             </div>
 
             <!-- ACTIVE EXAM WIDGET -->
@@ -228,17 +229,19 @@ type ExamMode = 'real' | 'asistido';
             </button>
           </div>
 
+        </div>
+        </div>
+      </main>
+    </div>
           <div *ngIf="pruebaSeleccionada" class="modal-preparacion" (click)="cerrarSeleccion()">
-            <div class="modal-content glass-card" (click)="$event.stopPropagation()">
+            <div class="modal-content glass-card" (click)="$event.stopPropagation()" (scroll)="onModalScroll($event)">
               <button class="modal-close" (click)="cerrarSeleccion()">×</button>
 
               <div class="modal-icon">{{ pruebaSeleccionada.icono }}</div>
               <h2 class="modal-title">¿Listo para iniciar {{ getNombreSeleccionado() }}?</h2>
 
               <div class="modal-message">
-                <p class="message-text">
-                  Prepárate para rendir {{ getNombreSeleccionado() }}.
-                </p>
+                
                 <p class="message-subtext">
                   Ponte cómodo, elimina distracciones y asegúrate de contar con el tiempo completo.
                 </p>
@@ -283,6 +286,11 @@ type ExamMode = 'real' | 'asistido';
                     <span class="subprueba-desc">{{ ensayo.descripcion }}</span>
                   </button>
                 </div>
+              </div>
+
+              <div class="scroll-indicator" *ngIf="canStart && !scrolledToBottom">
+                <span>Desliza hacia abajo para continuar</span>
+                <span class="scroll-arrow">↓</span>
               </div>
 
               <div class="prueba-detalles" *ngIf="canStart">
@@ -356,10 +364,6 @@ type ExamMode = 'real' | 'asistido';
               </div>
             </div>
           </div>
-        </div>
-        </div>
-      </main>
-    </div>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
     <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
 
@@ -401,6 +405,9 @@ type ExamMode = 'real' | 'asistido';
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host {
       display: block;
       min-height: 100vh;
@@ -423,22 +430,8 @@ type ExamMode = 'real' | 'asistido';
       height: 100vh; 
       z-index: 100; 
     }
-    .sidebar-header { 
-      padding: 2.5rem 1.5rem 2rem; 
-      border-bottom: 1px solid rgba(255,255,255,0.15); 
-      text-align: center;
-    }
-    .sidebar-logo { 
-      font-family: var(--font-heading); 
-      font-size: 2.2rem; 
-      font-weight: 900; 
-      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.04em; 
-      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-      position: relative;
-    }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .sidebar-nav {
       flex: 1; 
       padding: 1rem 0.75rem; 
@@ -565,7 +558,7 @@ type ExamMode = 'real' | 'asistido';
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
     .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
-    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 100000 !important; padding: 1.5rem; animation: fadeIn 0.2s ease; }
     .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
@@ -717,11 +710,13 @@ type ExamMode = 'real' | 'asistido';
     .modal-preparacion {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 20000;
+      z-index: 99999 !important;
       padding: 1.5rem;
       overflow-y: auto;
       animation: fadeIn 0.25s ease;
@@ -814,11 +809,36 @@ type ExamMode = 'real' | 'asistido';
       50% { transform: scale(1.3); opacity: 0.7; }
       100% { transform: scale(1); opacity: 1; }
     }
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      margin: 1rem auto;
+      color: var(--accent-primary);
+      font-weight: 800;
+      font-size: 0.9rem;
+      animation: fadeIn 0.5s ease;
+      position: sticky;
+      bottom: 20px;
+      z-index: 50;
+      width: fit-content;
+      text-shadow: 0 1px 3px rgba(255, 255, 255, 1), 0 0 8px rgba(255,255,255,0.9);
+    }
+    .scroll-arrow {
+      font-size: 1.5rem;
+      animation: bounceDown 2s infinite;
+      line-height: 1;
+    }
+    @keyframes bounceDown {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(8px); }
+      60% { transform: translateY(4px); }
+    }
     .countdown-row {
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin-top: 1.25rem;
       background: #fff;
       padding: 0.6rem 1.25rem;
       border-radius: 12px;
@@ -1158,7 +1178,7 @@ type ExamMode = 'real' | 'asistido';
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 2000;
+      z-index: 100000 !important;
       backdrop-filter: blur(4px);
       animation: fadeInOverlay 0.3s ease;
     }
@@ -1237,6 +1257,16 @@ export class EnsayosListComponent implements OnInit {
 
   isCollapsible = false;
   mobileOpen = false;
+  scrolledToBottom = false;
+
+  onModalScroll(event: any) {
+    const target = event.target;
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 30) {
+      this.scrolledToBottom = true;
+    } else {
+      this.scrolledToBottom = false;
+    }
+  }
 
   pruebas: Prueba[] = [
     {

@@ -28,7 +28,9 @@ interface MateriaOption {
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -75,7 +77,9 @@ interface MateriaOption {
             <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
           </span>
         </button>
-        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center;display:flex;justify-content:center;">
+          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="mobile-logo-img" />
+        </a>
         <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
           <span class="profile-avatar-wrap">
             <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileMe" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
@@ -86,7 +90,7 @@ interface MateriaOption {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <div style="padding: 1.5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-            <span class="text-gradient" style="font-size: 1.5rem; font-weight: 900; font-family: var(--font-heading);">EstudiaUni</span>
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" style="width: 150px; height: auto;" />
             <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
@@ -260,6 +264,9 @@ interface MateriaOption {
 
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #0F1018; color: var(--text-primary); }
 
     .setup-container { width: 100%; max-width: 900px; padding: 2.5rem; border-radius: 24px; border: 2px solid var(--glass-border); display: flex; flex-direction: column; gap: 2.5rem; }
@@ -360,9 +367,6 @@ interface MateriaOption {
     .header-greeting { font-size: 2rem; font-weight: 900; font-family: var(--font-heading); margin: 0; }
     .welcome-actions { display: flex; align-items: center; gap: 0.85rem; }
     .btn-upgrade-pro { background: linear-gradient(135deg, #f59e0b, #f97316); color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 99px; font-size: 0.85rem; font-weight: 800; cursor: pointer; }
-    .plan-badge { padding: 0.4rem 0.9rem; border-radius: 99px; font-size: 0.75rem; font-weight: 800; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: 1.5px solid rgba(255,255,255,0.12); }
-    .plan-badge.pro { background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.15)); color: #c4b5fd; border-color: rgba(139,92,246,0.3); }
-    .plan-badge.admin { background: rgba(239,68,68,0.12); color: #fca5a5; border-color: rgba(239,68,68,0.25); }
     .profile-menu-wrap { position: relative; }
     .profile-trigger { background: none; border: none; cursor: pointer; padding: 0; }
     .profile-avatar-wrap { display: flex; }

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -71,9 +71,17 @@ import { KatexService } from '../../core/services/katex.service';
 
         <!-- Hero actions -->
         <div class="hero-actions">
-          <button class="btn-primary-hero" (click)="retryTest()" *ngIf="!passed()">↩ Repetir test</button>
-          <button class="btn-secondary-hero" (click)="goBack()">← Volver al capítulo</button>
-          <button class="btn-primary-hero btn-next-hero" (click)="goNext()" *ngIf="passed()">Siguiente Lección →</button>
+          <div class="action-btn-wrapper" *ngIf="!passed()">
+            <button class="btn-primary-hero" (click)="retryTest()">↩ Repetir test</button>
+            <span class="btn-hint"><b>[O]</b> Repetir</span>
+          </div>
+          <div class="action-btn-wrapper">
+            <button class="btn-secondary-hero" (click)="goBack()">← Volver al capítulo</button>
+            <span class="btn-hint"><b>[P]</b> Volver al capítulo</span>
+          </div>
+          <div class="action-btn-wrapper" *ngIf="passed()">
+            <button class="btn-primary-hero btn-next-hero" (click)="goNext()">Siguiente Lección →</button>
+          </div>
         </div>
       </div>
 
@@ -105,16 +113,16 @@ import { KatexService } from '../../core/services/katex.service';
 
         <div class="rq-options">
           <div *ngFor="let key of optKeys" class="rq-option"
-            [class.correct-answer]="key === p.respuesta_correcta"
+            [class.correct-answer]="key === p.respuesta_correcta && isCorrect(r, p.id)"
             [class.wrong-selected]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key"
-            [class.neutral]="getAnswer(r, p.id) !== key && key !== p.respuesta_correcta">
+            [class.neutral]="getAnswer(r, p.id) !== key && !(key === p.respuesta_correcta && isCorrect(r, p.id))">
             <span class="rq-letter"
-              [class.letter-green]="key === p.respuesta_correcta"
+              [class.letter-green]="key === p.respuesta_correcta && isCorrect(r, p.id)"
               [class.letter-red]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">{{ key }}</span>
             <span class="rq-text" *ngIf="p.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(p.alternativas[key])"></span>
             <img *ngIf="p.tipo_alternativas === 'imagen'" [src]="p.alternativas[key]"
               alt="Opción {{ key }}" class="rq-opt-img" />
-            <span class="rq-tag correct-tag" *ngIf="key === p.respuesta_correcta">✓ Correcta</span>
+            <span class="rq-tag correct-tag" *ngIf="key === p.respuesta_correcta && isCorrect(r, p.id)">✓ Correcta</span>
             <span class="rq-tag wrong-tag" *ngIf="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">✗ Tu respuesta</span>
           </div>
         </div>
@@ -128,10 +136,6 @@ import { KatexService } from '../../core/services/katex.service';
             </div>
             <div *ngIf="!isCorrect(r, p.id)">
               <p [innerHTML]="parseMixed(p.feedback_error)"></p>
-              <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
-                <h4 style="color: #166534; font-size: 0.9rem; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</h4>
-                <p [innerHTML]="parseMixed(p.feedback_acierto)"></p>
-              </div>
             </div>
           </div>
         </div>
@@ -191,13 +195,17 @@ import { KatexService } from '../../core/services/katex.service';
     /* XP BADGE */
     .xp-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1.2rem; border-radius: 999px; background: linear-gradient(135deg, #ffc800, #ff9600); color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 0.9rem; margin-bottom: 1.5rem; animation: xpPop 0.5s ease-out 0.8s both; box-shadow: 0 3px 0 #cc7a00; }
 
-    .hero-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+    .hero-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .action-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
     .btn-primary-hero { padding: 0.75rem 1.5rem; border-radius: 999px; border: none; background: var(--accent-primary); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 #6b46b8; transition: all 0.2s; }
     .btn-primary-hero:hover { transform: translateY(2px); box-shadow: 0 2px 0 #6b46b8; }
     .btn-next-hero { background: #58cc02; box-shadow: 0 4px 0 #4caf00; }
     .btn-next-hero:hover { box-shadow: 0 2px 0 #4caf00; }
     .btn-secondary-hero { padding: 0.75rem 1.5rem; border-radius: 999px; border: 2px solid rgba(0,0,0,0.1); background: #fff; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
     .btn-secondary-hero:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    
+    .btn-hint { font-size: 0.75rem; color: var(--text-secondary); font-style: italic; }
+    .btn-hint b { color: var(--text-primary); font-family: monospace; font-style: normal; }
 
     /* REVIEW HEADING */
     .review-heading { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 1rem; }
@@ -297,6 +305,49 @@ export class SeccionTestReviewComponent {
 
   constructor() {
     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+    }
+  }
+
+  private getBestVoice(): SpeechSynthesisVoice | null {
+    const voices = window.speechSynthesis.getVoices();
+    let voice = voices.find(v => v.name.toLowerCase().includes('natural') && v.lang.startsWith('es'));
+    if (!voice) voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
+    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo') || v.name.includes('Sabina')));
+    if (!voice) voice = voices.find(v => v.lang.startsWith('es-') || v.lang === 'es');
+    return voice || null;
+  }
+
+  private speak(text: string) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.rate = 0.95;
+    utterance.pitch = 1.05;
+    
+    const voice = this.getBestVoice();
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    const key = event.key.toLowerCase();
+    if (key === 'o' && !this.passed()) {
+      this.speak('Test repetido');
+      setTimeout(() => this.retryTest(), 300); // Dar un pequeño retraso para que se escuche
+    }
+    if (key === 'p') {
+      this.speak('Volviendo al capítulo');
+      setTimeout(() => this.goBack(), 300);
+    }
   }
 
   getAnswer(r: any, preguntaId: number): string | null {
