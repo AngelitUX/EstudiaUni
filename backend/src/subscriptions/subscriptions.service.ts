@@ -5,13 +5,21 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import * as admin from 'firebase-admin';
 import { FirebaseService } from '../firebase/firebase.service';
 import { SubmitTransferDto } from './dto/manual-payment.dto';
 
 const FREE_TIER_LIMITS = {
   simulation: 1,  // 1 ensayo por día
   quiz: 5,        // 5 quizzes por día
+  focoTokens: 5,  // 5 fichas de Foco por día para Gratis
 };
+
+const PRO_TIER_LIMITS = {
+  focoTokens: 500, // 500 fichas de Foco por día para PRO
+};
+
+const COOLDOWN_SIMULATION_HOURS_FREE = 48;
 
 @Injectable()
 export class SubscriptionsService {
@@ -41,29 +49,122 @@ export class SubscriptionsService {
       return {
         tier: 'free',
         status: 'active',
-        credits: { ensayosRemaining: 1, quizzesRemaining: 5 },
+        credits: {
+          ensayosRemaining: 1,
+          quizzesRemaining: 5,
+          focoTokensRemaining: 5,
+          focoTokensLimit: 5,
+        },
+        cooldown: { inCooldown: false, secondsRemaining: 0 },
       };
     }
 
     const subscription = userData.subscription || { tier: userData.plan || 'free', status: 'active' };
+    const isPremium = subscription.tier === 'premium' || userData.plan === 'premium';
     const dailyCredits = await this.getResetCredits(uid, userData);
+    const focoLimit = isPremium ? PRO_TIER_LIMITS.focoTokens : FREE_TIER_LIMITS.focoTokens;
+    const focoUsed = dailyCredits.focoTokensUsedToday || 0;
+    const focoRemaining = Math.max(0, focoLimit - focoUsed);
+
+    const cooldownStatus = await this.checkSimulationCooldown(uid);
 
     return {
-      tier: subscription.tier || 'free',
+      tier: isPremium ? 'premium' : 'free',
       status: subscription.status || 'active',
       startDate: subscription.startDate,
       endDate: subscription.endDate,
       credits: {
-        ensayosRemaining:
-          subscription.tier === 'premium'
-            ? 'unlimited'
-            : Math.max(0, FREE_TIER_LIMITS.simulation - dailyCredits.ensayosUsedToday),
-        quizzesRemaining:
-          subscription.tier === 'premium'
-            ? 'unlimited'
-            : Math.max(0, FREE_TIER_LIMITS.quiz - dailyCredits.quizzesUsedToday),
+        ensayosRemaining: isPremium ? 'unlimited' : Math.max(0, FREE_TIER_LIMITS.simulation - dailyCredits.ensayosUsedToday),
+        quizzesRemaining: isPremium ? 'unlimited' : Math.max(0, FREE_TIER_LIMITS.quiz - dailyCredits.quizzesUsedToday),
+        focoTokensRemaining: focoRemaining,
+        focoTokensLimit: focoLimit,
+        focoTokensUsed: focoUsed,
       },
+      cooldown: cooldownStatus,
     };
+  }
+
+  /**
+   * Check Foco AI tutor tokens for user.
+   */
+  async checkFocoTokens(uid: string): Promise<{ allowed: boolean; remaining: number; limit: number; used: number }> {
+    let userData: any = null;
+    try {
+      const userDoc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .get();
+      if (userDoc.exists) userData = userDoc.data();
+    } catch (e) {}
+
+    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium';
+    const limit = isPremium ? PRO_TIER_LIMITS.focoTokens : FREE_TIER_LIMITS.focoTokens;
+    const dailyCredits = await this.getResetCredits(uid, userData || {});
+    const used = dailyCredits.focoTokensUsedToday || 0;
+    const remaining = Math.max(0, limit - used);
+
+    return {
+      allowed: remaining > 0,
+      remaining,
+      limit,
+      used,
+    };
+  }
+
+  /**
+   * Consume 1 Foco AI tutor token.
+   */
+  async consumeFocoToken(uid: string) {
+    try {
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .update({
+          'dailyCredits.focoTokensUsedToday': admin.firestore.FieldValue.increment(1),
+        });
+    } catch (e) {}
+  }
+
+  /**
+   * Check 48h simulation cooldown for Free tier users.
+   */
+  async checkSimulationCooldown(uid: string): Promise<{ inCooldown: boolean; secondsRemaining: number; lastFinishedAt?: Date }> {
+    let userData: any = null;
+    try {
+      const userDoc = await this.firebaseService.firestore.collection('users').doc(uid).get();
+      if (userDoc.exists) userData = userDoc.data();
+    } catch (e) {}
+
+    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium';
+    if (isPremium) {
+      return { inCooldown: false, secondsRemaining: 0 };
+    }
+
+    const lastFinishedVal = userData?.lastSimulationFinishedAt;
+    if (!lastFinishedVal) {
+      return { inCooldown: false, secondsRemaining: 0 };
+    }
+
+    let lastFinishedAt: Date;
+    if (typeof lastFinishedVal.toDate === 'function') {
+      lastFinishedAt = lastFinishedVal.toDate();
+    } else {
+      lastFinishedAt = new Date(lastFinishedVal);
+    }
+
+    const cooldownMs = COOLDOWN_SIMULATION_HOURS_FREE * 3600 * 1000;
+    const elapsedMs = Date.now() - lastFinishedAt.getTime();
+
+    if (elapsedMs < cooldownMs) {
+      const msRemaining = cooldownMs - elapsedMs;
+      return {
+        inCooldown: true,
+        secondsRemaining: Math.ceil(msRemaining / 1000),
+        lastFinishedAt,
+      };
+    }
+
+    return { inCooldown: false, secondsRemaining: 0, lastFinishedAt };
   }
 
   /**
@@ -117,6 +218,10 @@ export class SubscriptionsService {
     const dailyCredits = await this.getResetCredits(uid, userData);
 
     if (action === 'simulation') {
+      const cooldown = await this.checkSimulationCooldown(uid);
+      if (cooldown.inCooldown) {
+        return { allowed: false, reason: 'COOLDOWN_ACTIVE' };
+      }
       if (dailyCredits.ensayosUsedToday >= FREE_TIER_LIMITS.simulation) {
         return { allowed: false, reason: 'DAILY_LIMIT_REACHED' };
       }
@@ -143,7 +248,7 @@ export class SubscriptionsService {
         .collection('users')
         .doc(uid)
         .update({
-          [field]: (await this.getCurrentCount(uid, action)) + 1,
+          [field]: admin.firestore.FieldValue.increment(1),
         });
     } catch (e) {}
   }
@@ -152,56 +257,50 @@ export class SubscriptionsService {
    * Upgrade user to premium (Monthly or Yearly).
    */
   async upgrade(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
-    let startDate = new Date();
-    let endDate = new Date();
-
-    if (planType === 'yearly') {
-      endDate.setFullYear(startDate.getFullYear() + 1);
-    } else {
-      endDate.setMonth(startDate.getMonth() + 1);
-    }
+    const userRef = this.firebaseService.firestore.collection('users').doc(uid);
 
     try {
-      const userDoc = await this.firebaseService.firestore
-        .collection('users')
-        .doc(uid)
-        .get();
+      // Transaction: prevents two near-simultaneous grants (e.g. a Webpay commit racing
+      // an admin manual approval for the same user) from reading the same stale
+      // existingEndDate and one of them clobbering the other's extension.
+      await this.firebaseService.firestore.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
 
-      if (userDoc.exists) {
-        const userData = userDoc.data()!;
-        const isPremium = userData.subscription?.tier === 'premium' || userData.plan === 'premium';
-        const existingEndDateVal = userData.subscription?.endDate;
+        let startDate = new Date();
+        let endDate = new Date();
+        if (planType === 'yearly') {
+          endDate.setFullYear(startDate.getFullYear() + 1);
+        } else {
+          endDate.setMonth(startDate.getMonth() + 1);
+        }
 
-        if (isPremium && existingEndDateVal) {
-          let existingEndDate: Date;
-          if (typeof existingEndDateVal.toDate === 'function') {
-            existingEndDate = existingEndDateVal.toDate();
-          } else {
-            existingEndDate = new Date(existingEndDateVal);
-          }
+        if (userDoc.exists) {
+          const userData = userDoc.data()!;
+          const isPremium = userData.subscription?.tier === 'premium' || userData.plan === 'premium';
+          const existingEndDateVal = userData.subscription?.endDate;
 
-          if (existingEndDate > new Date()) {
-            if (userData.subscription?.startDate) {
-              if (typeof userData.subscription.startDate.toDate === 'function') {
-                startDate = userData.subscription.startDate.toDate();
-              } else {
-                startDate = new Date(userData.subscription.startDate);
+          if (isPremium && existingEndDateVal) {
+            const existingEndDate: Date = typeof existingEndDateVal.toDate === 'function'
+              ? existingEndDateVal.toDate()
+              : new Date(existingEndDateVal);
+
+            if (existingEndDate > new Date()) {
+              if (userData.subscription?.startDate) {
+                startDate = typeof userData.subscription.startDate.toDate === 'function'
+                  ? userData.subscription.startDate.toDate()
+                  : new Date(userData.subscription.startDate);
               }
-            }
-            endDate = new Date(existingEndDate);
-            if (planType === 'yearly') {
-              endDate.setFullYear(endDate.getFullYear() + 1);
-            } else {
-              endDate.setMonth(endDate.getMonth() + 1);
+              endDate = new Date(existingEndDate);
+              if (planType === 'yearly') {
+                endDate.setFullYear(endDate.getFullYear() + 1);
+              } else {
+                endDate.setMonth(endDate.getMonth() + 1);
+              }
             }
           }
         }
-      }
 
-      await this.firebaseService.firestore
-        .collection('users')
-        .doc(uid)
-        .set({
+        t.set(userRef, {
           subscription: {
             tier: 'premium',
             status: 'active',
@@ -211,6 +310,7 @@ export class SubscriptionsService {
           plan: 'premium',
           updatedAt: new Date(),
         }, { merge: true });
+      });
     } catch (dbError) {
       this.logger.warn(`[SubscriptionsService] Firestore upgrade error: ${dbError.message}`);
     }
@@ -222,6 +322,23 @@ export class SubscriptionsService {
    * Submit a manual bank transfer report.
    */
   async submitManualTransfer(uid: string, dto: SubmitTransferDto) {
+    // Guard against the same bank receipt number being submitted more than once
+    // (accidentally or to try to farm multiple approvals from one real payment).
+    try {
+      const existing = await this.firebaseService.firestore
+        .collection('manual_payments')
+        .where('transferNumber', '==', dto.transferNumber)
+        .where('status', 'in', ['pending_approval', 'approved'])
+        .limit(1)
+        .get();
+      if (!existing.empty) {
+        throw new BadRequestException('Ya existe un comprobante con ese número de transferencia en revisión o aprobado.');
+      }
+    } catch (e) {
+      if (e instanceof BadRequestException) throw e;
+      this.logger.warn(`[SubscriptionsService] Duplicate transfer check failed: ${e.message}`);
+    }
+
     const transferId = `TRF-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const recipientUid = dto.targetUid || uid;
 
@@ -266,13 +383,11 @@ export class SubscriptionsService {
   async findUserByEmailOrUid(targetEmailOrUid: string): Promise<{ uid: string; email: string; data: any } | null> {
     const input = targetEmailOrUid.trim();
     try {
-      // 1. Try by UID
       const doc = await this.firebaseService.firestore.collection('users').doc(input).get();
       if (doc.exists) {
         return { uid: doc.id, email: doc.data()?.email || '', data: doc.data() };
       }
 
-      // 2. Try by email query
       const query = await this.firebaseService.firestore
         .collection('users')
         .where('email', '==', input.toLowerCase())
@@ -287,7 +402,6 @@ export class SubscriptionsService {
       this.logger.warn(`[SubscriptionsService] findUserByEmailOrUid error: ${e.message}`);
     }
 
-    // Dev fallback if user typed email
     if (input.includes('@')) {
       return { uid: `uid-${input.split('@')[0]}`, email: input, data: {} };
     }
@@ -394,7 +508,6 @@ export class SubscriptionsService {
   async getAllTransactions() {
     const transactions: any[] = [];
 
-    // 1. Get Webpay & Online transactions
     try {
       const txSnapshot = await this.firebaseService.firestore
         .collection('transactions')
@@ -422,7 +535,6 @@ export class SubscriptionsService {
       this.logger.warn(`[SubscriptionsService] getAllTransactions Firestore error: ${e.message}`);
     }
 
-    // 2. Get Manual Transfers
     try {
       const trfSnapshot = await this.firebaseService.firestore
         .collection('manual_payments')
@@ -449,14 +561,12 @@ export class SubscriptionsService {
       });
     } catch (e) {}
 
-    // Include in-memory transfers if not present
     this.inMemoryTransfers.forEach((val, id) => {
       if (!transactions.some(t => t.id === id)) {
         transactions.push({ ...val, type: 'transfer' });
       }
     });
 
-    // Sort descending by date
     transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return transactions;
@@ -465,7 +575,7 @@ export class SubscriptionsService {
   /**
    * ADMIN: Approve or Reject a manual bank transfer request.
    */
-  async approveTransfer(transferId: string, action: 'approve' | 'reject', rejectionReason?: string) {
+  async approveTransfer(transferId: string, action: 'approve' | 'reject', adminUid: string, rejectionReason?: string) {
     let transfer = this.inMemoryTransfers.get(transferId);
 
     try {
@@ -480,6 +590,15 @@ export class SubscriptionsService {
       throw new NotFoundException('Comprobante de transferencia no encontrado');
     }
 
+    // Idempotency: a transfer already resolved can't be re-approved/re-rejected
+    // (prevents double-clicks from re-extending a subscription or duplicating audit logs).
+    if (transfer.status === 'approved' || transfer.status === 'rejected') {
+      return {
+        success: true,
+        message: `Esta transferencia ya fue ${transfer.status === 'approved' ? 'aprobada' : 'rechazada'} previamente.`,
+      };
+    }
+
     if (action === 'approve') {
       transfer.status = 'approved';
       const recipientUid = transfer.recipientUid || transfer.payerUid;
@@ -489,8 +608,10 @@ export class SubscriptionsService {
         await this.firebaseService.firestore
           .collection('manual_payments')
           .doc(transferId)
-          .update({ status: 'approved', updatedAt: new Date() });
+          .update({ status: 'approved', approvedBy: adminUid, updatedAt: new Date() });
       } catch (e) {}
+
+      await this.logAdminAction('APPROVE_TRANSFER', adminUid, recipientUid, { transferId, amount: transfer.amount, planType: transfer.planType });
 
       return { success: true, message: 'Transferencia aprobada y Plan Pro activado con éxito.' };
     } else {
@@ -501,10 +622,26 @@ export class SubscriptionsService {
         await this.firebaseService.firestore
           .collection('manual_payments')
           .doc(transferId)
-          .update({ status: 'rejected', rejectionReason, updatedAt: new Date() });
+          .update({ status: 'rejected', rejectionReason, rejectedBy: adminUid, updatedAt: new Date() });
       } catch (e) {}
 
+      await this.logAdminAction('REJECT_TRANSFER', adminUid, transfer.recipientUid || transfer.payerUid, { transferId, rejectionReason });
+
       return { success: true, message: 'Transferencia rechazada.' };
+    }
+  }
+
+  private async logAdminAction(action: string, adminUid: string, targetUid: string, extra: Record<string, any> = {}) {
+    try {
+      await this.firebaseService.firestore.collection('admin_audit_logs').add({
+        action,
+        adminUid,
+        targetUid,
+        ...extra,
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] Could not write admin audit log for "${action}": ${e.message}`);
     }
   }
 
@@ -536,6 +673,7 @@ export class SubscriptionsService {
     const dailyCredits = userData.dailyCredits || {
       ensayosUsedToday: 0,
       quizzesUsedToday: 0,
+      focoTokensUsedToday: 0,
       lastResetDate: todayStr,
     };
 
@@ -543,6 +681,7 @@ export class SubscriptionsService {
       const resetData = {
         ensayosUsedToday: 0,
         quizzesUsedToday: 0,
+        focoTokensUsedToday: 0,
         lastResetDate: todayStr,
       };
 
@@ -557,24 +696,5 @@ export class SubscriptionsService {
     }
 
     return dailyCredits;
-  }
-
-  private async getCurrentCount(
-    uid: string,
-    action: 'simulation' | 'quiz',
-  ): Promise<number> {
-    try {
-      const doc = await this.firebaseService.firestore
-        .collection('users')
-        .doc(uid)
-        .get();
-      const data = doc.data();
-      if (action === 'simulation') {
-        return data?.dailyCredits?.ensayosUsedToday || 0;
-      }
-      return data?.dailyCredits?.quizzesUsedToday || 0;
-    } catch (e) {
-      return 0;
-    }
   }
 }

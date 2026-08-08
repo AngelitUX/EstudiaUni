@@ -1,6 +1,9 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { FirestoreService } from '../../core/services/firestore.service';
+import { AdminService } from '../../features/admin/services/admin.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-streak-icon',
@@ -14,10 +17,14 @@ import { DashboardService } from '../../core/services/dashboard.service';
         <span class="streak-count" *ngIf="dashSvc.streakDays() > 0">{{ dashSvc.streakDays() }}</span>
       </div>
 
-      <!-- Super Streak -->
-      <div class="header-streak-icon super-streak" [class.active]="dashSvc.superStreakDays() > 0">
+      <!-- Super Streak (PRO only) -->
+      <div class="header-streak-icon super-streak" *ngIf="isProPlan()" [class.active]="dashSvc.superStreakDays() > 0">
         <span class="streak-emoji">🔥</span>
         <span class="streak-count" *ngIf="dashSvc.superStreakDays() > 0">{{ dashSvc.superStreakDays() }}</span>
+      </div>
+      <div class="header-streak-icon super-streak locked" *ngIf="!isProPlan()" (click)="openSuperStreakUpsell($event)" title="Súper Racha — exclusivo PRO">
+        <span class="streak-emoji">🔥</span>
+        <span class="streak-lock">🔒</span>
       </div>
 
       <!-- Hover Tooltip -->
@@ -36,11 +43,17 @@ import { DashboardService } from '../../core/services/dashboard.service';
               </div>
             </div>
             
-            <div class="streak-item super-streak">
+            <div class="streak-item super-streak" *ngIf="isProPlan()">
               <div class="streak-icon-wrap" style="filter: hue-rotate(190deg) saturate(150%) brightness(1.2);">🔥</div>
               <div class="streak-details">
                 <div class="streak-value">{{ dashSvc.superStreakDays() }} <span class="streak-label">días</span></div>
                 <div class="streak-name">Súper racha</div>
+              </div>
+            </div>
+            <div class="streak-item super-streak locked" *ngIf="!isProPlan()">
+              <div class="streak-icon-wrap" style="filter: grayscale(100%);">🔒</div>
+              <div class="streak-details">
+                <div class="streak-name">Súper racha — exclusivo PRO</div>
               </div>
             </div>
           </div>
@@ -89,7 +102,8 @@ import { DashboardService } from '../../core/services/dashboard.service';
               <ul>
                 <li>Completar al menos <strong>una lección</strong> de <strong>CADA materia</strong> activa en tu ruta de aprendizaje durante el mismo día.</li>
               </ul>
-              <span class="info-tip">🚀 Reto: ¡Mantener esta racha te garantiza un progreso masivo!</span>
+              <span class="info-tip" *ngIf="isProPlan()">🚀 Reto: ¡Mantener esta racha te garantiza un progreso masivo!</span>
+              <span class="info-tip" *ngIf="!isProPlan()">👑 La Súper Racha es exclusiva del Plan PRO. <a (click)="paymentService.openPricingModal()" style="cursor:pointer; text-decoration: underline;">Mejora tu plan</a> para empezar a acumularla.</span>
             </div>
           </div>
         </div>
@@ -165,6 +179,13 @@ import { DashboardService } from '../../core/services/dashboard.service';
     .header-streak-icon.super-streak.active .streak-count {
       color: #3b82f6;
     }
+
+    .header-streak-icon.super-streak.locked {
+      filter: grayscale(100%) opacity(35%);
+      position: relative;
+    }
+    .streak-lock { font-size: 0.75rem; margin-left: 0.1rem; }
+    .streak-item.super-streak.locked { opacity: 0.7; }
 
     @keyframes fireLoop {
       0% { transform: scale(1) rotate(-5deg); }
@@ -264,7 +285,20 @@ import { DashboardService } from '../../core/services/dashboard.service';
 })
 export class StreakIconComponent {
   public dashSvc = inject(DashboardService);
-  
+  private firestoreService = inject(FirestoreService);
+  private adminService = inject(AdminService);
+  public paymentService = inject(PaymentService);
+
+  isProPlan = computed(() => {
+    const p = this.firestoreService.profileSignal();
+    return p?.plan === 'premium' || this.adminService.isAdmin();
+  });
+
+  openSuperStreakUpsell(event: Event) {
+    event.stopPropagation();
+    this.paymentService.openPricingModal();
+  }
+
   // Weekly streak calendar
   weekDays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
   weeklyActivity: boolean[] = [false, false, false, false, false, false, false];

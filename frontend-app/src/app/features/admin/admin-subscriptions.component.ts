@@ -14,7 +14,7 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
             <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img src="assets/img/LogoEstudiaUni.png" alt="EstudiaUni" class="sidebar-logo-img" />
+            <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
           <div class="admin-panel-tag">ADMIN PANEL</div>
         </div>

@@ -22,6 +22,7 @@ import { from, map, Observable, of, catchError, switchMap, shareReplay } from 'r
 import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
 // @ts-ignore
 import m1InviernoQuestionsData from '../../../assets/m1-invierno-preguntas-db.json';
+import { environment } from '../../../environments/environment';
 
 export interface UserProfile {
   uid: string;
@@ -59,6 +60,13 @@ export interface UserProfile {
   metaPaesExcludedSubjects?: string[];
   location?: string;
   stats: { questionsAnswered: number; studyStreak: number; lastStudyDate: string; };
+  lastSimulationFinishedAt?: any;
+  dailyCredits?: {
+    ensayosUsedToday?: number;
+    quizzesUsedToday?: number;
+    focoTokensUsedToday?: number;
+    lastResetDate?: string;
+  };
   notasNem?: {
     n1?: number | null;
     n2?: number | null;
@@ -351,14 +359,47 @@ export class FirestoreService {
     );
   }
 
+  private preguntasCache = new Map<string, Pregunta[]>();
+  private intentoCache = new Map<string, Intento>();
+  public devBypassResultsLock = false;
+
+  async devSimulateTimePass(): Promise<void> {
+    if (environment.production) return; // Never allow bypassing limits in production
+    this.devBypassResultsLock = true;
+    localStorage.removeItem('estudiauni_last_simulation_finished');
+    const pastDate = new Date(Date.now() - 50 * 3600 * 1000);
+
+    const profile = this.profileSignal();
+    if (profile) {
+      this.profileSignal.set({
+        ...profile,
+        lastSimulationFinishedAt: pastDate
+      });
+    }
+
+    const user = this.auth.currentUser;
+    if (user) {
+      try {
+        await updateDoc(doc(this.firestore, 'users', user.uid), {
+          lastSimulationFinishedAt: Timestamp.fromDate(pastDate)
+        });
+      } catch (e) {}
+    }
+  }
+
   getPreguntas(ensayoId: string): Observable<Pregunta[]> {
     const finalId = this.normalizeEnsayoId(ensayoId);
+    if (this.preguntasCache.has(finalId)) {
+      return of(this.preguntasCache.get(finalId)!);
+    }
     const q = query(collection(this.firestore, 'preguntas'), where('ensayoId', '==', finalId));
     return from(getDocs(q)).pipe(
       map(snap => {
         if (snap.empty) return this.getMockPreguntas(finalId);
         const results = snap.docs.map(d => ({ id: d.id, ...d.data() } as Pregunta));
-        return results.sort((a, b) => (a.order || 0) - (b.order || 0));
+        const sorted = results.sort((a, b) => (a.order || 0) - (b.order || 0));
+        this.preguntasCache.set(finalId, sorted);
+        return sorted;
       }),
       catchError(() => of(this.getMockPreguntas(finalId)))
     );
@@ -378,10 +419,44 @@ export class FirestoreService {
     return snap.id;
   }
 
-  getIntento(intentoId: string): Observable<Intento | null> {
+  getIntento(intentoId: string, forceRefresh = false): Observable<Intento | null> {
+    if (!forceRefresh && this.intentoCache.has(intentoId)) {
+      const cached = this.intentoCache.get(intentoId)!;
+      if (cached.status !== 'in_progress') {
+        return of(cached);
+      }
+    }
     return from(getDoc(doc(this.firestore, 'intentos', intentoId))).pipe(
-      map(snap => snap.exists() ? { id: snap.id, ...snap.data() } as Intento : null)
+      map(snap => {
+        if (!snap.exists()) return null;
+        const data = { id: snap.id, ...snap.data() } as Intento;
+        this.intentoCache.set(intentoId, data);
+        return data;
+      })
     );
+  }
+
+  async getLatestCompletedIntento(uid: string): Promise<any | null> {
+    try {
+      const q = query(
+        collection(this.firestore, 'intentos'),
+        where('odId', '==', uid),
+        where('status', '==', 'completed'),
+        limit(10)
+      );
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      // Return the one with highest finishedAt / startedAt timestamp
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort((a: any, b: any) => {
+        const tA = (a.finishedAt?.toDate ? a.finishedAt.toDate() : new Date(a.finishedAt || 0)).getTime();
+        const tB = (b.finishedAt?.toDate ? b.finishedAt.toDate() : new Date(b.finishedAt || 0)).getTime();
+        return tB - tA;
+      });
+      return docs[0];
+    } catch (e) {
+      return null;
+    }
   }
 
   async saveAnswer(intentoId: string, preguntaId: string, selectedAnswer: string, isCorrect: boolean): Promise<void> {
@@ -395,14 +470,133 @@ export class FirestoreService {
     await updateDoc(ref, { answers });
   }
 
-  async finishIntento(intentoId: string, timeSpent: number, totalQuestions: number): Promise<number> {
+  async finishIntento(
+    intentoId: string,
+    timeSpent: number,
+    totalQuestions: number,
+    finalAnswers: { [preguntaId: string]: string } = {},
+    questionsList: any[] = []
+  ): Promise<number> {
     const ref = doc(this.firestore, 'intentos', intentoId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return 0;
-    const correct = snap.data()['answers'].filter((a: { isCorrect: boolean }) => a.isCorrect).length;
-    const score = Math.round(100 + (correct / Math.max(totalQuestions, 1)) * 900);
-    await updateDoc(ref, { status: 'completed', finishedAt: Timestamp.now(), score });
+    const existingData = snap.data();
+    const user = this.auth.currentUser;
+    const isPro = this.profileSignal()?.plan === 'premium';
+    const finishedAt = Timestamp.now();
+    const finishedDate = new Date();
+    const resultsAvailableAt = isPro
+      ? finishedAt
+      : Timestamp.fromDate(new Date(finishedDate.getTime() + 3 * 3600 * 1000));
+
+    let answersList: any[] = existingData['answers'] || [];
+
+    if (questionsList.length > 0) {
+      answersList = questionsList.map(q => {
+        const userSel = finalAnswers[q.id] || null;
+        const correctKey = q.correctAnswer || 'A';
+        const isCorr = userSel ? (userSel === correctKey) : false;
+        return {
+          preguntaId: q.id,
+          selectedAnswer: userSel,
+          correctAnswer: correctKey,
+          isCorrect: isCorr,
+          stem: q.stem || q.text || '',
+          options: q.options || [],
+          explanation: q.explanation || null
+        };
+      });
+    } else if (Object.keys(finalAnswers).length > 0) {
+      Object.keys(finalAnswers).forEach(pId => {
+        const sel = finalAnswers[pId];
+        const idx = answersList.findIndex((a: any) => a.preguntaId === pId);
+        if (idx >= 0) {
+          answersList[idx].selectedAnswer = sel;
+        } else {
+          answersList.push({ preguntaId: pId, selectedAnswer: sel, isCorrect: false });
+        }
+      });
+    }
+
+    const correctCount = answersList.filter((a: any) => a.isCorrect === true).length;
+    const score = Math.round(100 + (correctCount / Math.max(totalQuestions, 1)) * 900);
+
+    const updatePayload = {
+      status: 'completed',
+      finishedAt,
+      resultsAvailableAt,
+      resultsLocked: !isPro,
+      answers: answersList,
+      score
+    };
+
+    await updateDoc(ref, updatePayload);
+
+    this.intentoCache.set(intentoId, {
+      id: intentoId,
+      ...existingData,
+      ...updatePayload
+    } as unknown as Intento);
+
+    if (!isPro && user) {
+      try {
+        localStorage.setItem('estudiauni_last_simulation_finished', finishedDate.getTime().toString());
+        await updateDoc(doc(this.firestore, 'users', user.uid), {
+          lastSimulationFinishedAt: finishedAt
+        });
+        const currentProfile = this.profileSignal();
+        if (currentProfile) {
+          this.profileSignal.set({
+            ...currentProfile,
+            lastSimulationFinishedAt: finishedAt
+          });
+        }
+      } catch (e) {}
+    }
+
     return score;
+  }
+
+  /**
+   * Mark an in-progress "Ensayo Real" attempt as abandoned when the user exits early.
+   * Starts the 48h cooldown for Free tier, same as a normal finish, so users can't
+   * bypass the limit by quitting before submitting.
+   */
+  async abandonIntento(intentoId: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) return;
+
+    const ref = doc(this.firestore, 'intentos', intentoId);
+    const isPro = this.profileSignal()?.plan === 'premium';
+    const finishedAt = Timestamp.now();
+
+    try {
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data['status'] !== 'in_progress') return; // already finished/abandoned
+
+      await updateDoc(ref, {
+        status: 'abandoned',
+        finishedAt,
+      });
+
+      if (!isPro) {
+        localStorage.setItem('estudiauni_last_simulation_finished', Date.now().toString());
+        await updateDoc(doc(this.firestore, 'users', user.uid), {
+          lastSimulationFinishedAt: finishedAt
+        });
+        const currentProfile = this.profileSignal();
+        if (currentProfile) {
+          this.profileSignal.set({
+            ...currentProfile,
+            lastSimulationFinishedAt: finishedAt
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Error abandoning intento:', e);
+    }
   }
 
   async saveActivity(uid: string, entry: any): Promise<void> {
@@ -415,20 +609,48 @@ export class FirestoreService {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
 
+  private readonly newsCacheKey = 'estudiauni_news_cache_v1';
+  private readonly newsCacheTtlMs = 10 * 60 * 1000; // 10 min
+
+  /**
+   * Reads the public news feed. This is the highest-traffic query in the app (it runs for
+   * every anonymous visitor on the landing page), so results are cached in sessionStorage
+   * for a few minutes to avoid a fresh Firestore read on every page load under load.
+   */
   async getNews(): Promise<any[]> {
+    const cached = this.readSessionCache<any[]>(this.newsCacheKey, this.newsCacheTtlMs);
+    if (cached) return cached;
+
     try {
       const newsRef = collection(this.firestore, 'news');
       const q = query(newsRef, orderBy('date', 'desc'));
       const snap = await getDocs(q);
-      if (snap.empty) {
-        await this.seedNews();
-        const newSnap = await getDocs(q);
-        return newSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      }
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const news = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      this.writeSessionCache(this.newsCacheKey, news);
+      return news;
     } catch (error) {
       console.error('Error fetching news:', error);
       return [];
+    }
+  }
+
+  private readSessionCache<T>(key: string, ttlMs: number): T | null {
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      const { data, cachedAt } = JSON.parse(raw);
+      if (Date.now() - cachedAt > ttlMs) return null;
+      return data as T;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeSessionCache(key: string, data: unknown): void {
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ data, cachedAt: Date.now() }));
+    } catch {
+      // sessionStorage unavailable (private browsing, quota, etc.) — just skip caching
     }
   }
 

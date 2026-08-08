@@ -1,6 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, map, of, shareReplay } from 'rxjs';
+
+export interface CareerMatriculaData {
+  totalMatricula: number;
+  pctMujeres: number | null;
+  edadPromedio: number | null;
+  sedes: string[];
+  comunas: string[];
+  modalidades: string[];
+  jornadas: string[];
+  duracionSemestres: number | null;
+  acreditada: boolean;
+  fuente: string;
+}
 
 export interface Career {
   id: string;
@@ -10,6 +23,8 @@ export interface Career {
   area: string;
   ubicacion: string;
   descripcion: string;
+  /** Enriched, per-institution description built from real SIES/MINEDUC matrícula data — falls back to `descripcion` when there's no match. */
+  descripcionDetallada?: string;
   intereses: string[];
   puntajes: {
     nem: number;
@@ -20,6 +35,8 @@ export interface Career {
     electiva: number;
   };
   puntajeCorte2025: number;
+  /** Real enrollment facts for this career at this institution. Null if no match was found in the source dataset. */
+  matriculaData: CareerMatriculaData | null;
 }
 
 export interface CareerFilters {
@@ -35,10 +52,16 @@ export interface CareerFilters {
 })
 export class CareerService {
   private http = inject(HttpClient);
-  private dataUrl = 'assets/universidades-carreras.json';
+  // Hosted on Cloudinary (not bundled with the app) so the ~2700-career dataset doesn't
+  // bloat the deploy bundle and can be refreshed independently of a frontend release.
+  private dataUrl = 'https://res.cloudinary.com/dqm3syhwr/raw/upload/data/universidades-carreras.json';
+
+  // Fetched once per session and shared — this is a ~3MB reference dataset that doesn't
+  // change per-user, so every component asking for it reuses the same in-flight/cached request.
+  private careers$ = this.http.get<Career[]>(this.dataUrl).pipe(shareReplay(1));
 
   getCareers(): Observable<Career[]> {
-    return this.http.get<Career[]>(this.dataUrl);
+    return this.careers$;
   }
 
   getAreas(): Observable<string[]> {

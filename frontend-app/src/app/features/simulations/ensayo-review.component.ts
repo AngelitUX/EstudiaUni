@@ -1,8 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Intento, Pregunta } from '../../core/services/firestore.service';
+import { PaymentService } from '../../core/services/payment.service';
+import { Auth } from '@angular/fire/auth';
 import { from, map, forkJoin, of, catchError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface ReviewQuestion {
   id: number;
@@ -32,7 +35,41 @@ interface ReviewQuestion {
         <p>Calculando resultados...</p>
       </div>
 
-      <ng-container *ngIf="!loading">
+      <!-- RESULTS LOCKED VIEW (3-Hour Delay for Free Users) -->
+      <div class="results-locked-container animate-fade-in" *ngIf="!loading && resultsLocked" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="locked-card glass-card" style="background: #ffffff; padding: 3rem 2.5rem; border-radius: 28px; max-width: 600px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 2px solid rgba(124,58,237,0.2);">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">⏳</div>
+          <h2 style="font-size: 1.85rem; font-weight: 900; color: #0f172a; margin: 0 0 0.5rem;">Resultados en Preparación</h2>
+          <span style="background: rgba(245,158,11,0.15); color: #b45309; padding: 0.38rem 0.85rem; border-radius: 99px; font-weight: 800; font-size: 0.82rem; display: inline-block; margin-bottom: 1.5rem;">
+            Plan Básico (Liberación en 3 Horas)
+          </span>
+          
+          <p style="color: #475569; font-size: 1rem; line-height: 1.6; margin-bottom: 2rem;">
+            ¡Ensayo completado con éxito! 🎯 En el Plan Básico, tus resultados, puntaje PAES y pauta explicada se liberan automáticamente <strong>3 horas después</strong> de rendir la prueba.
+          </p>
+
+          <div style="background: rgba(124,58,237,0.06); border: 2px solid rgba(124,58,237,0.2); padding: 1.5rem; border-radius: 18px; margin-bottom: 2rem;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #6d28d9; text-transform: uppercase; letter-spacing: 1px;">Disponible en:</span>
+            <div style="font-size: 2.2rem; font-weight: 900; color: #7c3aed; font-family: monospace; margin-top: 0.4rem;">
+              {{ countdownTimerText }}
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <button (click)="paymentService.openPricingModal()" style="background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 800; font-size: 1.05rem; cursor: pointer; box-shadow: 0 8px 20px rgba(124,58,237,0.3); transition: all 0.2s;">
+              Desbloquear Resultados de Inmediato con PRO 👑
+            </button>
+            <button routerLink="/ensayos" style="background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; padding: 0.85rem 1.5rem; border-radius: 14px; font-weight: 700; font-size: 0.95rem; cursor: pointer;">
+              ← Volver a Ensayos PAES
+            </button>
+            <button *ngIf="!isProduction" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.75rem 1rem; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; margin-top: 0.5rem;">
+              🧪 [DEV] Simular paso de tiempo (Liberar Resultados Ahora)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!loading && !resultsLocked">
         <!-- HEADER -->
         <header class="review-header">
           <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
@@ -503,10 +540,12 @@ interface ReviewQuestion {
     }
   `]
 })
-export class EnsayoReviewComponent implements OnInit {
+export class EnsayoReviewComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private firestoreService = inject(FirestoreService);
+  public firestoreService = inject(FirestoreService);
+  public paymentService = inject(PaymentService);
+  private auth = inject(Auth);
 
   examId = '';
   examTitle = 'Cargando...';
@@ -515,8 +554,16 @@ export class EnsayoReviewComponent implements OnInit {
   activeFilter = 'all';
   loading = true;
   mostrarModalMejorador = false;
+  resultsLocked = false;
+  resultsAvailableAt: Date | null = null;
+  countdownTimerText = '00:00:00';
+  private resultsTimerInterval: any;
 
   questions: ReviewQuestion[] = [];
+
+  get isProPlan(): boolean {
+    return this.firestoreService.profileSignal()?.plan === 'premium';
+  }
 
   get correctCount(): number {
     return this.questions.filter(q => q.isCorrect).length;
@@ -553,15 +600,84 @@ export class EnsayoReviewComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.examId = this.route.snapshot.paramMap.get('id') || '';
-    const intentoId = this.route.snapshot.queryParamMap.get('intento');
+    let intentoId = this.route.snapshot.queryParamMap.get('intento');
+
+    const user = this.auth.currentUser;
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+
+    // Proactively check if non-Pro user completed a test within 3 hours
+    if (!this.isProPlan && lastFinished) {
+      let finishedDate: Date = typeof lastFinished.toDate === 'function' ? lastFinished.toDate() : new Date(lastFinished);
+      const availDate = new Date(finishedDate.getTime() + 3 * 3600 * 1000);
+      if (availDate > new Date()) {
+        this.resultsLocked = true;
+        this.resultsAvailableAt = availDate;
+        this.startResultsCountdown(availDate);
+        this.loading = false;
+        return;
+      }
+    }
+
+    // If intentoId is missing, auto-fetch latest completed attempt for user
+    if (!intentoId && user) {
+      const latest = await this.firestoreService.getLatestCompletedIntento(user.uid);
+      if (latest) {
+        intentoId = latest.id;
+        if (latest.ensayoId) this.examId = latest.ensayoId;
+      }
+    }
 
     if (intentoId) {
       this.loadIntentoData(intentoId);
     } else {
       this.loading = false;
     }
+  }
+
+  ngOnDestroy() {
+    if (this.resultsTimerInterval) {
+      clearInterval(this.resultsTimerInterval);
+    }
+  }
+
+  devBypassResultsLock = false;
+  readonly isProduction = environment.production;
+
+  async devResetTimeLimits() {
+    if (this.isProduction) return; // Dev-only escape hatch, never active in production
+    await this.firestoreService.devSimulateTimePass();
+    this.resultsLocked = false;
+    if (this.resultsTimerInterval) clearInterval(this.resultsTimerInterval);
+
+    const user = this.auth.currentUser;
+    let intentoId = this.route.snapshot.queryParamMap.get('intento');
+    if (!intentoId && user) {
+      const latest = await this.firestoreService.getLatestCompletedIntento(user.uid);
+      if (latest) intentoId = latest.id;
+    }
+    if (intentoId) {
+      this.loadIntentoData(intentoId);
+    }
+  }
+
+  private startResultsCountdown(targetDate: Date) {
+    const update = () => {
+      const diff = targetDate.getTime() - Date.now();
+      if (diff <= 0) {
+        this.resultsLocked = false;
+        if (this.resultsTimerInterval) clearInterval(this.resultsTimerInterval);
+        return;
+      }
+      const hours = Math.floor(diff / (1000 * 3600)).toString().padStart(2, '0');
+      const minutes = Math.floor((diff % (1000 * 3600)) / (1000 * 60)).toString().padStart(2, '0');
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+      this.countdownTimerText = `${hours}h : ${minutes}m : ${seconds}s`;
+    };
+    update();
+    this.resultsTimerInterval = setInterval(update, 1000);
   }
 
   private loadIntentoData(intentoId: string) {
@@ -575,77 +691,126 @@ export class EnsayoReviewComponent implements OnInit {
       next: (data: any) => {
         const preguntas: any[] = data.preguntas || [];
         const intento: any = data.intento || null;
-        const answersList: any[] = Array.isArray(intento?.answers) ? intento.answers : [];
 
-        this.examTitle = data.ensayo?.title || this.getGenericTitle(this.examId);
-        this.totalQuestions = preguntas.length;
-
-        this.questions = preguntas.map((p: any) => {
-          const userAnsObj = answersList.find((a: any) => a.preguntaId === p.id) || null;
-
-          // Map topic with fallbacks for official exams
-          let topic = p.tema || p.topic || p.subtema;
-          if (!topic) {
-            const lowerId = this.examId.toLowerCase();
-            const order = p.order || 1;
-            if (lowerId.includes('m1') || lowerId.includes('matematica')) {
-              if (order <= 15) topic = 'Números';
-              else if (order <= 35) topic = 'Álgebra';
-              else if (order <= 50) topic = 'Geometría';
-              else topic = 'Probabilidad';
-            } else if (lowerId.includes('lectora') || lowerId.includes('l-')) {
-              if (order <= 20) topic = 'Localizar';
-              else if (order <= 45) topic = 'Interpretar';
-              else topic = 'Evaluar';
-            } else if (lowerId.includes('ciencias') || lowerId.includes('biologia')) {
-              if (order <= 20) topic = 'Biología Celular';
-              else if (order <= 45) topic = 'Fisiología';
-              else topic = 'Ecosistemas';
-            } else if (lowerId.includes('fisica')) {
-              topic = 'Física';
-            } else if (lowerId.includes('quimica')) {
-              topic = 'Química';
-            } else if (lowerId.includes('historia')) {
-              if (order <= 22) topic = 'Época del Salitre';
-              else if (order <= 44) topic = 'Cuestión Social';
-              else topic = 'Constitución';
-            } else {
-              topic = 'General';
+        // Enforce 3-hour delay for Free tier users (unless DEV button bypassed it)
+        if (!this.isProPlan && !this.firestoreService.devBypassResultsLock) {
+          let availDate: Date | null = null;
+          if (intento?.resultsAvailableAt) {
+            availDate = typeof intento.resultsAvailableAt.toDate === 'function'
+              ? intento.resultsAvailableAt.toDate()
+              : new Date(intento.resultsAvailableAt);
+          } else if (intento?.finishedAt) {
+            const finishedDate = typeof intento.finishedAt.toDate === 'function'
+              ? intento.finishedAt.toDate()
+              : new Date(intento.finishedAt);
+            availDate = new Date(finishedDate.getTime() + 3 * 3600 * 1000);
+          } else {
+            const profile = this.firestoreService.profileSignal();
+            const lastFinished = profile?.lastSimulationFinishedAt;
+            if (lastFinished) {
+              const finishedDate = typeof lastFinished.toDate === 'function' ? lastFinished.toDate() : new Date(lastFinished);
+              availDate = new Date(finishedDate.getTime() + 3 * 3600 * 1000);
             }
           }
 
-          const pOpts = p.options || {};
-          const options: { id: string; text: string }[] = [
-            { id: 'A', text: pOpts.A || '' },
-            { id: 'B', text: pOpts.B || '' },
-            { id: 'C', text: pOpts.C || '' },
-            { id: 'D', text: pOpts.D || '' },
-          ];
-          if (pOpts.E !== undefined && pOpts.E !== null) {
-            options.push({ id: 'E', text: pOpts.E });
+          if (availDate && availDate > new Date()) {
+            this.resultsLocked = true;
+            this.resultsAvailableAt = availDate;
+            this.startResultsCountdown(availDate);
+            this.loading = false;
+            return;
           }
+        }
 
-          const isCorrect = userAnsObj?.isCorrect === true ||
-            (userAnsObj?.selectedAnswer && userAnsObj.selectedAnswer === p.correctAnswer);
+        const answersList: any[] = Array.isArray(intento?.answers) ? intento.answers : [];
+        this.score = intento?.score || 0;
+        this.examTitle = intento?.ensayoTitle || data.ensayo?.title || this.getGenericTitle(this.examId);
 
-          return {
-            id: p.order,
-            stem: p.text || '',
-            imageUrl: p.imageUrl ? (p.imageUrl.startsWith('http') || p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl) : undefined,
-            options,
-            userAnswer: userAnsObj?.selectedAnswer || null,
-            correctAnswer: p.correctAnswer || '',
-            isCorrect,
+        if (preguntas.length > 0) {
+          this.totalQuestions = preguntas.length;
+          this.questions = preguntas.map((p: any) => {
+            const userAnsObj = answersList.find((a: any) => a.preguntaId === p.id) || null;
+
+            let topic = p.tema || p.topic || p.subtema;
+            if (!topic) {
+              const lowerId = this.examId.toLowerCase();
+              const order = p.order || 1;
+              if (lowerId.includes('m1') || lowerId.includes('matematica')) {
+                if (order <= 15) topic = 'Números';
+                else if (order <= 35) topic = 'Álgebra';
+                else if (order <= 50) topic = 'Geometría';
+                else topic = 'Probabilidad';
+              } else if (lowerId.includes('lectora') || lowerId.includes('l-')) {
+                if (order <= 20) topic = 'Localizar';
+                else if (order <= 45) topic = 'Interpretar';
+                else topic = 'Evaluar';
+              } else if (lowerId.includes('ciencias') || lowerId.includes('biologia')) {
+                if (order <= 20) topic = 'Biología Celular';
+                else if (order <= 45) topic = 'Fisiología';
+                else topic = 'Ecosistemas';
+              } else if (lowerId.includes('fisica')) {
+                topic = 'Física';
+              } else if (lowerId.includes('quimica')) {
+                topic = 'Química';
+              } else if (lowerId.includes('historia')) {
+                if (order <= 22) topic = 'Época del Salitre';
+                else if (order <= 44) topic = 'Cuestión Social';
+                else topic = 'Constitución';
+              } else {
+                topic = 'General';
+              }
+            }
+
+            const pOpts = p.options || {};
+            const options: { id: string; text: string }[] = [
+              { id: 'A', text: pOpts.A || pOpts.a || 'Opción A' },
+              { id: 'B', text: pOpts.B || pOpts.b || 'Opción B' },
+              { id: 'C', text: pOpts.C || pOpts.c || 'Opción C' },
+              { id: 'D', text: pOpts.D || pOpts.d || 'Opción D' }
+            ];
+
+            const userSelected = userAnsObj?.selectedAnswer || null;
+            const correctKey = p.correctAnswer || p.correct || 'A';
+            const isCorrect = userSelected ? (userSelected === correctKey) : false;
+
+            return {
+              id: p.order || 1,
+              stem: p.stem || p.pregunta || 'Pregunta de ensayo',
+              options,
+              userAnswer: userSelected,
+              correctAnswer: correctKey,
+              isCorrect,
+              explanation: {
+                correctSolution: p.explicacion || p.explanation?.correctSolution || 'Revisa la pauta oficial DEMRE.',
+                tip: 'Analiza cada alternativa descartando las distractoras.'
+              },
+              imageUrl: p.imageUrl || null,
+              tema: topic
+            };
+          });
+        } else if (answersList.length > 0) {
+          // Fallback if preguntas collection query is empty for official exams
+          this.totalQuestions = answersList.length;
+          this.questions = answersList.map((a: any, idx: number) => ({
+            id: idx + 1,
+            stem: a.questionStem || a.stem || `Pregunta N° ${idx + 1}`,
+            options: a.options || [
+              { id: 'A', text: 'Opción A' },
+              { id: 'B', text: 'Opción B' },
+              { id: 'C', text: 'Opción C' },
+              { id: 'D', text: 'Opción D' }
+            ],
+            userAnswer: a.selectedAnswer || null,
+            correctAnswer: a.correctAnswer || (a.isCorrect ? a.selectedAnswer : 'A'),
+            isCorrect: !!a.isCorrect,
             explanation: {
-              whyWrong: userAnsObj && !isCorrect
-                ? (p as any).whyWrong || 'La respuesta elegida no cumple con las condiciones del problema.'
-                : undefined,
-              correctSolution: p.explanation || 'Consultar material de estudio para el desarrollo detallado.',
-              tip: (p as any).tip || 'Lee siempre bien el enunciado y las unidades antes de responder.'
+              correctSolution: a.explanation?.correctSolution || 'Pauta y solución explicada de la pregunta.',
+              tip: 'Revisa tus respuestas para identificar tus fortalezas y debilidades.'
             },
-            tema: topic
-          };
-        });
+            imageUrl: a.imageUrl || null,
+            tema: a.tema || 'General'
+          }));
+        }
 
         // Compute score: use stored score, or compute from mapped questions
         if (intento?.score) {

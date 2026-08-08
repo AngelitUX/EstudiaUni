@@ -24,7 +24,7 @@ import { PaymentService } from '../../core/services/payment.service';
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         <nav class="sidebar-nav">
@@ -163,14 +163,19 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="ai-promo-banner">
             <div class="ai-promo-content">
               <div style="width: 60px; height: 60px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.15); flex-shrink: 0;">
-                <img src="assets/img/gif.gif" style="width: 100%; height: 100%; object-fit: contain;" alt="Foco" />
+                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" style="width: 100%; height: 100%; object-fit: contain;" alt="Foco" />
               </div>
-              <div class="ai-promo-text">
+              <div class="ai-promo-text" *ngIf="isProPlan() || adminService.isAdmin()">
                 <strong>¿Dudas vocacionales?</strong>
                 <span>Pregúntale a Foco: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
               </div>
+              <div class="ai-promo-text" *ngIf="!isProPlan() && !adminService.isAdmin()">
+                <strong>¿No sabes qué carrera escoger?</strong>
+                <span>Foco te ayudará a decidir 🐙 — chat con IA disponible solo para el Plan PRO.</span>
+              </div>
             </div>
-            <button class="btn btn-primary" (click)="toggleAi()">Abrir 🐙</button>
+            <button class="btn btn-primary" *ngIf="isProPlan() || adminService.isAdmin()" (click)="toggleAi()">Abrir 🐙</button>
+            <button class="btn btn-primary" *ngIf="!isProPlan() && !adminService.isAdmin()" (click)="paymentService.openPricingModal()">🔒 Mejorar a PRO</button>
           </div>
         </div>
 
@@ -294,10 +299,18 @@ import { PaymentService } from '../../core/services/payment.service';
               </div>
               
               <h2 class="career-title">{{ career.nombre }}</h2>
-              <p class="career-desc">{{ career.descripcion }}</p>
+              <p class="career-desc">{{ career.descripcionDetallada || career.descripcion }}</p>
 
               <div class="interest-pills">
                 <span *ngFor="let int of career.intereses" class="pill">{{ int }}</span>
+              </div>
+
+              <!-- REAL ENROLLMENT FACTS (SIES/MINEDUC Matrícula 2025) -->
+              <div class="matricula-facts" *ngIf="career.matriculaData as md">
+                <span class="fact-badge" [class.accredited]="md.acreditada">{{ md.acreditada ? '✅ Acreditada' : '⚠️ Sin acreditación' }}</span>
+                <span class="fact-badge">👥 {{ md.totalMatricula.toLocaleString('es-CL') }} matriculados</span>
+                <span class="fact-badge" *ngIf="md.pctMujeres !== null">⚖️ {{ md.pctMujeres }}% mujeres</span>
+                <span class="fact-badge" *ngIf="md.jornadas.length">🕐 {{ md.jornadas.join('/') }}</span>
               </div>
 
               <div class="score-section">
@@ -370,7 +383,7 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="ai-header">
           <div class="ai-header-left">
             <div class="ai-avatar">
-              <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+              <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             <div>
               <h4 class="ai-title">Foco, tu Pulpo Orientador</h4>
@@ -444,9 +457,9 @@ import { PaymentService } from '../../core/services/payment.service';
       </aside>
 
       <!-- FLOATING BOT FAB BUTTON -->
-      <button class="ai-fab-btn" (click)="toggleAi()" *ngIf="!isAiOpen()" title="Hablar con Foco AI">
+      <button class="ai-fab-btn" (click)="toggleAi()" *ngIf="!isAiOpen()" [title]="(isProPlan() || adminService.isAdmin()) ? 'Hablar con Foco AI' : 'Foco AI — exclusivo PRO'">
         <span class="fab-emoji">🐙</span>
-        <span class="fab-text">Hablar con Foco</span>
+        <span class="fab-text">{{ (isProPlan() || adminService.isAdmin()) ? 'Hablar con Foco' : 'Foco (PRO) 🔒' }}</span>
       </button>
     </div>
 
@@ -710,6 +723,9 @@ import { PaymentService } from '../../core/services/payment.service';
 
     .interest-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
     .pill { font-size: 0.75rem; background: var(--bg-secondary); color: var(--text-secondary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600; }
+    .matricula-facts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .fact-badge { font-size: 0.72rem; background: rgba(0,0,0,0.04); color: var(--text-secondary); padding: 0.25rem 0.6rem; border-radius: 99px; font-weight: 700; border: 1px solid var(--glass-border); white-space: nowrap; }
+    .fact-badge.accredited { background: rgba(34,197,94,0.1); color: #15803d; border-color: rgba(34,197,94,0.3); }
 
     .score-section { background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; }
     .score-header { display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
@@ -1308,6 +1324,10 @@ export class CareerFinderComponent implements OnInit {
 
   // --- AI ASSISTANT LOGIC ---
   toggleAi() {
+    if (!this.isAiOpen() && !this.isProPlan() && !this.adminService.isAdmin()) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     this.isAiOpen.set(!this.isAiOpen());
     if (this.isAiOpen()) {
       setTimeout(() => this.scrollChatToBottom(), 100);

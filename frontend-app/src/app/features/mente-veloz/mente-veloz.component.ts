@@ -11,6 +11,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
+import { ToastService } from '../../core/services/toast.service';
+
+export const FREE_MENTE_VELOZ_MATERIAS = ['mat1', 'comp-lectora'];
+export const FREE_MENTE_VELOZ_TIMES = [60, 180];
+export const FREE_MENTE_VELOZ_SESSIONS_PER_WINDOW = 3;
+export const MENTE_VELOZ_WINDOW_HOURS = 24;
 
 type DifficultyMode = 'normal' | 'hardcore' | 'suddendeath';
 type GameState = 'setup' | 'playing' | 'results';
@@ -32,7 +38,7 @@ interface PlayedQuestion {
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         <nav class="sidebar-nav">
@@ -162,19 +168,22 @@ interface PlayedQuestion {
               <span class="section-badge">1</span>
               <h3>Selecciona las Materias</h3>
               <button class="btn-select-all" (click)="toggleAllMaterias()">
-                {{ selectedMaterias.size === paesContent.materias().length ? 'Deseleccionar todo' : 'Seleccionar todo' }}
+                {{ selectedMaterias.size === selectableMateriaCount() ? 'Deseleccionar todo' : 'Seleccionar todo' }}
               </button>
             </div>
             <div class="subjects-grid">
-              <button *ngFor="let m of paesContent.materias()" 
-                      class="subject-btn" 
+              <button *ngFor="let m of paesContent.materias()"
+                      class="subject-btn"
                       [class.selected]="selectedMaterias.has(m.id)"
+                      [class.locked]="isMateriaLockedForFree(m.id)"
                       (click)="toggleMateria(m.id)">
                 <span class="subj-icon">{{ m.icon || '📚' }}</span>
                 <span class="subj-title">{{ m.title }}</span>
-                <span class="checkbox-indicator"></span>
+                <span class="checkbox-indicator" *ngIf="!isMateriaLockedForFree(m.id)"></span>
+                <span class="lock-indicator" *ngIf="isMateriaLockedForFree(m.id)">🔒 PRO</span>
               </button>
             </div>
+            <p class="warning-text" *ngIf="!isProPlan() && !adminService.isAdmin()">Plan Básico: solo Competencia Lectora y M1 disponibles. <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejora a PRO</a> para todas las materias.</p>
             <div class="pool-counter" *ngIf="selectedMaterias.size > 0">
               📋 {{ getPoolCount() }} preguntas disponibles en {{ selectedMaterias.size }} materia{{ selectedMaterias.size > 1 ? 's' : '' }}
             </div>
@@ -199,42 +208,46 @@ interface PlayedQuestion {
               <button class="preset-btn" [class.active]="timeLimit() === 180" (click)="setTime(180)">
                 ⏱️ 3 Minutos
               </button>
-              <button class="preset-btn" [class.active]="timeLimit() === 300" (click)="setTime(300)">
-                ⏱️ 5 Minutos
+              <button class="preset-btn" [class.locked]="!isProPlan() && !adminService.isAdmin()" [class.active]="timeLimit() === 300" (click)="setTime(300)">
+                ⏱️ 5 Minutos @if (!isProPlan() && !adminService.isAdmin()) { <span class="lock-indicator">🔒</span> }
               </button>
-              <div class="custom-time-input-group">
-                <input type="number" [(ngModel)]="customTimeMinutes" placeholder="Personalizado" min="1" max="60" (change)="setCustomTime()">
-                <span class="input-unit">min</span>
+              <div class="custom-time-input-group" [class.locked]="!isProPlan() && !adminService.isAdmin()">
+                <input type="number" [(ngModel)]="customTimeMinutes" placeholder="Personalizado" min="1" max="60" [disabled]="!isProPlan() && !adminService.isAdmin()" (change)="setCustomTime()">
+                <span class="input-unit">min {{ (!isProPlan() && !adminService.isAdmin()) ? '🔒' : '' }}</span>
               </div>
             </div>
+            <p class="warning-text" *ngIf="!isProPlan() && !adminService.isAdmin()">Plan Básico: solo 1 o 3 minutos. <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejora a PRO</a> para 5 min o tiempo personalizado.</p>
 
             <div class="setup-section-title mt-5">
               <span class="section-badge">3</span>
               <h3>Modo de Penalización (Dificultad)</h3>
             </div>
             <div class="modes-grid">
-              <div class="mode-card normal" [class.active]="difficulty() === 'normal'" (click)="difficulty.set('normal')">
+              <div class="mode-card normal" [class.active]="difficulty() === 'normal'" (click)="setDifficulty('normal')">
                 <div class="mode-header-row">
                   <span class="mode-pill-icon">🟢</span>
                   <h4>Normal</h4>
                 </div>
                 <p>Perfecto para entrenar. Si te equivocas, pasas a la siguiente pregunta sin restar tiempo.</p>
               </div>
-              <div class="mode-card hardcore" [class.active]="difficulty() === 'hardcore'" (click)="difficulty.set('hardcore')">
+              <div class="mode-card hardcore" [class.locked]="!isProPlan() && !adminService.isAdmin()" [class.active]="difficulty() === 'hardcore'" (click)="setDifficulty('hardcore')">
                 <div class="mode-header-row">
                   <span class="mode-pill-icon">🔥</span>
                   <h4>Hardcore</h4>
+                  <span class="lock-indicator" *ngIf="!isProPlan() && !adminService.isAdmin()">🔒 PRO</span>
                 </div>
                 <p>Para mentes ágiles. Cada respuesta incorrecta restará <strong>5 segundos</strong> del temporizador.</p>
               </div>
-              <div class="mode-card suddendeath" [class.active]="difficulty() === 'suddendeath'" (click)="difficulty.set('suddendeath')">
+              <div class="mode-card suddendeath" [class.locked]="!isProPlan() && !adminService.isAdmin()" [class.active]="difficulty() === 'suddendeath'" (click)="setDifficulty('suddendeath')">
                 <div class="mode-header-row">
                   <span class="mode-pill-icon">💀</span>
                   <h4>Muerte Súbita</h4>
+                  <span class="lock-indicator" *ngIf="!isProPlan() && !adminService.isAdmin()">🔒 PRO</span>
                 </div>
                 <p>Sin margen de error. Al primer fallo se terminará el tiempo y la ronda habrá finalizado.</p>
               </div>
             </div>
+            <p class="warning-text" *ngIf="!isProPlan() && !adminService.isAdmin()">Plan Básico: solo dificultad Normal. <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejora a PRO</a> para Hardcore y Muerte Súbita.</p>
 
             <div class="setup-summary">
               <div class="summary-pill">
@@ -248,7 +261,10 @@ interface PlayedQuestion {
               </div>
             </div>
 
-            <button class="btn-start-game" (click)="startGame()">
+            <p class="warning-text" style="text-align: center;" *ngIf="!isProPlan() && !adminService.isAdmin()">
+              {{ sessionStatus().allowed ? ('Te quedan ' + sessionStatus().remaining + ' de ' + 3 + ' partidas gratis hoy.') : ('⏳ Sin partidas gratis disponibles. Vuelve ' + (sessionStatus().nextAvailableAt | date:'short') + ' o pásate a PRO.') }}
+            </p>
+            <button class="btn-start-game" [disabled]="!isProPlan() && !adminService.isAdmin() && !sessionStatus().allowed" (click)="startGame()">
               <span>Comenzar Desafío ⚡</span>
             </button>
           </div>
@@ -669,6 +685,9 @@ interface PlayedQuestion {
     .subj-title { font-size: 0.95rem; flex: 1; min-width: 0; margin-right: 0.25rem; }
     .pool-counter { margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(133, 92, 214, 0.04); border: 2.5px solid rgba(133, 92, 214, 0.18); border-radius: 12px; color: var(--accent-primary); font-weight: 600; font-size: 0.9rem; text-align: center; }
     .setup-error-alert { background: rgba(239, 68, 68, 0.08); border-left: 5px solid #ef4444; border-radius: 0 12px 12px 0; color: #ef4444; font-weight: 600; padding: 1rem; margin-top: 1rem; font-size: 0.95rem; border: 2.5px solid rgba(239, 68, 68, 0.15); border-left: none; }
+    .warning-text { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.75rem; }
+    .subject-btn.locked, .preset-btn.locked, .custom-time-input-group.locked, .mode-card.locked { opacity: 0.55; cursor: not-allowed; }
+    .lock-indicator { font-size: 0.72rem; font-weight: 800; color: #b45309; background: rgba(245,158,11,0.12); padding: 0.15rem 0.5rem; border-radius: 99px; margin-left: auto; }
  
     /* TIME PRESETS */
     .time-presets { display: flex; gap: 1rem; flex-wrap: wrap; }
@@ -1218,6 +1237,78 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     return p?.plan === 'premium';
   });
 
+  private toast = inject(ToastService);
+  sessionStatus = signal<{ allowed: boolean; remaining: number; nextAvailableAt?: Date }>({ allowed: true, remaining: FREE_MENTE_VELOZ_SESSIONS_PER_WINDOW });
+
+  private isFreeTier(): boolean {
+    return !this.isProPlan() && !this.adminService.isAdmin();
+  }
+
+  isMateriaLockedForFree(id: string): boolean {
+    if (!this.isFreeTier()) return false;
+    return !FREE_MENTE_VELOZ_MATERIAS.includes(this.normalizeMateriaId(id));
+  }
+
+  selectableMateriaCount(): number {
+    const all = this.paesContent.materias();
+    return this.isFreeTier() ? all.filter(m => !this.isMateriaLockedForFree(m.id)).length : all.length;
+  }
+
+  isDifficultyLockedForFree(mode: DifficultyMode): boolean {
+    return this.isFreeTier() && mode !== 'normal';
+  }
+
+  isTimeLockedForFree(seconds: number): boolean {
+    return this.isFreeTier() && !FREE_MENTE_VELOZ_TIMES.includes(seconds);
+  }
+
+  setDifficulty(mode: DifficultyMode) {
+    if (this.isDifficultyLockedForFree(mode)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
+    this.difficulty.set(mode);
+  }
+
+  private getSessionTimestampsKey(): string {
+    const uid = this.authService.currentUser?.uid || 'anon';
+    return `estudiauni_mv_sessions_${uid}`;
+  }
+
+  private getRecentSessionTimestamps(): number[] {
+    try {
+      const raw = localStorage.getItem(this.getSessionTimestampsKey()) || '[]';
+      const timestamps: number[] = JSON.parse(raw);
+      const cutoff = Date.now() - MENTE_VELOZ_WINDOW_HOURS * 3600 * 1000;
+      return timestamps.filter(t => t > cutoff);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  private recordSessionStart() {
+    const recent = this.getRecentSessionTimestamps();
+    recent.push(Date.now());
+    localStorage.setItem(this.getSessionTimestampsKey(), JSON.stringify(recent));
+    this.updateSessionStatus();
+  }
+
+  updateSessionStatus() {
+    if (!this.isFreeTier()) {
+      this.sessionStatus.set({ allowed: true, remaining: Infinity });
+      return;
+    }
+    const recent = this.getRecentSessionTimestamps();
+    const remaining = Math.max(0, FREE_MENTE_VELOZ_SESSIONS_PER_WINDOW - recent.length);
+    if (remaining > 0) {
+      this.sessionStatus.set({ allowed: true, remaining });
+      return;
+    }
+    const oldest = Math.min(...recent);
+    const nextAvailableAt = new Date(oldest + MENTE_VELOZ_WINDOW_HOURS * 3600 * 1000);
+    this.sessionStatus.set({ allowed: false, remaining: 0, nextAvailableAt });
+  }
+
   profileInitial = computed(() => {
     const p = this.firestoreService.profileSignal();
     return p?.displayName?.charAt(0).toUpperCase() || 'U';
@@ -1234,7 +1325,10 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.paesContent.materias().forEach(m => this.selectedMaterias.add(m.id));
+    this.paesContent.materias().forEach(m => {
+      if (!this.isMateriaLockedForFree(m.id)) this.selectedMaterias.add(m.id);
+    });
+    this.updateSessionStatus();
 
     // Load personal records when auth is resolved
     this.authService.user$.subscribe(user => {
@@ -1296,6 +1390,10 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   }
 
   toggleMateria(id: string) {
+    if (this.isMateriaLockedForFree(id)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     if (this.selectedMaterias.has(id)) {
       this.selectedMaterias.delete(id);
     } else {
@@ -1306,10 +1404,12 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
 
   toggleAllMaterias() {
     const all = this.paesContent.materias();
-    if (this.selectedMaterias.size === all.length) {
+    const selectable = this.isFreeTier() ? all.filter(m => !this.isMateriaLockedForFree(m.id)) : all;
+    if (this.selectedMaterias.size === selectable.length) {
       this.selectedMaterias.clear();
     } else {
-      all.forEach(m => this.selectedMaterias.add(m.id));
+      this.selectedMaterias.clear();
+      selectable.forEach(m => this.selectedMaterias.add(m.id));
     }
     this.updateCurrentRecord();
   }
@@ -1338,11 +1438,20 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   }
 
   setTime(seconds: number) {
+    if (this.isTimeLockedForFree(seconds)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     this.timeLimit.set(seconds);
     this.customTimeMinutes = Math.floor(seconds / 60);
   }
 
   setCustomTime() {
+    if (this.isFreeTier()) {
+      this.paymentService.openPricingModal();
+      this.customTimeMinutes = Math.floor(this.timeLimit() / 60);
+      return;
+    }
     if (this.customTimeMinutes > 0) {
       this.timeLimit.set(this.customTimeMinutes * 60);
     }
@@ -1353,7 +1462,20 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
       this.setupError = true;
       return;
     }
+
+    if (this.isFreeTier()) {
+      this.updateSessionStatus();
+      if (!this.sessionStatus().allowed) {
+        this.toast.info('Ya usaste tus 3 partidas gratis de las últimas 24 horas. Pásate a PRO para partidas ilimitadas.');
+        return;
+      }
+    }
+
     this.setupError = false;
+
+    if (this.isFreeTier()) {
+      this.recordSessionStart();
+    }
 
     const allQuestions = this.paesContent.poolPreguntas();
     this.poolQuestions = allQuestions.filter(q => this.isMateriaSelected(q.materiaId));
@@ -1536,18 +1658,22 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
       ? Math.round((this.correctAnswers() / this.totalAnswered()) * 100) 
       : 0;
 
-    this.dashSvc.logMenteVelozCompleted({
-      title: `Ronda de Mente Veloz: ${materiaNames}`,
-      correctAnswers: this.correctAnswers(),
-      totalQuestions: this.totalAnswered(),
-      score: scorePercentage,
-      difficulty: this.difficulty() === 'normal' ? 'Normal' : this.difficulty() === 'hardcore' ? 'Hardcore' : 'Muerte Súbita',
-      timeLimit: this.timeLimit(),
-      avgSpeed: this.avgSpeed().toString(),
-      bestStreak: this.bestStreak,
-      materiasKey: Array.from(this.selectedMaterias).sort().join(','),
-      playedQuestionsRaw
-    });
+    // History is a PRO perk — free users see their results on screen but nothing is persisted
+    if (!this.isFreeTier()) {
+      this.dashSvc.logMenteVelozCompleted({
+        title: `Ronda de Mente Veloz: ${materiaNames}`,
+        correctAnswers: this.correctAnswers(),
+        totalQuestions: this.totalAnswered(),
+        score: scorePercentage,
+        difficulty: this.difficulty() === 'normal' ? 'Normal' : this.difficulty() === 'hardcore' ? 'Hardcore' : 'Muerte Súbita',
+        timeLimit: this.timeLimit(),
+        avgSpeed: this.avgSpeed().toString(),
+        bestStreak: this.bestStreak,
+        materiasKey: Array.from(this.selectedMaterias).sort().join(','),
+        playedQuestionsRaw
+      });
+    }
+    this.updateSessionStatus();
 
     setTimeout(() => {
       this.gameState.set('results');

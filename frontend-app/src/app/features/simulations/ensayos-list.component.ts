@@ -2,13 +2,16 @@ import { Component, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { Auth } from '@angular/fire/auth';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { ToastService } from '../../core/services/toast.service';
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
+import { environment } from '../../../environments/environment';
 
 interface Prueba {
   id: string;
@@ -45,7 +48,7 @@ type ExamMode = 'real' | 'asistido';
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         
@@ -210,6 +213,26 @@ type ExamMode = 'real' | 'asistido';
                 ×
               </button>
             </div>
+
+            <!-- COMPACT LAST ENSAYO BUTTON WIDGET -->
+            <button class="last-ensayo-compact-btn glass-card animate-fade-in" *ngIf="getLastCompletedEnsayo() as lastEnsayo" (click)="goToLastEnsayoReview(lastEnsayo)" style="background: rgba(124,58,237,0.06); border: 1.5px solid rgba(124,58,237,0.3); border-radius: 99px; padding: 0.45rem 1.1rem; display: flex; align-items: center; gap: 0.65rem; cursor: pointer; transition: all 0.2s;">
+              <span style="font-size: 1rem;">📊</span>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 0.82rem; font-weight: 800; color: #0f172a;">Último Ensayo</span>
+                <span *ngIf="!isProPlan() && isResultsLockedForLast()" style="background: rgba(245,158,11,0.2); color: #b45309; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.55rem; border-radius: 99px;">
+                  ⏳ {{ getResultsUnlockCountdown() }}
+                </span>
+                <span *ngIf="isProPlan() || !isResultsLockedForLast()" style="background: rgba(16,185,129,0.2); color: #047857; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.55rem; border-radius: 99px;">
+                  Ver Pauta
+                </span>
+              </div>
+              <span style="font-size: 0.85rem; font-weight: 800; color: #7c3aed;">→</span>
+            </button>
+
+            <!-- DEV SIMULATE TIME BUTTON (hidden in production builds) -->
+            <button *ngIf="!isProduction" class="dev-simulate-btn animate-fade-in" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; border-radius: 99px; padding: 0.45rem 0.85rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; margin-left: auto;" title="Boton de prueba para simular el paso de 50h">
+              🧪 [DEV] Simular paso de tiempo (+50h)
+            </button>
           </div>
 
           <!-- PRUEBAS -->
@@ -257,12 +280,14 @@ type ExamMode = 'real' | 'asistido';
                     *ngFor="let sub of pruebaSeleccionada.subpruebas"
                     type="button"
                     class="subprueba-card"
+                    [class.pro-locked-card]="pruebaSeleccionada.id !== 'ciencias' && !isEssayAvailableForFree(sub.id)"
                     (click)="seleccionarSubprueba(sub)"
                     [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id"
                     [class.perfect-gold]="isPerfect(sub.id)">
                     <span class="subprueba-name">
                       {{ sub.nombre }}
                       <span class="gold-badge" *ngIf="isPerfect(sub.id)">🏆</span>
+                      <span class="pro-lock-badge" *ngIf="pruebaSeleccionada.id !== 'ciencias' && !isEssayAvailableForFree(sub.id)">🔒 PRO 👑</span>
                     </span>
                     <span class="subprueba-desc">{{ sub.descripcion }}</span>
                   </button>
@@ -276,12 +301,14 @@ type ExamMode = 'real' | 'asistido';
                     *ngFor="let ensayo of subPruebaSeleccionada?.ensayos"
                     type="button"
                     class="subprueba-card"
+                    [class.pro-locked-card]="!isEssayAvailableForFree(ensayo.id)"
                     (click)="seleccionarEnsayo(ensayo)"
                     [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id"
                     [class.perfect-gold]="isPerfect(ensayo.id)">
                     <span class="subprueba-name">
                       {{ ensayo.nombre }}
                       <span class="gold-badge" *ngIf="isPerfect(ensayo.id)">🏆</span>
+                      <span class="pro-lock-badge" *ngIf="!isEssayAvailableForFree(ensayo.id)">🔒 PRO 👑</span>
                     </span>
                     <span class="subprueba-desc">{{ ensayo.descripcion }}</span>
                   </button>
@@ -291,6 +318,20 @@ type ExamMode = 'real' | 'asistido';
               <div class="scroll-indicator" *ngIf="canStart && !scrolledToBottom">
                 <span>Desliza hacia abajo para continuar</span>
                 <span class="scroll-arrow">↓</span>
+              </div>
+
+              <!-- COOLDOWN WARNING BANNER FOR FREE USERS -->
+              <div class="cooldown-warning-banner animate-fade-in" *ngIf="isCooldownActive()" style="background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.3); padding: 1rem 1.25rem; border-radius: 12px; margin: 1.5rem 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span style="font-size: 1.5rem;">⏳</span>
+                  <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #b45309;">Cooldown de 48 horas Activo (Plan Básico)</h4>
+                    <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: #78350f;">Tu próximo ensayo estará disponible en <strong>{{ getCooldownFormatted() }}</strong>.</p>
+                  </div>
+                </div>
+                <button type="button" (click)="paymentService.openPricingModal()" style="background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none; padding: 0.6rem 1.1rem; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+                  Desbloquear con PRO 👑
+                </button>
               </div>
 
               <div class="prueba-detalles" *ngIf="canStart">
@@ -403,6 +444,40 @@ type ExamMode = 'real' | 'asistido';
         </div>
       </div>
     </div>
+
+    <!-- CUSTOM COOLDOWN MODAL -->
+    <div class="modal-overlay animate-fade-in" *ngIf="showCooldownModal" (click)="showCooldownModal = false" style="z-index: 99999;">
+      <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()" style="background: #ffffff; padding: 2.5rem 2rem; border-radius: 24px; max-width: 480px; width: 90%; text-align: center; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25); border: 1px solid rgba(15, 23, 42, 0.08);">
+        <div style="font-size: 3.5rem; margin-bottom: 0.75rem;">⏳</div>
+        <h2 style="font-size: 1.6rem; font-weight: 900; color: #0f172a !important; margin: 0 0 0.4rem;">Cooldown del Plan Básico</h2>
+        <span style="background: rgba(245,158,11,0.15); color: #b45309; padding: 0.35rem 0.85rem; border-radius: 99px; font-weight: 800; font-size: 0.8rem; display: inline-block; margin-bottom: 1.25rem;">
+          1 Ensayo cada 48 Horas
+        </span>
+
+        <p style="color: #475569 !important; font-size: 0.95rem; line-height: 1.6; margin: 0 0 1.5rem; text-align: center; font-weight: 600;">
+          Has completado un ensayo recientemente. En el Plan Básico debes esperar 48 horas entre ensayos. Tu próximo ensayo gratuito estará disponible en:
+        </p>
+
+        <div style="background: rgba(245,158,11,0.08); border: 2px solid rgba(245,158,11,0.3); padding: 1.2rem; border-radius: 16px; margin-bottom: 1.75rem;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: #b45309; text-transform: uppercase;">Disponible en:</span>
+          <div style="font-size: 2rem; font-weight: 900; color: #d97706; font-family: monospace; margin-top: 0.25rem;">
+            {{ getCooldownFormatted() }}
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <button (click)="showCooldownModal = false; paymentService.openPricingModal()" style="background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none; padding: 0.9rem 1.25rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 14px rgba(124,58,237,0.3);">
+            🚀 Desbloquear Ensayos Ilimitados con PRO
+          </button>
+          <button (click)="showCooldownModal = false" style="background: transparent; color: #64748b; border: 1.5px solid #cbd5e1; padding: 0.75rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
+            Entendido
+          </button>
+          <button *ngIf="!isProduction" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.65rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; margin-top: 0.5rem;">
+            🧪 [DEV] Simular paso de tiempo (Saltar Cooldown 48h)
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -413,6 +488,21 @@ type ExamMode = 'real' | 'asistido';
       min-height: 100vh;
       background: var(--bg-color);
       color: var(--text-primary);
+    }
+    .pro-lock-badge {
+      background: rgba(124, 58, 237, 0.15);
+      color: #7c3aed;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      margin-left: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .subprueba-card.pro-locked-card {
+      border-color: rgba(124, 58, 237, 0.25);
     }
     .ensayos-container { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -1596,7 +1686,7 @@ export class EnsayosListComponent implements OnInit {
   subPruebaSeleccionada: SubPrueba | null = null;
   ensayoSeleccionado: EnsayoOption | null = null;
   // Reads from same localStorage key as the runner - always reliable
-  activeProgress: { examId: string; examName: string } | null = null;
+  activeProgress: { examId: string; examName: string; intentoId?: string } | null = null;
   showOverwriteModal = false;
   pendingMode: ExamMode = 'real';
 
@@ -1608,10 +1698,20 @@ export class EnsayosListComponent implements OnInit {
   public adminService = inject(AdminService);
   public dashSvc = inject(DashboardService);
   public paymentService = inject(PaymentService);
+  private toast = inject(ToastService);
+  private auth = inject(Auth);
   showProfileModal = false;
   showSettingsModal = false;
   showLogoutConfirm = false;
   isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
+  readonly isProduction = environment.production;
+
+  async devResetTimeLimits() {
+    if (this.isProduction) return; // Dev-only escape hatch, never active in production
+    await this.firestoreService.devSimulateTimePass();
+    this.showCooldownModal = false;
+    this.toast.success('🧪 [DEV] ¡Se simularon 50h de avance! Cooldown y retención 3h reiniciados.');
+  }
 
   profileInitial = computed(() => {
     const p = this.firestoreService.profileSignal();
@@ -1676,7 +1776,7 @@ export class EnsayosListComponent implements OnInit {
       if (!raw) { this.activeProgress = null; return; }
       const data = JSON.parse(raw);
       if (data?.examId && data?.mode === 'asistido') {
-        this.activeProgress = { examId: data.examId, examName: data.examName || data.examId };
+        this.activeProgress = { examId: data.examId, examName: data.examName || data.examId, intentoId: data.intentoId };
       } else {
         this.activeProgress = null;
       }
@@ -1722,15 +1822,161 @@ export class EnsayosListComponent implements OnInit {
     }
   }
 
-  discardActiveProgress() {
+  async discardActiveProgress() {
+    const isPro = this.isProPlan() || this.adminService.isAdmin();
+    const now = new Date();
+    const nowTs = now.getTime();
+
+    // 1. Remove local progress storage
     localStorage.removeItem(this.STORAGE_KEY);
+
+    // 2. If free user, register finalization timestamp to activate 48h cooldown
+    if (!isPro) {
+      localStorage.setItem('estudiauni_last_simulation_finished', nowTs.toString());
+
+      const profile = this.firestoreService.profileSignal();
+      if (profile) {
+        this.firestoreService.profileSignal.set({
+          ...profile,
+          lastSimulationFinishedAt: now
+        });
+      }
+
+      const user = this.auth.currentUser;
+      if (user) {
+        try {
+          const { doc, updateDoc } = await import('@angular/fire/firestore');
+          await updateDoc(doc(this.firestoreService.firestore, 'users', user.uid), {
+            lastSimulationFinishedAt: now
+          });
+        } catch (e) {}
+      }
+      this.toast.info('Ensayo cerrado y finalizado. Cooldown de 48 horas activado.');
+    } else {
+      this.toast.info('Ensayo cerrado.');
+    }
+
+    // 3. Mark attempt in Firestore as completed if attempt ID is present
+    if (this.activeProgress?.intentoId) {
+      try {
+        await this.firestoreService.finishIntento(this.activeProgress.intentoId, 0, 65);
+      } catch (e) {}
+    }
+
     this.activeProgress = null;
+  }
+
+  isEssayAvailableForFree(ensayoId: string): boolean {
+    if (this.isProPlan() || this.adminService.isAdmin()) return true;
+    if (!ensayoId) return false;
+    const lower = ensayoId.toLowerCase();
+    return lower.includes('2026') && !lower.includes('invierno');
+  }
+
+  private getLastFinishedDate(): Date | null {
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+    if (lastFinished) {
+      return typeof lastFinished.toDate === 'function' ? lastFinished.toDate() : new Date(lastFinished);
+    }
+    const storageVal = localStorage.getItem('estudiauni_last_simulation_finished');
+    if (storageVal) {
+      const parsed = parseInt(storageVal, 10);
+      if (!isNaN(parsed) && parsed > 0) return new Date(parsed);
+    }
+    return null;
+  }
+
+  isCooldownActive(): boolean {
+    if (this.isProPlan() || this.adminService.isAdmin()) return false;
+    const finishedDate = this.getLastFinishedDate();
+    if (!finishedDate) return false;
+
+    const elapsed = Date.now() - finishedDate.getTime();
+    return elapsed < 48 * 3600 * 1000;
+  }
+
+  getCooldownFormatted(): string {
+    const finishedDate = this.getLastFinishedDate();
+    if (!finishedDate) return '0h 0m';
+
+    const remainingMs = (48 * 3600 * 1000) - (Date.now() - finishedDate.getTime());
+    if (remainingMs <= 0) return '0h 0m';
+
+    const hours = Math.floor(remainingMs / (3600 * 1000));
+    const minutes = Math.floor((remainingMs % (3600 * 1000)) / (60 * 1000));
+    return `${hours}h ${minutes}m`;
+  }
+
+  showCooldownModal = false;
+
+  isResultsLockedForLast(): boolean {
+    if (this.isProPlan() || this.adminService.isAdmin()) return false;
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+    if (!lastFinished) return false;
+
+    let finishedDate: Date;
+    if (typeof lastFinished.toDate === 'function') {
+      finishedDate = lastFinished.toDate();
+    } else {
+      finishedDate = new Date(lastFinished);
+    }
+
+    const elapsed = Date.now() - finishedDate.getTime();
+    return elapsed < 3 * 3600 * 1000;
+  }
+
+  getResultsUnlockCountdown(): string {
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+    if (!lastFinished) return '00h 00m 00s';
+
+    let finishedDate: Date;
+    if (typeof lastFinished.toDate === 'function') {
+      finishedDate = lastFinished.toDate();
+    } else {
+      finishedDate = new Date(lastFinished);
+    }
+
+    const remainingMs = (3 * 3600 * 1000) - (Date.now() - finishedDate.getTime());
+    if (remainingMs <= 0) return '00h 00m 00s';
+
+    const hours = Math.floor(remainingMs / (3600 * 1000)).toString().padStart(2, '0');
+    const minutes = Math.floor((remainingMs % (3600 * 1000)) / (60 * 1000)).toString().padStart(2, '0');
+    const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000).toString().padStart(2, '0');
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  getLastCompletedEnsayo(): any {
+    const records = this.dashSvc.paesRecords();
+    if (!records || records.length === 0) return null;
+    return records[0];
+  }
+
+  goToLastEnsayoReview(lastEnsayo: any) {
+    if (!lastEnsayo) return;
+    const ensayoId = lastEnsayo.ensayoId || 'paes-2026-oficial';
+    const intentoId = lastEnsayo.intentoId || '';
+    this.router.navigate(['/ensayo', ensayoId, 'review'], {
+      queryParams: intentoId ? { intento: intentoId } : {}
+    });
   }
 
   iniciarPrueba(mode: ExamMode) {
     if (!this.pruebaSeleccionada) return;
 
     const ensayoId = this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
+
+    if (!this.isEssayAvailableForFree(ensayoId)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
+
+    if (this.isCooldownActive()) {
+      this.showCooldownModal = true;
+      return;
+    }
 
     // Only warn if there is ALREADY a DIFFERENT assisted exam in progress
     if (mode === 'asistido' && this.activeProgress && this.activeProgress.examId !== ensayoId) {
