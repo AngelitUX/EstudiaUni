@@ -2031,15 +2031,35 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       .dashboard-header .subtitle { font-size: 0.82rem !important; line-height: 1.35 !important; }
       .dashboard-body { padding: 0.85rem 0.85rem 2rem !important; width: 100% !important; box-sizing: border-box !important; }
       .filters-container { flex-direction: column; align-items: stretch; }
+      .recursos-grid { grid-template-columns: 1fr !important; }
       .preview-modal { height: 95vh; max-height: none; }
+      .preview-body-container { padding: 1.25rem !important; }
+      .modal-header { padding: 1.25rem !important; }
+      .preview-modal-title { font-size: 1.15rem !important; }
+      .viewer-toolbar { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; padding: 0.75rem 1rem !important; }
+      .book-controls { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; text-align: center; }
+      .video-controls { flex-wrap: wrap; gap: 0.75rem !important; }
+      .video-progress-container { min-width: 100%; order: 3; }
       .mock-book { flex-direction: column; height: auto; }
-      .book-page.left-page { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); padding-right: 2.25rem; }
-      .book-page.right-page { padding-left: 2.25rem; }
+      .book-page { padding: 1.5rem !important; }
+      .book-page.left-page { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); padding-right: 1.5rem !important; }
+      .book-page.right-page { padding-left: 1.5rem !important; }
+      .pdf-page-mock { padding: 1.25rem !important; height: auto !important; min-height: 420px; }
+      .site-body-mock { padding: 1.5rem !important; }
+      .browser-window-mock { height: auto !important; }
+      .otro-view-card, .quiz-question-card { padding: 1.25rem !important; }
     }
 
     @media (max-width: 480px) {
       .main-content { padding-top: 60px !important; }
       .filters-container { gap: 0.5rem; }
+      .recursos-grid { grid-template-columns: 1fr !important; }
+      .preview-body-container { padding: 1rem !important; }
+      .modal-header { padding: 1rem !important; }
+      .preview-modal-footer { padding: 1rem !important; flex-direction: column-reverse; }
+      .preview-modal-footer .btn { width: 100%; }
+      .viewer-toolbar, .book-controls { gap: 0.5rem !important; }
+      .site-body-mock { padding: 1rem !important; }
     }
   `]
 })

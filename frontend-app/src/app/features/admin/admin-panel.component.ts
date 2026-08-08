@@ -444,7 +444,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       margin: 0.5rem 0 0; 
       font-weight: 500;
     }
-    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
     
     .btn-refresh {
       padding: 0.75rem 1.25rem; 
@@ -735,6 +735,22 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     @media (max-width: 600px) {
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
       .content-header h1 { font-size: 2.2rem; }
+    }
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .content-header h1 { font-size: 1.7rem; }
+      .subtitle { font-size: 1rem; }
+      .header-actions { width: 100%; }
+      .header-actions .btn-refresh,
+      .header-actions .btn-create { flex: 1 1 auto; justify-content: center; font-size: 0.85rem; padding: 0.65rem 0.9rem; }
+      .card-header { flex-direction: column; align-items: flex-start; }
+      .card-actions { align-self: flex-end; }
+      .modal-actions { grid-template-columns: 1fr; }
+      .glass-modal { padding: 1.5rem; }
+    }
+    @media (max-width: 380px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .glass-card-simple { padding: 1.1rem; }
     }
 
     /* IMPORT MODAL SPECIFICS */

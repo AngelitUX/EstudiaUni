@@ -1041,6 +1041,7 @@ interface PlayedQuestion {
       .stats-row { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
       .stat-box { min-width: 100%; padding: 1.25rem 1rem; }
       .stat-val { font-size: 2.2rem; }
+      .question-card { padding: 1.25rem 1rem; border-radius: 20px; }
       .q-enunciado { font-size: 1.25rem; }
       .option-btn { padding: 1rem; }
       .results-actions { flex-direction: column; width: 100%; }
@@ -1050,6 +1051,27 @@ interface PlayedQuestion {
       .summary-pill { font-size: 0.78rem; padding: 0.35rem 0.75rem; }
       .results-medal { font-size: 3.5rem; }
       .title { font-size: 2.2rem; }
+      .podium-section, .errors-section { padding: 1.25rem 1rem; border-radius: 18px; }
+      .error-card { padding: 1.25rem 1rem; }
+      .err-header { flex-wrap: wrap; gap: 0.5rem; }
+      .p-info-row { flex-wrap: wrap; gap: 0.25rem; }
+      .err-answer-item { flex-wrap: wrap; }
+      .err-answer-status-badge { min-width: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .main-content { padding-top: 60px !important; }
+      .subjects-grid, .modes-grid { grid-template-columns: 1fr !important; }
+      .time-presets { flex-direction: column; }
+      .preset-btn { min-width: 100%; }
+      .custom-time-input-group { max-width: 100%; }
+      .timer-box { font-size: 1.3rem; padding: 0.3rem 0.65rem; }
+      .q-header { gap: 0.5rem; }
+      .q-enunciado { font-size: 1.1rem; }
+      .options-grid { gap: 0.75rem; }
+      .option-btn { padding: 0.85rem; }
+      .game-controls { flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+      .btn-skip-game { width: 100%; }
     }
 
     /* TIME UP TRANSITION OVERLAY */

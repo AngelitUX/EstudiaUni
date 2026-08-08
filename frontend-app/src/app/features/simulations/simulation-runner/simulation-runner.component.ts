@@ -235,10 +235,11 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       background-clip: text;
     }
     .score-desc { font-size: 1.2rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; }
-    .results-details { 
-      display: flex; 
-      justify-content: center; 
-      gap: 2rem; 
+    .results-details {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem 2rem;
       font-size: 1.1rem;
       color: #e5e7eb;
     }
@@ -274,6 +275,23 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       padding: 4rem 2rem;
       color: #9ca3af;
       font-size: 1.1rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .simulation-container, .results-container { padding: 1.25rem; }
+      .sim-header { flex-wrap: wrap; gap: 0.75rem; }
+      .question-card { padding: 1.5rem; }
+      .stem { font-size: 1.1rem; margin-bottom: 1.5rem; }
+      .score-number { font-size: 3.5rem; }
+      .feedback-box { padding: 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .simulation-container, .results-container { padding: 1rem; }
+      .question-card { padding: 1.1rem; }
+      .actions { flex-wrap: wrap; }
+      .actions .btn { flex: 1 1 auto; }
+      .option-btn { padding: 1rem; font-size: 1rem; }
     }
   `]
 })

@@ -431,9 +431,27 @@ import { KatexService } from '../../core/services/katex.service';
     .pv-option.correct .pv-letter { background: rgba(88,204,2,0.15); color: #3d8c00; }
     .pv-opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
 
+    @media (max-width: 1024px) {
+      .editor-page { padding: 1.5rem; }
+    }
     @media (max-width: 900px) {
       .editor-grid { grid-template-columns: 1fr; }
       .preview-section { position: static; }
+    }
+    @media (max-width: 768px) {
+      .editor-page { padding: 1.25rem; }
+      .editor-header { flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
+      .editor-header h1 { font-size: 1.6rem; }
+      .form-section { padding: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .editor-page { padding: 1rem; }
+      .editor-header h1 { font-size: 1.35rem; }
+      .form-section { padding: 1.1rem; }
+      .form-actions { flex-direction: column-reverse; }
+      .btn-cancel, .btn-save { width: 100%; text-align: center; }
+      .radio-group { gap: 0.5rem; }
+      .radio-label { padding: 0.6rem 0.9rem; font-size: 0.85rem; }
     }
   `]
 })

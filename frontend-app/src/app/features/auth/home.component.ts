@@ -2034,6 +2034,16 @@ import { PaymentService } from '../../core/services/payment.service';
         flex-wrap: wrap;
         gap: 0.5rem;
       }
+      .hero-offer-badge, .active-students-badge {
+        max-width: 100%;
+      }
+      .hero-offer-badge {
+        white-space: normal;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        row-gap: 0.2rem;
+      }
     }
 
     .hero-title {
@@ -4991,7 +5001,40 @@ import { PaymentService } from '../../core/services/payment.service';
       font-weight: 500;
     }
 
-    
+    @media (max-width: 1024px) {
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem 2rem;
+      }
+    }
+    @media (max-width: 768px) {
+      .footer {
+        padding: 3rem 1.25rem 1.5rem;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem 1.5rem;
+        margin-bottom: 2.5rem;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .footer-bottom-right {
+        flex-wrap: wrap;
+      }
+    }
+    @media (max-width: 480px) {
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .footer-desc {
+        max-width: 100%;
+      }
+    }
+
     /* ===== FOCO SECTION ===== */
     .inline-badge {
       font-size: 0.9rem;
@@ -5395,6 +5438,21 @@ import { PaymentService } from '../../core/services/payment.service';
       .pricing-card { padding: 1.5rem 1.25rem; }
       .legal-modal-content { width: 95%; padding: 1.25rem; max-height: 85vh; }
       .legal-modal-header .close-btn { width: 44px; height: 44px; font-size: 1.3rem; }
+      .billing-toggle-container {
+        gap: 0.4rem;
+        padding: 0.3rem;
+        max-width: 100%;
+      }
+      .billing-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        gap: 0.35rem;
+        white-space: nowrap;
+      }
+      .discount-pill {
+        font-size: 0.62rem;
+        padding: 0.12rem 0.4rem;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-badge,

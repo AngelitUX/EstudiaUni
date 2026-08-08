@@ -401,7 +401,7 @@ interface ReviewQuestion {
       padding: 2rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
     .question-badge {
       padding: 0.35rem 0.75rem;
       border-radius: 6px;
@@ -531,12 +531,31 @@ interface ReviewQuestion {
     }
 
     /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .review-body { padding: 1.5rem; }
+      .options-list { grid-template-columns: 1fr; }
+    }
     @media (max-width: 768px) {
-      .review-header { flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+      .review-header { flex-direction: column; gap: 1.5rem; align-items: flex-start; padding: 1.25rem 1.25rem; }
+      .header-left { flex-wrap: wrap; gap: 1rem; }
+      .header-actions { width: 100%; }
+      .header-actions .btn { width: 100%; }
       .summary-cards { grid-template-columns: 1fr; }
       .filter-tabs { flex-direction: column; }
       .review-actions { flex-direction: column; gap: 1rem; }
       .review-actions .btn { width: 100%; }
+      .review-body { padding: 1.25rem; }
+      .review-question-card { padding: 1.25rem; }
+      .info-tooltip { right: auto; left: 0; width: 200px; max-width: calc(100vw - 2rem); }
+    }
+    @media (max-width: 480px) {
+      .info-tooltip { display: none; }
+      .review-header { padding: 1rem; }
+      .review-body { padding: 1rem; }
+      .review-question-card { padding: 1rem; }
+      .header-info h1 { font-size: 1.25rem; }
+      .score-points { font-size: 1.25rem; }
+      .modal-card { padding: 2rem 1.25rem 1.5rem !important; }
     }
   `]
 })

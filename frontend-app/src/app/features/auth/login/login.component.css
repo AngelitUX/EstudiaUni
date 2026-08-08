@@ -497,4 +497,16 @@
   }
 }
 
+@media (max-width: 380px) {
+  .auth-box {
+    padding: 1.25rem 0.85rem;
+  }
+  .auth-box h2 {
+    font-size: 1.4rem;
+  }
+  .brand {
+    font-size: 1.3rem;
+  }
+}
+
 

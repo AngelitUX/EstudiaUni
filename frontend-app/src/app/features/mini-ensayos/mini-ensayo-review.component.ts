@@ -63,6 +63,49 @@ import { PaymentService } from '../../core/services/payment.service';
         </div>
       </aside>
 
+      <!-- MOBILE HEADER -->
+      <div class="mobile-header">
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center;display:flex;justify-content:center;">
+          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+        </a>
+        <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+          <span class="profile-avatar-wrap">
+            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileMe" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+            <ng-template #avatarMobileMe><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+          </span>
+        </button>
+      </div>
+      <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
+        <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div style="padding: 1.5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 150px; height: auto;" />
+            <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
+          </div>
+          <nav class="sidebar-nav">
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item active" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <div class="sidebar-section-title">HERRAMIENTAS</div>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+          </nav>
+          <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+          </div>
+        </div>
+      </div>
+
       <!-- MAIN CONTENT -->
       <main class="main-content review-page animate-fade-in-down" *ngIf="result() as res">
         <!-- HEADER -->
@@ -420,10 +463,42 @@ import { PaymentService } from '../../core/services/payment.service';
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     
+    /* MOBILE HEADER */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+      .dashboard-header { display: none !important; }
+      .dashboard-body { padding: 1.5rem !important; padding-top: 72px !important; }
+      .overview-section { flex-direction: column; }
+      .main-score { min-width: 0; }
+      .stats-grid { min-width: 0; }
+    }
     @media (max-width: 768px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+      .dashboard-header { display: none !important; }
+      .dashboard-body { padding: 1rem 0.85rem 2rem !important; padding-top: 72px !important; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .bottom-actions { flex-direction: column; }
       .b-info { width: 120px; }
+      .breakdown-item { flex-wrap: wrap; gap: 0.75rem; }
+      .qr-header { flex-wrap: wrap; gap: 0.5rem; }
+    }
+    @media (max-width: 480px) {
+      .dashboard-body { padding-top: 70px !important; }
+      .score-value { font-size: 3rem; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .b-info { width: 100%; }
+      .b-progress-wrap { width: 100%; }
+      .breakdown-item { flex-direction: column; align-items: flex-start; }
+      .qr-title { flex-wrap: wrap; }
     }
   `]
 })
@@ -437,6 +512,7 @@ export class MiniEnsayoReviewComponent {
   showProfileModal = false;
   showLogoutConfirm = false;
   isCollapsible = false;
+  mobileOpen = false;
 
   get herramientasExpanded(): boolean {
     const val = localStorage.getItem('herramientasExpanded');

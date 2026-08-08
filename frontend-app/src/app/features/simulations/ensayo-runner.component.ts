@@ -93,7 +93,10 @@ interface AiMessage {
 
         <!-- QUESTION NAVIGATOR (Left Column) -->
         <aside class="question-nav" *ngIf="!isNavCollapsed">
-          <h4 class="nav-title">Navegador</h4>
+          <div class="nav-panel-header">
+            <h4 class="nav-title">Navegador</h4>
+            <button class="panel-close-btn" (click)="toggleNav()" aria-label="Cerrar navegador">✕</button>
+          </div>
           <div class="question-grid">
             <button 
               *ngFor="let q of questions; let i = index"
@@ -302,6 +305,7 @@ interface AiMessage {
               </div>
             </div>
             <button class="btn-icon-sm" (click)="clearChat()" title="Limpiar chat">🗑️</button>
+            <button class="btn-icon-sm panel-close-btn-ai" (click)="toggleAi()" title="Cerrar tutor" aria-label="Cerrar tutor">✕</button>
           </div>
 
           <div class="ai-messages" #chatScrollContainer>
@@ -361,6 +365,14 @@ interface AiMessage {
           </div>
           <p class="ai-disclaimer">⚠️ El tutor no revela respuestas directas.</p>
         </aside>
+
+        <!-- MOBILE FLOATING ACTION BUTTONS -->
+        <button class="mobile-fab mobile-nav-fab" *ngIf="isNavCollapsed" (click)="toggleNav()" aria-label="Abrir navegador de preguntas">
+          📋 <span class="fab-badge">{{ answeredCount }}/{{ totalQuestions }}</span>
+        </button>
+        <button class="mobile-fab mobile-ai-fab" *ngIf="isAssisted && isAiCollapsed" (click)="toggleAi()" aria-label="Abrir tutor Foco">
+          🐙
+        </button>
       </div>
 
       <!-- PAUSE MODAL -->
@@ -1233,13 +1245,129 @@ interface AiMessage {
     .glass-card { background: #ffffff; border: 2px solid var(--glass-border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
 
     /* ===== RESPONSIVE ===== */
+    .nav-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .nav-panel-header .nav-title { margin-bottom: 0; }
+    .panel-close-btn {
+      display: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 0.9rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .panel-close-btn-ai { display: none; }
+    .mobile-fab {
+      display: none;
+      position: fixed;
+      bottom: 1.25rem;
+      z-index: 1500;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.1rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      color: #fff;
+    }
+    .mobile-nav-fab { left: 1.25rem; background: #3b82f6; }
+    .mobile-ai-fab { right: 1.25rem; background: linear-gradient(135deg, #7c3aed, #4338ca); }
+    .fab-badge { font-size: 0.8rem; font-weight: 800; font-family: var(--font-body); }
+
     @media (max-width: 900px) {
-      .exam-body { grid-template-columns: 1fr; }
-      .exam-body.assisted-layout { grid-template-columns: 1fr; }
-      .question-nav { position: relative; top: 0; }
-      .ai-panel { position: relative; top: 0; }
+      html, body { overflow-x: hidden; }
+      .exam-container { min-height: 100vh; overflow-x: hidden; }
+      /* !important is required here: it beats the higher-specificity
+         .exam-body.nav-collapsed / .ai-collapsed combos above (which set extra
+         0px grid tracks for the desktop collapse toggles) that would otherwise
+         still apply on mobile and leave the sole remaining grid child
+         (question-area) auto-placed into a 0-width column. */
+      .exam-body {
+        grid-template-columns: 1fr !important;
+        height: auto;
+        min-height: calc(100vh - 64px);
+        overflow: visible;
+        padding: 0.75rem;
+      }
       .header-center { display: none; }
       .exam-title { display: none; }
+
+      /* Question nav & AI panel become full-screen slide-over drawers instead of
+         being stacked inline (avoids forcing the student to scroll past a big
+         question grid or chat panel before reaching the actual question). */
+      .question-nav, .ai-panel {
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        z-index: 2000 !important;
+        margin: 0 !important;
+      }
+      .panel-close-btn, .panel-close-btn-ai { display: flex; }
+      .mobile-fab { display: flex; }
+
+      .question-area { height: auto; overflow: visible; }
+      .question-content-container { height: auto; overflow: visible; padding: 0; }
+
+      .question-area.with-reading-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .question-area.with-reading-text .reading-text-container {
+        height: auto;
+        max-height: 48vh;
+        flex-shrink: 0;
+      }
+      .question-area.with-reading-text.focus-reading .question-content-container { display: none; }
+      .question-area.with-reading-text.focus-question .reading-text-container { display: none; }
+
+      .exam-header { padding: 0.75rem 1rem; flex-wrap: wrap; row-gap: 0.5rem; }
+      .header-right { flex-wrap: wrap; gap: 0.5rem; row-gap: 0.5rem; }
+      .header-right .mode-badge { display: none; }
+      .timer { padding: 0.4rem 0.7rem; font-size: 1.05rem; }
+      .header-right .btn.btn-ghost { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+
+      .question-card { padding: 1rem; }
+      .question-header { padding: 0.6rem 1rem; min-height: auto; flex-wrap: wrap; gap: 0.5rem; }
+
+      .options-nav-row { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+      .btn-nav-inline { width: 100%; min-width: 0; }
+      .bubble-sheet-inline { flex-wrap: wrap; order: -1; }
+    }
+
+    @media (max-width: 480px) {
+      .exam-header { padding: 0.6rem 0.75rem; }
+      .btn-icon { width: 32px; height: 32px; font-size: 1rem; }
+      .header-right { gap: 0.4rem; }
+      .foco-tokens-badge { font-size: 0.7rem !important; padding: 0.25rem 0.5rem !important; }
+      .timer { font-size: 0.95rem; padding: 0.35rem 0.55rem; gap: 0.3rem; }
+      .header-right .btn.btn-ghost { padding: 0.4rem 0.6rem; font-size: 0.78rem; }
+      .option-btn.bubble-btn { width: 38px; height: 38px; font-size: 0.9rem; }
+      .modal { padding: 1.5rem; max-width: 92vw; }
+      .mobile-fab { padding: 0.75rem 0.95rem; font-size: 1.15rem; bottom: 1rem; }
+      .mobile-nav-fab { left: 0.75rem; }
+      .mobile-ai-fab { right: 0.75rem; }
     }
 
     /* ===== MATH RENDERING & FOCO STYLING ===== */
@@ -1418,6 +1546,13 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   }
 
   ngOnInit() {
+    // En pantallas angostas arrancamos con el navegador de preguntas y el panel del
+    // tutor colapsados (se abren como paneles flotantes) para que la pregunta quede
+    // visible de inmediato sin tener que hacer scroll.
+    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
+      this.isNavCollapsed = true;
+      this.isAiCollapsed = true;
+    }
     this.examId = this.route.snapshot.paramMap.get('id') || '';
     this.intentoId = this.route.snapshot.queryParamMap.get('intento') || '';
     const modeParam = this.route.snapshot.queryParamMap.get('mode');

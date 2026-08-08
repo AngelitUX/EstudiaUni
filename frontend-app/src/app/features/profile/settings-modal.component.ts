@@ -144,7 +144,15 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
     .support-actions{display:flex;align-items:center;justify-content:flex-start}
     .support-link{display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;border-radius:10px;border:2px solid var(--accent-primary);color:var(--accent-primary);padding:.55rem .9rem;font-weight:700;background:rgba(133,92,214,0.08);transition:all .2s}
     .support-link:hover{background:var(--accent-primary);color:#ffffff;transform:translateY(-1px)}
-    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    @media(max-width:720px){
+      .modal-overlay{padding:0.5rem;align-items:flex-start}
+      .modal-container{width:100%;margin-top:0.5rem;max-height:94vh}
+      .grid{grid-template-columns:1fr !important}
+      input,select{font-size:16px !important}
+      .action-bar{flex-direction:column;align-items:stretch;gap:0.75rem}
+      .btn-report{justify-content:center}
+      .primary{width:100%}
+    }
   `]
 })
 export class SettingsModalComponent implements OnInit {

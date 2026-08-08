@@ -208,12 +208,12 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
     .content-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 1.5rem; }
     .content-header h1 { font-size: 2.5rem; font-weight: 800; margin: 0; }
     .subtitle { font-size: 1.05rem; color: var(--text-secondary); margin: 0.4rem 0 0; }
-    .header-actions { display: flex; gap: 0.75rem; }
-    
+    .header-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
     .btn-refresh { padding: 0.75rem 1.25rem; border-radius: 12px; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-secondary); font-weight: 700; cursor: pointer; }
     .btn-create { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
 
-    .admin-tabs-row { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .admin-tabs-row { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .atab { padding: 0.65rem 1.2rem; border-radius: 12px; border: 1.5px solid var(--glass-border); background: #fff; color: var(--text-secondary); font-weight: 700; cursor: pointer; }
     .atab.active { border-color: var(--accent-primary); background: rgba(133,92,214,0.08); color: var(--accent-primary); }
 
@@ -261,6 +261,27 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
     .modal-actions-row { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
     .btn-cancel { padding: 0.75rem 1.25rem; border-radius: 12px; border: 2px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-weight: 700; cursor: pointer; }
     .btn-grant-action { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; font-weight: 800; cursor: pointer; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar { position: relative; width: 100%; height: auto; border-right: none; }
+      .main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
+      .content-header { flex-direction: column; }
+      .admin-table { min-width: 800px; }
+    }
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .content-header h1 { font-size: 1.7rem; }
+      .header-actions { width: 100%; }
+      .header-actions .btn-refresh,
+      .header-actions .btn-create { flex: 1 1 auto; text-align: center; }
+      .admin-tabs-row { width: 100%; }
+      .atab { flex: 1 1 auto; font-size: 0.82rem; padding: 0.6rem 0.8rem; }
+      .glass-modal { padding: 1.25rem; }
+      .modal-actions-row { flex-direction: column-reverse; }
+      .modal-actions-row button { width: 100%; }
+    }
   `]
 })
 export class AdminSubscriptionsComponent implements OnInit {
