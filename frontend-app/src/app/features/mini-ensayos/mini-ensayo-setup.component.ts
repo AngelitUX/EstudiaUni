@@ -10,6 +10,7 @@ import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
+import { ToastService } from '../../core/services/toast.service';
 
 
 interface MateriaOption {
@@ -29,7 +30,7 @@ interface MateriaOption {
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         <nav class="sidebar-nav">
@@ -78,7 +79,7 @@ interface MateriaOption {
           </span>
         </button>
         <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center;display:flex;justify-content:center;">
-          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="mobile-logo-img" />
+          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
         </a>
         <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
           <span class="profile-avatar-wrap">
@@ -90,7 +91,7 @@ interface MateriaOption {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <div style="padding: 1.5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" style="width: 150px; height: auto;" />
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 150px; height: auto;" />
             <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
@@ -121,6 +122,9 @@ interface MateriaOption {
           </div>
           <div class="welcome-actions">
             <app-streak-icon></app-streak-icon>
+            <button *ngIf="hasLastCompleted()" class="btn-view-last" (click)="viewLastMiniEnsayo()" style="background: rgba(133,92,214,0.12); border: 1.5px solid rgba(133,92,214,0.35); color: var(--accent-primary); padding: 0.55rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+              📄 Último Mini Ensayo
+            </button>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
               Mejorar a PRO ⚡
             </button>
@@ -202,16 +206,23 @@ interface MateriaOption {
                 <label>Cantidad de preguntas</label>
                 <div class="count-selector">
                   @for (count of [16, 24, 30]; track count) {
-                    <button class="count-btn" 
+                    <button class="count-btn"
                             [class.active]="questionCount() === count"
-                            [disabled]="totalAvailableQuestions() < count"
+                            [class.locked]="count > 16 && !isProPlan() && !adminService.isAdmin()"
+                            [disabled]="totalAvailableQuestions() < count || (count > 16 && !isProPlan() && !adminService.isAdmin())"
                             (click)="setCount(count)">
                       {{ count }}
+                      @if (count > 16 && !isProPlan() && !adminService.isAdmin()) { <span class="count-lock">🔒</span> }
                     </button>
                   }
                 </div>
-                @if (totalAvailableQuestions() < questionCount()) {
+                @if (!isProPlan() && !adminService.isAdmin()) {
+                  <p class="warning-text">Plan Básico: máximo 16 preguntas por mini ensayo. <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejora a PRO</a> para 24 o 30.</p>
+                } @else if (totalAvailableQuestions() < questionCount()) {
                   <p class="warning-text">Solo hay {{ totalAvailableQuestions() }} preguntas disponibles en los temas seleccionados.</p>
+                }
+                @if (!isProPlan() && !adminService.isAdmin() && !dailyStatus().allowed) {
+                  <p class="warning-text" style="color: #f59e0b;">⏳ Ya usaste tu Mini Ensayo gratis de hoy. Disponible de nuevo {{ dailyStatus().nextAvailableAt ? (dailyStatus().nextAvailableAt | date:'short') : 'mañana' }}, o <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">pásate a PRO</a> para ilimitados.</p>
                 }
               </div>
               
@@ -227,8 +238,8 @@ interface MateriaOption {
 
         <!-- ACCIONES -->
         <div class="setup-actions">
-          <button class="btn-start" 
-                  [disabled]="!isValid()" 
+          <button class="btn-start"
+                  [disabled]="!isValid() || (!isProPlan() && !adminService.isAdmin() && !dailyStatus().allowed)"
                   (click)="startMiniEnsayo()">
             🚀 Comenzar Mini Ensayo
           </button>
@@ -305,6 +316,8 @@ interface MateriaOption {
     .count-btn:hover:not(:disabled) { border-color: rgba(133,92,214,0.4); }
     .count-btn.active { border-color: var(--accent-primary); background: rgba(133,92,214,0.15); color: var(--accent-primary); }
     .count-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .count-btn.locked { position: relative; }
+    .count-lock { font-size: 0.7rem; margin-left: 0.25rem; }
     
     .time-display { padding: 0.75rem; border-radius: 12px; border: 2px solid transparent; background: rgba(255,255,255,0.05); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
     .warning-text { font-size: 0.8rem; color: #ef4444; margin: 0; }
@@ -456,6 +469,10 @@ export class MiniEnsayoSetupComponent implements OnInit {
   private miniEnsayoSvc = inject(MiniEnsayoService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private toast = inject(ToastService);
+
+  hasLastCompleted = signal<boolean>(false);
+  dailyStatus = signal<{ allowed: boolean; nextAvailableAt?: Date }>({ allowed: true });
 
   materias: MateriaOption[] = [
     { id: 'competencia-lectora', label: 'Comp. Lectora', icon: '📖' },
@@ -488,6 +505,12 @@ export class MiniEnsayoSetupComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.hasLastCompleted.set(!!this.miniEnsayoSvc.getLastCompletedResult());
+    this.dailyStatus.set(this.miniEnsayoSvc.canStartToday());
+    if (!this.isProPlan() && !this.adminService.isAdmin()) {
+      this.questionCount.set(16);
+    }
+
     this.route.queryParams.subscribe(params => {
       if (params['mode'] === 'mejorador') {
         this.mode.set('mejorador');
@@ -560,8 +583,23 @@ export class MiniEnsayoSetupComponent implements OnInit {
            this.totalAvailableQuestions() >= 1; // At least 1 question
   }
 
+  viewLastMiniEnsayo() {
+    const last = this.miniEnsayoSvc.getLastCompletedResult();
+    if (!last) return;
+    this.miniEnsayoSvc.setLastResult(last);
+    this.router.navigate(['/mini-ensayo/review']);
+  }
+
   startMiniEnsayo() {
     if (!this.isValid()) return;
+
+    if (!this.isProPlan() && !this.adminService.isAdmin()) {
+      const status = this.miniEnsayoSvc.canStartToday();
+      if (!status.allowed) {
+        this.toast.info('Ya usaste tu Mini Ensayo gratis de hoy. Vuelve mañana o pásate a PRO para ilimitados.');
+        return;
+      }
+    }
 
     let finalCount = this.questionCount();
     if (this.totalAvailableQuestions() < finalCount) {

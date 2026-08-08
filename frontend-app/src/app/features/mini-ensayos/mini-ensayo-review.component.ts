@@ -24,7 +24,7 @@ import { PaymentService } from '../../core/services/payment.service';
       <aside class="sidebar">
         <div class="sidebar-header">
           <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'assets/img/LogoEstudiaUniPREMIUM.png' : 'assets/img/LogoEstudiaUni.png'" alt="EstudiaUni" class="sidebar-logo-img" />
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         <nav class="sidebar-nav">
@@ -247,10 +247,17 @@ import { PaymentService } from '../../core/services/payment.service';
                     }
                   </div>
                   
-                  <div class="qr-feedback" [class.good]="res.answers[q.id] === q.respuesta_correcta" [class.bad]="res.answers[q.id] !== q.respuesta_correcta">
-                    <strong>Feedback:</strong> 
-                    {{ res.answers[q.id] === q.respuesta_correcta ? q.feedback_acierto : q.feedback_error }}
-                  </div>
+                  @if (isProPlan() || adminService.isAdmin() || res.answers[q.id] !== q.respuesta_correcta) {
+                    <div class="qr-feedback" [class.good]="res.answers[q.id] === q.respuesta_correcta" [class.bad]="res.answers[q.id] !== q.respuesta_correcta">
+                      <strong>Feedback:</strong>
+                      {{ res.answers[q.id] === q.respuesta_correcta ? q.feedback_acierto : q.feedback_error }}
+                    </div>
+                  } @else {
+                    <div class="qr-feedback locked-feedback">
+                      <span>🔒 La justificación de respuestas correctas es exclusiva de <strong>PRO</strong>.</span>
+                      <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejorar a PRO</a>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -398,6 +405,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .qr-feedback { padding: 1rem; border-radius: 10px; font-size: 0.9rem; line-height: 1.5; }
     .qr-feedback.good { background: rgba(88,204,2,0.1); color: #2d6600; border: 1px solid rgba(88,204,2,0.2); }
     .qr-feedback.bad { background: rgba(239,68,68,0.1); color: #991b1b; border: 1px solid rgba(239,68,68,0.2); }
+    .qr-feedback.locked-feedback { background: rgba(133,92,214,0.08); border: 1px dashed rgba(133,92,214,0.35); color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     
     /* ACTIONS */
     .bottom-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; }

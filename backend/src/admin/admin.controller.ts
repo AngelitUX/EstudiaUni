@@ -96,10 +96,14 @@ export class AdminController {
 
   @Post('subscriptions/transfer/approve')
   @HttpCode(HttpStatus.OK)
-  async approveTransfer(@Body() dto: ApproveTransferDto) {
+  async approveTransfer(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: ApproveTransferDto,
+  ) {
     return this.subscriptionsService.approveTransfer(
       dto.transferId,
       dto.action,
+      user.uid,
       dto.rejectionReason,
     );
   }

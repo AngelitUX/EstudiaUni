@@ -19,6 +19,31 @@ import {
 } from './prompts/assist.prompt';
 import OpenAI from 'openai';
 import { ChatRequestDto } from './dto/chat-message.dto';
+import { RecommendationsRequestDto } from './dto/recommendations.dto';
+
+const RECOMMENDATIONS_SYSTEM_PROMPT = `Eres Foco, el tutor IA de EstudiaUni.cl, una plataforma de preparación para la PAES (admisión universitaria en Chile).
+Tu tarea es dar una recomendación de estudio breve, cálida y accionable, basada en la actividad reciente del estudiante.
+Reglas:
+- Máximo 120 palabras.
+- Identifica 1-2 patrones concretos (materias con bajo rendimiento, poca práctica reciente, buen progreso a mantener).
+- Termina con UNA acción concreta y específica que el estudiante pueda hacer hoy.
+- Tono motivador, cercano, en español chileno neutro. Nunca uses relleno genérico tipo "sigue así" sin contexto.
+- No inventes datos que no estén en la actividad entregada.`;
+
+function buildRecommendationsUserPrompt(activities: RecommendationsRequestDto['activities']): string {
+  if (!activities || activities.length === 0) {
+    return 'El estudiante aún no tiene actividad registrada. Dale una recomendación general para comenzar a prepararse para la PAES.';
+  }
+  const lines = activities.slice(0, 15).map((a) => {
+    const scoreText = a.totalQuestions
+      ? `${a.totalCorrect ?? 0}/${a.totalQuestions} correctas`
+      : a.score !== undefined
+        ? `puntaje ${a.score}`
+        : 'sin puntaje';
+    return `- [${a.timestamp}] ${a.type} · ${a.title}${a.subject ? ` (${a.subject})` : ''} · ${scoreText}`;
+  });
+  return `Actividad reciente del estudiante (más nueva primero):\n${lines.join('\n')}\n\nGenera la recomendación siguiendo las reglas del sistema.`;
+}
 
 @Injectable()
 export class AiFeedbackService {
@@ -294,6 +319,29 @@ IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles
     } catch (error) {
       this.logger.error(`Chat failed: ${error.message}`);
       throw new InternalServerErrorException('AI chat failed');
+    }
+  }
+
+  /**
+   * Generate a short, personalized study recommendation from the user's recent activity.
+   * PRO-only, button-triggered feature — consumes 1 Foco token per call (enforced by controller).
+   */
+  async generateRecommendations(input: RecommendationsRequestDto): Promise<{ recommendation: string }> {
+    if (!this.openai) {
+      return {
+        recommendation: 'La IA no está disponible en este momento. Revisa tu historial de actividad y prioriza los temas donde tuviste más errores recientes.',
+      };
+    }
+
+    try {
+      const recommendation = await this.callOpenAIText(
+        RECOMMENDATIONS_SYSTEM_PROMPT,
+        buildRecommendationsUserPrompt(input.activities),
+      );
+      return { recommendation: recommendation || 'No pude generar una recomendación esta vez. Intenta de nuevo más tarde.' };
+    } catch (error) {
+      this.logger.error(`Recommendations failed: ${error.message}`);
+      throw new InternalServerErrorException('AI recommendations failed');
     }
   }
 

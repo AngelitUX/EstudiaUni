@@ -6,6 +6,7 @@ import { FirestoreService, Pregunta } from '../../core/services/firestore.servic
 import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.service';
 import { ToastService } from '../../core/services/toast.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 interface Question {
   id: string;
@@ -58,6 +59,9 @@ interface AiMessage {
         <div class="header-right">
           <span class="mode-badge" [class.assisted]="isAssisted">
             {{ isAssisted ? 'Asistido' : 'Real' }}
+          </span>
+          <span class="foco-tokens-badge" *ngIf="isAssisted" (click)="focoRemaining <= 0 ? paymentService.openPricingModal() : null" style="background: rgba(124,58,237,0.1); color: #7c3aed; font-weight: 800; font-size: 0.8rem; padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid rgba(124,58,237,0.3); display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+            💡 Foco: {{ focoRemaining }}/{{ focoLimit }} hoy
           </span>
           <div class="timer" [class.warning]="timeWarning" [class.critical]="timeCritical">
             <span class="timer-icon">⏱️</span>
@@ -290,7 +294,7 @@ interface AiMessage {
           <div class="ai-header">
             <div class="ai-header-left">
               <div class="ai-avatar">
-                <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
               </div>
               <div>
                 <h4 class="ai-title">Foco, tu Pulpo Tutor</h4>
@@ -1318,6 +1322,23 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private aiAssistService = inject(AiAssistService);
   private toast = inject(ToastService);
   private dashboardService = inject(DashboardService);
+  public paymentService = inject(PaymentService);
+
+  get isProPlan(): boolean {
+    return this.firestoreService.profileSignal()?.plan === 'premium';
+  }
+
+  get focoLimit(): number {
+    return this.isProPlan ? 500 : 5;
+  }
+
+  get focoUsed(): number {
+    return this.firestoreService.profileSignal()?.dailyCredits?.focoTokensUsedToday || 0;
+  }
+
+  get focoRemaining(): number {
+    return Math.max(0, this.focoLimit - this.focoUsed);
+  }
 
   @ViewChild('chatScrollContainer') private chatContainer!: ElementRef;
 
@@ -1657,9 +1678,18 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     this.router.navigate(['/ensayos']);
   }
 
-  exitRealExam() {
+  async exitRealExam() {
     this.pauseTimer();
     this.showRealExitModal = false;
+
+    if (this.intentoId) {
+      try {
+        await this.firestoreService.abandonIntento(this.intentoId);
+      } catch (e) {
+        // Continuar aunque falle
+      }
+    }
+
     this.router.navigate(['/ensayos']);
   }
 
@@ -1707,10 +1737,16 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       console.warn('[EnsayoRunner] Error logging to dashboard:', err);
     }
     
-    // Finalizar intento en Firestore
+    // Finalizar intento en Firestore enviando respuestas completas y lista de preguntas
     if (this.intentoId) {
       try {
-        await this.firestoreService.finishIntento(this.intentoId, timeSpent, this.totalQuestions);
+        await this.firestoreService.finishIntento(
+          this.intentoId,
+          timeSpent,
+          this.totalQuestions,
+          this.answers,
+          this.questions
+        );
       } catch (e) {
         // Continuar aunque falle
       }
@@ -1790,6 +1826,17 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private async callAiChat() {
     if (!this.currentQuestion) { this.aiLoading = false; return; }
 
+    if (this.focoRemaining <= 0) {
+      this.aiLoading = false;
+      this.aiMessages.push({
+        role: 'assistant',
+        content: `⚠️ Has alcanzado tus ${this.focoLimit} fichas/tokens diarias de Foco IA. Se recargarán mañana a la misma hora. ¡Pásate a PRO para tener 200 fichas diarias! 👑`,
+        timestamp: new Date()
+      });
+      this.paymentService.openPricingModal();
+      return;
+    }
+
     const historyForApi = this.aiMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
     try {
@@ -1802,6 +1849,17 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         imageUrl: this.currentQuestion.imageUrl,
         history: historyForApi,
       });
+
+      // Update local profile signal with used token count
+      const profile = this.firestoreService.profileSignal();
+      if (profile) {
+        const currentUsed = profile.dailyCredits?.focoTokensUsedToday || 0;
+        profile.dailyCredits = {
+          ...(profile.dailyCredits || {}),
+          focoTokensUsedToday: currentUsed + 1
+        };
+      }
+
       this.aiMessages.push({ role: 'assistant', content: response.reply, timestamp: new Date() });
     } catch {
       this.toast.error('No se pudo conectar con el tutor IA.');
