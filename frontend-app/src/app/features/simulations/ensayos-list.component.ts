@@ -2,13 +2,16 @@ import { Component, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { Auth } from '@angular/fire/auth';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { ToastService } from '../../core/services/toast.service';
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
+import { environment } from '../../../environments/environment';
 
 interface Prueba {
   id: string;
@@ -44,8 +47,8 @@ type ExamMode = 'real' | 'asistido';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;">
-            <span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
           </a>
         </div>
         
@@ -111,6 +114,47 @@ type ExamMode = 'real' | 'asistido';
         </div>
       </aside>
 
+      <!-- MOBILE HEADER -->
+      <div class="mobile-header">
+        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
+          </span>
+        </button>
+        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
+        <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+          <span class="profile-avatar-wrap">
+            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileE" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+            <ng-template #avatarMobileE><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+          </span>
+        </button>
+      </div>
+      <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
+        <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div style="padding: 1.5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+            <span class="text-gradient" style="font-size: 1.5rem; font-weight: 900; font-family: var(--font-heading);">EstudiaUni</span>
+            <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
+          </div>
+          <nav class="sidebar-nav">
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item active" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <div class="sidebar-section-title">HERRAMIENTAS</div>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+          </nav>
+          <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+          </div>
+        </div>
+      </div>
+
       <!-- MAIN CONTENT -->
       <main class="main-content animate-fade-in-down">
         <!-- HEADER -->
@@ -151,8 +195,9 @@ type ExamMode = 'real' | 'asistido';
             </div>
 
             <!-- TEMARIO BADGE -->
-            <div class="temario-badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 0.4rem 1rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-right: auto;">
-              <span>✨</span> Actualizado con temario PAES oficial 2026
+            <div class="temario-badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 2px solid rgba(34, 197, 94, 0.3); padding: 0.6rem 1.25rem; border-radius: 99px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-right: auto;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> 
+              Actualizado con temario PAES oficial 2026
             </div>
 
             <!-- ACTIVE EXAM WIDGET -->
@@ -168,6 +213,26 @@ type ExamMode = 'real' | 'asistido';
                 ×
               </button>
             </div>
+
+            <!-- COMPACT LAST ENSAYO BUTTON WIDGET -->
+            <button class="last-ensayo-compact-btn glass-card animate-fade-in" *ngIf="getLastCompletedEnsayo() as lastEnsayo" (click)="goToLastEnsayoReview(lastEnsayo)" style="background: rgba(124,58,237,0.06); border: 1.5px solid rgba(124,58,237,0.3); border-radius: 99px; padding: 0.45rem 1.1rem; display: flex; align-items: center; gap: 0.65rem; cursor: pointer; transition: all 0.2s;">
+              <span style="font-size: 1rem;">📊</span>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 0.82rem; font-weight: 800; color: #0f172a;">Último Ensayo</span>
+                <span *ngIf="!isProPlan() && isResultsLockedForLast()" style="background: rgba(245,158,11,0.2); color: #b45309; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.55rem; border-radius: 99px;">
+                  ⏳ {{ getResultsUnlockCountdown() }}
+                </span>
+                <span *ngIf="isProPlan() || !isResultsLockedForLast()" style="background: rgba(16,185,129,0.2); color: #047857; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.55rem; border-radius: 99px;">
+                  Ver Pauta
+                </span>
+              </div>
+              <span style="font-size: 0.85rem; font-weight: 800; color: #7c3aed;">→</span>
+            </button>
+
+            <!-- DEV SIMULATE TIME BUTTON (hidden in production builds) -->
+            <button *ngIf="!isProduction" class="dev-simulate-btn animate-fade-in" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; border-radius: 99px; padding: 0.45rem 0.85rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; margin-left: auto;" title="Boton de prueba para simular el paso de 50h">
+              🧪 [DEV] Simular paso de tiempo (+50h)
+            </button>
           </div>
 
           <!-- PRUEBAS -->
@@ -187,17 +252,19 @@ type ExamMode = 'real' | 'asistido';
             </button>
           </div>
 
+        </div>
+        </div>
+      </main>
+    </div>
           <div *ngIf="pruebaSeleccionada" class="modal-preparacion" (click)="cerrarSeleccion()">
-            <div class="modal-content glass-card" (click)="$event.stopPropagation()">
+            <div class="modal-content glass-card" (click)="$event.stopPropagation()" (scroll)="onModalScroll($event)">
               <button class="modal-close" (click)="cerrarSeleccion()">×</button>
 
               <div class="modal-icon">{{ pruebaSeleccionada.icono }}</div>
               <h2 class="modal-title">¿Listo para iniciar {{ getNombreSeleccionado() }}?</h2>
 
               <div class="modal-message">
-                <p class="message-text">
-                  Prepárate para rendir {{ getNombreSeleccionado() }}.
-                </p>
+                
                 <p class="message-subtext">
                   Ponte cómodo, elimina distracciones y asegúrate de contar con el tiempo completo.
                 </p>
@@ -213,12 +280,14 @@ type ExamMode = 'real' | 'asistido';
                     *ngFor="let sub of pruebaSeleccionada.subpruebas"
                     type="button"
                     class="subprueba-card"
+                    [class.pro-locked-card]="pruebaSeleccionada.id !== 'ciencias' && !isEssayAvailableForFree(sub.id)"
                     (click)="seleccionarSubprueba(sub)"
                     [class.subprueba-card-selected]="subPruebaSeleccionada?.id === sub.id"
                     [class.perfect-gold]="isPerfect(sub.id)">
                     <span class="subprueba-name">
                       {{ sub.nombre }}
                       <span class="gold-badge" *ngIf="isPerfect(sub.id)">🏆</span>
+                      <span class="pro-lock-badge" *ngIf="pruebaSeleccionada.id !== 'ciencias' && !isEssayAvailableForFree(sub.id)">🔒 PRO 👑</span>
                     </span>
                     <span class="subprueba-desc">{{ sub.descripcion }}</span>
                   </button>
@@ -232,16 +301,37 @@ type ExamMode = 'real' | 'asistido';
                     *ngFor="let ensayo of subPruebaSeleccionada?.ensayos"
                     type="button"
                     class="subprueba-card"
+                    [class.pro-locked-card]="!isEssayAvailableForFree(ensayo.id)"
                     (click)="seleccionarEnsayo(ensayo)"
                     [class.subprueba-card-selected]="ensayoSeleccionado?.id === ensayo.id"
                     [class.perfect-gold]="isPerfect(ensayo.id)">
                     <span class="subprueba-name">
                       {{ ensayo.nombre }}
                       <span class="gold-badge" *ngIf="isPerfect(ensayo.id)">🏆</span>
+                      <span class="pro-lock-badge" *ngIf="!isEssayAvailableForFree(ensayo.id)">🔒 PRO 👑</span>
                     </span>
                     <span class="subprueba-desc">{{ ensayo.descripcion }}</span>
                   </button>
                 </div>
+              </div>
+
+              <div class="scroll-indicator" *ngIf="canStart && !scrolledToBottom">
+                <span>Desliza hacia abajo para continuar</span>
+                <span class="scroll-arrow">↓</span>
+              </div>
+
+              <!-- COOLDOWN WARNING BANNER FOR FREE USERS -->
+              <div class="cooldown-warning-banner animate-fade-in" *ngIf="isCooldownActive()" style="background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.3); padding: 1rem 1.25rem; border-radius: 12px; margin: 1.5rem 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span style="font-size: 1.5rem;">⏳</span>
+                  <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #b45309;">Cooldown de 48 horas Activo (Plan Básico)</h4>
+                    <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: #78350f;">Tu próximo ensayo estará disponible en <strong>{{ getCooldownFormatted() }}</strong>.</p>
+                  </div>
+                </div>
+                <button type="button" (click)="paymentService.openPricingModal()" style="background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none; padding: 0.6rem 1.1rem; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+                  Desbloquear con PRO 👑
+                </button>
               </div>
 
               <div class="prueba-detalles" *ngIf="canStart">
@@ -315,10 +405,6 @@ type ExamMode = 'real' | 'asistido';
               </div>
             </div>
           </div>
-        </div>
-        </div>
-      </main>
-    </div>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
     <app-profile-modal *ngIf="showProfileModal" (close)="onProfileModalClose()"></app-profile-modal>
 
@@ -358,13 +444,65 @@ type ExamMode = 'real' | 'asistido';
         </div>
       </div>
     </div>
+
+    <!-- CUSTOM COOLDOWN MODAL -->
+    <div class="modal-overlay animate-fade-in" *ngIf="showCooldownModal" (click)="showCooldownModal = false" style="z-index: 99999;">
+      <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()" style="background: #ffffff; padding: 2.5rem 2rem; border-radius: 24px; max-width: 480px; width: 90%; text-align: center; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25); border: 1px solid rgba(15, 23, 42, 0.08);">
+        <div style="font-size: 3.5rem; margin-bottom: 0.75rem;">⏳</div>
+        <h2 style="font-size: 1.6rem; font-weight: 900; color: #0f172a !important; margin: 0 0 0.4rem;">Cooldown del Plan Básico</h2>
+        <span style="background: rgba(245,158,11,0.15); color: #b45309; padding: 0.35rem 0.85rem; border-radius: 99px; font-weight: 800; font-size: 0.8rem; display: inline-block; margin-bottom: 1.25rem;">
+          1 Ensayo cada 48 Horas
+        </span>
+
+        <p style="color: #475569 !important; font-size: 0.95rem; line-height: 1.6; margin: 0 0 1.5rem; text-align: center; font-weight: 600;">
+          Has completado un ensayo recientemente. En el Plan Básico debes esperar 48 horas entre ensayos. Tu próximo ensayo gratuito estará disponible en:
+        </p>
+
+        <div style="background: rgba(245,158,11,0.08); border: 2px solid rgba(245,158,11,0.3); padding: 1.2rem; border-radius: 16px; margin-bottom: 1.75rem;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: #b45309; text-transform: uppercase;">Disponible en:</span>
+          <div style="font-size: 2rem; font-weight: 900; color: #d97706; font-family: monospace; margin-top: 0.25rem;">
+            {{ getCooldownFormatted() }}
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <button (click)="showCooldownModal = false; paymentService.openPricingModal()" style="background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none; padding: 0.9rem 1.25rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 14px rgba(124,58,237,0.3);">
+            🚀 Desbloquear Ensayos Ilimitados con PRO
+          </button>
+          <button (click)="showCooldownModal = false" style="background: transparent; color: #64748b; border: 1.5px solid #cbd5e1; padding: 0.75rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
+            Entendido
+          </button>
+          <button *ngIf="!isProduction" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.65rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; margin-top: 0.5rem;">
+            🧪 [DEV] Simular paso de tiempo (Saltar Cooldown 48h)
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host {
       display: block;
       min-height: 100vh;
       background: var(--bg-color);
       color: var(--text-primary);
+    }
+    .pro-lock-badge {
+      background: rgba(124, 58, 237, 0.15);
+      color: #7c3aed;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      margin-left: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .subprueba-card.pro-locked-card {
+      border-color: rgba(124, 58, 237, 0.25);
     }
     .ensayos-container { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -382,22 +520,8 @@ type ExamMode = 'real' | 'asistido';
       height: 100vh; 
       z-index: 100; 
     }
-    .sidebar-header { 
-      padding: 2.5rem 1.5rem 2rem; 
-      border-bottom: 1px solid rgba(255,255,255,0.15); 
-      text-align: center;
-    }
-    .sidebar-logo { 
-      font-family: var(--font-heading); 
-      font-size: 2.2rem; 
-      font-weight: 900; 
-      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.04em; 
-      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-      position: relative;
-    }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .sidebar-nav {
       flex: 1; 
       padding: 1rem 0.75rem; 
@@ -524,7 +648,7 @@ type ExamMode = 'real' | 'asistido';
     .sidebar-footer { padding: 1.25rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn-sidebar { color: #fca5a5 !important; opacity: 0.8; }
     .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; opacity: 1; }
-    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 11000; padding: 1.5rem; animation: fadeIn 0.2s ease; }
+    .logout-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 100000 !important; padding: 1.5rem; animation: fadeIn 0.2s ease; }
     .logout-confirm-modal { max-width: 420px !important; background: rgba(255,255,255,0.95); border: 2px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 100%; overflow: hidden; }
     .modal-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
     .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
@@ -676,11 +800,13 @@ type ExamMode = 'real' | 'asistido';
     .modal-preparacion {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 99999 !important;
       padding: 1.5rem;
       overflow-y: auto;
       animation: fadeIn 0.25s ease;
@@ -693,10 +819,10 @@ type ExamMode = 'real' | 'asistido';
       background: #ffffff;
       border: 2px solid rgba(0,0,0,0.06);
       border-radius: 20px;
-      padding: 2.5rem;
+      padding: 2.5rem 1.5rem 1.5rem;
       max-width: 560px;
       width: 100%;
-      max-height: calc(100vh - 3rem);
+      max-height: 88vh;
       overflow-y: auto;
       position: relative;
       display: flex;
@@ -711,20 +837,22 @@ type ExamMode = 'real' | 'asistido';
     }
     .modal-close {
       position: absolute;
-      top: 1.25rem;
-      right: 1.25rem;
-      background: rgba(0, 0, 0, 0.05);
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.08);
       border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      font-size: 1.5rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 1.3rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
+      line-height: 1;
     }
     .modal-close:hover {
       background: rgba(0, 0, 0, 0.1);
@@ -771,11 +899,36 @@ type ExamMode = 'real' | 'asistido';
       50% { transform: scale(1.3); opacity: 0.7; }
       100% { transform: scale(1); opacity: 1; }
     }
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      margin: 1rem auto;
+      color: var(--accent-primary);
+      font-weight: 800;
+      font-size: 0.9rem;
+      animation: fadeIn 0.5s ease;
+      position: sticky;
+      bottom: 20px;
+      z-index: 50;
+      width: fit-content;
+      text-shadow: 0 1px 3px rgba(255, 255, 255, 1), 0 0 8px rgba(255,255,255,0.9);
+    }
+    .scroll-arrow {
+      font-size: 1.5rem;
+      animation: bounceDown 2s infinite;
+      line-height: 1;
+    }
+    @keyframes bounceDown {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(8px); }
+      60% { transform: translateY(4px); }
+    }
     .countdown-row {
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin-top: 1.25rem;
       background: #fff;
       padding: 0.6rem 1.25rem;
       border-radius: 12px;
@@ -1115,7 +1268,7 @@ type ExamMode = 'real' | 'asistido';
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 2000;
+      z-index: 100000 !important;
       backdrop-filter: blur(4px);
       animation: fadeInOverlay 0.3s ease;
     }
@@ -1138,24 +1291,47 @@ type ExamMode = 'real' | 'asistido';
       box-shadow: var(--shadow-lg);
     }
 
+    /* MOBILE HEADER */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
+    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 200; }
+    .mobile-overlay.open { display: block; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 290px; max-width: 85vw; height: 100vh; background: #0d0f17; overflow-y: auto; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.5); z-index: 10000; }
+
     /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+      /* Ocultar dashboard-header interno en mobile (la barra top ya lo reemplaza) */
+      .dashboard-header { display: none !important; }
+      .dashboard-body { padding: 1rem 1rem 2rem !important; padding-top: 72px !important; }
+      .pruebas-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    }
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { 
-        margin-left: 0; 
-        padding: 1.5rem;
-      }
+      aside.sidebar, .sidebar { display: none !important; }
+      .mobile-header { display: flex !important; }
+      .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+      .dashboard-header { display: none !important; }
+      .dashboard-body { padding: 1rem 0.85rem 2rem !important; padding-top: 72px !important; }
       .title { font-size: 1.8rem; }
-      .pruebas-grid {
-        grid-template-columns: 1fr;
-      }
-      .modal-content {
-        padding: 2rem;
-        border-radius: 16px;
-      }
-      .prueba-detalles {
-        grid-template-columns: 1fr;
-      }
+      .pruebas-grid { grid-template-columns: 1fr; }
+      .modal-preparacion { padding: 1rem 0.5rem !important; align-items: center !important; z-index: 20000 !important; }
+      .modal-content { padding: 2.5rem 1.25rem 1.25rem !important; margin: auto !important; max-height: 86vh !important; border-radius: 16px !important; }
+      .modal-close { top: 0.75rem !important; right: 0.75rem !important; width: 36px !important; height: 36px !important; }
+      .prueba-detalles { grid-template-columns: 1fr; }
+      .cooldown-warning-banner { flex-direction: column !important; align-items: stretch !important; justify-content: flex-start !important; gap: 0.85rem !important; }
+      .cooldown-warning-banner > div:first-child { width: 100%; }
+      .cooldown-warning-banner button { width: 100% !important; white-space: normal !important; }
+      .active-exam-widget { max-width: 100% !important; flex-wrap: wrap !important; }
+      .last-ensayo-compact-btn { max-width: 100%; }
+      .last-ensayo-compact-btn > div { flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .dashboard-body { padding: 0.85rem !important; padding-top: 70px !important; }
+      .prueba-card { padding: 1.5rem; }
+      .card-title { font-size: 1.4rem; }
     }
   `]
 })
@@ -1176,6 +1352,17 @@ export class EnsayosListComponent implements OnInit {
   }
 
   isCollapsible = false;
+  mobileOpen = false;
+  scrolledToBottom = false;
+
+  onModalScroll(event: any) {
+    const target = event.target;
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 30) {
+      this.scrolledToBottom = true;
+    } else {
+      this.scrolledToBottom = false;
+    }
+  }
 
   pruebas: Prueba[] = [
     {
@@ -1505,7 +1692,7 @@ export class EnsayosListComponent implements OnInit {
   subPruebaSeleccionada: SubPrueba | null = null;
   ensayoSeleccionado: EnsayoOption | null = null;
   // Reads from same localStorage key as the runner - always reliable
-  activeProgress: { examId: string; examName: string } | null = null;
+  activeProgress: { examId: string; examName: string; intentoId?: string } | null = null;
   showOverwriteModal = false;
   pendingMode: ExamMode = 'real';
 
@@ -1517,10 +1704,20 @@ export class EnsayosListComponent implements OnInit {
   public adminService = inject(AdminService);
   public dashSvc = inject(DashboardService);
   public paymentService = inject(PaymentService);
+  private toast = inject(ToastService);
+  private auth = inject(Auth);
   showProfileModal = false;
   showSettingsModal = false;
   showLogoutConfirm = false;
   isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
+  readonly isProduction = environment.production;
+
+  async devResetTimeLimits() {
+    if (this.isProduction) return; // Dev-only escape hatch, never active in production
+    await this.firestoreService.devSimulateTimePass();
+    this.showCooldownModal = false;
+    this.toast.success('🧪 [DEV] ¡Se simularon 50h de avance! Cooldown y retención 3h reiniciados.');
+  }
 
   profileInitial = computed(() => {
     const p = this.firestoreService.profileSignal();
@@ -1585,7 +1782,7 @@ export class EnsayosListComponent implements OnInit {
       if (!raw) { this.activeProgress = null; return; }
       const data = JSON.parse(raw);
       if (data?.examId && data?.mode === 'asistido') {
-        this.activeProgress = { examId: data.examId, examName: data.examName || data.examId };
+        this.activeProgress = { examId: data.examId, examName: data.examName || data.examId, intentoId: data.intentoId };
       } else {
         this.activeProgress = null;
       }
@@ -1631,15 +1828,161 @@ export class EnsayosListComponent implements OnInit {
     }
   }
 
-  discardActiveProgress() {
+  async discardActiveProgress() {
+    const isPro = this.isProPlan() || this.adminService.isAdmin();
+    const now = new Date();
+    const nowTs = now.getTime();
+
+    // 1. Remove local progress storage
     localStorage.removeItem(this.STORAGE_KEY);
+
+    // 2. If free user, register finalization timestamp to activate 48h cooldown
+    if (!isPro) {
+      localStorage.setItem('estudiauni_last_simulation_finished', nowTs.toString());
+
+      const profile = this.firestoreService.profileSignal();
+      if (profile) {
+        this.firestoreService.profileSignal.set({
+          ...profile,
+          lastSimulationFinishedAt: now
+        });
+      }
+
+      const user = this.auth.currentUser;
+      if (user) {
+        try {
+          const { doc, updateDoc } = await import('@angular/fire/firestore');
+          await updateDoc(doc(this.firestoreService.firestore, 'users', user.uid), {
+            lastSimulationFinishedAt: now
+          });
+        } catch (e) {}
+      }
+      this.toast.info('Ensayo cerrado y finalizado. Cooldown de 48 horas activado.');
+    } else {
+      this.toast.info('Ensayo cerrado.');
+    }
+
+    // 3. Mark attempt in Firestore as completed if attempt ID is present
+    if (this.activeProgress?.intentoId) {
+      try {
+        await this.firestoreService.finishIntento(this.activeProgress.intentoId, 0, 65);
+      } catch (e) {}
+    }
+
     this.activeProgress = null;
+  }
+
+  isEssayAvailableForFree(ensayoId: string): boolean {
+    if (this.isProPlan() || this.adminService.isAdmin()) return true;
+    if (!ensayoId) return false;
+    const lower = ensayoId.toLowerCase();
+    return lower.includes('2026') && !lower.includes('invierno');
+  }
+
+  private getLastFinishedDate(): Date | null {
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+    if (lastFinished) {
+      return typeof lastFinished.toDate === 'function' ? lastFinished.toDate() : new Date(lastFinished);
+    }
+    const storageVal = localStorage.getItem('estudiauni_last_simulation_finished');
+    if (storageVal) {
+      const parsed = parseInt(storageVal, 10);
+      if (!isNaN(parsed) && parsed > 0) return new Date(parsed);
+    }
+    return null;
+  }
+
+  isCooldownActive(): boolean {
+    if (this.isProPlan() || this.adminService.isAdmin()) return false;
+    const finishedDate = this.getLastFinishedDate();
+    if (!finishedDate) return false;
+
+    const elapsed = Date.now() - finishedDate.getTime();
+    return elapsed < 48 * 3600 * 1000;
+  }
+
+  getCooldownFormatted(): string {
+    const finishedDate = this.getLastFinishedDate();
+    if (!finishedDate) return '0h 0m';
+
+    const remainingMs = (48 * 3600 * 1000) - (Date.now() - finishedDate.getTime());
+    if (remainingMs <= 0) return '0h 0m';
+
+    const hours = Math.floor(remainingMs / (3600 * 1000));
+    const minutes = Math.floor((remainingMs % (3600 * 1000)) / (60 * 1000));
+    return `${hours}h ${minutes}m`;
+  }
+
+  showCooldownModal = false;
+
+  isResultsLockedForLast(): boolean {
+    if (this.isProPlan() || this.adminService.isAdmin()) return false;
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+    if (!lastFinished) return false;
+
+    let finishedDate: Date;
+    if (typeof lastFinished.toDate === 'function') {
+      finishedDate = lastFinished.toDate();
+    } else {
+      finishedDate = new Date(lastFinished);
+    }
+
+    const elapsed = Date.now() - finishedDate.getTime();
+    return elapsed < 3 * 3600 * 1000;
+  }
+
+  getResultsUnlockCountdown(): string {
+    const profile = this.firestoreService.profileSignal();
+    const lastFinished = profile?.lastSimulationFinishedAt;
+    if (!lastFinished) return '00h 00m 00s';
+
+    let finishedDate: Date;
+    if (typeof lastFinished.toDate === 'function') {
+      finishedDate = lastFinished.toDate();
+    } else {
+      finishedDate = new Date(lastFinished);
+    }
+
+    const remainingMs = (3 * 3600 * 1000) - (Date.now() - finishedDate.getTime());
+    if (remainingMs <= 0) return '00h 00m 00s';
+
+    const hours = Math.floor(remainingMs / (3600 * 1000)).toString().padStart(2, '0');
+    const minutes = Math.floor((remainingMs % (3600 * 1000)) / (60 * 1000)).toString().padStart(2, '0');
+    const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000).toString().padStart(2, '0');
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  getLastCompletedEnsayo(): any {
+    const records = this.dashSvc.paesRecords();
+    if (!records || records.length === 0) return null;
+    return records[0];
+  }
+
+  goToLastEnsayoReview(lastEnsayo: any) {
+    if (!lastEnsayo) return;
+    const ensayoId = lastEnsayo.ensayoId || 'paes-2026-oficial';
+    const intentoId = lastEnsayo.intentoId || '';
+    this.router.navigate(['/ensayo', ensayoId, 'review'], {
+      queryParams: intentoId ? { intento: intentoId } : {}
+    });
   }
 
   iniciarPrueba(mode: ExamMode) {
     if (!this.pruebaSeleccionada) return;
 
     const ensayoId = this.ensayoSeleccionado?.id ?? this.subPruebaSeleccionada?.id ?? this.pruebaSeleccionada.id;
+
+    if (!this.isEssayAvailableForFree(ensayoId)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
+
+    if (this.isCooldownActive()) {
+      this.showCooldownModal = true;
+      return;
+    }
 
     // Only warn if there is ALREADY a DIFFERENT assisted exam in progress
     if (mode === 'asistido' && this.activeProgress && this.activeProgress.examId !== ensayoId) {

@@ -430,6 +430,45 @@ import { FirestoreService } from '../../core/services/firestore.service';
       from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .glass-card {
+        width: 92%;
+        padding: 2rem 1.25rem;
+      }
+      .title {
+        font-size: 1.6rem;
+      }
+      .subtitle {
+        font-size: 0.95rem;
+        max-width: 100%;
+      }
+      .receipt-box {
+        padding: 1rem;
+      }
+      .action-row {
+        flex-direction: column;
+      }
+      .action-btn {
+        padding: 0.9rem 1rem;
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .spinner-container, .success-icon-container, .error-icon-container {
+        width: 70px;
+        height: 70px;
+      }
+      .title {
+        font-size: 1.4rem;
+      }
+      .receipt-row {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+      }
+    }
   `]
 })
 export class PaymentResultComponent implements OnInit {

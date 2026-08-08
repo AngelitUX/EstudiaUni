@@ -14,7 +14,9 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-import { MATERIAS, CAPITULOS } from '../../frontend-app/src/app/features/learning-path/data/seed-data';
+// Carga dinámica en tiempo de ejecución para evitar que tsc altere la estructura de dist
+// tslint:disable-next-line:no-var-requires
+const { MATERIAS, CAPITULOS } = require('../../frontend-app/src/app/features/learning-path/data/seed-data');
 
 async function seedFirestore() {
   console.log('🌱 Starting learning path seed...');

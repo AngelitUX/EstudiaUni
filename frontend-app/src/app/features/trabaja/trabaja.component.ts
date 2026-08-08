@@ -135,6 +135,9 @@ import { RouterModule } from '@angular/router';
     </footer>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host {
       display: block;
       min-height: 100vh;
@@ -480,6 +483,23 @@ import { RouterModule } from '@angular/router';
       .steps-container { grid-template-columns: 1fr; gap: 2rem; }
       .step-connector { display: none; }
       .req-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .trabaja-main { padding: 0 1rem 3rem; }
+      .hero-section { padding: 0.5rem 0 2rem; }
+      .hero-subtitle { font-size: 1rem; }
+      .req-card { padding: 1.5rem; }
+      .req-card h2 { font-size: 1.3rem; }
+      .final-cta-section h2 { font-size: 1.4rem; }
+      .btn-primary-cta { padding: 0.85rem 1.5rem; font-size: 0.95rem; }
+      .section-title { font-size: 1.6rem; }
+    }
+
+    @media (max-width: 380px) {
+      .trabaja-icon-wrap { width: 64px; height: 64px; }
+      .hero-badge { padding: 0.3rem 0.8rem; font-size: 0.72rem; }
+      .req-card { padding: 1.1rem; }
     }
   `]
 })

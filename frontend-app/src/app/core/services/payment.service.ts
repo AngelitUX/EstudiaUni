@@ -23,10 +23,6 @@ export interface WebpayCommitResponse {
   };
 }
 
-export interface RandomRecipientResponse {
-  uid: string;
-  email: string;
-}
 
 export interface CouponValidationResponse {
   valid: boolean;
@@ -35,6 +31,35 @@ export interface CouponValidationResponse {
   discountValue?: number;
   discountAmount?: number;
   finalAmount?: number;
+}
+
+export interface ManualTransferData {
+  planType: 'monthly' | 'yearly';
+  bankName: string;
+  transferNumber: string;
+  amount: number;
+  payerEmail?: string;
+  targetUid?: string;
+  receiptUrl?: string;
+  couponCode?: string;
+}
+
+export interface TransactionRecord {
+  id: string;
+  type: 'webpay' | 'transfer';
+  buyOrder?: string;
+  transferNumber?: string;
+  bankName?: string;
+  payerEmail?: string;
+  payerUid?: string;
+  recipientUid?: string;
+  amount: number;
+  planType: 'monthly' | 'yearly';
+  status: 'pending' | 'completed' | 'failed' | 'rejected' | 'pending_approval' | 'approved';
+  paymentType?: string;
+  authorizationCode?: string;
+  receiptUrl?: string;
+  createdAt: string | Date;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -68,8 +93,6 @@ export class PaymentService {
 
   /**
    * Initiate a Webpay transaction.
-   * If targetUid is provided, premium will be granted to that user after payment (gift flow).
-   * If couponCode is provided, the discount will be applied to the amount.
    */
   createWebpayTransaction(
     planType: 'monthly' | 'yearly',
@@ -95,11 +118,33 @@ export class PaymentService {
   }
 
   /**
-   * Get a random free-tier user to gift premium to
+   * Submit manual bank transfer report
    */
-  getRandomFreeUser(): Observable<RandomRecipientResponse> {
+  submitManualTransfer(data: ManualTransferData): Observable<{ success: boolean; message: string; transferId: string }> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    const url = `${baseUrl}/api/subscriptions/webpay/random-recipient`;
-    return this.http.get<RandomRecipientResponse>(url);
+    const url = `${baseUrl}/api/subscriptions/transfer/submit`;
+    return this.http.post<{ success: boolean; message: string; transferId: string }>(url, data);
+  }
+
+  // ── ADMIN PAYMENT ENDPOINTS ──
+
+  getAdminTransactions(): Observable<TransactionRecord[]> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.get<TransactionRecord[]>(`${baseUrl}/api/admin/subscriptions/transactions`);
+  }
+
+  adminGrantSubscription(data: { targetEmailOrUid: string; durationMonths: number; planType?: 'monthly' | 'yearly'; reason?: string }): Observable<{ success: boolean; message: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/grant`, data);
+  }
+
+  adminRevokeSubscription(data: { targetEmailOrUid: string; reason?: string }): Observable<{ success: boolean; message: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/revoke`, data);
+  }
+
+  adminApproveTransfer(data: { transferId: string; action: 'approve' | 'reject'; rejectionReason?: string }): Observable<{ success: boolean; message: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/transfer/approve`, data);
   }
 }

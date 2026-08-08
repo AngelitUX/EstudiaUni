@@ -6,6 +6,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 
 type ModalStep = 'plans' | 'recipient';
 type RecipientMode = 'self' | 'gift';
+type PaymentMethodOption = 'webpay' | 'transfer';
 type EmailStatus = 'idle' | 'checking' | 'found' | 'not_found';
 type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
@@ -19,7 +20,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
         <!-- Close Button -->
         <button class="btn-close-pricing" (click)="closeModal()">✕</button>
 
-        <!-- ─────────────── STEP 1: Plan Selection (solo desde Dashboard) ─────────────── -->
+        <!-- ─────────────── STEP 1: Plan Selection ─────────────── -->
         <ng-container *ngIf="currentStep() === 'plans'">
           <div class="pricing-header">
             <span class="crown-icon">👑</span>
@@ -89,13 +90,13 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </div>
           </div>
 
-          <p class="secure-checkout-text">🔒 Pago 100% seguro a través de Webpay Plus de Transbank</p>
+          <p class="secure-checkout-text">🔒 Pago 100% seguro a través de Webpay Plus y Transferencia Bancaria</p>
         </ng-container>
 
-        <!-- ─────────────── STEP 2: Recipient, Plan & Coupon Selection ─────────────── -->
+        <!-- ─────────────── STEP 2: Recipient, Method & Plan ─────────────── -->
         <ng-container *ngIf="currentStep() === 'recipient'">
           <div class="flow-step">
-            <!-- Back Button (solo si no vino del home) -->
+            <!-- Back Button -->
             <button class="btn-back" *ngIf="!cameFromHome()" (click)="goBack()">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
               Volver a los planes
@@ -107,7 +108,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               <p>Elige si activar el Pro en tu cuenta o regalárselo a alguien más.</p>
             </div>
 
-            <!-- Mode Tabs -->
+            <!-- Mode Tabs (Para mi / Regalar) -->
             <div class="mode-tabs">
               <button class="mode-tab" [class.active]="recipientMode() === 'self'" (click)="setMode('self')">
                 <span class="tab-icon">🧑‍💻</span> Para mí
@@ -117,23 +118,23 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               </button>
             </div>
 
-            <!-- Plan Selector Option (always visible here so they can choose/toggle monthly or yearly) -->
+            <!-- Plan Selector Option -->
             <div class="plan-selector-row">
               <button class="pselector-btn" [class.active]="billingCycle() === 'monthly'" (click)="onPlanChange('monthly')">
                 <div class="pselector-main">Mensual</div>
                 <div class="pselector-price">
-                  \\\${{ couponResult()?.valid && billingCycle() === 'monthly' ? formatPrice(couponResult()!.finalAmount!) : '9.990' }} /mes
+                  $ {{ couponResult()?.valid && billingCycle() === 'monthly' ? formatPrice(couponResult()!.finalAmount!) : '9.990' }} /mes
                 </div>
               </button>
               <button class="pselector-btn" [class.active]="billingCycle() === 'yearly'" (click)="onPlanChange('yearly')">
                 <div class="pselector-main">Anual <span class="save-chip">-41%</span></div>
                 <div class="pselector-price">
-                  \\\${{ couponResult()?.valid && billingCycle() === 'yearly' ? formatPrice(couponResult()!.finalAmount!) : '69.990' }}
+                  $ {{ couponResult()?.valid && billingCycle() === 'yearly' ? formatPrice(couponResult()!.finalAmount!) : '69.990' }}
                 </div>
               </button>
             </div>
 
-            <!-- ── Self Mode Email Display ── -->
+            <!-- Self Mode Email Display -->
             <div class="mode-panel" *ngIf="recipientMode() === 'self'">
               <div class="self-email-display">
                 <span class="sedf-icon">🧑‍💻</span>
@@ -145,10 +146,9 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               </div>
             </div>
 
-            <!-- ── Gift Mode Email Input ── -->
+            <!-- Gift Mode Email Input -->
             <div class="mode-panel" *ngIf="recipientMode() === 'gift'">
-              <p class="gift-desc">Ingresa el correo de la persona a quien quieres regalarle el Plan Pro. Su cuenta debe estar registrada en EstudiaUni.</p>
-
+              <p class="gift-desc">Ingresa el correo de la persona a quien quieres regalarle el Plan Pro.</p>
               <div class="email-wrap" [class.found]="emailStatus() === 'found'" [class.notfound]="emailStatus() === 'not_found'">
                 <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,12 2,6"></polyline></svg>
                 <input type="email" class="text-input" placeholder="correo@ejemplo.cl" [(ngModel)]="giftEmail" (input)="onEmailInput()" [disabled]="loadingCheckout()" />
@@ -158,141 +158,170 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                   <span *ngIf="emailStatus() === 'not_found'">❌</span>
                 </span>
               </div>
-
-              <!-- Recipient status alerts -->
-              <p class="feedback-msg success" *ngIf="emailStatus() === 'found' && recipientPlan() !== 'premium'">
-                ✅ <strong>{{ giftEmail }}</strong> — ¡Cuenta encontrada! Está listo para recibir el Pro.
-              </p>
-              <p class="feedback-msg warning" *ngIf="emailStatus() === 'found' && recipientPlan() === 'premium'">
-                ⚠️ <strong>{{ giftEmail }}</strong> ya tiene el Plan Pro activo. Si continúas, la compra se sumará como días adicionales a su plan actual.
+              <p class="feedback-msg success" *ngIf="emailStatus() === 'found'">
+                ✅ <strong>{{ giftEmail }}</strong> — Cuenta verificada.
               </p>
               <p class="feedback-msg error" *ngIf="emailStatus() === 'not_found'">
-                ❌ No encontramos ninguna cuenta con ese correo. Pídele que se registre primero.
+                ❌ No encontramos una cuenta registrada con ese correo.
               </p>
             </div>
 
-            <!-- ── Coupon Toggle Checkbox (To keep the UI clean) ── -->
-            <div class="coupon-toggle-row" style="margin-top: 1.25rem;">
-              <label class="checkbox-container">
-                <input type="checkbox" [checked]="hasDiscountCode()" (change)="toggleDiscountCode()" />
-                <span class="checkmark"></span>
-                Tengo un código de descuento
-              </label>
-            </div>
-
-            <!-- ── Coupon Code Section (Visible only when checked) ── -->
-            <div class="coupon-section" *ngIf="hasDiscountCode()" style="margin-top: 1rem; animation: fadeIn 0.2s ease-out;">
-              <div class="coupon-input-row">
-                <div class="coupon-wrap" [class.valid]="couponStatus() === 'valid'" [class.invalid]="couponStatus() === 'invalid'">
-                  <svg class="coupon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                  <input
-                    type="text"
-                    class="text-input coupon-text"
-                    placeholder="Ej: PAES2026"
-                    [(ngModel)]="couponCode"
-                    (input)="onCouponInput()"
-                    [disabled]="loadingCheckout()"
-                    style="text-transform:uppercase;"
-                  />
-                  <span class="coupon-status-icon" *ngIf="couponStatus() !== 'idle'">
-                    <span *ngIf="couponStatus() === 'checking'">⏳</span>
-                    <span *ngIf="couponStatus() === 'valid'">✅</span>
-                    <span *ngIf="couponStatus() === 'invalid'">❌</span>
-                  </span>
-                </div>
-                <button class="btn-apply-coupon" (click)="applyCoupon()" [disabled]="!couponCode.trim() || couponStatus() === 'checking' || loadingCheckout()">
-                  <span *ngIf="couponStatus() !== 'checking'">Aplicar</span>
-                  <span *ngIf="couponStatus() === 'checking'" class="loading-dots">Verificando</span>
+            <!-- ── PAYMENT METHOD SELECTOR ── -->
+            <div class="method-selector-section" style="margin-top: 1.5rem;">
+              <label class="section-label-sm">Método de Pago:</label>
+              <div class="method-tabs">
+                <button class="method-tab" [class.active]="paymentMethod() === 'webpay'" (click)="setPaymentMethod('webpay')">
+                  💳 Webpay Plus <span class="sub-tag">(Tarjetas)</span>
+                </button>
+                <button class="method-tab" [class.active]="paymentMethod() === 'transfer'" (click)="setPaymentMethod('transfer')">
+                  🏛️ Transferencia <span class="sub-tag">(Manual)</span>
                 </button>
               </div>
-              <p class="coupon-feedback success" *ngIf="couponStatus() === 'valid'">{{ couponResult()?.message }}</p>
-              <p class="coupon-feedback error" *ngIf="couponStatus() === 'invalid'">{{ couponFeedbackMsg() }}</p>
             </div>
 
-            <!-- ── Price Breakdown (Visible when a coupon is applied) ── -->
-            <div class="price-summary-box" *ngIf="couponResult()?.valid" [class.discounted]="true" style="margin-top: 1.25rem; margin-bottom: 1.25rem;">
-              <div class="price-row">
-                <span class="price-label">Precio base</span>
-                <span class="price-val crossed">
-                  \\\${{ billingCycle() === 'monthly' ? '9.990' : '69.990' }}/{{ billingCycle() === 'monthly' ? 'mes' : 'año' }}
+            <!-- ── WEBPAY FLOW ── -->
+            <div *ngIf="paymentMethod() === 'webpay'">
+              <!-- Coupon Toggle -->
+              <div class="coupon-toggle-row" style="margin-top: 1.25rem;">
+                <label class="checkbox-container">
+                  <input type="checkbox" [checked]="hasDiscountCode()" (change)="toggleDiscountCode()" />
+                  <span class="checkmark"></span>
+                  Tengo un código de descuento
+                </label>
+              </div>
+
+              <!-- Coupon Input -->
+              <div class="coupon-section" *ngIf="hasDiscountCode()" style="margin-top: 1rem;">
+                <div class="coupon-input-row">
+                  <div class="coupon-wrap" [class.valid]="couponStatus() === 'valid'" [class.invalid]="couponStatus() === 'invalid'">
+                    <input type="text" class="text-input coupon-text" placeholder="Ej: PAES2026" [(ngModel)]="couponCode" (input)="onCouponInput()" [disabled]="loadingCheckout()" style="text-transform:uppercase;" />
+                  </div>
+                  <button class="btn-apply-coupon" (click)="applyCoupon()" [disabled]="!couponCode.trim() || couponStatus() === 'checking' || loadingCheckout()">
+                    Aplicar
+                  </button>
+                </div>
+                <p class="coupon-feedback success" *ngIf="couponStatus() === 'valid'">{{ couponResult()?.message }}</p>
+                <p class="coupon-feedback error" *ngIf="couponStatus() === 'invalid'">{{ couponFeedbackMsg() }}</p>
+              </div>
+
+              <!-- Price breakdown if coupon valid -->
+              <div class="price-summary-box discounted" *ngIf="couponResult()?.valid" style="margin-top: 1.25rem;">
+                <div class="price-row">
+                  <span class="price-label">Precio base</span>
+                  <span class="price-val crossed">$ {{ billingCycle() === 'monthly' ? '9.990' : '69.990' }}</span>
+                </div>
+                <div class="price-row discount-row">
+                  <span class="price-label green">Descuento</span>
+                  <span class="price-val green">-$ {{ formatPrice(couponResult()!.discountAmount!) }}</span>
+                </div>
+                <div class="price-divider"></div>
+                <div class="price-row total-row">
+                  <span class="price-label bold">Total</span>
+                  <span class="price-val bold purple">$ {{ formatPrice(couponResult()!.finalAmount!) }}</span>
+                </div>
+              </div>
+
+              <button class="btn-checkout big" style="margin-top: 1.5rem;" (click)="proceedCheckout()" [disabled]="loadingCheckout() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
+                <span *ngIf="!loadingCheckout()">
+                  {{ couponResult()?.valid
+                    ? 'Pagar $' + formatPrice(couponResult()!.finalAmount!) + ' con Webpay 🔒'
+                    : 'Continuar a Webpay Plus 🔒'
+                  }}
                 </span>
+                <span *ngIf="loadingCheckout()" class="loading-dots">Iniciando Webpay</span>
+              </button>
+              <p class="secure-checkout-text">🔒 Transacción encriptada a través de Transbank</p>
+            </div>
+
+            <!-- ── MANUAL TRANSFER FLOW ── -->
+            <div *ngIf="paymentMethod() === 'transfer'" style="margin-top: 1.25rem;">
+              <div class="bank-details-box">
+                <h4>🏛️ Datos para Transferencia Bancaria:</h4>
+                <div class="bank-grid">
+                  <div><strong>Banco:</strong> Banco de Chile / BancoEstado</div>
+                  <div><strong>Tipo de Cuenta:</strong> Cuenta Vista / Corriente</div>
+                  <div><strong>N° de Cuenta:</strong> 77-654321-0</div>
+                  <div><strong>RUT:</strong> 77.654.321-K</div>
+                  <div><strong>Nombre:</strong> EstudiaUni SpA</div>
+                  <div><strong>Correo Pagos:</strong> pagos&#64;estudiauni.cl</div>
+                </div>
+                <p class="bank-amount-notice">
+                  Monto exacto a transferir: <strong>$ {{ couponResult()?.valid ? formatPrice(couponResult()!.finalAmount!) : (billingCycle() === 'monthly' ? '9.990' : '69.990') }} CLP</strong>
+                </p>
               </div>
-              <div class="price-row discount-row">
-                <span class="price-label green">Descuento aplicado</span>
-                <span class="price-val green">-\\\${{ formatPrice(couponResult()!.discountAmount!) }}</span>
+
+              <div class="transfer-form" *ngIf="!transferSubmitted()">
+                <div class="form-row-sm">
+                  <label>Banco Emisor (tu banco):</label>
+                  <input type="text" class="text-input-styled" placeholder="Ej: BancoEstado, Santander, Falabella" [(ngModel)]="bankName" />
+                </div>
+                <div class="form-row-sm">
+                  <label>N° de Comprobante o Transferencia:</label>
+                  <input type="text" class="text-input-styled" placeholder="Ej: 123456789" [(ngModel)]="transferNumber" />
+                </div>
+
+                <button class="btn-checkout big" style="margin-top: 1.25rem; background: linear-gradient(135deg, #059669, #047857);" (click)="submitTransferReport()" [disabled]="loadingCheckout() || !bankName.trim() || !transferNumber.trim() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
+                  <span *ngIf="!loadingCheckout()">📤 Notificar Transferencia</span>
+                  <span *ngIf="loadingCheckout()" class="loading-dots">Enviando comprobante</span>
+                </button>
               </div>
-              <div class="price-divider"></div>
-              <div class="price-row total-row">
-                <span class="price-label bold">Total a pagar</span>
-                <span class="price-val bold purple">\\\${{ formatPrice(couponResult()!.finalAmount!) }}/{{ billingCycle() === 'monthly' ? 'mes' : 'año' }}</span>
+
+              <div class="transfer-success-box" *ngIf="transferSubmitted()">
+                <div class="ts-icon">🎉</div>
+                <h4>¡Comprobante de Transferencia Recibido!</h4>
+                <p>El equipo de EstudiaUni verificará tu transferencia N° <strong>{{ transferNumber }}</strong> y activará el Plan Pro en breve.</p>
+                <button class="btn-cancel" style="margin-top: 1rem; width: 100%;" (click)="closeModal()">Entendido, cerrar</button>
               </div>
             </div>
 
-            <!-- ── Final Checkout Button ── -->
-            <button class="btn-checkout big" style="margin-top: 1.5rem;" (click)="proceedCheckout()" [disabled]="loadingCheckout() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
-              <span *ngIf="!loadingCheckout()">
-                {{ couponResult()?.valid
-                  ? 'Pagar $' + formatPrice(couponResult()!.finalAmount!) + ' con Webpay 🔒'
-                  : (recipientMode() === 'gift' ? 'Regalar Plan Pro 🎁' : 'Continuar con Webpay 🔒')
-                }}
-              </span>
-              <span *ngIf="loadingCheckout()" class="loading-dots">Iniciando Webpay</span>
-            </button>
-
-            <p class="secure-checkout-text">🔒 Pago 100% seguro a través de Webpay Plus de Transbank</p>
           </div>
         </ng-container>
       </div>
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     .pricing-modal-overlay {
       position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center;
       justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px); animation: fadeInOverlay 0.25s ease-out;
       padding: 1rem; overflow-y: auto;
     }
-    @keyframes fadeInOverlay { from { opacity:0; } to { opacity:1; } }
     .pricing-modal-container {
       position: relative; width: min(880px,100%); border-radius: 24px; background: #fff;
       border: 2px solid var(--glass-border); box-shadow: 0 25px 60px rgba(0,0,0,0.25);
-      padding: 2.5rem 2rem 2rem; animation: slideUpModal 0.35s cubic-bezier(0.16,1,0.3,1);
-      color: var(--text-primary); max-height: 94vh; overflow-y: auto;
+      padding: 2.5rem 2rem 2rem; color: var(--text-primary); max-height: 94vh; overflow-y: auto;
     }
-    @keyframes slideUpModal { from { opacity:0; transform:translateY(40px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
     .btn-close-pricing {
       position: absolute; top: 1.25rem; right: 1.25rem; border: none;
       background: var(--bg-secondary); color: var(--text-secondary);
       width: 36px; height: 36px; border-radius: 10px; font-size: 1.15rem;
       cursor: pointer; display: grid; place-items: center; transition: all 0.2s; z-index: 2;
     }
-    .btn-close-pricing:hover { background: rgba(239,68,68,0.2); color:#ef4444; transform:rotate(90deg); }
+    .btn-close-pricing:hover { background: rgba(239,68,68,0.2); color:#ef4444; }
 
-    /* Step 1 */
     .pricing-header { text-align:center; margin-bottom:2rem; }
-    .crown-icon { font-size:2.5rem; display:inline-block; animation:crownBob 2s ease-in-out infinite; }
-    @keyframes crownBob { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-6px) rotate(4deg)} }
-    .pricing-header h2 { margin:0.5rem 0; font-size:1.8rem; font-weight:800; letter-spacing:-0.02em; }
-    .pricing-subtitle { margin:0 auto 1.5rem; color:var(--text-secondary); max-width:580px; font-size:0.98rem; line-height:1.5; }
+    .crown-icon { font-size:2.5rem; display:inline-block; }
+    .pricing-header h2 { margin:0.5rem 0; font-size:1.8rem; font-weight:800; }
+    .pricing-subtitle { margin:0 auto 1.5rem; color:var(--text-secondary); max-width:580px; font-size:0.98rem; }
     .billing-switcher { display:inline-flex; background:var(--bg-secondary); padding:0.35rem; border-radius:14px; border:1px solid var(--glass-border); gap:0.25rem; }
-    .billing-switcher button { border:none; background:transparent; color:var(--text-secondary); padding:0.5rem 1.25rem; border-radius:10px; font-weight:700; font-size:0.9rem; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:0.5rem; }
+    .billing-switcher button { border:none; background:transparent; color:var(--text-secondary); padding:0.5rem 1.25rem; border-radius:10px; font-weight:700; font-size:0.9rem; cursor:pointer; }
     .billing-switcher button.active { background:#fff; color:var(--accent-primary); box-shadow:var(--shadow-sm); }
-    .discount-badge { background:#10b981; color:#fff; font-size:0.72rem; padding:0.15rem 0.45rem; border-radius:6px; font-weight:800; text-transform:uppercase; }
+    .discount-badge { background:#10b981; color:#fff; font-size:0.72rem; padding:0.15rem 0.45rem; border-radius:6px; font-weight:800; }
     .pricing-cards { display:grid; grid-template-columns:1fr 1fr; gap:1.75rem; margin-bottom:1.5rem; }
-    .pricing-card { background:#fff; border:2px solid var(--glass-border); border-radius:20px; padding:2rem; display:flex; flex-direction:column; position:relative; transition:all 0.3s ease; }
-    .pricing-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+    .pricing-card { background:#fff; border:2px solid var(--glass-border); border-radius:20px; padding:2rem; display:flex; flex-direction:column; position:relative; }
     .pro-card { border-color:#d4af37; background:linear-gradient(to bottom,#fff,rgba(254,243,199,0.25)); }
     .glowing-gold-border { box-shadow:0 0 20px rgba(212,175,55,0.15); }
-    .pricing-card:hover.pro-card { box-shadow:0 15px 40px rgba(212,175,55,0.3); border-color:#e6a100; }
-    .popular-ribbon { position:absolute; top:1rem; right:1rem; background:linear-gradient(135deg,#FFE885 0%,#E6A100 50%,#B87E00 100%); color:#fff; font-size:0.7rem; font-weight:800; padding:0.3rem 0.75rem; border-radius:99px; letter-spacing:0.05em; border:1px solid #FFE885; box-shadow:0 2px 8px rgba(184,126,0,0.3); }
-    .plan-tag-small { display:inline-block; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); background:var(--bg-secondary); padding:0.2rem 0.6rem; border-radius:6px; margin-bottom:0.4rem; border:1px solid var(--glass-border); }
-    .premium-tag-small { background:rgba(212,175,55,0.15); color:#b87e00; border-color:rgba(212,175,55,0.3); }
+    .popular-ribbon { position:absolute; top:1rem; right:1rem; background:linear-gradient(135deg,#FFE885 0%,#E6A100 50%,#B87E00 100%); color:#fff; font-size:0.7rem; font-weight:800; padding:0.3rem 0.75rem; border-radius:99px; }
+    .plan-tag-small { display:inline-block; font-size:0.72rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); background:var(--bg-secondary); padding:0.2rem 0.6rem; border-radius:6px; margin-bottom:0.4rem; }
+    .premium-tag-small { background:rgba(212,175,55,0.15); color:#b87e00; }
     .card-header h3 { margin:0; font-size:1.4rem; font-weight:800; }
     .text-gold-gradient { background:linear-gradient(135deg,#d4af37 0%,#b87e00 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
     .card-desc { margin:0.35rem 0 1.25rem; font-size:0.88rem; color:var(--text-secondary); }
     .card-price { display:flex; align-items:baseline; gap:0.2rem; margin-bottom:0.25rem; }
     .currency { font-size:1.3rem; font-weight:800; }
-    .amount { font-size:2.2rem; font-weight:900; letter-spacing:-0.03em; }
+    .amount { font-size:2.2rem; font-weight:900; }
     .amount-big { font-size:2rem; font-weight:900; }
     .period { font-size:0.9rem; color:var(--text-muted); font-weight:600; }
     .price-sub { margin:0.1rem 0 0.75rem; font-size:0.8rem; color:var(--text-muted); }
@@ -304,99 +333,137 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .features-list li.forbidden { color:var(--text-muted); }
     .features-list li.highlight { color:var(--text-primary); font-weight:600; }
     .btn-basic-status { width:100%; padding:0.85rem; border:2px solid var(--glass-border); background:var(--bg-secondary); color:var(--text-muted); border-radius:12px; font-weight:700; cursor:not-allowed; }
-    .btn-pro-action { width:100%; padding:0.95rem; border:none; background:linear-gradient(135deg,#FFE885 0%,#E6A100 50%,#B87E00 100%); color:#fff; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; transition:all 0.25s ease; box-shadow:0 4px 15px rgba(230,161,0,0.35); text-shadow:0 1px 2px rgba(0,0,0,0.2); }
-    .btn-pro-action:hover { filter:brightness(1.08); transform:translateY(-2px); }
+    .btn-pro-action { width:100%; padding:0.95rem; border:none; background:linear-gradient(135deg,#FFE885 0%,#E6A100 50%,#B87E00 100%); color:#fff; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; }
     .pulse-gold { animation:goldPulse 2s infinite; }
     @keyframes goldPulse { 0%{box-shadow:0 0 0 0 rgba(230,161,0,0.4)} 70%{box-shadow:0 0 0 10px rgba(230,161,0,0)} 100%{box-shadow:0 0 0 0 rgba(230,161,0,0)} }
 
-    /* Steps 2 & 3 shared */
-    .flow-step { max-width:520px; margin:0 auto; }
-    .btn-back { display:inline-flex; align-items:center; gap:0.4rem; border:none; background:transparent; color:var(--text-secondary); font-size:0.9rem; font-weight:600; cursor:pointer; padding:0.35rem 0.75rem 0.35rem 0.4rem; border-radius:8px; transition:all 0.2s; margin-bottom:1.75rem; }
+    .flow-step { max-width:540px; margin:0 auto; }
+    .btn-back { display:inline-flex; align-items:center; gap:0.4rem; border:none; background:transparent; color:var(--text-secondary); font-size:0.9rem; font-weight:600; cursor:pointer; padding:0.35rem 0.75rem; border-radius:8px; margin-bottom:1.5rem; }
     .btn-back:hover { background:var(--bg-secondary); color:var(--text-primary); }
-    .step-header { text-align:center; margin-bottom:2rem; }
-    .step-icon-wrap { font-size:2.5rem; margin-bottom:0.5rem; display:inline-block; animation:crownBob 2.5s ease-in-out infinite; }
-    .step-header h2 { margin:0 0 0.5rem; font-size:1.6rem; font-weight:800; letter-spacing:-0.02em; }
+    .step-header { text-align:center; margin-bottom:1.5rem; }
+    .step-icon-wrap { font-size:2.5rem; margin-bottom:0.5rem; }
+    .step-header h2 { margin:0 0 0.5rem; font-size:1.6rem; font-weight:800; }
     .step-header p { margin:0; color:var(--text-secondary); font-size:0.95rem; }
-    .mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.5rem; background:var(--bg-secondary); padding:0.4rem; border-radius:16px; border:1px solid var(--glass-border); }
-    .mode-tab { display:flex; align-items:center; justify-content:center; gap:0.6rem; border:none; background:transparent; color:var(--text-secondary); padding:0.75rem 1rem; border-radius:12px; font-weight:700; font-size:0.95rem; cursor:pointer; transition:all 0.2s; }
+    .mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem; background:var(--bg-secondary); padding:0.4rem; border-radius:16px; border:1px solid var(--glass-border); }
+    .mode-tab { display:flex; align-items:center; justify-content:center; gap:0.6rem; border:none; background:transparent; color:var(--text-secondary); padding:0.75rem 1rem; border-radius:12px; font-weight:700; font-size:0.95rem; cursor:pointer; }
     .mode-tab.active { background:#fff; color:var(--accent-primary); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
     .mode-tab.gift-tab.active { background:linear-gradient(135deg,#fdf2ff 0%,#f3e8ff 100%); color:#7c3aed; }
-    .plan-selector-row { display:flex; gap:0.75rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-    .pselector-btn { flex:1; min-width:120px; padding:0.7rem 1rem; border:2px solid var(--glass-border); background:var(--bg-secondary); border-radius:12px; font-size:0.88rem; font-weight:700; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; text-align:left; }
+    .plan-selector-row { display:flex; gap:0.75rem; margin-bottom:1.25rem; }
+    .pselector-btn { flex:1; padding:0.7rem 1rem; border:2px solid var(--glass-border); background:var(--bg-secondary); border-radius:12px; font-size:0.88rem; font-weight:700; color:var(--text-secondary); cursor:pointer; text-align:left; }
     .pselector-btn.active { border-color:var(--accent-primary); background:rgba(133,92,214,0.06); color:var(--accent-primary); }
     .pselector-main { font-size:0.88rem; font-weight:700; display:flex; align-items:center; gap:0.4rem; }
     .pselector-price { font-size:1rem; font-weight:800; margin-top:0.15rem; }
     .save-chip { background:#10b981; color:#fff; font-size:0.65rem; padding:0.1rem 0.35rem; border-radius:5px; font-weight:800; }
-    .mode-panel { animation:fadeIn 0.25s ease-out; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    .self-email-display { display:flex; align-items:center; gap:0.9rem; padding:1rem 1.25rem; border-radius:14px; background:rgba(133,92,214,0.04); border:1.5px solid rgba(133,92,214,0.2); margin-bottom:1.5rem; }
+    
+    .self-email-display { display:flex; align-items:center; gap:0.9rem; padding:0.9rem 1.25rem; border-radius:14px; background:rgba(133,92,214,0.04); border:1.5px solid rgba(133,92,214,0.2); margin-bottom:1.25rem; }
     .sedf-icon { font-size:1.8rem; flex-shrink:0; }
     .sedf-info { display:flex; flex-direction:column; flex:1; min-width:0; }
-    .sedf-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+    .sedf-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); }
     .sedf-val { font-size:0.95rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .badge-green { flex-shrink:0; background:rgba(16,185,129,0.12); color:#059669; font-size:0.8rem; font-weight:700; padding:0.3rem 0.65rem; border-radius:8px; }
-    .gift-desc { font-size:0.9rem; color:var(--text-secondary); margin:0 0 1.25rem; line-height:1.55; }
-    .email-wrap { display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; border-radius:14px; border:2px solid var(--glass-border); background:var(--bg-secondary); margin-bottom:0.75rem; transition:border-color 0.2s; }
-    .email-wrap:focus-within { border-color:var(--accent-primary); background:#fff; }
-    .email-wrap.found { border-color:#10b981; }
-    .email-wrap.notfound { border-color:#ef4444; }
+    .gift-desc { font-size:0.9rem; color:var(--text-secondary); margin:0 0 1rem; }
+    .email-wrap { display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; border-radius:14px; border:2px solid var(--glass-border); background:var(--bg-secondary); margin-bottom:0.75rem; }
     .input-icon { flex-shrink:0; color:var(--text-muted); }
     .text-input { flex:1; border:none; background:transparent; font-size:0.95rem; font-weight:500; color:var(--text-primary); outline:none; font-family:inherit; }
-    .text-input::placeholder { color:var(--text-muted); }
     .feedback-msg { font-size:0.85rem; font-weight:600; margin:0 0 1rem; padding:0.6rem 0.9rem; border-radius:10px; }
-    .feedback-msg.success { background:rgba(16,185,129,0.08); color:#047857; border:1px solid rgba(16,185,129,0.2); }
-    .feedback-msg.warning { background:rgba(245,158,11,0.08); color:#d97706; border:1px solid rgba(245,158,11,0.2); }
-    .feedback-msg.error { background:rgba(239,68,68,0.08); color:#b91c1c; border:1px solid rgba(239,68,68,0.2); }
-    
-    /* Coupon Toggle Checkbox Styles */
-    .coupon-toggle-row { display: flex; align-items: center; }
-    .checkbox-container { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; user-select: none; }
-    .checkbox-container input { cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent-primary); }
+    .feedback-msg.success { background:rgba(16,185,129,0.08); color:#047857; }
+    .feedback-msg.error { background:rgba(239,68,68,0.08); color:#b91c1c; }
 
-    /* Step 3 — Discount */
-    .price-summary-box { background:var(--bg-secondary); border:1.5px solid var(--glass-border); border-radius:16px; padding:1.1rem 1.25rem; margin-bottom:1.5rem; transition:all 0.3s; }
-    .price-summary-box.discounted { border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.04); }
-    .price-row { display:flex; justify-content:space-between; align-items:center; padding:0.3rem 0; }
+    /* Method Selector */
+    .section-label-sm { display:block; font-size:0.82rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem; }
+    .method-tabs { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem; }
+    .method-tab { padding:0.75rem 0.85rem; border:2px solid var(--glass-border); background:var(--bg-secondary); border-radius:14px; font-weight:700; font-size:0.9rem; color:var(--text-secondary); cursor:pointer; text-align:center; }
+    .method-tab.active { border-color:var(--accent-primary); background:rgba(133,92,214,0.08); color:var(--accent-primary); }
+    .sub-tag { font-size:0.75rem; font-weight:500; opacity:0.8; }
+
+    /* Coupon Toggle & Section */
+    .checkbox-container { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+    .price-summary-box { background:var(--bg-secondary); border:1.5px solid var(--glass-border); border-radius:16px; padding:1rem 1.25rem; margin-bottom:1.25rem; }
+    .price-row { display:flex; justify-content:space-between; align-items:center; padding:0.25rem 0; }
     .price-label { font-size:0.88rem; font-weight:600; color:var(--text-secondary); }
-    .price-val { font-size:0.95rem; font-weight:700; color:var(--text-primary); }
+    .price-val { font-size:0.95rem; font-weight:700; }
     .price-val.crossed { text-decoration:line-through; color:var(--text-muted); }
     .green { color:#059669 !important; }
-    .bold { font-weight:800 !important; color:var(--text-primary) !important; }
+    .bold { font-weight:800 !important; }
     .purple { color:var(--accent-primary) !important; font-size:1.1rem !important; }
-    .price-divider { height:1px; background:rgba(16,185,129,0.2); margin:0.5rem 0; }
-    .discount-row .price-val { font-size:0.9rem; }
-    .coupon-section { margin-bottom:1.5rem; }
-    .coupon-label { display:block; font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.6rem; }
-    .optional-tag { font-weight:500; color:var(--text-muted); font-size:0.82rem; }
-    .coupon-input-row { display:flex; gap:0.65rem; align-items:stretch; }
-    .coupon-wrap { flex:1; display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; border-radius:14px; border:2px solid var(--glass-border); background:var(--bg-secondary); transition:border-color 0.2s; }
-    .coupon-wrap:focus-within { border-color:var(--accent-primary); background:#fff; }
-    .coupon-wrap.valid { border-color:#10b981; background:rgba(16,185,129,0.04); }
-    .coupon-wrap.invalid { border-color:#ef4444; }
-    .coupon-icon { flex-shrink:0; color:var(--text-muted); }
+    .price-divider { height:1px; background:rgba(16,185,129,0.2); margin:0.4rem 0; }
+    .coupon-input-row { display:flex; gap:0.65rem; }
+    .coupon-wrap { flex:1; display:flex; align-items:center; padding:0.75rem 1rem; border-radius:14px; border:2px solid var(--glass-border); background:var(--bg-secondary); }
     .coupon-text { flex:1; font-size:0.95rem; font-weight:700; letter-spacing:0.08em; }
-    .coupon-status-icon { font-size:1.1rem; flex-shrink:0; }
-    .btn-apply-coupon { padding:0 1.25rem; border:none; background:var(--accent-primary); color:#fff; border-radius:12px; font-weight:800; font-size:0.9rem; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-    .btn-apply-coupon:hover:not([disabled]) { filter:brightness(1.1); transform:translateY(-1px); }
-    .btn-apply-coupon[disabled] { opacity:0.5; cursor:not-allowed; }
-    .coupon-feedback { font-size:0.85rem; font-weight:600; margin:0.6rem 0 0; padding:0.5rem 0.8rem; border-radius:8px; }
-    .coupon-feedback.success { color:#047857; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); }
-    .coupon-feedback.error { color:#b91c1c; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); }
+    .btn-apply-coupon { padding:0 1.25rem; border:none; background:var(--accent-primary); color:#fff; border-radius:12px; font-weight:800; font-size:0.9rem; cursor:pointer; }
+    .coupon-feedback { font-size:0.85rem; font-weight:600; margin:0.5rem 0 0; padding:0.4rem 0.8rem; border-radius:8px; }
+    .coupon-feedback.success { color:#047857; background:rgba(16,185,129,0.08); }
+    .coupon-feedback.error { color:#b91c1c; background:rgba(239,68,68,0.08); }
+
+    /* Bank Details Box */
+    .bank-details-box { background:rgba(16,185,129,0.05); border:1.5px solid rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem; }
+    .bank-details-box h4 { margin:0 0 0.75rem; font-size:1rem; font-weight:800; color:#047857; }
+    .bank-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; font-size:0.88rem; color:var(--text-primary); }
+    .bank-amount-notice { margin:0.85rem 0 0; font-size:0.9rem; color:#065f46; border-top:1px dashed rgba(16,185,129,0.3); padding-top:0.6rem; }
+
+    /* Form inputs */
+    .form-row-sm { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.85rem; }
+    .form-row-sm label { font-size:0.85rem; font-weight:700; color:var(--text-secondary); }
+    .text-input-styled { padding:0.75rem 1rem; border-radius:12px; border:2px solid var(--glass-border); background:var(--bg-secondary); font-size:0.95rem; font-weight:600; color:var(--text-primary); outline:none; }
+    .text-input-styled:focus { border-color:var(--accent-primary); background:#fff; }
+
+    /* Transfer Success */
+    .transfer-success-box { text-align:center; padding:1.5rem 1rem; background:rgba(16,185,129,0.08); border-radius:16px; border:1.5px solid rgba(16,185,129,0.3); }
+    .ts-icon { font-size:3rem; margin-bottom:0.5rem; }
+    .transfer-success-box h4 { margin:0 0 0.5rem; color:#047857; font-weight:800; font-size:1.2rem; }
+    .transfer-success-box p { margin:0; font-size:0.92rem; color:var(--text-secondary); line-height:1.5; }
 
     /* Checkout */
     .btn-checkout { width:100%; padding:1rem; border:none; background:linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%); color:#fff; border-radius:14px; font-weight:800; font-size:1rem; cursor:pointer; transition:all 0.25s ease; box-shadow:0 4px 15px rgba(124,58,237,0.35); display:flex; align-items:center; justify-content:center; }
     .btn-checkout.big { font-size:1.05rem; padding:1.1rem; }
-    .btn-checkout:hover:not([disabled]) { filter:brightness(1.1); transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,58,237,0.45); }
-    .btn-checkout[disabled] { opacity:0.5; cursor:not-allowed; transform:none; }
+    .btn-checkout:hover:not([disabled]) { filter:brightness(1.1); transform:translateY(-2px); }
+    .btn-checkout[disabled] { opacity:0.5; cursor:not-allowed; }
+    .secure-checkout-text { text-align:center; margin:1rem 0 0; font-size:0.8rem; color:var(--text-muted); font-weight:600; }
 
-    .secure-checkout-text { text-align:center; margin:1.25rem 0 0; font-size:0.8rem; color:var(--text-muted); font-weight:600; }
-    .loading-dots::after { content:'...'; animation:dotPulse 1.4s infinite; }
-    @keyframes dotPulse { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .pricing-modal-container { padding: 2rem 1.5rem 1.5rem; }
+      .pricing-cards { gap: 1.25rem; }
+      .pricing-card { padding: 1.5rem; }
+    }
 
-    @media (max-width:768px) {
-      .pricing-cards { grid-template-columns:1fr; gap:1.25rem; }
-      .pricing-modal-container { padding:2rem 1.25rem 1.25rem; }
-      .pricing-header h2 { font-size:1.5rem; }
+    @media (max-width: 768px) {
+      .pricing-modal-overlay { padding: 0.5rem; align-items: flex-start; }
+      .pricing-modal-container { width: 100%; border-radius: 18px; padding: 2rem 1.25rem 1.25rem; max-height: none; margin-top: 0.5rem; }
+      .pricing-header h2 { font-size: 1.35rem; }
+      .pricing-subtitle { font-size: 0.9rem; }
+      .billing-switcher { display: flex; width: 100%; }
+      .billing-switcher button { flex: 1; padding: 0.5rem 0.5rem; font-size: 0.85rem; white-space: nowrap; }
+      .pricing-cards { grid-template-columns: 1fr; gap: 1rem; }
+      .pricing-card { padding: 1.5rem 1.25rem; }
+      .flow-step { max-width: 100%; }
+      .step-header h2 { font-size: 1.3rem; }
+      .mode-tabs { grid-template-columns: 1fr 1fr; }
+      .mode-tab { padding: 0.7rem 0.5rem; font-size: 0.85rem; }
+      .plan-selector-row { flex-direction: column; }
+      .method-tabs { grid-template-columns: 1fr; }
+      .bank-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .pricing-modal-container { padding: 1.75rem 1rem 1rem; }
+      .btn-close-pricing { top: 0.85rem; right: 0.85rem; width: 32px; height: 32px; }
+      .crown-icon { font-size: 2rem; }
+      .pricing-header h2 { font-size: 1.15rem; }
+      .card-header h3 { font-size: 1.2rem; }
+      .amount { font-size: 1.8rem; }
+      .amount-big { font-size: 1.6rem; }
+      .coupon-input-row { flex-direction: column; }
+      .btn-apply-coupon { padding: 0.75rem 1.25rem; }
+      .self-email-display { flex-wrap: wrap; }
+      .action-row, .plan-selector-row { gap: 0.5rem; }
+    }
+
+    @media (max-width: 380px) {
+      .pricing-header h2 { font-size: 1.05rem; }
+      .step-header h2 { font-size: 1.15rem; }
+      .mode-tab { font-size: 0.78rem; padding: 0.6rem 0.4rem; }
+      .mode-tab .tab-icon { display: none; }
     }
   `]
 })
@@ -406,6 +473,7 @@ export class PricingModalComponent implements OnInit {
 
   currentStep = signal<ModalStep>('plans');
   recipientMode = signal<RecipientMode>('self');
+  paymentMethod = signal<PaymentMethodOption>('webpay');
   billingCycle = signal<'monthly' | 'yearly'>('monthly');
   loadingCheckout = signal<boolean>(false);
   cameFromHome = signal<boolean>(false);
@@ -424,13 +492,16 @@ export class PricingModalComponent implements OnInit {
   couponFeedbackMsg = signal<string>('');
   hasDiscountCode = signal<boolean>(false);
 
+  // Manual Transfer flow
+  bankName = '';
+  transferNumber = '';
+  transferSubmitted = signal<boolean>(false);
+
   isPro = () => this.firestoreService.profileSignal()?.plan === 'premium';
   currentUserEmail = () => (this.firestoreService.profileSignal() as any)?.email || 'tu cuenta';
 
   ngOnInit() {
-    // Sync initial billing cycle selection
     this.billingCycle.set(this.paymentService.selectedPlanType());
-
     if (this.paymentService.skipPlanStep()) {
       this.cameFromHome.set(true);
       this.currentStep.set('recipient');
@@ -438,14 +509,13 @@ export class PricingModalComponent implements OnInit {
   }
 
   formatPrice(n: number): string {
-    return n.toLocaleString('es-CL');
+    return (n || 0).toLocaleString('es-CL');
   }
 
   setBilling(cycle: 'monthly' | 'yearly') { this.billingCycle.set(cycle); }
 
   onPlanChange(cycle: 'monthly' | 'yearly') {
     this.billingCycle.set(cycle);
-    // Re-validate existing coupon for new plan
     if (this.couponCode.trim() && this.couponStatus() === 'valid') {
       this.couponStatus.set('idle');
       this.couponResult.set(null);
@@ -463,9 +533,14 @@ export class PricingModalComponent implements OnInit {
     this.cameFromHome.set(false);
     this.resetGiftState();
     this.resetCouponState();
+    this.transferSubmitted.set(false);
   }
 
   setMode(mode: RecipientMode) { this.recipientMode.set(mode); this.resetGiftState(); }
+
+  setPaymentMethod(method: PaymentMethodOption) {
+    this.paymentMethod.set(method);
+  }
 
   toggleDiscountCode() {
     this.hasDiscountCode.set(!this.hasDiscountCode());
@@ -488,7 +563,6 @@ export class PricingModalComponent implements OnInit {
     this.couponFeedbackMsg.set('');
   }
 
-  // ── Email lookup ──
   onEmailInput() {
     this.emailStatus.set('idle'); this.giftTargetUid = '';
     this.recipientPlan.set('free');
@@ -504,22 +578,7 @@ export class PricingModalComponent implements OnInit {
       const uid = await this.firestoreService.findUidByEmail(email);
       if (uid) {
         this.giftTargetUid = uid;
-        
-        // Fetch recipient profile to check if they already have premium
-        this.firestoreService.getUserProfile(true, uid).subscribe({
-          next: (profile) => {
-            if (profile) {
-              this.recipientPlan.set(profile.plan);
-            } else {
-              this.recipientPlan.set('free');
-            }
-            this.emailStatus.set('found');
-          },
-          error: () => {
-            this.recipientPlan.set('free');
-            this.emailStatus.set('found');
-          }
-        });
+        this.emailStatus.set('found');
       } else {
         this.emailStatus.set('not_found');
       }
@@ -528,7 +587,6 @@ export class PricingModalComponent implements OnInit {
     }
   }
 
-  // ── Coupon ──
   onCouponInput() {
     this.couponStatus.set('idle');
     this.couponResult.set(null);
@@ -557,7 +615,6 @@ export class PricingModalComponent implements OnInit {
     });
   }
 
-  // ── Checkout ──
   proceedCheckout() {
     this.loadingCheckout.set(true);
     const returnUrl = window.location.origin + '/pago-resultado';
@@ -577,6 +634,34 @@ export class PricingModalComponent implements OnInit {
         this.loadingCheckout.set(false);
         const errMsg = err.error?.message || err.message || 'Error de conexión';
         alert('Hubo un problema al iniciar el pago: ' + errMsg);
+      }
+    });
+  }
+
+  submitTransferReport() {
+    if (!this.bankName.trim() || !this.transferNumber.trim()) return;
+    this.loadingCheckout.set(true);
+
+    const baseAmount = this.billingCycle() === 'monthly' ? 9990 : 69990;
+    const finalAmount = this.couponResult()?.valid ? this.couponResult()!.finalAmount! : baseAmount;
+
+    const data = {
+      planType: this.billingCycle(),
+      bankName: this.bankName.trim(),
+      transferNumber: this.transferNumber.trim(),
+      amount: finalAmount,
+      targetUid: this.recipientMode() === 'gift' ? this.giftTargetUid : undefined,
+      couponCode: this.couponStatus() === 'valid' ? this.couponCode.trim().toUpperCase() : undefined,
+    };
+
+    this.paymentService.submitManualTransfer(data).subscribe({
+      next: () => {
+        this.loadingCheckout.set(false);
+        this.transferSubmitted.set(true);
+      },
+      error: (err) => {
+        this.loadingCheckout.set(false);
+        alert('Error al enviar comprobante: ' + (err.error?.message || err.message));
       }
     });
   }

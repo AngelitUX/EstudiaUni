@@ -5,15 +5,27 @@ import {
   Body,
   Param,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
+import {
+  GrantSubscriptionDto,
+  RevokeSubscriptionDto,
+  ApproveTransferDto,
+} from '../subscriptions/dto/manual-payment.dto';
+import { CurrentUser, CurrentUserData } from '../common/decorators/current-user.decorator';
 
 @Controller('admin')
 @UseGuards(FirebaseAuthGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly subscriptionsService: SubscriptionsService,
+  ) {}
 
   @Post('modules')
   async upsertModule(@Body() body: { moduleId?: string; data: any }) {
@@ -45,5 +57,54 @@ export class AdminController {
   @Get('stats')
   async getStats() {
     return this.adminService.getStats();
+  }
+
+  // ─── ADMIN SUBSCRIPTION & PAYMENT ENDPOINTS ───
+
+  @Get('subscriptions/transactions')
+  async getAllTransactions() {
+    return this.subscriptionsService.getAllTransactions();
+  }
+
+  @Post('subscriptions/grant')
+  @HttpCode(HttpStatus.OK)
+  async grantSubscription(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: GrantSubscriptionDto,
+  ) {
+    return this.subscriptionsService.manualGrant(
+      dto.targetEmailOrUid,
+      dto.durationMonths,
+      dto.planType || 'monthly',
+      user.uid,
+      dto.reason,
+    );
+  }
+
+  @Post('subscriptions/revoke')
+  @HttpCode(HttpStatus.OK)
+  async revokeSubscription(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: RevokeSubscriptionDto,
+  ) {
+    return this.subscriptionsService.manualRevoke(
+      dto.targetEmailOrUid,
+      user.uid,
+      dto.reason,
+    );
+  }
+
+  @Post('subscriptions/transfer/approve')
+  @HttpCode(HttpStatus.OK)
+  async approveTransfer(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: ApproveTransferDto,
+  ) {
+    return this.subscriptionsService.approveTransfer(
+      dto.transferId,
+      dto.action,
+      user.uid,
+      dto.rejectionReason,
+    );
   }
 }

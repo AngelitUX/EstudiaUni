@@ -231,6 +231,59 @@ import { ModulesService } from '../services/modules.service';
       color: #9ca3af;
       font-size: 1.1rem;
     }
+
+    @media (max-width: 1024px) {
+      .modules-container {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .modules-container {
+        padding: 1.25rem;
+      }
+      .modules-container h2 {
+        font-size: 1.6rem;
+      }
+      .topics-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+      }
+      .module-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modules-container {
+        padding: 1rem;
+      }
+      .modules-container h2 {
+        font-size: 1.4rem;
+      }
+      .subtitle {
+        margin-bottom: 2rem;
+      }
+      .topics-grid {
+        grid-template-columns: 1fr;
+      }
+      .topic-card {
+        padding: 1.25rem;
+      }
+      .module-header h3 {
+        font-size: 1.25rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .modules-container {
+        padding: 0.75rem;
+      }
+      .topic-card {
+        padding: 1rem;
+      }
+    }
   `]
 })
 export class ModulesListComponent implements OnInit {

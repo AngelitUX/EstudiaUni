@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { DashboardService, ActivityEntry } from '../../core/services/dashboard.service';
 import { Router } from '@angular/router';
 import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
+import { FirestoreService } from '../../core/services/firestore.service';
+import { PaymentService } from '../../core/services/payment.service';
+import { AdminService } from '../admin/services/admin.service';
+
+const FREE_HISTORY_LIMIT = 3;
 
 @Component({
   selector: 'app-history-modal',
@@ -12,11 +17,15 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
     <div class="modal-overlay" (click)="close.emit()">
       <div class="modal-container glass-card" (click)="$event.stopPropagation()">
         <div class="modal-topbar">
-          <h2>Historial Completo de Actividad</h2>
+          <h2>{{ isProPlan ? 'Historial Completo de Actividad' : 'Últimas Actividades' }}</h2>
           <button class="btn-close" (click)="close.emit()">✕</button>
         </div>
-        
+
         <div class="modal-content">
+          <p class="free-limit-notice" *ngIf="!isProPlan && allActivitiesCount > activities.length">
+            🔒 Plan Básico: solo se muestran tus últimas {{ FREE_HISTORY_LIMIT }} actividades.
+            <a (click)="paymentService.openPricingModal()">Mejora a PRO</a> para ver tu historial completo.
+          </p>
           <div class="activity-list" *ngIf="activities.length > 0; else noActivity">
             <div *ngFor="let act of activities" 
                  class="activity-item" 
@@ -75,19 +84,30 @@ import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
 
     .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .empty-icon { font-size: 3rem; opacity: 0.8; }
+    .free-limit-notice { background: rgba(133,92,214,0.08); border: 1.5px dashed rgba(133,92,214,0.35); color: var(--text-secondary); padding: 0.85rem 1rem; border-radius: 12px; font-size: 0.85rem; margin: 0 0 0.25rem; }
+    .free-limit-notice a { color: var(--accent-primary); cursor: pointer; font-weight: 700; }
   `]
 })
 export class HistoryModalComponent implements OnInit {
   private dashSvc = inject(DashboardService);
   private miniEnsayoSvc = inject(MiniEnsayoService);
   private router = inject(Router);
+  private firestoreService = inject(FirestoreService);
+  private adminService = inject(AdminService);
+  paymentService = inject(PaymentService);
 
   @Output() close = new EventEmitter<void>();
 
+  readonly FREE_HISTORY_LIMIT = FREE_HISTORY_LIMIT;
   activities: ActivityEntry[] = [];
+  allActivitiesCount = 0;
+  isProPlan = false;
 
   ngOnInit() {
-    this.activities = this.dashSvc.activities();
+    this.isProPlan = this.firestoreService.profileSignal()?.plan === 'premium' || !!this.adminService.isAdmin();
+    const all = this.dashSvc.activities();
+    this.allActivitiesCount = all.length;
+    this.activities = this.isProPlan ? all : all.slice(0, FREE_HISTORY_LIMIT);
   }
 
   getRelativeTime(timestamp: string): string {

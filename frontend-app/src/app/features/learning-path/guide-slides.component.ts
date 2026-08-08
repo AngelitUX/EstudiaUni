@@ -38,6 +38,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
             <h2 class="slide-title s-anim s-d1" [innerHTML]="parseMixed(slide.title)"></h2>
             <div class="slide-body s-anim s-d2" [innerHTML]="parseMixed(slide.content)"></div>
 
+            <!-- CUSTOM IMAGES / SVG -->
+            <div *ngIf="slide.imageUrl" class="slide-image-wrap-large s-anim s-d2">
+              <img [src]="slide.imageUrl" class="slide-image-premium" alt="Imagen {{ slide.title }}">
+            </div>
+            <div *ngIf="slide.svgContent" class="slide-svg-wrap-large s-anim s-d2" [innerHTML]="renderSvg(slide.svgContent)"></div>
+
+            <!-- RESOURCES -->
+            <div *ngIf="slide.resourcesContent" class="resources-section s-anim s-d2" [innerHTML]="renderSvg(slide.resourcesContent)"></div>
+
             <!-- INTERACTIVE QUIZ -->
             <div *ngIf="slide.interactive" class="quiz-section s-anim s-d3">
               <div *ngFor="let alt of getQuiz(slide.quizId!)" class="quiz-alt"
@@ -134,6 +143,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
     :host ::ng-deep .slide-image-wrap-large { display: flex; justify-content: center; align-items: center; margin-top: 2rem; }
     :host ::ng-deep .slide-image-premium { width: 100%; max-width: 600px; border-radius: 20px; border: 4px solid rgba(255,255,255,0.8); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+    
+    :host ::ng-deep .slide-svg-wrap-large { display: flex; justify-content: center; align-items: center; margin: 2.5rem auto; width: 100%; max-width: 700px; }
+    :host ::ng-deep .slide-svg-wrap-large svg { width: 100%; height: auto; max-height: 350px; }
 
     /* BIG RULE */
     :host ::ng-deep .big-rule { background:rgba(255,200,0,0.08); border:2px solid rgba(255,200,0,0.2); border-radius:16px; padding:1.25rem; margin:0.5rem 0; text-align:center; }
@@ -274,6 +286,11 @@ export class GuideSlidesComponent implements OnChanges {
       .replace(/&#39;/g, "'")
       .replace(/&amp;/g, '&');
     return this.sanitizer.bypassSecurityTrustHtml(unescaped);
+  }
+
+  renderSvg(svg: string | undefined): SafeHtml {
+    if (!svg) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
   }
 
   current = signal(0);

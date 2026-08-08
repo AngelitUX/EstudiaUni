@@ -239,6 +239,9 @@ interface FaqItem {
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; }
 
     .soporte-page {
@@ -632,13 +635,35 @@ interface FaqItem {
     .soporte-footer a:hover { text-decoration: underline; }
 
     /* ── RESPONSIVE ── */
+    .search-bar,
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      font-size: 16px; /* Prevents iOS Safari auto-zoom on input focus */
+    }
+    .qa-text p {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     @media (max-width: 768px) {
-      .contact-card { grid-template-columns: 1fr; padding: 2rem 1.5rem; gap: 2rem; }
+      .contact-card { grid-template-columns: 1fr; padding: 2rem 1.25rem; gap: 2rem; }
       .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
+      .soporte-body { padding: 2rem 1rem; }
+    }
+    @media (max-width: 640px) {
+      .soporte-header { padding: 1.25rem 1rem 2.25rem; }
+      .soporte-hero-icon { font-size: 1.8rem; }
+      .soporte-icon-wrap { width: 64px; height: 64px; border-radius: 18px; margin-bottom: 1rem; }
+      .soporte-hero h1 { font-size: 1.85rem; }
+      .soporte-hero-sub { font-size: 0.95rem; margin-bottom: 1.5rem; }
+      .quick-actions-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+      .useful-links-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .contact-card { padding: 1.5rem 1rem; border-radius: 18px; }
+      .btn-send { width: 100%; min-height: 48px; }
     }
     @media (max-width: 480px) {
-      .quick-actions-grid { grid-template-columns: 1fr; }
-      .useful-links-grid { grid-template-columns: 1fr; }
+      .faq-soporte-header { padding: 1rem; gap: 0.75rem; }
+      .faq-soporte-body p { padding: 0 1rem 1rem 2.8rem; }
     }
   `]
 })

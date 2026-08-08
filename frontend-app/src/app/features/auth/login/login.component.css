@@ -452,3 +452,61 @@
   line-height: 1.5;
 }
 
+/* ===== RESPONSIVE MOBILE OPTIMIZATIONS ===== */
+.glass-input {
+  font-size: 16px !important; /* Prevents iOS Safari auto-zoom on focus */
+  min-height: 48px;
+}
+
+.btn-toggle-password {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .floating-symbol {
+    display: none !important;
+  }
+  .auth-container {
+    padding: 1rem 0.6rem;
+    align-items: flex-start;
+  }
+  .auth-box {
+    padding: 1.5rem 1.15rem;
+    border-radius: 18px;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+  .auth-box h2 {
+    font-size: 1.6rem;
+  }
+  .subtitle {
+    font-size: 0.92rem;
+    margin-bottom: 1.5rem;
+  }
+  .brand {
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .btn-back {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-box {
+    padding: 1.25rem 0.85rem;
+  }
+  .auth-box h2 {
+    font-size: 1.4rem;
+  }
+  .brand {
+    font-size: 1.3rem;
+  }
+}
+
+

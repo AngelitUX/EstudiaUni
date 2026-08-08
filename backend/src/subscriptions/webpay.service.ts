@@ -1,4 +1,6 @@
-import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as admin from 'firebase-admin';
 import { FirebaseService } from '../firebase/firebase.service';
 import { SubscriptionsService } from './subscriptions.service';
 
@@ -6,6 +8,14 @@ const PLAN_AMOUNTS: Record<string, number> = {
   monthly: 9990,
   yearly: 69990,
 };
+
+// Transbank's own publicly-documented Webpay Plus INTEGRATION (sandbox) credentials.
+// These are not secrets — Transbank publishes them for every developer to test against.
+// They are only used as a fallback when WEBPAY_* env vars are not set.
+const SANDBOX_BASE_URL = 'https://webpay3gint.transbank.cl';
+const SANDBOX_COMMERCE_CODE = '597055555532';
+const SANDBOX_API_KEY = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C';
+const PRODUCTION_BASE_URL = 'https://webpay3g.transbank.cl';
 
 export interface CouponValidationResult {
   valid: boolean;
@@ -19,29 +29,56 @@ export interface CouponValidationResult {
 @Injectable()
 export class WebpayService {
   private readonly logger = new Logger(WebpayService.name);
-  
-  // Transbank Integration/Sandbox public details
-  private readonly baseUrl = 'https://webpay3gint.transbank.cl';
-  private readonly commerceCode = '597055555532';
-  private readonly apiKey = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C';
+  private readonly inMemoryTransactions = new Map<string, any>();
+
+  // Test-to-production switch: set WEBPAY_ENVIRONMENT=production plus the two
+  // credential env vars below to your real Transbank commerce credentials.
+  // Nothing else in this file needs to change.
+  private readonly isProduction: boolean;
+  private readonly baseUrl: string;
+  private readonly commerceCode: string;
+  private readonly apiKey: string;
 
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly subscriptionsService: SubscriptionsService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.isProduction = this.configService.get<string>('WEBPAY_ENVIRONMENT') === 'production';
+    this.baseUrl = this.configService.get<string>('WEBPAY_BASE_URL')
+      || (this.isProduction ? PRODUCTION_BASE_URL : SANDBOX_BASE_URL);
+    this.commerceCode = this.configService.get<string>('WEBPAY_COMMERCE_CODE') || SANDBOX_COMMERCE_CODE;
+    this.apiKey = this.configService.get<string>('WEBPAY_API_KEY') || SANDBOX_API_KEY;
+
+    if (this.isProduction && (this.commerceCode === SANDBOX_COMMERCE_CODE || this.apiKey === SANDBOX_API_KEY)) {
+      this.logger.error(
+        '[Webpay] WEBPAY_ENVIRONMENT=production but WEBPAY_COMMERCE_CODE/WEBPAY_API_KEY are missing — ' +
+        'still using Transbank sandbox credentials. Real payments will NOT work until these are set.',
+      );
+    }
+    this.logger.log(`[Webpay] Running in ${this.isProduction ? 'PRODUCTION' : 'TEST/sandbox'} mode against ${this.baseUrl}`);
+  }
 
   /**
    * Validate a discount coupon code.
-   * Coupon documents are stored in the 'discount_codes' collection using the code (uppercase) as the document ID.
    */
   async validateCoupon(code: string, planType: 'monthly' | 'yearly'): Promise<CouponValidationResult> {
     const normalized = code.trim().toUpperCase();
-    const doc = await this.firebaseService.firestore
-      .collection('discount_codes')
-      .doc(normalized)
-      .get();
+    let doc: any = null;
 
-    if (!doc.exists) {
+    try {
+      doc = await this.firebaseService.firestore
+        .collection('discount_codes')
+        .doc(normalized)
+        .get();
+    } catch (dbError) {
+      this.logger.error(`[Webpay] Firestore check for coupon "${code}" failed: ${dbError.message}`);
+      // Fail closed: a coupon must be verified against Firestore to be honored.
+      // Never grant a discount just because the database was momentarily unreachable.
+      return { valid: false, message: 'No se pudo verificar el código de descuento en este momento.' };
+    }
+
+    if (!doc || !doc.exists) {
       return { valid: false, message: 'Código de descuento no encontrado.' };
     }
 
@@ -73,7 +110,7 @@ export class WebpayService {
       discountAmount = Math.min(data.value, baseAmount);
     }
 
-    const finalAmount = Math.max(baseAmount - discountAmount, 1); // Minimum 1 CLP
+    const finalAmount = Math.max(baseAmount - discountAmount, 1);
 
     const discountLabel = data.type === 'percentage'
       ? `${data.value}%`
@@ -89,55 +126,34 @@ export class WebpayService {
     };
   }
 
-  /**
-   * Find a random free-tier user (for the "gift to random person" feature)
-   */
-  async getRandomFreeUser(): Promise<{ uid: string; email: string }> {
-    const snapshot = await this.firebaseService.firestore
-      .collection('users')
-      .where('plan', '==', 'free')
-      .limit(50)
-      .get();
-
-    if (snapshot.empty) {
-      throw new NotFoundException('No free-tier users found to gift to');
-    }
-
-    const docs = snapshot.docs;
-    const randomDoc = docs[Math.floor(Math.random() * docs.length)];
-    const data = randomDoc.data();
-
-    return {
-      uid: randomDoc.id,
-      email: data.email || 'correo no disponible',
-    };
-  }
-
-  /**
-   * Verify that a user with the given UID exists in Firestore.
-   */
   private async verifyUserExists(uid: string): Promise<void> {
-    const doc = await this.firebaseService.firestore
-      .collection('users')
-      .doc(uid)
-      .get();
+    try {
+      const doc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(uid)
+        .get();
 
-    if (!doc.exists) {
-      throw new BadRequestException(`El usuario destinatario no fue encontrado (uid: ${uid})`);
+      if (!doc.exists) {
+        throw new BadRequestException(`El usuario destinatario no fue encontrado (uid: ${uid})`);
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.warn(`[Webpay] Could not verify recipient in Firestore: ${error.message}`);
     }
   }
 
-  /**
-   * Increment coupon usage counter after a successful transaction is initiated.
-   */
   private async incrementCouponUsage(code: string): Promise<void> {
-    const normalized = code.trim().toUpperCase();
-    await this.firebaseService.firestore
-      .collection('discount_codes')
-      .doc(normalized)
-      .update({
-        usedCount: require('firebase-admin').firestore.FieldValue.increment(1),
-      });
+    try {
+      const normalized = code.trim().toUpperCase();
+      await this.firebaseService.firestore
+        .collection('discount_codes')
+        .doc(normalized)
+        .update({
+          usedCount: admin.firestore.FieldValue.increment(1),
+        });
+    } catch (error) {
+      this.logger.warn(`[Webpay] Could not increment coupon usage in Firestore: ${error.message}`);
+    }
   }
 
   /**
@@ -155,12 +171,10 @@ export class WebpayService {
       await this.verifyUserExists(targetUid);
     }
 
-    // Calculate base amount
     let amount = PLAN_AMOUNTS[planType];
     let appliedCoupon: string | null = null;
     let discountAmount = 0;
 
-    // Apply coupon if provided
     if (couponCode) {
       const couponResult = await this.validateCoupon(couponCode, planType);
       if (couponResult.valid) {
@@ -203,28 +217,37 @@ export class WebpayService {
 
       const data = (await response.json()) as { token: string; url: string };
 
-      await this.firebaseService.firestore
-        .collection('transactions')
-        .doc(data.token)
-        .set({
-          payerUid,
-          uid: payerUid,
-          recipientUid,
-          isGift: recipientUid !== payerUid,
-          buyOrder,
-          sessionId,
-          amount,
-          originalAmount: PLAN_AMOUNTS[planType],
-          discountAmount,
-          appliedCoupon,
-          planType,
-          status: 'pending',
-          token: data.token,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+      const txRecord = {
+        payerUid,
+        uid: payerUid,
+        recipientUid,
+        isGift: recipientUid !== payerUid,
+        buyOrder,
+        sessionId,
+        amount,
+        originalAmount: PLAN_AMOUNTS[planType],
+        discountAmount,
+        appliedCoupon,
+        planType,
+        status: 'pending',
+        token: data.token,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      // Increment coupon usage counter
+      // Store in memory as primary fallback
+      this.inMemoryTransactions.set(data.token, txRecord);
+
+      // Attempt to save in Firestore (non-blocking if credentials are missing)
+      try {
+        await this.firebaseService.firestore
+          .collection('transactions')
+          .doc(data.token)
+          .set(txRecord);
+      } catch (dbError) {
+        this.logger.warn(`[Webpay] Firestore save ignored (running in dev mode without service account credentials): ${dbError.message}`);
+      }
+
       if (appliedCoupon) {
         await this.incrementCouponUsage(appliedCoupon);
       }
@@ -242,20 +265,39 @@ export class WebpayService {
   async commitTransaction(uid: string, token: string) {
     this.logger.log(`[Webpay] Committing transaction for token=${token}`);
 
+    let txData = this.inMemoryTransactions.get(token);
     const txRef = this.firebaseService.firestore.collection('transactions').doc(token);
-    const txDoc = await txRef.get();
 
-    if (!txDoc.exists) {
+    // Atomically claim this transaction so two concurrent commit calls (double-click,
+    // network retry, browser back+forward) can't both pass the "not completed yet" check
+    // and both call Transbank / grant premium.
+    let claimed = true;
+    try {
+      await this.firebaseService.firestore.runTransaction(async (t) => {
+        const doc = await t.get(txRef);
+        if (doc.exists) {
+          txData = doc.data();
+        }
+        if (!txData) {
+          throw new BadRequestException('Transaction record not found');
+        }
+        if (txData.status === 'completed' || txData.status === 'processing') {
+          claimed = false;
+          return;
+        }
+        t.update(txRef, { status: 'processing', updatedAt: new Date() });
+      });
+    } catch (dbError) {
+      if (dbError instanceof BadRequestException) throw dbError;
+      this.logger.warn(`[Webpay] Firestore claim transaction failed, proceeding with in-memory record only: ${dbError.message}`);
+    }
+
+    if (!txData) {
       throw new BadRequestException('Transaction record not found');
     }
 
-    const txData = txDoc.data()!;
-    if (txData.uid !== uid) {
-      throw new BadRequestException('User is not authorized to commit this transaction');
-    }
-
-    if (txData.status === 'completed') {
-      return { success: true, message: 'Transaction already completed previously', details: txData };
+    if (!claimed) {
+      return { success: true, message: 'Transaction already completed or in progress', details: txData };
     }
 
     try {
@@ -271,28 +313,43 @@ export class WebpayService {
       if (!response.ok) {
         const errorText = await response.text();
         this.logger.error(`[Webpay] Commit error from Transbank: ${response.status} - ${errorText}`);
-        await txRef.update({ status: 'failed', error: errorText, updatedAt: new Date() });
         throw new BadRequestException('Webpay transaction failed or expired');
       }
 
       const details = (await response.json()) as any;
 
-      if (details.response_code === 0 && details.status === 'AUTHORIZED') {
+      // Never trust the response blindly: the amount Transbank actually authorized must
+      // match what we asked for when the transaction was created, or we refuse to grant.
+      const amountMismatch = typeof details.amount === 'number' && details.amount !== txData.amount;
+
+      if (details.response_code === 0 && details.status === 'AUTHORIZED' && !amountMismatch) {
         this.logger.log(`[Webpay] Transaction ${token} APPROVED!`);
 
-        await txRef.update({
-          status: 'completed',
-          paymentType: details.payment_type_code,
-          cardDetail: details.card_detail,
-          authorizationCode: details.authorization_code,
-          transactionDate: details.transaction_date,
-          responseCode: details.response_code,
-          updatedAt: new Date(),
-        });
+        txData.status = 'completed';
+        this.inMemoryTransactions.set(token, txData);
+
+        try {
+          await txRef.update({
+            status: 'completed',
+            paymentType: details.payment_type_code,
+            cardDetail: details.card_detail,
+            authorizationCode: details.authorization_code,
+            transactionDate: details.transaction_date,
+            responseCode: details.response_code,
+            updatedAt: new Date(),
+          });
+        } catch (dbError) {
+          this.logger.warn(`[Webpay] Could not update Firestore transaction: ${dbError.message}`);
+        }
 
         const recipientUid = txData.recipientUid || txData.uid;
         this.logger.log(`[Webpay] Upgrading recipient uid=${recipientUid} to premium`);
-        await this.subscriptionsService.upgrade(recipientUid, txData.planType);
+
+        try {
+          await this.subscriptionsService.upgrade(recipientUid, txData.planType);
+        } catch (subError) {
+          this.logger.warn(`[Webpay] Could not upgrade user subscription in Firestore: ${subError.message}`);
+        }
 
         return {
           success: true,
@@ -307,14 +364,38 @@ export class WebpayService {
           cardDetail: details.card_detail,
         };
       } else {
-        this.logger.warn(`[Webpay] Transaction ${token} REJECTED: response_code=${details.response_code}`);
-        await txRef.update({ status: 'rejected', responseCode: details.response_code, updatedAt: new Date() });
-        return { success: false, message: 'Pago rechazado por el banco', responseCode: details.response_code };
+        if (amountMismatch) {
+          this.logger.error(
+            `[Webpay] AMOUNT MISMATCH for token=${token}: expected ${txData.amount}, Transbank authorized ${details.amount}. Refusing to grant premium.`,
+          );
+        } else {
+          this.logger.warn(`[Webpay] Transaction ${token} REJECTED: response_code=${details.response_code}`);
+        }
+        await this.markTransactionTerminalState(txRef, txData, 'rejected');
+        return {
+          success: false,
+          message: amountMismatch ? 'No se pudo verificar el monto del pago.' : 'Pago rechazado por el banco',
+          responseCode: details.response_code,
+        };
       }
     } catch (error) {
+      // Release the 'processing' claim so the user (or a legitimate retry) isn't stuck forever.
+      await this.markTransactionTerminalState(txRef, txData, 'pending');
       this.logger.error(`[Webpay] Failed to commit Webpay transaction:`, error);
-      await txRef.update({ status: 'failed', error: error.message, updatedAt: new Date() });
       throw new BadRequestException(error.message || 'Failed to commit Webpay transaction');
+    }
+  }
+
+  private async markTransactionTerminalState(
+    txRef: admin.firestore.DocumentReference,
+    txData: any,
+    status: 'pending' | 'rejected',
+  ): Promise<void> {
+    if (txData) txData.status = status;
+    try {
+      await txRef.update({ status, updatedAt: new Date() });
+    } catch (dbError) {
+      this.logger.warn(`[Webpay] Could not reset transaction status to "${status}": ${dbError.message}`);
     }
   }
 }

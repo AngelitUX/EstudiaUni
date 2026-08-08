@@ -5,13 +5,11 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
-import { GUIA_TIPOS_TEXTO_SLIDES, QUIZ_TIPOS_TEXTO, GUIA_INTERPRETAR_SLIDES, QUIZ_INTERPRETAR } from './guide-slides-data';
+import { GUIA_TIPOS_TEXTO_SLIDES, QUIZ_TIPOS_TEXTO } from './guide-slides-data';
 import { SynonymPracticeComponent } from './synonym-practice.component';
 import { MatchPracticeComponent } from './match-practice.component';
 import { CategorizePracticeComponent } from './categorize-practice.component';
 import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
-import { TrueFalsePracticeComponent } from './true-false-practice/true-false-practice.component';
-import { SortPracticeComponent } from './sort-practice/sort-practice.component';
 
 @Component({
   selector: 'app-seccion-detail',
@@ -23,8 +21,6 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
     MatchPracticeComponent, 
     CategorizePracticeComponent, 
     FillBlanksPracticeComponent,
-    TrueFalsePracticeComponent,
-    SortPracticeComponent,
     GuideSlidesComponent
   ],
   template: `
@@ -101,20 +97,6 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
         </div>
       </ng-container>
 
-      <!-- TRUE/FALSE MODE -->
-      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'true-false'">
-        <div class="content-card practice-card">
-          <app-true-false-practice [practiceData]="sec.practiceData" (completed)="completePractice()"></app-true-false-practice>
-        </div>
-      </ng-container>
-
-      <!-- SORT MODE -->
-      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'sort'">
-        <div class="content-card practice-card">
-          <app-sort-practice [practiceData]="sec.practiceData" (completed)="completePractice()"></app-sort-practice>
-        </div>
-      </ng-container>
-
       <!-- RAPID PRACTICE (Generic Practice Nodes) -->
       <ng-container *ngIf="sec.isPractice && (!sec.practiceType || sec.practiceType === 'rapid')">
         <div class="content-card generic-practice-card">
@@ -124,19 +106,14 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
             <p>{{ sec.title }}</p>
           </div>
           
-          <div class="context-body mt-2" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia'">
+          <div class="context-body mt-2" *ngIf="sec.test?.contexto_base && materiaId() !== 'historia' && materiaId() !== 'ciencias-biologia'">
             <div class="context-body-header">
               <span class="card-icon">📄</span> <b>Texto de Análisis</b>
             </div>
-            <p *ngFor="let p of getFormattedParagraphs(readingTexts()[currentReadingIndex()])">
+            <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
               <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
               <span class="p-text" [class.p-title]="p.isTitle">{{ p.text }}</span>
             </p>
-
-            <div class="reading-pagination" *ngIf="readingTexts().length > 1">
-               <button class="btn-prev-text" *ngIf="currentReadingIndex() > 0" (click)="currentReadingIndex.set(currentReadingIndex() - 1)">⬅ Texto Anterior</button>
-               <button class="btn-next-text" *ngIf="currentReadingIndex() < readingTexts().length - 1" (click)="currentReadingIndex.set(currentReadingIndex() + 1)">Siguiente Texto ➡</button>
-            </div>
           </div>
 
           <div class="cta-section">
@@ -170,8 +147,10 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
         <div class="sec-image-wrap-large" *ngIf="sec.imageUrl">
           <img [src]="sec.imageUrl" alt="Imagen {{ sec.title }}" class="sec-image-large">
         </div>
+        <div class="sec-svg-wrap-large" *ngIf="sec.svgContent">
+          <div class="sec-svg-container" [innerHTML]="renderSvg(sec.svgContent)"></div>
+        </div>
       </div>
-
 
       <!-- TIPS CLAVE -->
       <div class="content-card tips-card" *ngIf="sec.datos_claves?.length">
@@ -196,15 +175,10 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
           <span class="pregunta-count" *ngIf="!isScienceOrMath()">{{ sec.test?.preguntas?.length || 0 }} {{ (sec.test?.preguntas?.length || 0) === 1 ? 'pregunta' : 'preguntas' }}</span>
         </div>
         <div class="context-body">
-          <p *ngFor="let p of getFormattedParagraphs(readingTexts()[currentReadingIndex()])">
+          <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
             <span class="p-num" *ngIf="!p.isTitle && !isScienceOrMath()">[{{ p.number }}]</span>
             <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
           </p>
-        </div>
-        
-        <div class="reading-pagination" *ngIf="readingTexts().length > 1">
-           <button class="btn-prev-text" *ngIf="currentReadingIndex() > 0" (click)="currentReadingIndex.set(currentReadingIndex() - 1)">← Texto Anterior</button>
-           <button class="btn-next-text" *ngIf="currentReadingIndex() < readingTexts().length - 1" (click)="currentReadingIndex.set(currentReadingIndex() + 1)">Siguiente Texto →</button>
         </div>
       </div>
 
@@ -224,13 +198,12 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
       <ng-container *ngIf="sec.isProTip">
         <div class="content-card pro-tip-card">
           <div class="pro-tip-header">
-            <div class="pro-tip-icon">{{ sec.id.includes('guia') || (sec.title && !sec.title.includes('Pro Tip') && !sec.title.includes('ProTip')) ? '📖' : '💡' }}</div>
-            <h2>{{ sec.id.includes('guia') || (sec.title && !sec.title.includes('Pro Tip') && !sec.title.includes('ProTip')) ? 'Guía de Estudio' : '¡Pro Tip!' }}</h2>
+            <div class="pro-tip-icon">💡</div>
+            <h2>¡Pro Tip!</h2>
           </div>
           <div class="pro-tip-body">
-            <h3 *ngIf="sec.title">{{ sec.title }}</h3>
-            <div class="pro-tip-content" [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></div>
-            <div class="svg-container text-center mt-3" *ngIf="sec.svgContent" [innerHTML]="renderSvg(sec.svgContent)"></div>
+            <h3>{{ sec.title }}</h3>
+            <p [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
           </div>
           <div class="tips-list" *ngIf="sec.datos_claves?.length">
             <div *ngFor="let dato of sec.datos_claves; let i = index" class="tip-item tip-item-pro">
@@ -258,13 +231,6 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
     .breadcrumb a:hover { color: var(--accent-primary); }
     .sep { color: rgba(0,0,0,0.2); }
     .current { color: var(--text-primary); font-weight: 600; }
-    
-    .reading-pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 2px dashed rgba(0,0,0,0.05); }
-    .reading-pagination button { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; padding: 0.6rem 1.25rem; border-radius: 10px; cursor: pointer; transition: all 0.2s; border: none; }
-    .btn-next-text { background: var(--accent-primary); color: #fff; box-shadow: 0 4px 0 var(--accent-dark); margin-left: auto; }
-    .btn-next-text:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--accent-dark); }
-    .btn-prev-text { background: #fff; color: var(--text-secondary); border: 2px solid rgba(0,0,0,0.1) !important; }
-    .btn-prev-text:hover { background: #f0f0f0; color: var(--text-primary); }
 
     /* LESSON HEADER */
     .lesson-header { margin-bottom: 1.5rem; animation: fadeSlide 0.5s ease-out; }
@@ -286,7 +252,8 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
     
     .sec-image-wrap-large, .sec-svg-wrap-large { margin: 2rem 0; text-align: center; display: flex; justify-content: center; }
     .sec-image-large { max-width: 100%; width: 500px; border-radius: 16px; border: 4px solid rgba(133,92,214,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    .sec-svg-container { max-width: 100%; width: 500px; }
+    .sec-svg-container { max-width: 100%; width: 650px; }
+    ::ng-deep .sec-svg-container svg { width: 100%; height: 100%; display: block; overflow: visible; }
     
     /* CONTEXT */
     .context-body { background: rgba(133,92,214,0.03); border-left: 4px solid var(--accent-primary); border-radius: 0 12px 12px 0; padding: 1.25rem; }
@@ -357,10 +324,7 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
     .pro-tip-icon { font-size: 3.5rem; margin-bottom: 0.5rem; animation: ctaBounce 2s ease-in-out infinite; text-shadow: 0 10px 20px rgba(255, 150, 0, 0.3); }
     .pro-tip-card h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: #ff9600; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }
     .pro-tip-body h3 { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0 0 1rem; }
-    ::ng-deep .pro-tip-content { text-align: left; }
-    ::ng-deep .pro-tip-content p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 1rem; }
-    ::ng-deep .pro-tip-content ul, ::ng-deep .pro-tip-content ol { padding-left: 1.5rem; margin: 0.5rem 0 1.5rem; }
-    ::ng-deep .pro-tip-content li { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.5rem; }
+    .pro-tip-body p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 2rem; }
     .tip-item-pro { text-align: left; background: #fff; border: 1px solid rgba(0,0,0,0.05); }
     .btn-got-it { margin-top: 2rem; padding: 1.2rem 3rem; border-radius: 999px; border: none; background: #ff9600; color: #fff; font-family: var(--font-heading); font-weight: 800; font-size: 1.15rem; cursor: pointer; box-shadow: 0 5px 0 #cc7800; transition: all 0.2s; }
     .btn-got-it:hover { transform: translateY(3px); box-shadow: 0 2px 0 #cc7800; }
@@ -403,7 +367,7 @@ export class SeccionDetailComponent {
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
   isScienceOrMath = computed(() => {
     const id = this.materiaId().toLowerCase();
-    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica');
+    return id.includes('mat') || id.includes('ciencias') || id.includes('fisica') || id.includes('bio') || id.includes('qui');
   });
 
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
@@ -414,16 +378,6 @@ export class SeccionDetailComponent {
   });
   capitulo = computed(() => this.paes.getCapituloById(this.capituloId()));
   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
-  
-  currentReadingIndex = signal(0);
-  
-  readingTexts = computed(() => {
-    const s = this.seccion();
-    const base = s?.test?.contexto_base;
-    if (!base) return [];
-    return base.split('--- DIVISION_TEXTOS ---').map(t => t.trim());
-  });
-
   capOrder = computed(() => {
     const caps = this.paes.getCapitulosByMateria(this.materiaId());
     const idx = caps.findIndex(c => c.id === this.capituloId());
@@ -436,9 +390,6 @@ export class SeccionDetailComponent {
       this.capituloId.set(params.get('capituloId') || '');
       this.seccionId.set(params.get('seccionId') || '');
       this.practiceCompleted.set(false);
-      setTimeout(() => {
-        console.log('SECCION DETAIL LOADED:', this.seccion());
-      }, 500);
     });
   }
 
@@ -462,14 +413,17 @@ export class SeccionDetailComponent {
     this.router.navigate(['/ruta', this.materiaId()]);
   }
 
-  parseMixed(text: string | null | undefined): SafeHtml {
+    parseMixed(text: string | null | undefined): SafeHtml {
     if (!text) return '';
     const renderedSafe = this.katexSvc.renderMixedText(text);
     const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
     const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong style="color:var(--accent-primary)">$1</strong>');
     let withBreaks = bolded.replace(/&lt;br&gt;/gi, '<br>');
-    withBreaks = withBreaks.replace(/&lt;(b|i|u|strong|em|p|ul|li)&gt;/gi, '<$1>');
-    withBreaks = withBreaks.replace(/&lt;\/(b|i|u|strong|em|p|ul|li)&gt;/gi, '</$1>');
+    withBreaks = withBreaks.replace(/&lt;(b|i|u|strong|em|div|span|h[1-6]|p|table|tbody|thead|tr|th|td|ul|ol|li)(.*?)&gt;/gi, (match: string, tag: string, attrs: string) => {
+      const unescapedAttrs = attrs.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+      return `<${tag}${unescapedAttrs}>`;
+    });
+    withBreaks = withBreaks.replace(/&lt;\/(b|i|u|strong|em|div|span|h[1-6]|p|table|tbody|thead|tr|th|td|ul|ol|li)&gt;/gi, '</$1>');
     return this.sanitizer.bypassSecurityTrustHtml(withBreaks);
   }
 
@@ -518,29 +472,11 @@ export class SeccionDetailComponent {
 
   getSlidesForGuide(id: string) {
     if (id === 'sec-1-0-guia') return GUIA_TIPOS_TEXTO_SLIDES;
-    if (id === 'sec-2-0-guia') return GUIA_INTERPRETAR_SLIDES;
-    
-    const sec = this.seccion() as any;
-    if (sec && sec.slides && sec.slides.length > 0) {
-      return sec.slides;
-    }
-    
-    if (sec && sec.guia_titulo) {
-      return [{
-        icon: '📖',
-        title: sec.guia_titulo,
-        bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.06), rgba(133,92,214,0.02))',
-        iconBg: 'linear-gradient(135deg, #855cd6, #6b46b8)',
-        content: sec.guia_contenido || sec.introduccion
-      }];
-    }
-    
     return [];
   }
 
   getQuizzesForGuide(id: string): any {
     if (id === 'sec-1-0-guia') return { quiz_tipos_texto: QUIZ_TIPOS_TEXTO };
-    if (id === 'sec-2-0-guia') return { quiz_interpretar: QUIZ_INTERPRETAR };
     return {};
   }
 

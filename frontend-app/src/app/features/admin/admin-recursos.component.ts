@@ -15,7 +15,9 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="adminSvc.isAdmin() ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
           <div class="admin-panel-tag">ADMIN PANEL</div>
         </div>
 
@@ -32,6 +34,10 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
           <a routerLink="/admin/recursos" class="nav-item active">
             <span class="nav-icon">📂</span>
             <span class="nav-text">Recursos</span>
+          </a>
+          <a routerLink="/admin/bugs" class="nav-item">
+            <span class="nav-icon">🐛</span>
+            <span class="nav-text">Reportes de Bug</span>
           </a>
         </nav>
 
@@ -349,14 +355,17 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); }
     .admin-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(255,255,255,0.85) !important; backdrop-filter: blur(20px) !important; border-right: 1px solid rgba(133,92,214,0.15) !important; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(133,92,214,0.15) !important; text-align: center; }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .admin-panel-tag { display: inline-block; background: rgba(139, 92, 246, 0.25); color: #c084fc; font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 99px; margin-top: 0.5rem; letter-spacing: 0.08em; border: none; }
     
     .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
@@ -401,7 +410,7 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
     .stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* TABLE */
-    .recursos-list-container { padding: 0 !important; overflow: hidden; border: 2px solid var(--glass-border); }
+    .recursos-list-container { padding: 0 !important; overflow-x: auto; overflow-y: hidden; border: 2px solid var(--glass-border); }
     .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
     .admin-table th { background: #f8f9fa; padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--glass-border); }
     .admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--glass-border); vertical-align: middle; }
@@ -653,6 +662,8 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
       display: flex;
       align-items: center;
       gap: 0.85rem;
+      min-width: 0;
+      flex: 1;
     }
     .file-installed-icon {
       font-size: 1.8rem;
@@ -661,6 +672,7 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
+      min-width: 0;
     }
     .file-name-label {
       font-size: 0.9rem;
@@ -670,6 +682,7 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      display: block;
     }
     .file-size-label {
       font-size: 0.75rem;
@@ -706,6 +719,37 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
       margin: 0;
       font-weight: 650;
       line-height: 1.4;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-right: none;
+      }
+      .main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
+      .admin-table { min-width: 720px; }
+    }
+    @media (max-width: 768px) {
+      .admin-header { flex-direction: column; align-items: stretch; }
+      .header-content h1 { font-size: 1.6rem; }
+      .modal-content { max-width: 100%; }
+      .modal-body { padding: 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .modal-header { padding: 1.1rem 1.25rem; }
+      .modal-header h2 { font-size: 1.15rem; }
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions button { width: 100%; }
+      .type-selector-grid { grid-template-columns: repeat(2, 1fr); }
+      .source-tabs { flex-direction: column; }
+      .file-details-card { flex-wrap: wrap; gap: 0.75rem; }
+      .file-name-label { max-width: 180px; }
     }
   `]
 })
