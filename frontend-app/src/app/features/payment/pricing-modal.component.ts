@@ -419,6 +419,52 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .btn-checkout:hover:not([disabled]) { filter:brightness(1.1); transform:translateY(-2px); }
     .btn-checkout[disabled] { opacity:0.5; cursor:not-allowed; }
     .secure-checkout-text { text-align:center; margin:1rem 0 0; font-size:0.8rem; color:var(--text-muted); font-weight:600; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .pricing-modal-container { padding: 2rem 1.5rem 1.5rem; }
+      .pricing-cards { gap: 1.25rem; }
+      .pricing-card { padding: 1.5rem; }
+    }
+
+    @media (max-width: 768px) {
+      .pricing-modal-overlay { padding: 0.5rem; align-items: flex-start; }
+      .pricing-modal-container { width: 100%; border-radius: 18px; padding: 2rem 1.25rem 1.25rem; max-height: none; margin-top: 0.5rem; }
+      .pricing-header h2 { font-size: 1.35rem; }
+      .pricing-subtitle { font-size: 0.9rem; }
+      .billing-switcher { display: flex; width: 100%; }
+      .billing-switcher button { flex: 1; padding: 0.5rem 0.5rem; font-size: 0.85rem; white-space: nowrap; }
+      .pricing-cards { grid-template-columns: 1fr; gap: 1rem; }
+      .pricing-card { padding: 1.5rem 1.25rem; }
+      .flow-step { max-width: 100%; }
+      .step-header h2 { font-size: 1.3rem; }
+      .mode-tabs { grid-template-columns: 1fr 1fr; }
+      .mode-tab { padding: 0.7rem 0.5rem; font-size: 0.85rem; }
+      .plan-selector-row { flex-direction: column; }
+      .method-tabs { grid-template-columns: 1fr; }
+      .bank-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .pricing-modal-container { padding: 1.75rem 1rem 1rem; }
+      .btn-close-pricing { top: 0.85rem; right: 0.85rem; width: 32px; height: 32px; }
+      .crown-icon { font-size: 2rem; }
+      .pricing-header h2 { font-size: 1.15rem; }
+      .card-header h3 { font-size: 1.2rem; }
+      .amount { font-size: 1.8rem; }
+      .amount-big { font-size: 1.6rem; }
+      .coupon-input-row { flex-direction: column; }
+      .btn-apply-coupon { padding: 0.75rem 1.25rem; }
+      .self-email-display { flex-wrap: wrap; }
+      .action-row, .plan-selector-row { gap: 0.5rem; }
+    }
+
+    @media (max-width: 380px) {
+      .pricing-header h2 { font-size: 1.05rem; }
+      .step-header h2 { font-size: 1.15rem; }
+      .mode-tab { font-size: 0.78rem; padding: 0.6rem 0.4rem; }
+      .mode-tab .tab-icon { display: none; }
+    }
   `]
 })
 export class PricingModalComponent implements OnInit {

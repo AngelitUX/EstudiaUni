@@ -571,7 +571,8 @@ import { CareerService, Career } from '../../core/services/career.service';
     }
 
     @media(max-width:720px){
-      .modal-container { width: 95vw !important; max-height: 90vh !important; border-radius: 16px !important; }
+      .modal-overlay { padding: 0.5rem !important; align-items: flex-start !important; }
+      .modal-container { width: 100% !important; max-height: 94vh !important; border-radius: 16px !important; margin-top: 0.5rem; }
       .profile-shell { grid-template-columns: 1fr !important; }
       .profile-sidebar { position: static !important; }
       .emoji-grid { grid-template-columns: repeat(5, minmax(40px, 1fr)); }
@@ -579,6 +580,17 @@ import { CareerService, Career } from '../../core/services/career.service';
       input, select, textarea { font-size: 16px !important; }
       .action-bar { padding: 0.75rem 0.85rem 1rem !important; background: transparent !important; border: none !important; box-shadow: none !important; }
       .action-bar button.primary { width: 100% !important; padding: 0.85rem 1rem !important; }
+      .nem-history-grid { flex-wrap: wrap; }
+      .nem-stat { min-width: 40%; }
+      .confirm-footer { grid-template-columns: 1fr; }
+      .editor-footer { flex-wrap: wrap; }
+    }
+
+    @media(max-width:480px){
+      .avatar-container, .avatar-wrap { width: 84px !important; height: 84px !important; }
+      .editor-panel { padding: 1rem; }
+      .info-row { flex-wrap: wrap; gap: 0.75rem; }
+      .subscription-badge-wrap { gap: 0.5rem; }
     }
 
     /* PAES GOAL SECTION */
@@ -597,8 +609,8 @@ import { CareerService, Career } from '../../core/services/career.service';
     .editor-header{display:flex;justify-content:space-between;align-items:center}
     .editor-header h4{margin:0;font-size:1.1rem;font-weight:800}
     .editor-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-secondary)}
-    .editor-body{display:flex;flex-direction:column;gap:1.5rem;align-items:center;user-select:none}
-    .crop-container{position:relative;width:340px;height:340px;background:#f3f4f6;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid var(--glass-border);cursor:crosshair}
+    .editor-body{display:flex;flex-direction:column;gap:1.5rem;align-items:center;user-select:none;width:100%;overflow-x:auto}
+    .crop-container{position:relative;width:340px;flex-shrink:0;height:340px;background:#f3f4f6;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid var(--glass-border);cursor:crosshair}
     .img-full-preview{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none}
     .crop-overlay{position:absolute;border:2px solid var(--accent-primary);box-shadow:0 0 0 4000px rgba(0,0,0,0.5);cursor:move;border-radius:50%}
     .crop-overlay::before{content:'';position:absolute;inset:0;border:1px solid rgba(255,255,255,0.4);border-radius:50%}

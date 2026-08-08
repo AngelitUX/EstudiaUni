@@ -806,6 +806,52 @@ import { PaymentService } from '../../core/services/payment.service';
         grid-template-columns: repeat(5, minmax(40px, 1fr));
       }
     }
+
+    @media (max-width: 480px) {
+      .page {
+        padding: 1rem 0.75rem 2rem;
+      }
+      .topbar {
+        padding: 0.75rem 1rem;
+      }
+      h1 {
+        font-size: 1.05rem;
+      }
+      .profile-card, .card {
+        padding: 0.9rem;
+      }
+      .profile-sidebar {
+        padding: 0.85rem;
+      }
+      .avatar-wrap {
+        width: 76px;
+        height: 76px;
+      }
+      .avatars-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .emoji-grid {
+        grid-template-columns: repeat(4, minmax(36px, 1fr));
+      }
+      .emoji-panel {
+        padding: 0.85rem 1rem 1rem;
+      }
+      .action-bar {
+        justify-content: stretch;
+      }
+      .action-bar .primary {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .avatars-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .emoji-grid {
+        grid-template-columns: repeat(4, minmax(32px, 1fr));
+      }
+    }
   `],
 })
 export class ProfileSettingsComponent implements OnInit, OnDestroy {

@@ -1321,6 +1321,12 @@ type ExamMode = 'real' | 'asistido';
       .modal-content { padding: 2.5rem 1.25rem 1.25rem !important; margin: auto !important; max-height: 86vh !important; border-radius: 16px !important; }
       .modal-close { top: 0.75rem !important; right: 0.75rem !important; width: 36px !important; height: 36px !important; }
       .prueba-detalles { grid-template-columns: 1fr; }
+      .cooldown-warning-banner { flex-direction: column !important; align-items: stretch !important; justify-content: flex-start !important; gap: 0.85rem !important; }
+      .cooldown-warning-banner > div:first-child { width: 100%; }
+      .cooldown-warning-banner button { width: 100% !important; white-space: normal !important; }
+      .active-exam-widget { max-width: 100% !important; flex-wrap: wrap !important; }
+      .last-ensayo-compact-btn { max-width: 100%; }
+      .last-ensayo-compact-btn > div { flex-wrap: wrap; }
     }
     @media (max-width: 480px) {
       .dashboard-body { padding: 0.85rem !important; padding-top: 70px !important; }

@@ -177,6 +177,26 @@ import { AdminService } from './services/admin.service';
     .report-desc { font-size: 0.95rem; color: var(--text-secondary); margin: 0; line-height: 1.6; white-space: pre-wrap; }
 
     .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px dashed var(--glass-border); font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
+      .main-content { margin-left: 0; padding: 1.5rem; }
+      .content-header { flex-direction: column; gap: 1.25rem; }
+    }
+    @media (max-width: 600px) {
+      .content-header h1 { font-size: 2rem; }
+    }
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .content-header h1 { font-size: 1.6rem; }
+      .subtitle { font-size: 1rem; }
+      .card-header { flex-direction: column; align-items: flex-start; }
+      .card-actions { align-self: flex-end; }
+      .card-footer { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+      .glass-card-simple { padding: 1.1rem; }
+    }
   `]
 })
 export class AdminBugsComponent implements OnInit {

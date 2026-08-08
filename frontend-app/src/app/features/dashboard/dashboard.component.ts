@@ -1980,6 +1980,28 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         max-height: 90vh !important;
         border-radius: 16px !important;
       }
+      .ai-hero-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100%;
+      }
+      .ai-hero-actions .btn-hero {
+        width: 100%;
+        white-space: normal;
+        text-align: center;
+        padding: 0.75rem 1rem;
+      }
+      .meta-paes-materias-list li {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.6rem;
+      }
+      .btn-toggle-materia {
+        width: 100%;
+      }
+      .logout-confirm-modal .confirm-actions {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })

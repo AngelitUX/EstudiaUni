@@ -71,6 +71,14 @@ import { ToastService } from '../../core/services/toast.service';
     .primary { border: 0; border-radius: 9px; background: linear-gradient(135deg, #855cd6, #6b46b8); color: #fff; padding: 0.65rem 1.25rem; font-weight: 600; cursor: pointer; transition: all .2s; box-shadow: 0 4px 12px rgba(133,92,214,0.25); }
     .primary:hover:not([disabled]) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(133,92,214,0.35); }
     .primary[disabled] { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    @media (max-width: 480px) {
+      .modal-overlay { padding: 0.5rem; align-items: flex-start; }
+      .modal-container { width: 100%; margin-top: 0.5rem; max-height: 94vh; }
+      input, textarea, select { font-size: 16px !important; }
+      .action-bar { flex-direction: column-reverse; gap: 0.5rem; }
+      .action-bar button { width: 100%; }
+    }
   `]
 })
 export class ReportBugModalComponent {

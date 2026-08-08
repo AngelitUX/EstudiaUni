@@ -1072,12 +1072,23 @@ import { PaymentService } from '../../core/services/payment.service';
       .page-header h1 { font-size: 2.2rem; }
       .careers-grid { grid-template-columns: 1fr; }
       .ai-fab-btn { bottom: 1rem; right: 1rem; padding: 0.65rem 1rem; font-size: 0.85rem; }
+      .finder-form { padding: 1.5rem; }
+      .welcome-search { padding: 3rem 1.5rem; }
     }
 
     @media (max-width: 480px) {
       .main-content { padding-top: 60px !important; }
       .page-header h1 { font-size: 1.8rem; }
       .form-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+      .welcome-search { padding: 2.5rem 1.25rem; }
+      .welcome-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+      .welcome-search h2 { font-size: 1.6rem; }
+      .welcome-search p { font-size: 1rem; }
+      .finder-form { padding: 1.25rem; }
+      .interests-grid { gap: 0.5rem; }
+      .interest-pill { padding: 0.5rem 1rem; font-size: 0.85rem; }
+      .career-card { padding: 1.25rem; }
+      .favorites-wrapper { width: 100%; }
     }
   `]
 })

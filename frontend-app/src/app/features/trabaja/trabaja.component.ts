@@ -484,6 +484,23 @@ import { RouterModule } from '@angular/router';
       .step-connector { display: none; }
       .req-grid { grid-template-columns: 1fr; }
     }
+
+    @media (max-width: 480px) {
+      .trabaja-main { padding: 0 1rem 3rem; }
+      .hero-section { padding: 0.5rem 0 2rem; }
+      .hero-subtitle { font-size: 1rem; }
+      .req-card { padding: 1.5rem; }
+      .req-card h2 { font-size: 1.3rem; }
+      .final-cta-section h2 { font-size: 1.4rem; }
+      .btn-primary-cta { padding: 0.85rem 1.5rem; font-size: 0.95rem; }
+      .section-title { font-size: 1.6rem; }
+    }
+
+    @media (max-width: 380px) {
+      .trabaja-icon-wrap { width: 64px; height: 64px; }
+      .hero-badge { padding: 0.3rem 0.8rem; font-size: 0.72rem; }
+      .req-card { padding: 1.1rem; }
+    }
   `]
 })
 export class TrabajaComponent {}
