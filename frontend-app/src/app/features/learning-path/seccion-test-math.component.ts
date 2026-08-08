@@ -104,7 +104,7 @@ import { ToastService } from '../../core/services/toast.service';
             <button *ngFor="let key of optionKeys"
               class="option-btn"
               [class.selected]="answers().get(q.id) === key && !showFeedback()"
-              [class.correct]="showFeedback() && key === q.respuesta_correcta"
+              [class.correct]="showFeedback() && key === q.respuesta_correcta && isCurrentCorrect()"
               [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
               [disabled]="showFeedback()"
               (click)="selectAnswer(q.id, key)">
@@ -126,11 +126,8 @@ import { ToastService } from '../../core/services/toast.service';
                 <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
               </div>
               <div *ngIf="!isCurrentCorrect()">
-                <p [innerHTML]="parseMixed(currentQuestion()!.feedback_error)"></p>
-                <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
-                  <strong style="color: #166534; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</strong>
-                  <p [innerHTML]="parseMixed(currentQuestion()!.feedback_acierto)"></p>
-                </div>
+                <p *ngIf="showDetailedErrorFeedback" [innerHTML]="parseMixed(currentQuestion()!.feedback_error)"></p>
+                <p class="review-hint-text" style="margin-top: 0.75rem; font-weight: 500; color: #b45309;">💡 Recuerda revisar esta fórmula o procedimiento para llegar a este resultado.</p>
               </div>
             </div>
           </div> <!-- End feedback-bar -->
@@ -553,6 +550,7 @@ export class SeccionTestMathComponent implements OnInit, OnDestroy {
   private toastSvc = inject(ToastService);
 
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+  showDetailedErrorFeedback = true; // Cambiar a true a futuro cuando feedback_error contenga solo sugerencias y no la respuesta directa
 
   seccionId = signal('');
   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
