@@ -1,4 +1,4 @@
-﻿export interface GuideSlide {
+export interface GuideSlide {
   icon: string;
   title: string;
   bgGradient: string;
@@ -25,15 +25,57 @@ export const SLIDE_QUIZ2: QuizAlt[] = [
   { key: 'A', text: 'Modificar las molÃ©culas de agua.', correct: false, explain: 'âŒ El texto no habla de modificar molÃ©culas.' },
   { key: 'B', text: 'Eliminar impurezas y microorganismos para hacerla segura.', correct: true, explain: 'âœ… ParÃ¡frasis: "contaminantes" = "impurezas", "patÃ³genos" = "microorganismos", "apta para consumo" = "segura".' },
   { key: 'C', text: 'AÃ±adirle minerales esenciales para la salud.', correct: false, explain: 'âŒ Inventa informaciÃ³n que el texto no contiene.' },
+  { key: 'C', text: 'AÃ±adirle minerales esenciales para la salud.', correct: false, explain: 'â Œ Inventa informaciÃ³n que el texto no contiene.' },
 ];
 
 const P = 'var(--accent-primary)';
 
+export const CAP1_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '🗺️', title: '¡Bienvenido al Capítulo 1!',
+    bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.08), rgba(133,92,214,0.02))',
+    iconBg: 'linear-gradient(135deg, #855cd6, #6b46b8)',
+    content: `
+      <p>Estás a punto de comenzar tu entrenamiento en la habilidad de <span class="hl">Localizar</span>. Esta es la base de todo lo que haremos en Competencia Lectora.</p>
+      <div class="callout">
+        🎯 <strong>Tu misión principal:</strong> Aprender a rastrear y extraer información que está escrita de forma <strong>explícita</strong> en el texto, sin caer en trampas.
+      </div>
+      <p>Puede sonar fácil, pero el DEMRE es experto en camuflar las respuestas. ¡Aquí aprenderás a desarmar esos trucos!</p>
+    `
+  },
+  {
+    icon: '🧠', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Durante este capítulo, te guiaremos paso a paso a través de estos pilares:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>El concepto:</strong> Qué es Localizar y por qué está prohibido deducir.</div>
+        <div class="mc green">2️⃣ <strong>Paráfrasis:</strong> Cómo identificar la misma idea escrita con otras palabras.</div>
+        <div class="mc red" style="grid-column: 1 / -1;">3️⃣ <strong>Trampas:</strong> Distractores numéricos y palabras absolutas.</div>
+        <div class="mc blue">4️⃣ <strong>Técnica ninja:</strong> El arte de la Huella y el Escaneo visual.</div>
+      </div>
+    `
+  },
+  {
+    icon: '⚡', title: '¿Por qué es tan importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+    iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+    content: `
+      <p>Las preguntas de Localizar representan <span class="hl">cerca del 30% de la prueba PAES</span>. Son los puntos más rápidos y seguros de obtener si sabes cómo buscar.</p>
+      <div class="callout-gold">
+        ⚠️ <strong>Atención:</strong> No puedes avanzar a interpretar textos complejos o evaluar actitudes si primero no sabes encontrar los datos duros.
+      </div>
+      <p>¡Prepárate para entrenar tu ojo de águila y asegurar esos puntos! 🦅</p>
+    `
+  }
+];
+
 export const LOCALIZAR_SLIDES: GuideSlide[] = [
 
-  // â”€â”€â”€ 1: QUÃ‰ ES â”€â”€â”€
+  // ─── 1: QUÉ ES ───
   {
-    icon: 'ðŸ”', title: 'Â¿QuÃ© significa "Localizar"?',
+    icon: '🔍', title: '¿Qué significa "Localizar"?',
     bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.06), rgba(133,92,214,0.02))',
     iconBg: 'linear-gradient(135deg, #855cd6, #6b46b8)',
     content: `
@@ -290,4 +332,130 @@ export const QUIZ_TIPOS_TEXTO: QuizAlt[] = [
   { key: 'A', text: 'Informativo', correct: false, explain: '❌ Trampa: No está entregando datos o hechos reales sobre dragones, está relatando una escena.' },
   { key: 'B', text: 'Narrativo', correct: true, explain: '✅ ¡Excelente! Hay personajes (el caballero, el dragón) que realizan acciones en un relato.' },
   { key: 'C', text: 'Argumentativo', correct: false, explain: '❌ No intenta convencer de una opinión ni expone argumentos lógicos.' },
+];
+
+export const GUIA_INTERPRETAR_SLIDES: GuideSlide[] = [
+  {
+    icon: '🔍',
+    title: '¿Qué es Interpretar?',
+    bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.1), rgba(133,92,214,0.02))',
+    iconBg: 'rgba(133,92,214,0.15)',
+    content: '<p>Interpretar va más allá de lo que el texto dice literalmente. Debes comprender qué quiso decir el autor, para qué sirve cada parte del texto y cuál es su postura ante el tema.</p>'
+  },
+  {
+    icon: '⚖️',
+    title: 'Localizar vs Interpretar',
+    bgGradient: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.02))',
+    iconBg: 'rgba(59,130,246,0.15)',
+    content: '<p><strong>Localizar</strong> = encontrar la información tal como aparece escrita en el texto.</p><p><strong>Interpretar</strong> = comprender el significado implícito, las relaciones entre ideas y la intención del autor. Exige ir un paso más allá.</p>'
+  },
+  {
+    icon: '📈',
+    title: '¿Por qué es importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(236,72,153,0.02))',
+    iconBg: 'rgba(236,72,153,0.15)',
+    content: '<p>En la PAES, Interpretar representa cerca del <strong>35% de las preguntas</strong> y es la habilidad que más diferencia los puntajes altos de los puntajes medios.</p>'
+  },
+  {
+    icon: '🔑',
+    title: 'Textos Informativos vs Narrativos',
+    bgGradient: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.02))',
+    iconBg: 'rgba(245,158,11,0.15)',
+    content: '<ul><li>En <strong>textos informativos</strong>: busca la tesis, los conectores lógicos y la relación entre párrafos.</li><li>En <strong>textos narrativos</strong>: busca las motivaciones de los personajes, la atmósfera y el tema central.</li><li>La respuesta <strong>siempre</strong> debe justificarse con evidencia del propio texto.</li></ul>'
+  },
+  {
+    icon: '🧠',
+    title: 'Pon a prueba tu habilidad',
+    bgGradient: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.02))',
+    iconBg: 'rgba(16,185,129,0.15)',
+    content: '<p>Lee la siguiente frase y responde la pregunta a continuación:</p><div class="callout">“El hielo glaciar no miente. Cada capa es un año, y los gases atrapados dentro son la memoria exacta de la atmósfera de ese tiempo.”</div>',
+    interactive: true,
+    quizId: 'quiz_interpretar'
+  }
+];
+
+export const QUIZ_INTERPRETAR: QuizAlt[] = [
+  { key: 'A', text: 'Informar sobre el proceso físico de formación del hielo.', correct: false, explain: '❌ Trampa: Se menciona el hielo, pero el tono y las expresiones usadas ("no miente") buscan algo más que informar.' },
+  { key: 'B', text: 'Argumentar que el hielo glaciar es una fuente confiable de información histórica.', correct: true, explain: '✅ ¡Correcto! La expresión "el hielo no miente" y la metáfora de "memoria exacta" revelan que el autor busca persuadir sobre la fiabilidad del hielo.' },
+  { key: 'C', text: 'Narrar cómo un científico estudia el hielo.', correct: false, explain: '❌ No hay una historia ni personajes.' },
+  { key: 'D', text: 'Describir la composición química del hielo.', correct: false, explain: '❌ Menciona "gases atrapados", pero no detalla una composición química exacta.' }
+];
+
+
+export const CAP2_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '🔮', title: '¡Bienvenido al Capítulo 2!',
+    bgGradient: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(236,72,153,0.02))',
+    iconBg: 'linear-gradient(135deg, #ec4899, #db2777)',
+    content: `
+      <p>Estás a punto de dar un salto cuántico en tu entrenamiento. Pasaremos de simplemente encontrar información a la habilidad más determinante: <span class="hl">Interpretar</span>.</p>
+      <div class="callout">
+        👁️‍🗨️ <strong>Tu nueva misión:</strong> Leer entre líneas. Ya no buscarás lo que está escrito literalmente, sino que descubrirás <strong>qué quiso decir realmente el autor</strong> y cuál es la intención oculta detrás de sus palabras.
+      </div>
+      <p>Aquí es donde la mayoría se equivoca. ¡Pero tú aprenderás a decodificar los textos como un experto!</p>
+    `
+  },
+  {
+    icon: '🗺️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02))',
+    iconBg: 'linear-gradient(135deg, #10b981, #059669)',
+    content: `
+      <p>Durante este capítulo, tu entrenamiento se dividirá en estos pilares fundamentales:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Vocabulario en Contexto:</strong> Cómo descubrir el significado real de una palabra según su entorno.</div>
+        <div class="mc green">2️⃣ <strong>Intención del Autor:</strong> Por qué y para qué se escribió el texto (o un párrafo específico).</div>
+        <div class="mc red" style="grid-column: 1 / -1;">3️⃣ <strong>Decodificar Metáforas:</strong> Traducir lenguaje figurado a lenguaje literal sin perder el sentido.</div>
+        <div class="mc blue">4️⃣ <strong>Tono y Actitud:</strong> Detectar si el autor es objetivo, crítico, sarcástico o pesimista.</div>
+      </div>
+    `
+  },
+  {
+    icon: '🏆', title: 'La habilidad clave de la PAES',
+    bgGradient: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02))',
+    iconBg: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    content: `
+      <p>En la prueba, las preguntas de Interpretar representan cerca del <strong>35% del total</strong>.</p>
+      <p>A diferencia de Localizar, donde la respuesta te espera en el texto, aquí tú debes construir la respuesta conectando pistas dispersas.</p>
+      <p><em>¿Listo para dejar de ser un lector pasivo y convertirte en un analista activo? ¡Comencemos!</em></p>
+    `
+  }
+];
+
+export const CAP3_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '🚀', title: '¡Bienvenido al Capítulo 3!',
+    bgGradient: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02))',
+    iconBg: 'linear-gradient(135deg, #10b981, #059669)',
+    content: `
+      <p>Has superado las etapas de Localizar e Interpretar. Ahora te enfrentas al nivel más alto de comprensión lectora: <span class="hl">Evaluar</span>.</p>
+      <div class="callout">
+        🧠 <strong>Tu misión final:</strong> Ya no solo encuentras o traduces información, ahora debes <strong>juzgarla</strong>. Evaluar significa tomar una postura crítica frente al texto, analizando su calidad, la intención detrás de él y la pertinencia de sus argumentos.
+      </div>
+      <p>Es la habilidad que te convierte en un lector inmune a las mentiras y las falacias.</p>
+    `
+  },
+  {
+    icon: '🗺️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Durante este capítulo, tu entrenamiento se dividirá en estos pilares fundamentales:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Intención y Postura:</strong> Identificar el verdadero propósito del autor y su actitud frente al tema.</div>
+        <div class="mc green">2️⃣ <strong>Calidad de la Información:</strong> Detectar falacias, sesgos y juzgar si los argumentos son sólidos.</div>
+        <div class="mc red" style="grid-column: 1 / -1;">3️⃣ <strong>Recursos Visuales y Lingüísticos:</strong> Evaluar el uso de ironía, metáforas, comillas e imágenes.</div>
+        <div class="mc blue" style="grid-column: 1 / -1;">4️⃣ <strong>Extrapolación:</strong> Aplicar la lógica del autor a contextos totalmente nuevos.</div>
+      </div>
+    `
+  },
+  {
+    icon: '⚔️', title: 'El desafío final de la PAES',
+    bgGradient: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02))',
+    iconBg: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    content: `
+      <p>Las preguntas de Evaluar representan cerca del <strong>35% de la prueba PAES</strong>.</p>
+      <p>A diferencia de Localizar e Interpretar, aquí se te pedirá que mires el texto desde afuera, como un juez externo, y evalúes sus formas y su contenido.</p>
+      <p><em>¿Listo para convertirte en el maestro definitivo de la lectura? ¡Comencemos!</em></p>
+    `
+  }
 ];

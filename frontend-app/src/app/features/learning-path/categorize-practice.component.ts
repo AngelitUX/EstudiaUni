@@ -38,11 +38,10 @@ export interface CategorizeItem {
 
         <!-- ACTION BUTTONS -->
         <div class="action-buttons" *ngIf="currentItem()">
-          <button class="btn-category btn-cat-a" (click)="categorize(catA().id)">
-            {{ catA().label }}
-          </button>
-          <button class="btn-category btn-cat-b" (click)="categorize(catB().id)">
-            {{ catB().label }}
+          <button *ngFor="let cat of categories(); let i = index" 
+                  class="btn-category" [ngClass]="'btn-cat-' + i" 
+                  (click)="categorize(cat.id)">
+            {{ cat.label }}
           </button>
         </div>
 
@@ -87,12 +86,16 @@ export interface CategorizeItem {
     .main-card.shake { animation: shakeError 0.4s ease-in-out; border-color: #ff4b4b; background: rgba(255,75,75,0.05); }
 
     /* BUTTONS */
-    .action-buttons { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; }
-    .btn-category { flex: 1; max-width: 200px; padding: 1rem; border-radius: 12px; font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; cursor: pointer; border: none; color: #fff; transition: all 0.2s; }
-    .btn-cat-a { background: #ff9600; box-shadow: 0 5px 0 #cc7800; }
-    .btn-cat-a:hover { transform: translateY(3px); box-shadow: 0 2px 0 #cc7800; }
-    .btn-cat-b { background: #58cc02; box-shadow: 0 5px 0 #4caf00; }
-    .btn-cat-b:hover { transform: translateY(3px); box-shadow: 0 2px 0 #4caf00; }
+    .action-buttons { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .btn-category { flex: 1; min-width: 120px; max-width: 200px; padding: 1rem; border-radius: 12px; font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; cursor: pointer; border: none; color: #fff; transition: all 0.2s; }
+    .btn-cat-0 { background: #ff9600; box-shadow: 0 5px 0 #cc7800; }
+    .btn-cat-0:hover { transform: translateY(3px); box-shadow: 0 2px 0 #cc7800; }
+    .btn-cat-1 { background: #58cc02; box-shadow: 0 5px 0 #4caf00; }
+    .btn-cat-1:hover { transform: translateY(3px); box-shadow: 0 2px 0 #4caf00; }
+    .btn-cat-2 { background: #1cb0f6; box-shadow: 0 5px 0 #1899d6; }
+    .btn-cat-2:hover { transform: translateY(3px); box-shadow: 0 2px 0 #1899d6; }
+    .btn-cat-3 { background: #ce82ff; box-shadow: 0 5px 0 #a568cc; }
+    .btn-cat-3:hover { transform: translateY(3px); box-shadow: 0 2px 0 #a568cc; }
 
     /* FEEDBACK */
     .feedback-toast { text-align: center; padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; animation: fadeSlide 0.3s ease-out; }
@@ -125,8 +128,7 @@ export class CategorizePracticeComponent implements OnInit {
   title = signal('Clasificador');
   description = signal('Clasifica las siguientes tarjetas en la categoría correcta.');
   
-  catA = signal<{id: string, label: string}>({id: 'a', label: 'A'});
-  catB = signal<{id: string, label: string}>({id: 'b', label: 'B'});
+  categories = signal<{id: string, label: string}[]>([]);
   
   items = signal<CategorizeItem[]>([]);
   currentIndex = signal(0);
@@ -148,11 +150,12 @@ export class CategorizePracticeComponent implements OnInit {
     if (this.data) {
       if (this.data.title) this.title.set(this.data.title);
       if (this.data.description) this.description.set(this.data.description);
-      if (this.data.categories && this.data.categories.length === 2) {
-        const cat1: any = this.data.categories[0];
-        const cat2: any = this.data.categories[1];
-        this.catA.set(typeof cat1 === 'string' ? { id: cat1, label: cat1 } : cat1);
-        this.catB.set(typeof cat2 === 'string' ? { id: cat2, label: cat2 } : cat2);
+      if (this.data.categories && this.data.categories.length > 0) {
+        this.categories.set(this.data.categories.map((cat: any) => 
+          typeof cat === 'string' ? { id: cat, label: cat } : cat
+        ));
+      } else {
+        this.categories.set([{id: 'a', label: 'A'}, {id: 'b', label: 'B'}]);
       }
       if (this.data.items) {
         // shuffle items

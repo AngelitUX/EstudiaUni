@@ -104,19 +104,21 @@ import { KatexService } from '../../core/services/katex.service';
         </div>
 
         <div class="rq-options">
-          <div *ngFor="let key of optKeys" class="rq-option"
-            [class.correct-answer]="key === p.respuesta_correcta"
-            [class.wrong-selected]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key"
-            [class.neutral]="getAnswer(r, p.id) !== key && key !== p.respuesta_correcta">
-            <span class="rq-letter"
-              [class.letter-green]="key === p.respuesta_correcta"
-              [class.letter-red]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">{{ key }}</span>
-            <span class="rq-text" *ngIf="p.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(p.alternativas[key])"></span>
-            <img *ngIf="p.tipo_alternativas === 'imagen'" [src]="p.alternativas[key]"
-              alt="Opción {{ key }}" class="rq-opt-img" />
-            <span class="rq-tag correct-tag" *ngIf="key === p.respuesta_correcta">✓ Correcta</span>
-            <span class="rq-tag wrong-tag" *ngIf="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">✗ Tu respuesta</span>
-          </div>
+          <ng-container *ngFor="let key of optKeys">
+            <div *ngIf="p.alternativas && p.alternativas[key]" class="rq-option"
+              [class.correct-answer]="key === p.respuesta_correcta"
+              [class.wrong-selected]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key"
+              [class.neutral]="getAnswer(r, p.id) !== key && key !== p.respuesta_correcta">
+              <span class="rq-letter"
+                [class.letter-green]="key === p.respuesta_correcta"
+                [class.letter-red]="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">{{ key }}</span>
+              <span class="rq-text" *ngIf="p.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(p.alternativas[key])"></span>
+              <img *ngIf="p.tipo_alternativas === 'imagen'" [src]="p.alternativas[key]"
+                alt="Opción {{ key }}" class="rq-opt-img" />
+              <span class="rq-tag correct-tag" *ngIf="key === p.respuesta_correcta">✓ Correcta</span>
+              <span class="rq-tag wrong-tag" *ngIf="key !== p.respuesta_correcta && getAnswer(r, p.id) === key">✗ Tu respuesta</span>
+            </div>
+          </ng-container>
         </div>
 
         <div class="explanation-box" [class.exp-success]="isCorrect(r, p.id)" [class.exp-error]="!isCorrect(r, p.id)">
@@ -128,10 +130,6 @@ import { KatexService } from '../../core/services/katex.service';
             </div>
             <div *ngIf="!isCorrect(r, p.id)">
               <p [innerHTML]="parseMixed(p.feedback_error)"></p>
-              <div class="correct-dev-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed rgba(239,68,68,0.25);">
-                <h4 style="color: #166534; font-size: 0.9rem; margin-bottom: 0.25rem;">➡️ Resolución Correcta Paso a Paso:</h4>
-                <p [innerHTML]="parseMixed(p.feedback_acierto)"></p>
-              </div>
             </div>
           </div>
         </div>

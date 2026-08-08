@@ -56,9 +56,10 @@ export interface Seccion {
   isPractice?: boolean;
   isSlideGuide?: boolean;
   isProTip?: boolean;
-  practiceType?: string;
+  practiceType?: 'categorize' | 'fill-blanks' | 'synonyms' | 'match-pairs' | 'rapid' | 'true-false' | 'sort';
   practiceData?: any; // Para guardar configuracion especifica de juegos (match-pairs, categorize)
   imageUrl?: string;
+  svgContent?: string | null;
   tags?: string[];
   test?: TestPaes;
 }
@@ -81,7 +82,7 @@ export interface PreguntaTest {
   enunciado: string;
   formula_latex?: string | null;           // Fórmulas LaTeX (Matemáticas M1/M2)
   tipo_alternativas?: 'texto' | 'imagen';  // Flag para renderizado dinámico
-  alternativas: { A: string; B: string; C: string; D: string };
+  alternativas: { A: string; B: string; C?: string; D?: string };
   respuesta_correcta: 'A' | 'B' | 'C' | 'D';
   feedback_acierto: string;
   feedback_error: string;
@@ -108,7 +109,7 @@ export interface PoolPregunta {
   enunciado: string;
   formula_latex: string | null;
   tipo_alternativas: 'texto' | 'imagen';
-  alternativas: { A: string; B: string; C: string; D: string };
+  alternativas: { A: string; B: string; C?: string; D?: string };
   respuesta_correcta: 'A' | 'B' | 'C' | 'D';
   feedback_acierto: string;
   feedback_error: string;

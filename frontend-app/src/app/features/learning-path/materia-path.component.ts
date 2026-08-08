@@ -2356,6 +2356,15 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
   constructor() {
     this.materiaId.set(this.route.snapshot.paramMap.get('materiaId') || '');
+    
+    // Restaurar posición de scroll al volver a la ruta
+    setTimeout(() => {
+      const savedScroll = sessionStorage.getItem('ruta_scroll_' + this.materiaId());
+      if (savedScroll) {
+        window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' });
+        sessionStorage.removeItem('ruta_scroll_' + this.materiaId());
+      }
+    }, 50);
   }
 
   getOffset(index: number): number {
@@ -2670,6 +2679,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   handleNodeClick(item: any) {
     const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
     if (item.status === 'locked' && !this.adminService.isAdmin() && !unlockAll) return;
+    sessionStorage.setItem('ruta_scroll_' + this.materiaId(), String(window.scrollY));
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
   }
 
@@ -2693,6 +2703,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   }
 
   goToGuide(capId: string) {
+    sessionStorage.setItem('ruta_scroll_' + this.materiaId(), String(window.scrollY));
     this.router.navigate(['/ruta', this.materiaId(), capId]);
   }
 

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, Inject, PLATFORM_ID, effect, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -90,18 +90,20 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
 
           <div class="options-grid">
-            <button *ngFor="let key of optionKeys"
-              class="option-btn"
-              [class.selected]="answers().get(q.id) === key && !showFeedback()"
-              [class.correct]="showFeedback() && key === q.respuesta_correcta"
-              [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
-              [disabled]="showFeedback()"
-              (click)="selectAnswer(q.id, key)">
-              <span class="opt-letter" [class.sel]="answers().get(q.id) === key && !showFeedback()">{{ key }}</span>
-              <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(q.alternativas[key])"></span>
-              <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
-                alt="Opción {{ key }}" class="opt-img" />
-            </button>
+            <ng-container *ngFor="let key of optionKeys">
+              <button *ngIf="q.alternativas && q.alternativas[key]"
+                class="option-btn"
+                [class.selected]="answers().get(q.id) === key && !showFeedback()"
+                [class.correct]="showFeedback() && key === q.respuesta_correcta"
+                [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
+                [disabled]="showFeedback()"
+                (click)="selectAnswer(q.id, key)">
+                <span class="opt-letter" [class.sel]="answers().get(q.id) === key && !showFeedback()">{{ key }}</span>
+                <span class="opt-text" *ngIf="q.tipo_alternativas !== 'imagen'" [innerHTML]="parseMixed(q.alternativas[key])"></span>
+                <img *ngIf="q.tipo_alternativas === 'imagen'" [src]="q.alternativas[key]"
+                  alt="Opción {{ key }}" class="opt-img" />
+              </button>
+            </ng-container>
           </div>
 
             <!-- FEEDBACK -->
@@ -553,7 +555,11 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   private intervalId: any;
 
   currentIndex = signal(0);
-  showFeedback = signal(false);
+  checkedAnswers = signal(new Set<number>());
+  showFeedback = computed(() => {
+    const q = this.currentQuestion();
+    return q ? this.checkedAnswers().has(q.id) : false;
+  });
   contextCollapsed = false;
 
   togglePhysicsContext(event: Event) {
@@ -633,7 +639,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     const state = {
       answers: Array.from(this.answers().entries()),
       currentIndex: this.currentIndex(),
-      showFeedback: this.showFeedback(),
+      checkedAnswers: Array.from(this.checkedAnswers()),
       timer: this.timer(),
       lives: this.lives(),
       questionOrder: this.shuffledPreguntas().map(q => q.id)
@@ -653,8 +659,8 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
         if (typeof state.currentIndex === 'number') {
           this.currentIndex.set(state.currentIndex);
         }
-        if (typeof state.showFeedback === 'boolean') {
-          this.showFeedback.set(state.showFeedback);
+        if (state.checkedAnswers) {
+          this.checkedAnswers.set(new Set(state.checkedAnswers));
         }
         if (typeof state.timer === 'number') {
           this.timer.set(state.timer);
@@ -672,11 +678,18 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
-    this.loadTest();
+  }
+
+  constructor() {
+    effect(() => {
+      const t = this.test();
+      if (t && t.preguntas && t.preguntas.length > 0 && this.shuffledPreguntas().length === 0) {
+        this.loadTest();
+      }
+    }, { allowSignalWrites: true });
   }
 
   loadTest() {
-    this.showFeedback.set(false);
     this.contextCollapsed = this.materiaId().includes('fisica');
     
     const savedOrder = this.loadState();
@@ -949,7 +962,15 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
         this.toastSvc.error('Respuesta incorrecta');
       }
     }
-    this.showFeedback.set(true);
+
+    const q = this.currentQuestion();
+    if (q) {
+      this.checkedAnswers.update(s => {
+        const next = new Set(s);
+        next.add(q.id);
+        return next;
+      });
+    }
     this.saveState();
   }
 
@@ -963,7 +984,6 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   nextQuestion() {
-    this.showFeedback.set(false);
     this.currentIndex.update(v => v + 1);
     this.saveState();
   }

@@ -5,7 +5,7 @@ export interface MatchPair {
   id: number;
   left: string;
   right: string;
-  hint: string;
+  hint?: string;
 }
 
 @Component({
@@ -16,13 +16,25 @@ export interface MatchPair {
     <div class="syn-game">
       <!-- HEADER -->
       <div class="game-header">
-        <div class="game-badge">🧠 Mini-Juego</div>
+        <div class="game-badge">🎮 Mini-Juego</div>
         <h2 class="game-title">{{ title() }}</h2>
         <p class="game-desc">{{ description() }}</p>
       </div>
 
+      <!-- ROUND INDICATOR -->
+      <div class="round-bar" *ngIf="!gameFinished() && totalRounds() > 1">
+        <div class="round-pills">
+          <div *ngFor="let r of [].constructor(totalRounds()); let i = index" 
+               class="round-pill" 
+               [class.active]="currentRound() === i"
+               [class.done]="currentRound() > i">
+          </div>
+        </div>
+        <div class="round-label">Ronda {{ currentRound() + 1 }} de {{ totalRounds() }}</div>
+      </div>
+
       <!-- GAME AREA -->
-      <div class="match-area" *ngIf="!gameFinished()">
+      <div class="match-area" *ngIf="!gameFinished() && !roundComplete()">
         <!-- LEFT COLUMN -->
         <div class="match-col">
           <button *ngFor="let pair of leftItems()" class="match-btn word-btn"
@@ -57,9 +69,16 @@ export interface MatchPair {
       </div>
 
       <!-- FEEDBACK -->
-      <div class="feedback-bar" *ngIf="lastFeedback() && !gameFinished()" [class.correct]="lastCorrect()" [class.wrong]="!lastCorrect()">
-        <span class="fb-icon">{{ lastCorrect() ? '✅' : '❌' }}</span>
+      <div class="feedback-bar" *ngIf="lastFeedback() && !gameFinished() && !roundComplete()" [class.correct]="lastCorrect()" [class.wrong]="!lastCorrect()">
+        <span class="fb-icon">{{ lastCorrect() ? '💡' : '❌' }}</span>
         <span class="fb-text">{{ lastFeedback() }}</span>
+      </div>
+
+      <!-- ROUND COMPLETE -->
+      <div class="round-complete" *ngIf="roundComplete() && !gameFinished()">
+        <div class="rc-icon">🔥</div>
+        <h3 class="rc-text">¡Ronda {{ currentRound() + 1 }} Completada!</h3>
+        <button class="btn-next-round" (click)="nextRound()">Siguiente Ronda →</button>
       </div>
 
       <!-- GAME FINISHED -->
@@ -84,6 +103,14 @@ export interface MatchPair {
     .game-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.4rem; }
     .game-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin: 0; }
 
+    /* ROUND INDICATOR */
+    .round-bar { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .round-pills { display: flex; gap: 0.4rem; }
+    .round-pill { width: 30px; height: 6px; border-radius: 3px; background: rgba(0,0,0,0.1); transition: all 0.3s; }
+    .round-pill.active { background: var(--accent-primary); width: 40px; }
+    .round-pill.done { background: #58cc02; }
+    .round-label { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); }
+
     /* MATCH AREA */
     .match-area { display: flex; align-items: stretch; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
     .match-col { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
@@ -98,42 +125,56 @@ export interface MatchPair {
     .syn-btn.selected { border-color: #58cc02; background: rgba(88,204,2,0.05); box-shadow: 0 4px 0 #4caf00; color: #4caf00; }
     
     .match-btn.wrong-flash { animation: shakeError 0.4s ease-in-out; border-color: #ff4b4b; background: rgba(255,75,75,0.05); box-shadow: 0 4px 0 #e63939; color: #ff4b4b; }
-    
-    .match-btn.matched { border-color: rgba(0,0,0,0.05); background: rgba(0,0,0,0.02); color: #aaa; box-shadow: none; cursor: default; transform: none; opacity: 0.6; }
+    .match-btn.matched { border-color: #58cc02; background: rgba(88,204,2,0.08); color: #16a34a; cursor: default; opacity: 0.75; transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.05); }
 
     /* FEEDBACK */
-    .feedback-bar { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 600; font-size: 0.95rem; animation: fadeSlide 0.3s ease-out; }
-    .feedback-bar.correct { background: rgba(88,204,2,0.1); border: 1px solid rgba(88,204,2,0.3); color: #4caf00; }
-    .feedback-bar.wrong { background: rgba(255,75,75,0.1); border: 1px solid rgba(255,75,75,0.3); color: #e63939; }
-    .fb-icon { font-size: 1.2rem; }
+    .feedback-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1rem; border-radius: 12px; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; animation: fadeSlide 0.3s ease; }
+    .feedback-bar.correct { background: rgba(88,204,2,0.1); border: 1px solid rgba(88,204,2,0.2); color: #16a34a; }
+    .feedback-bar.wrong { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); color: #dc2626; }
+    .fb-icon { font-size: 1rem; }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)} }
+
+    /* ROUND COMPLETE */
+    .round-complete { text-align: center; padding: 1.5rem; background: rgba(88,204,2,0.06); border: 2px solid rgba(88,204,2,0.15); border-radius: 20px; margin-top: 1rem; animation: fadeSlide 0.4s ease; }
+    .rc-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .rc-text { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1rem; }
+    .btn-next-round { background: #58cc02; color: #fff; font-family: var(--font-heading); font-size: 1rem; font-weight: 800; padding: 0.75rem 1.75rem; border-radius: 14px; border: none; box-shadow: 0 4px 0 #46a302; cursor: pointer; transition: all 0.2s; }
+    .btn-next-round:hover { transform: translateY(2px); box-shadow: 0 2px 0 #46a302; }
 
     /* GAME FINISHED */
-    .game-finished { text-align: center; padding: 3rem 1.5rem; background: #fff; border-radius: 16px; border: 2px solid rgba(0,0,0,0.05); animation: fadeSlide 0.5s ease-out; }
-    .gf-icon { font-size: 4rem; margin-bottom: 1rem; animation: ctaBounce 2s infinite; }
-    .game-finished h3 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem; }
-    .game-finished p { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 2rem; }
-    .gf-actions { display: flex; gap: 1rem; justify-content: center; }
-    .btn-replay, .btn-finish { padding: 0.85rem 1.5rem; border-radius: 99px; font-family: var(--font-heading); font-size: 1rem; font-weight: 800; cursor: pointer; border: none; transition: all 0.2s; }
-    .btn-replay { background: rgba(0,0,0,0.05); color: var(--text-primary); box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
-    .btn-replay:hover { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
-    .btn-finish { background: var(--accent-primary); color: #fff; box-shadow: 0 4px 0 var(--accent-dark); }
-    .btn-finish:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--accent-dark); }
+    .game-finished { text-align: center; padding: 2rem; background: linear-gradient(135deg, rgba(255,200,0,0.06), rgba(88,204,2,0.06)); border: 2px solid rgba(88,204,2,0.15); border-radius: 24px; margin-top: 1.25rem; animation: fadeSlide 0.5s ease; }
+    .gf-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .game-finished h3 { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem; }
+    .game-finished p { color: var(--text-secondary); font-size: 0.95rem; margin: 0 0 0.75rem; }
+    .gf-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .btn-replay { background: #fff; border: 2px solid rgba(0,0,0,0.1); color: var(--text-primary); font-family: var(--font-heading); font-size: 0.9rem; font-weight: 800; padding: 0.7rem 1.25rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+    .btn-replay:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .btn-finish { background: #58cc02; color: #fff; font-family: var(--font-heading); font-size: 0.9rem; font-weight: 800; padding: 0.7rem 1.25rem; border-radius: 12px; border: none; box-shadow: 0 4px 0 #46a302; cursor: pointer; transition: all 0.2s; }
+    .btn-finish:hover { transform: translateY(2px); box-shadow: 0 2px 0 #46a302; }
 
     @keyframes shakeError { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
-    @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes ctaBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
     @media (max-width: 640px) { .match-area { flex-direction: column; gap: 0.5rem; } .match-arrows { display: none; } }
   `]
 })
 export class MatchPracticeComponent implements OnInit {
-  @Input() data!: { title: string, description: string, pairs: MatchPair[] };
+  @Input() data!: { title?: string, description?: string, pairs?: MatchPair[], rounds?: { pairs: MatchPair[] }[] };
   @Output() onComplete = new EventEmitter<void>();
 
   title = signal('Conecta los Pares');
   description = signal('Haz clic en la izquierda y luego en la derecha para conectarlos.');
   
-  currentPairs = signal<MatchPair[]>([]);
+  rounds = signal<MatchPair[][]>([]);
+  currentRound = signal(0);
+  
+  currentPairs = computed(() => {
+    const r = this.rounds();
+    if (r.length === 0) return [];
+    return r[this.currentRound()];
+  });
+  
+  totalRounds = computed(() => this.rounds().length);
+
   rightItemsShuffled = signal<MatchPair[]>([]);
 
   selectedLeft = signal<number | null>(null);
@@ -145,7 +186,14 @@ export class MatchPracticeComponent implements OnInit {
   lastFeedback = signal<string>('');
   lastCorrect = signal<boolean>(false);
 
-  gameFinished = computed(() => this.matchedIds().size === this.currentPairs().length && this.currentPairs().length > 0);
+  roundComplete = computed(() => {
+    const pairs = this.currentPairs();
+    return pairs.length > 0 && this.matchedIds().size === pairs.length;
+  });
+
+  gameFinished = computed(() => {
+    return this.roundComplete() && this.currentRound() === this.totalRounds() - 1;
+  });
 
   leftItems = computed(() => this.currentPairs());
 
@@ -153,10 +201,35 @@ export class MatchPracticeComponent implements OnInit {
     if (this.data) {
       if (this.data.title) this.title.set(this.data.title);
       if (this.data.description) this.description.set(this.data.description);
-      if (this.data.pairs) {
-        this.currentPairs.set(this.data.pairs);
-        this.rightItemsShuffled.set([...this.data.pairs].sort(() => Math.random() - 0.5));
+      
+      // Support BOTH formats: { pairs: [...] } OR { rounds: [{pairs: [...]}] }
+      let newRounds: MatchPair[][] = [];
+      if (this.data.rounds && this.data.rounds.length > 0) {
+        newRounds = this.data.rounds.map(r => r.pairs);
+      } else if (this.data.pairs && this.data.pairs.length > 0) {
+        newRounds = [this.data.pairs];
       }
+      
+      this.rounds.set(newRounds);
+      this.setupCurrentRound();
+    }
+  }
+
+  setupCurrentRound() {
+    const pairs = this.currentPairs();
+    if (pairs && pairs.length > 0) {
+      this.rightItemsShuffled.set([...pairs].sort(() => Math.random() - 0.5));
+    }
+    this.matchedIds.set(new Set());
+    this.selectedLeft.set(null);
+    this.selectedRight.set(null);
+    this.lastFeedback.set('');
+  }
+
+  nextRound() {
+    if (this.currentRound() < this.totalRounds() - 1) {
+      this.currentRound.update(r => r + 1);
+      this.setupCurrentRound();
     }
   }
 
@@ -206,10 +279,7 @@ export class MatchPracticeComponent implements OnInit {
   }
 
   resetGame() {
-    this.matchedIds.set(new Set());
-    this.selectedLeft.set(null);
-    this.selectedRight.set(null);
-    this.lastFeedback.set('');
-    this.rightItemsShuffled.set([...this.currentPairs()].sort(() => Math.random() - 0.5));
+    this.currentRound.set(0);
+    this.setupCurrentRound();
   }
 }

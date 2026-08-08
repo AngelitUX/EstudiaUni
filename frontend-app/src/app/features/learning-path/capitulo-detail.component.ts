@@ -5,7 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
-import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data';
+import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, CAP1_SUMMARY_SLIDES, CAP2_SUMMARY_SLIDES, CAP3_SUMMARY_SLIDES } from './guide-slides-data';
 
 @Component({
   selector: 'app-capitulo-detail',
@@ -223,13 +223,15 @@ export class CapituloDetailComponent {
 
   // --- SLIDE HELPERS ---
   hasSlides(cap: any): boolean {
-    return cap.id === 'cap-localizar'
+    return cap.id === 'cap-localizar' || cap.id === 'cap-1'
       || (cap.slides && cap.slides.length > 0)
       || (cap.secciones && cap.secciones.length > 0);
   }
 
   getSlides(cap: any): any[] {
-    if (cap.id === 'cap-localizar') return LOCALIZAR_SLIDES;
+    if (cap.id === 'cap-localizar' || cap.id === 'cap-1') return CAP1_SUMMARY_SLIDES;
+    if (cap.id === 'cap-interpretar' || cap.id === 'cap-2') return CAP2_SUMMARY_SLIDES;
+    if (cap.id === 'cap-evaluar' || cap.id === 'cap-3') return CAP3_SUMMARY_SLIDES;
     if (cap.slides && cap.slides.length > 0) return cap.slides;
     if (cap.secciones && cap.secciones.length > 0) return this.buildDynamicSlides(cap);
     return [];
@@ -255,6 +257,51 @@ export class CapituloDetailComponent {
   private buildDynamicSlides(cap: any): any[] {
     if (!cap?.secciones || cap.secciones.length === 0) return [];
     const isHistoria = cap.materiaId === 'historia' || (cap.id && cap.id.startsWith('cap-hist'));
+    
+    if (isHistoria) {
+      return [
+        {
+          icon: '🏛️', 
+          title: `¡Bienvenido al Capítulo!`,
+          bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.08), rgba(133,92,214,0.02))',
+          iconBg: 'linear-gradient(135deg, #855cd6, #6b46b8)',
+          content: `
+            <p>Estás a punto de comenzar tu entrenamiento en <strong>${cap.title}</strong>.</p>
+            <div class="callout">
+              🎯 <strong>Tu misión principal:</strong> ${cap.introduccion}
+            </div>
+            <p>Este contenido está diseñado para que aprendas haciendo, intercalando teoría directa con juegos interactivos.</p>
+          `
+        },
+        {
+          icon: '⚔️', 
+          title: 'Lo que dominarás aquí',
+          bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+          iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+          content: `
+            <p>Aplicarás de forma inmediata la teoría histórica a través de minijuegos y desarrollarás habilidades PAES:</p>
+            <div class="mini-cards">
+              <div class="mc blue">1️⃣ <strong>Pensamiento Temporal:</strong> Líneas de tiempo y orden cronológico.</div>
+              <div class="mc green">2️⃣ <strong>Análisis:</strong> Clasificación y evaluación de fuentes primarias y secundarias.</div>
+              <div class="mc red" style="grid-column: 1 / -1;">3️⃣ <strong>Causalidad:</strong> Identificación precisa de causas y efectos en procesos históricos.</div>
+            </div>
+          `
+        },
+        {
+          icon: '⚡', 
+          title: '¿Por qué es tan importante?',
+          bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+          iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+          content: `
+            <p>Dominar esta estructura es un pilar fundamental para la prueba PAES de Historia y Ciencias Sociales.</p>
+            <div class="callout" style="border-left-color: #ffc800; background: rgba(255,200,0,0.1);">
+              🚀 Responder correctamente estas preguntas te dará una <strong>ventaja enorme</strong> en tu puntaje final y desarrollará tu pensamiento crítico. ¡Vamos con todo!
+            </div>
+          `
+        }
+      ];
+    }
+
     return cap.secciones.map((sec: any, index: number) => {
       const theme = this.getSlideTheme(index);
       return {

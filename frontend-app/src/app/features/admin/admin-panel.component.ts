@@ -145,14 +145,16 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
 
                   <div class="alternativas-preview">
                     @for (key of optionKeys; track key) {
-                      <span class="alt-chip" [class.correct]="key === pregunta.respuesta_correcta">
-                        <strong>{{ key }})</strong>
-                        @if (pregunta.tipo_alternativas === 'texto') {
-                          {{ pregunta.alternativas[key] | slice:0:40 }}{{ pregunta.alternativas[key].length > 40 ? '...' : '' }}
-                        } @else {
-                          🖼️ Imagen
-                        }
-                      </span>
+                      @if (pregunta.alternativas && pregunta.alternativas[key]) {
+                        <span class="alt-chip" [class.correct]="key === pregunta.respuesta_correcta">
+                          <strong>{{ key }})</strong>
+                          @if (pregunta.tipo_alternativas === 'texto') {
+                            {{ pregunta.alternativas[key] | slice:0:40 }}{{ pregunta.alternativas[key].length > 40 ? '...' : '' }}
+                          } @else {
+                            🖼️ Imagen
+                          }
+                        </span>
+                      }
                     }
                   </div>
                 </div>
