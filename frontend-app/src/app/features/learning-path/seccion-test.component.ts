@@ -98,6 +98,12 @@ import { ToastService } from '../../core/services/toast.service';
 
           <p class="q-text" [innerHTML]="parseMixed(q.enunciado)"></p>
 
+          <!-- Imagen o gráfico de apoyo (fuera de Física, que usa el panel lateral) -->
+          <div class="q-image-wrap" *ngIf="q.imageUrl && !isPhysics()">
+            <img [src]="q.imageUrl" alt="Imagen de apoyo" class="q-image" />
+          </div>
+          <div class="q-svg-wrap" *ngIf="q.svgContent && !isPhysics()" [innerHTML]="renderSvg(q.svgContent)"></div>
+
           <!-- Fórmula LaTeX (Matemáticas) -->
           <div class="q-formula" *ngIf="q.formula_latex"
             [innerHTML]="renderLatex(q.formula_latex)">
@@ -395,6 +401,8 @@ import { ToastService } from '../../core/services/toast.service';
 
     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
     .q-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
+    .q-svg-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: center; }
+    .q-svg-wrap svg { max-width: 100%; height: auto; max-height: 320px; }
 
     /* PREAMBULO */
     .q-preambulo { display: flex; gap: 0.8rem; padding: 1.25rem; margin: 0 0 1.5rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 4px solid rgba(133,92,214,0.4); }

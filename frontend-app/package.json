@@ -22,6 +22,7 @@
     "@angular/router": "^18.2.0",
     "@google/generative-ai": "^0.24.1",
     "@types/marked": "^5.0.2",
+    "dotenv": "^17.4.2",
     "driver.js": "^1.4.0",
     "firebase": "^10.14.1",
     "katex": "^0.16.45",

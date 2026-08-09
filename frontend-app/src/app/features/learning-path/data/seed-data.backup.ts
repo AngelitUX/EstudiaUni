@@ -92,7 +92,7 @@ export const CAPITULOS: Capitulo[] = [
           preguntas: [
             { id: 102, enunciado: 'En el relato, ¿dónde se ubica la pequeña tienda del relojero?', alternativas: { A: 'En la calle del Cuero.', B: 'Junto a un escaparate dorado.', C: 'En la calle de los Olmos.', D: 'Frente a su mesa de trabajo.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente! En la primera línea se menciona directamente la ubicación.', feedback_error: 'Busca el nombre de la calle en la primera oración del texto.' },
             { id: 1021, enunciado: '¿Qué prenda llevaba puesta el anciano?', alternativas: { A: 'Un traje dorado.', B: 'Un delantal de cuero desgastado.', C: 'Un abrigo de invierno.', D: 'Un reloj de bolsillo en la solapa.' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien hecho! Rastreaste el detalle de la vestimenta.', feedback_error: 'Lee la segunda oración del texto.' },
-            { id: 1022, enunciado: '¿Quién le regaló esa prenda al relojero y cuándo?', alternativas: { A: 'Su abuelo, hace cuarenta años.', B: 'Su padre, hace veinte años.', C: 'Su esposa, recientemente.', D: 'Un cliente, hace cuarenta años.' }, respuesta_correcta: 'A', feedback_acierto: '¡Perfecto! El texto menciona que fue su abuelo quien se lo regaló hace cuarenta años.', feedback_error: 'El texto menciona directamente quién se lo regaló en la segunda línea.' },
+            { id: 1022, enunciado: '¿Quién le regaló esa prenda al relojero y cuándo?', alternativas: { A: 'Su abuelo, hace cuarenta años.', B: 'Su padre, hace veinte años.', C: 'Su esposa, recientemente.', D: 'Un cliente, hace cuarenta años.' }, respuesta_correcta: 'A', feedback_acierto: '¡Perfecto!', feedback_error: 'El texto menciona directamente quién se lo regaló en la segunda línea.' },
             { id: 1023, enunciado: '¿Qué objeto esperaba sobre la mesa de trabajo?', alternativas: { A: 'Un cristal roto.', B: 'Un nuevo delantal.', C: 'Un antiguo reloj de bolsillo dorado.', D: 'Herramientas oxidadas.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! Rastreaste la acción del final del párrafo.', feedback_error: 'Observa la última oración del fragmento.' }
           ]
         }
@@ -131,7 +131,7 @@ export const CAPITULOS: Capitulo[] = [
             contexto_base: 'La Revolución Francesa, iniciada en 1789, marcó un hito en la historia de Europa al poner fin a la monarquía absoluta de Luis XVI. Durante este período, el 14 de julio de 1789, ocurrió la famosa Toma de la Bastilla, una prisión en París que simbolizaba el poder real. Un mes después, el 26 de agosto, se promulgó la Declaración de los Derechos del Hombre y del Ciudadano. Destacan figuras clave como Maximilien Robespierre, líder de los jacobinos durante la época conocida como "El Terror", y Jean-Paul Marat, periodista radical asesinado en 1793. Las revueltas también impulsaron el lema "Libertad, Igualdad, Fraternidad", que se popularizó en 1790. Finalmente, en 1799, Napoleón Bonaparte dio un golpe de Estado que puso fin al Directorio.',
             preguntas: [
               { id: 10301, enunciado: 'Según el texto, ¿en qué fecha exacta ocurrió la Toma de la Bastilla?', alternativas: { A: '14 de julio de 1789', B: '26 de agosto de 1789', C: '14 de junio de 1789', D: '14 de julio de 1790' }, respuesta_correcta: 'A', feedback_acierto: '¡Bien escaneado!', feedback_error: 'Busca las palabras "Toma de la Bastilla" y lee la fecha que le antecede.' },
-              { id: 10302, enunciado: '¿Qué día y mes se promulgó la Declaración de los Derechos del Hombre?', alternativas: { A: '14 de julio', B: '26 de agosto', C: '15 de abril', D: '26 de julio' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto! El 26 de agosto es la fecha exacta que acompaña la mención de la Declaración.', feedback_error: 'Escanea buscando "Declaración de los Derechos del Hombre".' },
+              { id: 10302, enunciado: '¿Qué día y mes se promulgó la Declaración de los Derechos del Hombre?', alternativas: { A: '14 de julio', B: '26 de agosto', C: '15 de abril', D: '26 de julio' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto!', feedback_error: 'Escanea buscando "Declaración de los Derechos del Hombre".' },
               { id: 10303, enunciado: '¿Cuál era el nombre de pila del periodista radical asesinado?', alternativas: { A: 'Maximilien', B: 'Luis', C: 'Jean-Paul', D: 'Napoleón' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente rastreo!', feedback_error: 'Busca la palabra "periodista" en el texto.' },
               { id: 10304, enunciado: '¿En qué año fue asesinado Jean-Paul Marat?', alternativas: { A: '1789', B: '1790', C: '1793', D: '1799' }, respuesta_correcta: 'C', feedback_acierto: '¡Exacto!', feedback_error: 'Ubica el nombre "Marat" y el año contiguo.' },
               { id: 10305, enunciado: '¿Quién dio un golpe de Estado en el año 1799?', alternativas: { A: 'Maximilien Robespierre', B: 'Napoleón Bonaparte', C: 'Luis XVI', D: 'Jean-Paul Marat' }, respuesta_correcta: 'B', feedback_acierto: '¡Muy rápido!', feedback_error: 'Busca el número "1799" y lee el nombre que lo acompaña.' }
@@ -151,7 +151,7 @@ export const CAPITULOS: Capitulo[] = [
             contexto_base: 'El hidrógeno es el elemento químico más abundante del universo, constituyendo aproximadamente el 75% de toda la materia bariónica. En nuestro sistema solar, el Sol está compuesto en un 73% de hidrógeno y un 25% de helio. Este elemento fue descubierto formalmente en 1766 por el científico británico Henry Cavendish, quien lo denominó "aire inflamable". Más tarde, en 1783, Antoine Lavoisier le dio el nombre de hidrógeno, que significa "creador de agua" en griego. A nivel atómico, el hidrógeno es el elemento más ligero, con un peso atómico de 1.008 y solo posee un electrón. Actualmente, se investiga su uso como combustible limpio para reducir las emisiones globales de CO2 en un 20% para el año 2040.',
             preguntas: [
               { id: 10306, enunciado: 'Según el texto, ¿qué porcentaje del Sol está compuesto por helio?', alternativas: { A: '75%', B: '73%', C: '25%', D: '20%' }, respuesta_correcta: 'C', feedback_acierto: '¡Eso es scanning nivel experto!', feedback_error: 'Escanea la palabra "helio" y fíjate en el porcentaje a su lado. ¡Cuidado con el 73% que es del hidrógeno!' },
-              { id: 10307, enunciado: '¿En qué año fue descubierto formalmente el hidrógeno?', alternativas: { A: '1766', B: '1783', C: '2040', D: '1008' }, respuesta_correcta: 'A', feedback_acierto: '¡Correcto! El texto señala 1766 como el año del descubrimiento del hidrógeno.', feedback_error: 'Busca la palabra "descubierto".' },
+              { id: 10307, enunciado: '¿En qué año fue descubierto formalmente el hidrógeno?', alternativas: { A: '1766', B: '1783', C: '2040', D: '1008' }, respuesta_correcta: 'A', feedback_acierto: '¡Correcto!', feedback_error: 'Busca la palabra "descubierto".' },
               { id: 10308, enunciado: '¿Cómo denominó inicialmente Henry Cavendish a este elemento?', alternativas: { A: 'Creador de agua', B: 'Materia bariónica', C: 'Combustible limpio', D: 'Aire inflamable' }, respuesta_correcta: 'D', feedback_acierto: '¡Genial!', feedback_error: 'Busca el nombre "Cavendish" y lee lo que está entre comillas.' },
               { id: 10309, enunciado: '¿Qué científico le dio el nombre definitivo de hidrógeno?', alternativas: { A: 'Henry Cavendish', B: 'Antoine Lavoisier', C: 'Maximilien Robespierre', D: 'Jean-Paul Marat' }, respuesta_correcta: 'B', feedback_acierto: '¡Rastreado con éxito!', feedback_error: 'Busca el año "1783" o la palabra "nombre".' },
               { id: 10310, enunciado: '¿Cuál es la meta de reducción de emisiones de CO2 para el año 2040?', alternativas: { A: '75%', B: '73%', C: '25%', D: '20%' }, respuesta_correcta: 'D', feedback_acierto: '¡Bien hecho!', feedback_error: 'Busca el año 2040 y ve el porcentaje mencionado.' }
@@ -173,7 +173,7 @@ export const CAPITULOS: Capitulo[] = [
               { id: 10311, enunciado: '¿A qué hora exacta llegó María al mercado de San Juan?', alternativas: { A: '08:30 a.m.', B: '11:15 a.m.', C: '09:00 a.m.', D: '08:00 a.m.' }, respuesta_correcta: 'A', feedback_acierto: '¡Al instante!', feedback_error: 'Escanea la primera oración del texto buscando formato de hora.' },
               { id: 10312, enunciado: '¿Cuál era el número del puesto atendido por Don Pedro?', alternativas: { A: '3', B: '42', C: '12', D: '15' }, respuesta_correcta: 'B', feedback_acierto: '¡Preciso!', feedback_error: 'Escanea la palabra "puesto" cerca de "Pedro".' },
               { id: 10313, enunciado: '¿Cuánto costaba el kilo de peras?', alternativas: { A: '$1.200', B: '$950', C: '$14.500', D: '$15.000' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien escaneado!', feedback_error: 'Busca la palabra "peras" y fíjate en el precio.' },
-              { id: 10314, enunciado: '¿Cuánto pesaba la sandía gigante que compró en el sector sur?', alternativas: { A: '2 kilos', B: '3 kilos', C: '5 kilos', D: '8 kilos' }, respuesta_correcta: 'D', feedback_acierto: '¡Perfecto! La sandía gigante que compró en el sector sur pesaba 8 kilos.', feedback_error: 'Busca la palabra "sandía".' },
+              { id: 10314, enunciado: '¿Cuánto pesaba la sandía gigante que compró en el sector sur?', alternativas: { A: '2 kilos', B: '3 kilos', C: '5 kilos', D: '8 kilos' }, respuesta_correcta: 'D', feedback_acierto: '¡Perfecto!', feedback_error: 'Busca la palabra "sandía".' },
               { id: 10315, enunciado: '¿Qué día y fecha exactos se celebraría el cumpleaños de la madre?', alternativas: { A: 'Sábado 14 de abril', B: 'Domingo 15 de abril', C: 'Lunes 16 de abril', D: 'Domingo 26 de agosto' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente! Has terminado la ráfaga de scanning.', feedback_error: 'Busca la palabra "cumpleaños" al final del texto.' }
             ]
           }
@@ -187,7 +187,7 @@ export const CAPITULOS: Capitulo[] = [
         datos_claves: ['Cuidado con los distractores numéricos'],
         test: {
           id: 'test-1-6-inf', seccionId: 'sec-1-6-inf',
-          contexto_base: 'La energía eólica en Chile ha experimentado un crecimiento exponencial. En 2014, el país contaba con apenas 836 MW de capacidad instalada eólica. Diez años después, en 2024, esa cifra más que se quintuplicó, alcanzando los 4.500 MW, lo que representa cerca del 14% de la matriz energética nacional. Gran parte de estos proyectos se concentran en las regiones de Coquimbo y Atacama.',
+          contexto_base: 'La energía eólica en Chile ha experimentado un crecimiento exponencial. En 2014, el país contaba con apenas 836 MW de capacidad instalada eólica. Diez años después, en 2024, esa cifra se quintuplicó, alcanzando los 4.500 MW, lo que representa cerca del 14% de la matriz energética nacional. Gran parte de estos proyectos se concentran en las regiones de Coquimbo y Atacama.',
           preguntas: [
             { id: 106, enunciado: 'De acuerdo con el fragmento, ¿cuál era la capacidad instalada eólica en Chile en el año 2014?', alternativas: { A: '14 MW', B: '836 MW', C: '4.500 MW', D: 'Se quintuplicó.' }, respuesta_correcta: 'B', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'Vuelve al texto y busca específicamente la cifra que acompaña al año 2014.' },
             { id: 1061, enunciado: '¿En qué año la capacidad instalada alcanzó los 4.500 MW?', alternativas: { A: '2014', B: '2019', C: '2024', D: '2030' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente! Escaneaste el año correcto.', feedback_error: 'Busca el año que está junto a la cifra 4.500 MW.' },
@@ -199,7 +199,7 @@ export const CAPITULOS: Capitulo[] = [
       // ── NODO 8: PRO TIP 2 ──
       {
         id: 'sec-1-7-tip', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 6, order: 8, tags: ['subcapitulo:Rastrear Datos'],
+        level: 7, order: 9, tags: ['subcapitulo:Rastrear Datos'],
         title: 'Pro Tip: Trampas Numéricas',
         isProTip: true,
         introduccion: 'El DEMRE ama poner todos los números del texto en las alternativas.',
@@ -220,7 +220,7 @@ export const CAPITULOS: Capitulo[] = [
       // ── NODO 9: RASTREAR INFO II (NARRATIVOS) ──
       {
         id: 'sec-1-8-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
-        level: 7, order: 9, tags: ['subcapitulo:Rastrear Datos'],
+        level: 6, order: 8, tags: ['subcapitulo:Rastrear Datos'],
         title: 'Rastrear info II (Narrativos)',
         introduccion: 'Localiza información sobre los sentimientos y reacciones de los personajes.',
         datos_claves: ['Busca adjetivos que describan la actitud de los personajes'],
@@ -230,7 +230,7 @@ export const CAPITULOS: Capitulo[] = [
           preguntas: [
             { id: 107, enunciado: '¿Qué le generaba a Marta la visión de la carta cerrada?', alternativas: { A: 'Un profundo frío en las manos.', B: 'Mucha nostalgia por la panadería.', C: 'Una mezcla abrumadora de esperanza y pánico.', D: 'Desilusión ante la universidad.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! Rastreaste el sentimiento exacto.', feedback_error: 'Lee con atención por qué le temblaban las manos según el texto.' },
             { id: 1071, enunciado: '¿De dónde provenía la carta?', alternativas: { A: 'De la panadería de sus tíos.', B: 'De la universidad.', C: 'De un observatorio astronómico.', D: 'De un banco.' }, respuesta_correcta: 'B', feedback_acierto: '¡Bien! Detectaste el origen de la carta.', feedback_error: 'Revisa la segunda oración que menciona el sello.' },
-            { id: 1072, enunciado: '¿A qué se tendrían que dedicar Marta si la respuesta fuera negativa?', alternativas: { A: 'A trabajar en la universidad.', B: 'A trabajar en la panadería de sus tíos.', C: 'A estudiar astronomía en otro lado.', D: 'A buscar empleo en la ciudad.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! El final del texto explica que volvería a la panadería de sus tíos si la respuesta fuera negativa.', feedback_error: 'El final del texto explica qué pasaría si fuera rechazada.' },
+            { id: 1072, enunciado: '¿A qué se tendrían que dedicar Marta si la respuesta fuera negativa?', alternativas: { A: 'A trabajar en la universidad.', B: 'A trabajar en la panadería de sus tíos.', C: 'A estudiar astronomía en otro lado.', D: 'A buscar empleo en la ciudad.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto!', feedback_error: 'El final del texto explica qué pasaría si fuera rechazada.' },
             { id: 1073, enunciado: '¿Cuál es el sueño de Marta?', alternativas: { A: 'Estudiar astronomía.', B: 'Ser dueña de la panadería.', C: 'Recibir muchas cartas.', D: 'Viajar lejos de sus tíos.' }, respuesta_correcta: 'A', feedback_acierto: '¡Excelente, rastreaste la motivación final!', feedback_error: 'Lee las últimas tres palabras del fragmento.' }
           ]
         }
@@ -279,8 +279,8 @@ export const CAPITULOS: Capitulo[] = [
               {
                 pairs: [
                   { id: 13, word: 'Inerte', synonym: 'Inmóvil', hint: 'Falto de vida o movilidad.' },
-                  { id: 14, word: 'Perspicaz', synonym: 'Agudo', hint: 'Que percibe detalles que a otros se les escapan.' },
-                  { id: 15, word: 'Sagaz', synonym: 'Astuto', hint: 'Astuto y prudente, que prevé y previene las cosas.' }
+                  { id: 14, word: 'Perspicaz', synonym: 'Astuto', hint: 'Que percibe detalles que a otros se les escapan.' },
+                  { id: 15, word: 'Sagaz', synonym: 'Inteligente', hint: 'Astuto y prudente, que prevé y previene las cosas.' }
                 ]
               },
               {
@@ -334,7 +334,7 @@ export const CAPITULOS: Capitulo[] = [
           preguntas: [
             { id: 108, enunciado: 'Según el texto, ¿qué causa el derretimiento del permafrost en el Ártico?', alternativas: { A: 'La liberación de enormes cantidades de metano.', B: 'La debilidad de las infraestructuras locales.', C: 'El ciclo de retroalimentación climática.', D: 'El aumento acelerado de las temperaturas.' }, respuesta_correcta: 'D', feedback_acierto: '¡Exacto! El texto dice "...causado por el aumento acelerado de las temperaturas...".', feedback_error: '¡Cuidado! Te están pidiendo la CAUSA del derretimiento, no la consecuencia.' },
             { id: 1081, enunciado: '¿A qué infraestructuras afecta inicialmente el derretimiento?', alternativas: { A: 'Infraestructuras globales.', B: 'Infraestructuras locales.', C: 'Infraestructuras de transporte.', D: 'Redes eléctricas.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! Encontraste el dato.', feedback_error: 'Revisa la primera línea del texto.' },
-            { id: 1082, enunciado: '¿Qué gas es liberado debido a este fenómeno?', alternativas: { A: 'Dióxido de carbono.', B: 'Oxígeno puro.', C: 'Metano.', D: 'Nitrógeno.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente! El texto indica que el metano es el gas liberado por este fenómeno.', feedback_error: 'Busca el nombre del gas liberado en la segunda oración.' },
+            { id: 1082, enunciado: '¿Qué gas es liberado debido a este fenómeno?', alternativas: { A: 'Dióxido de carbono.', B: 'Oxígeno puro.', C: 'Metano.', D: 'Nitrógeno.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente!', feedback_error: 'Busca el nombre del gas liberado en la segunda oración.' },
             { id: 1083, enunciado: '¿Cómo es el metano comparado con el dióxido de carbono?', alternativas: { A: 'Menos potente.', B: 'Igual de potente.', C: 'Inofensivo.', D: 'Mucho más potente.' }, respuesta_correcta: 'D', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'Lee cómo se describe el gas de efecto invernadero.' }
           ]
         }
@@ -352,8 +352,8 @@ export const CAPITULOS: Capitulo[] = [
           preguntas: [
             { id: 109, enunciado: 'Según la narración, ¿qué fue lo primero que hizo el viajero tras desempacar su libreta de apuntes?', alternativas: { A: 'Se detuvo a tomar aire.', B: 'Esbozó un rápido mapa del valle.', C: 'Tomó un sorbo de agua de su cantimplora.', D: 'Emprendió el descenso hacia el pueblo.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! Encontraste el orden exacto de los eventos.', feedback_error: 'Lee con atención la tercera oración. Fíjate qué acción ocurre inmediatamente después de sacar la libreta.' },
             { id: 1091, enunciado: '¿Qué dejaba atrás el viajero al llegar a la cima?', alternativas: { A: 'El pueblo y la cantimplora.', B: 'El valle y su libreta.', C: 'El espeso bosque de robles y el sonido del río.', D: 'La montaña nevada.' }, respuesta_correcta: 'C', feedback_acierto: '¡Excelente rastreo de información!', feedback_error: 'Lee la segunda oración del texto.' },
-            { id: 1092, enunciado: '¿Qué bebió el viajero antes de descender?', alternativas: { A: 'Jugo de frutas.', B: 'Café frío.', C: 'Agua de su cantimplora.', D: 'Agua del río caudaloso.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien! El viajero bebió agua de su cantimplora antes de descender.', feedback_error: 'Revisa qué tomó en la última parte del texto.' },
-            { id: 1093, enunciado: '¿Hacia dónde se dirigía al final del relato?', alternativas: { A: 'Hacia el bosque de robles.', B: 'Hacia la cima de la colina.', C: 'Hacia el pueblo.', D: 'Hacia el río caudaloso.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! La última oración del relato indica que se dirigía hacia el pueblo.', feedback_error: 'La última oración indica su próximo destino.' }
+            { id: 1092, enunciado: '¿Qué bebió el viajero antes de descender?', alternativas: { A: 'Jugo de frutas.', B: 'Café frío.', C: 'Agua de su cantimplora.', D: 'Agua del río caudaloso.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien!', feedback_error: 'Revisa qué tomó en la última parte del texto.' },
+            { id: 1093, enunciado: '¿Hacia dónde se dirigía al final del relato?', alternativas: { A: 'Hacia el bosque de robles.', B: 'Hacia la cima de la colina.', C: 'Hacia el pueblo.', D: 'Hacia el río caudaloso.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto!', feedback_error: 'La última oración indica su próximo destino.' }
           ]
         }
       },
@@ -438,9 +438,9 @@ export const CAPITULOS: Capitulo[] = [
                 id: 9,
                 textBefore: 'Redujeron los costos de producción y aumentaron las ventas. ',
                 textAfter: ', la empresa alcanzó cifras récord de ganancias.',
-                options: ['Como resultado', 'Mientras tanto', 'Aunque', 'Debido a'],
-                correctOption: 'Como resultado',
-                hint: 'Las ganancias récord son el RESULTADO de las acciones anteriores.'
+                options: ['En conclusión', 'Mientras tanto', 'Aunque', 'Debido a'],
+                correctOption: 'En conclusión',
+                hint: 'Las ganancias récord son el RESULTADO o CIERRE lógico de las acciones anteriores.'
               },
               {
                 id: 10,
@@ -486,7 +486,7 @@ export const CAPITULOS: Capitulo[] = [
           preguntas: [
             { id: 110, enunciado: '¿Qué opción expresa la misma idea del texto de manera correcta?', alternativas: { A: 'Las enfermedades cardiovasculares suelen aparecer por diversas causas en los adultos, entre ellas el ejercicio.', B: 'La falta de actividad física aumenta considerablemente la probabilidad de sufrir patologías del corazón en los adultos.', C: 'Solo las personas sedentarias desarrollarán problemas cardiovasculares en el futuro.', D: 'El sedentarismo previene las enfermedades crónicas en la etapa de adultez.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto! Has identificado la paráfrasis correcta. "Falta de actividad física" equivale a "sedentarismo".', feedback_error: 'Busca la opción que mantenga el mismo significado sin exagerar ni cambiar la afirmación. La opción C dice "Solo las personas" (es una exageración).' },
             { id: 1101, enunciado: 'Según el fragmento, ¿en qué etapa de la vida hay riesgo de desarrollar la enfermedad?', alternativas: { A: 'En la infancia.', B: 'En la juventud.', C: 'En la edad adulta.', D: 'En la vejez.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'El texto especifica en la última parte a qué etapa corresponde.' },
-            { id: 1102, enunciado: '¿Qué es el sedentarismo según el contexto de la información entregada?', alternativas: { A: 'Un factor protector.', B: 'Una cura cardiovascular.', C: 'Un riesgo nulo.', D: 'Un factor de riesgo principal.' }, respuesta_correcta: 'D', feedback_acierto: '¡Correcto! El texto indica claramente que el sedentarismo representa un factor de riesgo principal.', feedback_error: 'El texto indica claramente lo que el sedentarismo representa.' },
+            { id: 1102, enunciado: '¿Qué es el sedentarismo según el contexto de la información entregada?', alternativas: { A: 'Un factor protector.', B: 'Una cura cardiovascular.', C: 'Un riesgo nulo.', D: 'Un factor de riesgo principal.' }, respuesta_correcta: 'D', feedback_acierto: '¡Correcto!', feedback_error: 'El texto indica claramente lo que el sedentarismo representa.' },
             { id: 1103, enunciado: '¿Qué término podría ser un buen sinónimo para "enfermedades cardiovasculares"?', alternativas: { A: 'Patologías pulmonares.', B: 'Afecciones del corazón y vasos sanguíneos.', C: 'Problemas estomacales.', D: 'Trastornos neurológicos.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente conexión de vocabulario!', feedback_error: 'Cardiovascular está relacionado con el corazón.' }
           ]
         }
@@ -504,7 +504,7 @@ export const CAPITULOS: Capitulo[] = [
           preguntas: [
             { id: 111, enunciado: '¿Qué opción expresa de manera equivalente la reacción de Juan?', alternativas: { A: 'Juan se sentó tranquilamente en la silla tras oír lo que le decían.', B: 'La noticia provocó en Juan un ataque de furia incontrolable.', C: 'Juan perdió el color de su rostro y se desplomó en el asiento debido al impacto de la noticia.', D: 'Juan decidió arrodillarse frente a la vieja silla de madera.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! Es una excelente reformulación de lo que le sucede físicamente por la sorpresa.', feedback_error: 'Compara la oración original con las alternativas. Palidecer es perder color, ceder las rodillas es desplomarse.' },
             { id: 1111, enunciado: '¿Qué objeto del mobiliario se describe en el texto?', alternativas: { A: 'Una mesa moderna.', B: 'Un viejo sofá.', C: 'Una vieja silla de madera.', D: 'Un taburete de plástico.' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien! El adjetivo "vieja" y "de madera" lo confirman.', feedback_error: 'Busca cómo se describe la silla.' },
-            { id: 1112, enunciado: '¿Qué le ocurrió al rostro de Juan al escuchar la noticia?', alternativas: { A: 'Se sonrojó levemente.', B: 'Palideció súbitamente.', C: 'Se llenó de lágrimas.', D: 'Mostró una gran sonrisa.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto! El texto señala que el rostro de Juan palideció súbitamente al escuchar la noticia.', feedback_error: 'El texto señala claramente el verbo que indica lo que le pasa a su rostro.' },
+            { id: 1112, enunciado: '¿Qué le ocurrió al rostro de Juan al escuchar la noticia?', alternativas: { A: 'Se sonrojó levemente.', B: 'Palideció súbitamente.', C: 'Se llenó de lágrimas.', D: 'Mostró una gran sonrisa.' }, respuesta_correcta: 'B', feedback_acierto: '¡Perfecto!', feedback_error: 'El texto señala claramente el verbo que indica lo que le pasa a su rostro.' },
             { id: 1113, enunciado: '¿Por qué cayó Juan pesadamente?', alternativas: { A: 'Porque sus rodillas cedieron.', B: 'Porque la silla estaba rota.', C: 'Porque alguien lo empujó.', D: 'Porque resbaló con agua.' }, respuesta_correcta: 'A', feedback_acierto: '¡Exacto! Esa fue la causa de su caída.', feedback_error: 'Revisa la acción que ocurre justo antes de que caiga.' }
           ]
         }
@@ -574,7 +574,7 @@ export const CAPITULOS: Capitulo[] = [
             { id: 112, enunciado: '¿Cuál de las siguientes afirmaciones parafrasea correctamente el texto?', alternativas: { A: 'Los seres vivos usan compuestos orgánicos para crear luz mediante la fotosíntesis.', B: 'A través de la fotosíntesis, ciertos organismos fabrican su propio alimento orgánico usando luz y elementos inorgánicos.', C: 'La fotosíntesis destruye sustancias químicas para liberar energía luminosa en el ambiente.', D: 'Solo los organismos autótrofos pueden vivir sin consumir materia inorgánica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Muy bien! Captaste la esencia del proceso sin enredarte en los términos técnicos.', feedback_error: 'Recuerda: convertir energía luminosa en compuestos orgánicos significa usar luz para fabricar alimento.' },
             { id: 1121, enunciado: '¿Qué tipo de proceso es la fotosíntesis según el texto?', alternativas: { A: 'Un proceso destructivo.', B: 'Un proceso catabólico.', C: 'Un proceso inorgánico.', D: 'Un proceso anabólico.' }, respuesta_correcta: 'D', feedback_acierto: '¡Correcto! Encontraste el término técnico.', feedback_error: 'Busca el adjetivo que acompaña a "proceso" en la primera línea.' },
             { id: 1122, enunciado: '¿Qué tipo de energía se almacena finalmente en este proceso?', alternativas: { A: 'Energía luminosa.', B: 'Energía química.', C: 'Energía solar.', D: 'Energía inorgánica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente! Rastreaste el tipo de energía almacenada.', feedback_error: 'Revisa en qué tipo de energía se convierte la luz.' },
-            { id: 1123, enunciado: 'A partir de qué tipo de sustancias se sintetizan los compuestos orgánicos?', alternativas: { A: 'De sustancias inorgánicas.', B: 'De compuestos orgánicos previos.', C: 'De energía pura.', D: 'De otros organismos.' }, respuesta_correcta: 'A', feedback_acierto: '¡Perfecto! Los compuestos orgánicos se sintetizan a partir de sustancias inorgánicas, según el texto.', feedback_error: 'La última parte de la oración lo menciona directamente.' }
+            { id: 1123, enunciado: 'A partir de qué tipo de sustancias se sintetizan los compuestos orgánicos?', alternativas: { A: 'De sustancias inorgánicas.', B: 'De compuestos orgánicos previos.', C: 'De energía pura.', D: 'De otros organismos.' }, respuesta_correcta: 'A', feedback_acierto: '¡Perfecto!', feedback_error: 'La última parte de la oración lo menciona directamente.' }
           ]
         }
       },
@@ -590,9 +590,9 @@ export const CAPITULOS: Capitulo[] = [
           contexto_base: 'La noticia cayó sobre la pequeña aldea como un balde de agua helada en pleno invierno, paralizando el habitual bullicio del mercado matutino.',
           preguntas: [
             { id: 113, enunciado: '¿Qué significa la expresión figurada utilizada en el fragmento?', alternativas: { A: 'Que empezó a llover fuertemente y el mercado tuvo que cerrar.', B: 'Que la noticia fue tan impactante y sorpresiva que dejó a todos los habitantes atónitos y en silencio.', C: 'Que los comerciantes reaccionaron con violencia ante el evento inesperado.', D: 'Que alguien derramó agua fría en el centro de la plaza del mercado.' }, respuesta_correcta: 'B', feedback_acierto: '¡Excelente interpretación! "Balde de agua fría" se refiere a una sorpresa desagradable que paraliza.', feedback_error: 'Es una expresión figurada. No tomarlo de manera literal.' },
-            { id: 1131, enunciado: '¿Sobre qué lugar cayó la noticia?', alternativas: { A: 'Sobre un balde de agua.', B: 'Sobre una gran ciudad.', C: 'Sobre la pequeña aldea.', D: 'Sobre el mercado invernal.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto! El texto menciona que la noticia cayó sobre la pequeña aldea.', feedback_error: 'El texto menciona el lugar exacto en las primeras palabras.' },
+            { id: 1131, enunciado: '¿Sobre qué lugar cayó la noticia?', alternativas: { A: 'Sobre un balde de agua.', B: 'Sobre una gran ciudad.', C: 'Sobre la pequeña aldea.', D: 'Sobre el mercado invernal.' }, respuesta_correcta: 'C', feedback_acierto: '¡Correcto!', feedback_error: 'El texto menciona el lugar exacto en las primeras palabras.' },
             { id: 1132, enunciado: '¿Qué actividad fue paralizada por este evento?', alternativas: { A: 'La lluvia de invierno.', B: 'El tráfico en la ciudad.', C: 'El habitual bullicio del mercado matutino.', D: 'El trabajo de los aldeanos.' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien rastreado!', feedback_error: 'Revisa la última parte de la oración.' },
-            { id: 1133, enunciado: '¿En qué época del año se ambienta la comparación?', alternativas: { A: 'En verano.', B: 'En otoño.', C: 'En invierno.', D: 'En primavera.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! La comparación está ambientada en invierno, la estación mencionada en la metáfora.', feedback_error: 'Busca la estación del año mencionada en la metáfora.' }
+            { id: 1133, enunciado: '¿En qué época del año se ambienta la comparación?', alternativas: { A: 'En verano.', B: 'En otoño.', C: 'En invierno.', D: 'En primavera.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto!', feedback_error: 'Busca la estación del año mencionada en la metáfora.' }
           ]
         }
       },
@@ -659,7 +659,7 @@ export const CAPITULOS: Capitulo[] = [
           contexto_base: 'El uso indiscriminado de antibióticos tanto en la medicina humana como en la ganadería ha acelerado la aparición de bacterias multirresistentes. Estas "superbacterias" suponen una grave amenaza para la salud pública mundial, ya que infecciones comunes que antes se curaban fácilmente, ahora requieren tratamientos más largos, costosos y con mayor riesgo de mortalidad.',
           preguntas: [
             { id: 114, enunciado: '¿Cuál de las siguientes opciones resume adecuadamente el fragmento?', alternativas: { A: 'La ganadería es la principal culpable de la aparición de superbacterias que matan a millones de personas anualmente.', B: 'Los antibióticos modernos son ineficaces, por lo que las enfermedades comunes ya no tienen cura.', C: 'El abuso de los antibióticos ha generado bacterias resistentes, convirtiendo enfermedades simples en peligros sanitarios difíciles de tratar.', D: 'Las infecciones comunes pueden tratarse fácilmente si se disminuye el uso de antibióticos en animales.' }, respuesta_correcta: 'C', feedback_acierto: '¡Perfecto! Captura la causa (abuso) y la consecuencia (bacterias resistentes y dificultad de trato).', feedback_error: 'La opción A exagera. La opción D no resume el problema real, es una suposición.' },
-            { id: 1141, enunciado: 'Según el texto, ¿en qué sectores se usan los antibióticos de forma indiscriminada?', alternativas: { A: 'En la agricultura y la minería.', B: 'En la medicina humana y en la ganadería.', C: 'En los hospitales exclusivamente.', D: 'En la industria farmacéutica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! El texto señala que se usan de forma indiscriminada en la medicina humana y en la ganadería.', feedback_error: 'Lee la primera oración del párrafo.' },
+            { id: 1141, enunciado: 'Según el texto, ¿en qué sectores se usan los antibióticos de forma indiscriminada?', alternativas: { A: 'En la agricultura y la minería.', B: 'En la medicina humana y en la ganadería.', C: 'En los hospitales exclusivamente.', D: 'En la industria farmacéutica.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto!', feedback_error: 'Lee la primera oración del párrafo.' },
             { id: 1142, enunciado: '¿Cómo describe el texto a las "superbacterias"?', alternativas: { A: 'Como una leve molestia.', B: 'Como bacterias beneficiosas para la ganadería.', C: 'Como una grave amenaza para la salud pública mundial.', D: 'Como infecciones comunes que se curan fácilmente.' }, respuesta_correcta: 'C', feedback_acierto: '¡Muy bien rastreado!', feedback_error: 'Busca el término "superbacterias" y lee la descripción que le sigue.' },
             { id: 1143, enunciado: '¿Qué consecuencia tienen ahora las infecciones comunes?', alternativas: { A: 'Se curan con mayor facilidad.', B: 'Desaparecen por sí solas.', C: 'Requieren tratamientos más rápidos y baratos.', D: 'Requieren tratamientos más largos, costosos y con mayor riesgo.' }, respuesta_correcta: 'D', feedback_acierto: '¡Excelente comprensión!', feedback_error: 'Revisa la última parte del texto donde se habla de las infecciones comunes hoy en día.' }
           ]
@@ -669,16 +669,16 @@ export const CAPITULOS: Capitulo[] = [
       {
         id: 'sec-1-21-nar', capituloId: 'cap-1', materiaId: 'comp-lectora',
         level: 15, order: 22, tags: ['subcapitulo:Paráfrasis'],
-        title: 'Sentimientos y Reacciones de Personajes',
-        introduccion: 'Identifica lo que siente o hace un personaje a partir de lo explícito en el texto, aunque esté formulado con otras palabras (paráfrasis).',
-        datos_claves: ['Busca las palabras y frases que describen directamente lo que siente o hace el personaje, aunque estén dichas con otras palabras.'],
+        title: 'Motivaciones de Personajes',
+        introduccion: 'Resume las motivaciones profundas o intenciones de los personajes en un texto narrativo.',
+        datos_claves: ['Fíjate en las acciones que delatan lo que el personaje realmente busca (lo implícito)'],
         test: {
           id: 'test-1-21-nar', seccionId: 'sec-1-21-nar',
           contexto_base: 'A pesar de sus constantes quejas sobre el ruido y el tráfico, don Ernesto se negaba rotundamente a vender su casona en el centro para mudarse al campo. En el fondo, el solo pensamiento de despertar sin el bullicio de los vendedores callejeros y sin el eco de los tranvías le provocaba un vacío insoportable en el pecho.',
           preguntas: [
-            { id: 115, enunciado: '¿Cuál de las siguientes es la mejor paráfrasis de "el solo pensamiento de despertar sin el bullicio... le provocaba un vacío insoportable en el pecho"?', alternativas: { A: 'Sentía una profunda sensación de vacío ante la sola idea de perder los sonidos de la ciudad.', B: 'Se sentía aliviado de dejar atrás el ruido constante.', C: 'Estaba emocionado por la tranquilidad que encontraría en el campo.', D: 'No le importaba en absoluto el bullicio de la ciudad.' }, respuesta_correcta: 'A', feedback_acierto: '¡Correcto! "Vacío insoportable en el pecho" al pensar en perder el bullicio es exactamente esa sensación de pérdida.', feedback_error: 'Lee la segunda oración del texto. El silencio le provocaba "un vacío insoportable".' },
+            { id: 115, enunciado: '¿Cuál es la verdadera motivación de don Ernesto para no mudarse?', alternativas: { A: 'En realidad, siente un profundo apego emocional al ambiente vibrante y ruidoso de la ciudad.', B: 'Quiere vender su casona a un precio más alto en el futuro.', C: 'Siente desprecio por la vida en el campo y la tranquilidad de la naturaleza.', D: 'Su familia le prohíbe abandonar el centro histórico.' }, respuesta_correcta: 'A', feedback_acierto: '¡Muy bien interpretado! Sus quejas son superficiales, pues realmente necesita ese ruido para no sentirse vacío.', feedback_error: 'Lee la segunda oración del texto. El silencio le provocaba "un vacío insoportable".' },
             { id: 1151, enunciado: '¿De qué se quejaba constantemente don Ernesto?', alternativas: { A: 'Del clima de la ciudad.', B: 'De su vieja casona.', C: 'Del ruido y el tráfico.', D: 'Del campo y la naturaleza.' }, respuesta_correcta: 'C', feedback_acierto: '¡Bien! Eso era lo que decía superficialmente.', feedback_error: 'Revisa la primera línea de la narración.' },
-            { id: 1152, enunciado: '¿Hacia dónde se negaba a mudarse?', alternativas: { A: 'Al extranjero.', B: 'Al campo.', C: 'A otra ciudad más ruidosa.', D: 'A un departamento en el centro.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto! Se negaba a mudarse al campo, según la primera oración del texto.', feedback_error: 'Busca el destino de mudanza mencionado en la primera oración.' },
+            { id: 1152, enunciado: '¿Hacia dónde se negaba a mudarse?', alternativas: { A: 'Al extranjero.', B: 'Al campo.', C: 'A otra ciudad más ruidosa.', D: 'A un departamento en el centro.' }, respuesta_correcta: 'B', feedback_acierto: '¡Correcto!', feedback_error: 'Busca el destino de mudanza mencionado en la primera oración.' },
             { id: 1153, enunciado: '¿Qué le provocaba el pensamiento de despertar sin el bullicio?', alternativas: { A: 'Una gran alegría.', B: 'Mucha paz mental.', C: 'Un vacío insoportable en el pecho.', D: 'Ganas de vender la casona.' }, respuesta_correcta: 'C', feedback_acierto: '¡Exacto! Esa es su motivación oculta.', feedback_error: 'Revisa el final de la segunda oración.' }
           ]
         }
@@ -1153,8 +1153,8 @@ export const CAPITULOS: Capitulo[] = [
             D: 'El cuarto párrafo presenta una causa del fenómeno descrito en el tercero.'
           },
           respuesta_correcta: 'B',
-          feedback_acierto: '¡Correcto! El cuarto párrafo retoma \'estos movimientos\' mencionados en el tercero y describe su legado a largo plazo: sentaron las bases de los derechos laborales modernos, una consecuencia de su formación.',
-          feedback_error: 'Observa que el cuarto párrafo retoma \'estos movimientos\' (mencionados en el tercero) y explica qué provocaron a largo plazo. Esa es la relación causa-efecto entre ambos párrafos.'
+          feedback_acierto: '¡Correcto! El conector \'Como consecuencia\' establece explícitamente una relación causa-efecto: las malas condiciones (tercero) llevaron al surgimiento de movimientos obreros (cuarto).',
+          feedback_error: 'Observa el conector al inicio del cuarto párrafo: \'Como consecuencia\'. Ese conector define la relación lógica entre ambos párrafos.'
         },
         {
           id: 210,
@@ -1285,7 +1285,7 @@ export const CAPITULOS: Capitulo[] = [
       contexto_base: 'TEXTO 1\nEl transporte público en las grandes ciudades se ha vuelto insostenible debido al aumento desmesurado del parque automotriz y las emisiones de gases. Las calles están congestionadas y la calidad del aire empeora cada día. Como respuesta a esta crisis, varios municipios han comenzado a implementar redes exclusivas para bicicletas y subsidios para la compra de vehículos eléctricos, buscando no solo descongestionar las vías, sino también reducir drásticamente la huella de carbono urbana.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 2\nDurante siglos, la sal fue uno de los productos más valiosos del mundo, llegando a usarse como moneda de cambio (de ahí la palabra "salario"). Su valor radicaba en su capacidad única para conservar los alimentos antes de la invención de la refrigeración, previniendo la proliferación de bacterias en carnes y pescados. Sin embargo, con la llegada de la tecnología moderna, la sal perdió su estatus de recurso estratégico y se convirtió en un condimento de mesa común y económico.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 3\nLa arquitectura brutalista, surgida a mediados del siglo XX, se caracteriza por el uso de hormigón crudo, formas geométricas masivas y una estética utilitaria. Aunque sus creadores la concibieron como una expresión de honestidad estructural y democratización del espacio, el público general a menudo percibe estos edificios como fríos, opresivos e inhumanos. Hoy en día, muchos de estos gigantes de concreto enfrentan la demolición, atrapados entre el desprecio popular y la defensa apasionada de historiadores del arte.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 4\nEl sueño es un proceso biológico fundamental, tan vital como respirar o comer. Durante las fases de sueño profundo, el cerebro realiza un verdadero "lavado", eliminando toxinas acumuladas durante la vigilia a través del sistema glinfático. Investigadores han observado que la privación crónica de sueño interrumpe este proceso. **Por ejemplo**, estudios recientes vinculan la falta sostenida de sueño profundo con una mayor acumulación de proteínas asociadas a enfermedades neurodegenerativas como el Alzheimer.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 5\nLa migración de las mariposas monarca es uno de los fenómenos más impresionantes de la naturaleza. Cada otoño, millones de estos insectos viajan miles de kilómetros desde Canadá y Estados Unidos hasta los bosques de oyamel en México. **Este viaje no es realizado por un solo individuo, sino que toma varias generaciones completarlo.** El mecanismo de navegación que utilizan sigue siendo en gran parte un misterio, aunque se cree que se orientan por la posición del sol y el campo magnético terrestre.',
       preguntas: [
         {
-          id: 25001,
+          id: 2002,
           texto_index: 0,
           enunciado: '¿Cuál es la conclusión principal sobre las medidas adoptadas por los municipios (TEXTO 1)?',
           tipo_alternativas: 'texto',
@@ -1300,7 +1300,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Identifica para qué se están implementando las redes y subsidios: buscan solucionar tanto el tráfico como las emisiones.'
         },
         {
-          id: 25002,
+          id: 2003,
           texto_index: 1,
           enunciado: '¿Cuál de las siguientes opciones sintetiza mejor el contenido del TEXTO 2?',
           tipo_alternativas: 'texto',
@@ -1315,7 +1315,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Busca la opción que abarque el antes (conservante valioso) y el después (tecnología redujo su estatus).'
         },
         {
-          id: 25003,
+          id: 2004,
           texto_index: 2,
           enunciado: 'Se puede inferir globalmente del TEXTO 3 que la arquitectura brutalista:',
           tipo_alternativas: 'texto',
@@ -1330,7 +1330,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Lee con atención el contraste entre cómo la concibieron sus creadores y cómo la percibe el público general.'
         },
         {
-          id: 25004,
+          id: 2005,
           texto_index: 3,
           enunciado: 'En el TEXTO 4, ¿qué función cumple el conector "**Por ejemplo**" en relación con el resto del párrafo?',
           tipo_alternativas: 'texto',
@@ -1345,7 +1345,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Un ejemplo normalmente sirve para ilustrar, clarificar o apoyar una afirmación que se acaba de hacer.'
         },
         {
-          id: 25005,
+          id: 2006,
           texto_index: 4,
           enunciado: 'En el TEXTO 5, ¿qué nivel de importancia tiene la oración en negrita dentro de la jerarquía de las ideas del texto?',
           tipo_alternativas: 'texto',
@@ -1688,7 +1688,7 @@ export const CAPITULOS: Capitulo[] = [
           pairs: [
             { id: 13, left: 'Llover sobre mojado', right: 'Repetirse una desgracia', hint: 'Un problema que ocurre sobre otro ya existente.' },
             { id: 14, left: 'Dar luz verde', right: 'Autorizar', hint: 'Dar permiso para iniciar algo.' },
-            { id: 15, left: 'Estar entre la espada y la pared', right: 'Estar en un dilema', hint: 'Tener que decidir entre dos opciones difíciles.' },
+            { id: 15, left: 'Estar contra la espada y la pared', right: 'Estar en un dilema', hint: 'Tener que decidir entre dos opciones difíciles.' },
             { id: 16, left: 'Dejar mucho que desear', right: 'Ser deficiente', hint: 'No cumplir con las expectativas.' }
           ]
         },
@@ -1807,7 +1807,7 @@ export const CAPITULOS: Capitulo[] = [
         },
         {
           pairs: [
-            { id: 13, word: 'Subyacer', synonym: 'Fundamentar', hint: 'Estar en la base de algo, servirle de sustento oculto.' },
+            { id: 13, word: 'Subyacer', synonym: 'Ocultarse', hint: 'Estar debajo de algo o hallarse oculto tras otra cosa.' },
             { id: 14, word: 'Erradicar', synonym: 'Eliminar', hint: 'Arrancar de raíz o eliminar completamente.' },
             { id: 15, word: 'Sustancial', synonym: 'Fundamental', hint: 'De gran importancia o valor.' },
           ]
@@ -1822,7 +1822,7 @@ export const CAPITULOS: Capitulo[] = [
         {
           pairs: [
             { id: 19, word: 'Mitigar', synonym: 'Atenuar', hint: 'Suavizar o disminuir la dureza de algo.' },
-            { id: 20, word: 'Discrepar', synonym: 'Disentir', hint: 'Estar en desacuerdo con otra persona.' },
+            { id: 20, word: 'Discrepar', synonym: 'Dissentir', hint: 'Estar en desacuerdo con otra persona.' },
             { id: 21, word: 'Auge', synonym: 'Apogeo', hint: 'El momento de mayor intensidad o esplendor.' },
           ]
         },
@@ -1830,7 +1830,7 @@ export const CAPITULOS: Capitulo[] = [
           pairs: [
             { id: 22, word: 'Plausible', synonym: 'Aceptable', hint: 'Que admite aprobación o justificación.' },
             { id: 23, word: 'Obsoleto', synonym: 'Anticuado', hint: 'Que ha dejado de usarse o está pasado de moda.' },
-            { id: 24, word: 'Connotación', synonym: 'Sentido implícito', hint: 'Significado añadido o sugerido de una palabra.' },
+            { id: 24, word: 'Connotación', synonym: 'Sentido', hint: 'Significado añadido o sugerido de una palabra.' },
           ]
         },
         {
@@ -1844,7 +1844,7 @@ export const CAPITULOS: Capitulo[] = [
           pairs: [
             { id: 28, word: 'Ineludible', synonym: 'Inevitable', hint: 'Que no se puede evitar o rehuir.' },
             { id: 29, word: 'Arbitrario', synonym: 'Caprichoso', hint: 'Sujeto al capricho antes que a la razón.' },
-            { id: 30, word: 'Dogma', synonym: 'Precepto', hint: 'Principio innegable de una ciencia o religión.' },
+            { id: 30, word: 'Dogma', synonym: 'Creencia', hint: 'Principio innegable de una ciencia o religión.' },
           ]
         }
       ]
@@ -2100,7 +2100,7 @@ export const CAPITULOS: Capitulo[] = [
       items: [
         { id: 1, text: 'El calentamiento global requiere acciones internacionales inmediatas.', category: 'tesis', hint: 'Es la postura principal del texto.' },
         { id: 2, text: 'La transición a energías renovables es vital para reducir emisiones.', category: 'tesis', hint: 'Es un pilar central del argumento.' },
-        { id: 3, text: 'Los océanos están absorbiendo cantidades críticas de carbono.', category: 'detalle', hint: 'Es un dato específico citado como evidencia del problema, no la idea central.' },
+        { id: 3, text: 'Los océanos están absorbiendo cantidades críticas de carbono.', category: 'tesis', hint: 'Es un problema global abordado en la tesis.' },
         { id: 4, text: 'Es fundamental cambiar nuestros patrones de consumo diarios.', category: 'tesis', hint: 'Es un llamado general a la acción.' },
         { id: 5, text: 'Groenlandia perdió 279 mil millones de toneladas de hielo en 2019.', category: 'detalle', hint: 'Dato estadístico específico.' },
         { id: 6, text: 'Ciertas especies de corales en Australia sufren blanqueamiento.', category: 'detalle', hint: 'Es un caso puntual de las consecuencias.' },
@@ -2533,7 +2533,6 @@ export const CAPITULOS: Capitulo[] = [
       'subcapitulo:Práctica Mixta'
     ],
     title: '🧩 Práctica: Jerarquía y Funciones',
-    isPractice: true,
     introduccion: '¡Pon a prueba tu capacidad de jerarquizar información y reconocer funciones retóricas en un mismo texto mixto!',
     datos_claves: [
       'Aplica todo lo aprendido: diferencia lo principal de lo secundario.',
@@ -2799,7 +2798,7 @@ export const CAPITULOS: Capitulo[] = [
       contexto_base: 'TEXTO 1\nEs francamente \'maravilloso\' ver cómo las autoridades han pavimentado la misma calle tres veces este año, mientras el hospital sigue sin insumos básicos. ¡Qué gran gestión de nuestros recursos!\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 2\nLa deforestación en la Amazonía ha alcanzado un punto de no retorno. Si no implementamos medidas drásticas e inmediatas para frenar la tala ilegal, las futuras generaciones no conocerán los pulmones del planeta. Estamos caminando ciegamente hacia el abismo ecológico.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 3\nTras analizar las muestras bajo el microscopio electrónico durante 48 horas continuas, se observó que la tasa de mitosis celular disminuyó en un 14,2% en presencia del compuesto X-23. Estos resultados sugieren una correlación preliminar entre el compuesto y la inhibición de la división celular.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 4\nEs verdaderamente un privilegio haber crecido en esta pequeña ciudad. Cada rincón empedrado, cada panadería de la esquina que aún hornea a primera hora, me recuerda una época donde la vida transcurría sin la prisa asfixiante de hoy. Cómo extraño aquellas tardes doradas.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 5\nA pesar de los múltiples contratiempos que hemos enfrentado este semestre, estoy completamente seguro de que este equipo tiene el talento, la resiliencia y la creatividad necesarias para sacar este proyecto adelante y triunfar como nunca antes. ¡El éxito es inminente!\n',
       preguntas: [
         {
-          id: 23001,
+          id: 2006,
           texto_index: 0,
           enunciado: '¿Cuál es el tono predominante del emisor en el TEXTO 1?',
           tipo_alternativas: 'texto',
@@ -2814,7 +2813,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Fíjate en las comillas y en el contraste entre pavimentar una calle 3 veces y la falta de insumos médicos. ¿Realmente lo encuentra maravilloso?'
         },
         {
-          id: 23002,
+          id: 2007,
           texto_index: 1,
           enunciado: '¿Cuál es el tono predominante del emisor en el TEXTO 2?',
           tipo_alternativas: 'texto',
@@ -2829,7 +2828,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Observa las expresiones utilizadas: "punto de no retorno", "abismo ecológico". No solo informa, sino que intenta asustar o advertir gravemente al lector.'
         },
         {
-          id: 23003,
+          id: 2008,
           texto_index: 2,
           enunciado: 'A partir de las marcas textuales, el tono del TEXTO 3 puede clasificarse como:',
           tipo_alternativas: 'texto',
@@ -2844,7 +2843,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: '¿Hay alguna palabra en el texto que revele la opinión personal del autor? Al estar ausentes, el tono se limita a constatar hechos de forma neutral.'
         },
         {
-          id: 23004,
+          id: 2009,
           texto_index: 3,
           enunciado: '¿Cuál es el tono predominante del emisor en el TEXTO 4?',
           tipo_alternativas: 'texto',
@@ -2859,7 +2858,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Aunque hay cierta tristeza, no llega a ser depresión. El autor valora un pasado hermoso ("tardes doradas") y lamenta su pérdida, lo que define la melancolía/nostalgia.'
         },
         {
-          id: 23005,
+          id: 2010,
           texto_index: 4,
           enunciado: 'En el TEXTO 5, la actitud del emisor frente al proyecto se caracteriza por ser:',
           tipo_alternativas: 'texto',
@@ -2911,7 +2910,7 @@ export const CAPITULOS: Capitulo[] = [
             pairs: [
               { id: 9, left: '"La temperatura de ebullición del agua es de 100°C a nivel del mar."', right: 'Informativo', hint: 'Transmite datos sin valoración alguna.' },
               { id: 10, left: '"Me duele profundamente ver a mi pueblo en estas condiciones."', right: 'Apesadumbrado', hint: 'Transmite tristeza y pesar sincero.' },
-              { id: 11, left: '"No cabe duda de que este es el mejor invento del siglo."', right: 'Elogioso', hint: 'Alaba algo con entusiasmo, usando un superlativo.' },
+              { id: 11, left: '"No cabe duda de que este es el mejor invento del siglo."', right: 'Apologético', hint: 'Defiende o alaba algo intensamente.' },
               { id: 12, left: '"Por un lado está la teoría A, y por otro, la teoría B."', right: 'Neutral', hint: 'Muestra ambas caras sin inclinarse por ninguna.' }
             ]
           },
@@ -2960,7 +2959,7 @@ export const CAPITULOS: Capitulo[] = [
               { id: 33, left: '"En mis tiempos, la música sí transmitía valores, no como ahora."', right: 'Conservador', hint: 'Privilegia el pasado y critica lo moderno.' },
               { id: 34, left: '"Te suplico que consideres nuestra propuesta, dependemos de ello."', right: 'Desesperado', hint: 'Muestra una urgencia angustiante.' },
               { id: 35, left: '"Aunque hoy llueva y esté oscuro, mañana siempre sale el sol."', right: 'Esperanzador', hint: 'Confía en que lo malo pasará pronto.' },
-              { id: 36, left: '"El ministro que prometió \'honestidad total\' fue arrestado con maletines de efectivo... qué gran ejemplo de transparencia."', right: 'Burlón', hint: 'Muestra una contradicción ridícula para reírse.' }
+              { id: 36, left: '"El ministro que prometió honestidad fue arrestado con maletines de efectivo."', right: 'Burlón', hint: 'Muestra una contradicción ridícula para reírse.' }
             ]
           },
           {
@@ -3186,7 +3185,7 @@ export const CAPITULOS: Capitulo[] = [
       contexto_base: 'TEXTO 1\nComo vecinos del sector histórico, exigimos que se detenga la construcción de la nueva torre habitacional. No solo destruirá la estética del barrio, sino que colapsará las alcantarillas.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 2\nLa adopción de esta nueva política impositiva tendrá un impacto directo en el producto interno bruto. Las simulaciones estocásticas proyectan una reducción del 0,4% en el crecimiento interanual si no se realizan los ajustes correspondientes en el gasto fiscal.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 3\nLlevo más de quince años trabajando en esta sala de urgencias y jamás había visto una saturación tan extrema de las camas UCI. Nos faltan respiradores, insumos básicos y, sobre todo, personal de enfermería de relevo.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 4\nAl evaluar las pinturas encontradas en la cueva, resulta innegable que los pigmentos utilizados provienen de una mezcla de carbón vegetal y ocre rojo, técnica característica de las comunidades nómadas de finales del Paleolítico Superior.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 5\nEs inaceptable que sigan enviándonos a apagar incendios forestales con trajes que ya cumplieron su vida útil hace tres temporadas. No solo arriesgamos nuestras vidas por la comunidad, sino que el Estado nos da la espalda cuando pedimos el equipamiento mínimo.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 6\nLas semillas que hemos sembrado este año no lograron germinar como esperábamos. Las sequías prolongadas y la falta de subsidios agrícolas nos tienen al borde de la quiebra. Si el gobierno no declara emergencia rural, perderemos las tierras de nuestros abuelos.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 7\nEn el análisis microscópico de la muestra de tejido, las células escamosas presentan núcleos agrandados e hipercromáticos. Estos hallazgos histológicos son altamente sugestivos de una displasia severa que requiere confirmación inmediata.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 8\nComo madre, no puedo dormir tranquila sabiendo que la carretera frente al colegio de mis hijos sigue sin semáforos ni señalética. Ya hemos entregado tres cartas al departamento de tránsito y nadie responde. ¿Tienen que ocurrir tragedias para que actúen?\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 9\nTras revisar los estados financieros de la compañía del último semestre, he concluido que debemos declarar la quiebra corporativa. Los pasivos superan con creces los activos líquidos y los acreedores ya han iniciado acciones legales.\n\n--- DIVISION_TEXTOS ---\n\nTEXTO 10\nResulta fascinante observar cómo las abejas obreras se comunican a través de danzas vibratorias para indicar la ubicación exacta de las fuentes de néctar. Llevo meses documentando este patrón de comportamiento en las colmenas silvestres de la reserva.\n',
       preguntas: [
         {
-          id: 24009,
+          id: 2009,
           texto_index: 0,
           enunciado: '¿Desde qué perspectiva habla el emisor en el TEXTO 1?',
           tipo_alternativas: 'texto',
@@ -3201,7 +3200,7 @@ export const CAPITULOS: Capitulo[] = [
           feedback_error: 'Lee la primera frase del texto: "Como vecinos del sector...".'
         },
         {
-          id: 24010,
+          id: 2010,
           texto_index: 1,
           enunciado: 'A partir del vocabulario y contenido del TEXTO 2, la postura del emisor corresponde a la de un:',
           tipo_alternativas: 'texto',
@@ -3896,17 +3895,17 @@ export const CAPITULOS: Capitulo[] = [
         },
         {
           id: 3089,
-          enunciado: 'El emisor dice: "Es intolerable que sigamos permitiendo que las grandes empresas contaminen nuestros ríos sin ninguna consecuencia". La postura predominante es:',
+          enunciado: 'El emisor dice: "Cómo extraño aquellos tiempos donde los niños jugaban en la calle hasta el anochecer". La postura predominante es:',
           tipo_alternativas: 'texto',
           alternativas: {
-            A: 'Nostálgica.',
-            B: 'Indignada.',
+            A: 'Indignada.',
+            B: 'Nostálgica.',
             C: 'Esperanzada.',
-            D: 'Indiferente.'
+            D: 'Agresiva.'
           },
           respuesta_correcta: 'B',
-          feedback_acierto: '¡Correcto! Palabras como "intolerable" y el reclamo por la falta de consecuencias expresan un fuerte rechazo.',
-          feedback_error: 'La palabra "intolerable" y el reclamo por la impunidad son la marca textual de la indignación.'
+          feedback_acierto: '¡Correcto! Siente nostalgia por un recuerdo idealizado del pasado.',
+          feedback_error: 'La expresión "extraño aquellos tiempos" es la definición textual de nostalgia.'
         },
         {
           id: 30810,
@@ -4057,9 +4056,9 @@ export const CAPITULOS: Capitulo[] = [
     practiceData: {
       items: [
         {
-          statement: 'Tesis: "Los autos eléctricos son mejores para el medio ambiente." Argumento: "Tienen un diseño más futurista que los autos a combustión."',
+          statement: 'Tesis: "Los autos eléctricos son mejores para el medio ambiente." Argumento: "No hacen ruido al arrancar."',
           isTrue: false,
-          feedback: 'Falso. El diseño estético del vehículo no tiene relación alguna con su impacto medioambiental (como reducir emisiones de CO2).'
+          feedback: 'Falso. El ruido es un tema de confort urbano, no es un argumento directamente medioambiental (como reducir emisiones de CO2).'
         },
         {
           statement: 'Tesis: "Fumar causa daño pulmonar crónico." Argumento: "El alquitrán se acumula en los alveolos y destruye el tejido respiratorio."',
@@ -4196,7 +4195,7 @@ export const CAPITULOS: Capitulo[] = [
       title: 'Ordena el Argumento',
       description: 'Arrastra cada pieza del argumento al orden correcto, desde la idea general hasta la evidencia específica.',
       items: [
-        { id: 1, text: 'Tesis: "Las ciudades deberían prohibir los vehículos de combustión interna en sus centros históricos."' },
+        { id: 1, text: 'Tesis: "Las ciudades deberían prohibir los vehículos de combustión frent en sus centros históricos."' },
         { id: 2, text: 'Base: Porque los motores a gasolina emiten gases que deterioran la calidad del aire urbano.' },
         { id: 3, text: 'Garantía: Se asume que reducir la contaminación del aire mejora la salud pública y la calidad de vida.' },
         { id: 4, text: 'Respaldo: La OMS certifica que el material particulado PM2.5 está vinculado a 7 millones de muertes anuales.' }
@@ -4252,7 +4251,7 @@ export const CAPITULOS: Capitulo[] = [
         },
         {
           id: 31503,
-          enunciado: 'Si dejamos que los empleados lleguen cinco minutos tarde, pronto todos llegarán cuando quieran y la empresa colapsará.',
+          enunciado: 'Si permitimos el aborto, luego se permitirá el infanticidio y después el genocidio.',
           tipo_alternativas: 'texto',
           alternativas: { A: 'Falacia', B: 'Válido' },
           respuesta_correcta: 'A',
@@ -4658,7 +4657,7 @@ export const CAPITULOS: Capitulo[] = [
           pairs: [
             {
               id: 13,
-              left: 'Comillas irónicas ("")',
+              left: 'Comillas iróncigas ("")',
               right: 'Expresar distancia o escepticismo sobre un término',
               hint: 'El autor duda de la veracidad de esa palabra.'
             },
@@ -5025,8 +5024,8 @@ export const CAPITULOS: Capitulo[] = [
         },
         {
           statement: 'Gráfico: "El desempleo bajó del 10% al 8%". Conclusión: "La cantidad de desempleados disminuyó en ese periodo".',
-          isTrue: false,
-          feedback: 'Falso. La tasa de desempleo es desempleados ÷ fuerza laboral. Si la fuerza laboral también cambió (por ejemplo, personas que dejaron de buscar trabajo), el número real de desempleados podría no haber bajado aunque la tasa sí.',
+          isTrue: true,
+          feedback: 'Verdadero. La tasa porcentual se traduce en una reducción real del desempleo.',
           svgContent: `
             <svg viewBox="0 0 200 120" style="width:100%; max-width:250px; background:#fff; border-radius:8px; padding:10px; margin: 0 auto; display: block; border: 1px solid #e2e8f0;">
               <text x="100" y="15" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="bold" fill="#333">Tasa de Desempleo</text>
@@ -5238,6 +5237,7 @@ export const CAPITULOS: Capitulo[] = [
     title: 'Test: Evaluar Recursos',
     introduccion: 'Evalúa funciones de recursos y forma en la PAES.',
     datos_claves: [ 'Ningún recurso es casual, todo tiene un motivo.' ],
+    isPractice: true,
     test: {
       id: 'test-3-23',
       seccionId: 'sec-3-23',
@@ -5542,7 +5542,7 @@ export const CAPITULOS: Capitulo[] = [
             {
               id: 8,
               left: 'Principio de inocencia hasta que se demuestre la culpabilidad (en justicia penal)',
-              right: 'Asumir que un producto ya en el mercado es seguro hasta que estudios lo contradigan',
+              right: 'Asumir que un producto es seguro hasta que estudios lo contradigan',
               hint: 'El mismo principio de presunción positiva en distintos ámbitos.'
             }
           ]
@@ -5614,7 +5614,7 @@ export const CAPITULOS: Capitulo[] = [
           category: 'Ilógico'
         },
         {
-          text: 'Autor que cree que el Estado necesita más ingresos para financiar programas sociales → Exigiría eliminar todos los impuestos.',
+          text: 'Autor a favor de impuestos altos al capital → Exigiría bajar el IVA para todos.',
           category: 'Ilógico'
         },
         {
@@ -5748,6 +5748,7 @@ export const CAPITULOS: Capitulo[] = [
     title: 'Test: Nuevos Contextos',
     introduccion: 'Extrapolación oficial tipo PAES.',
     datos_claves: [ 'Respeta siempre la tesis original.' ],
+    isPractice: true,
     test: {
       id: 'test-3-29',
       seccionId: 'sec-3-29',
@@ -5811,7 +5812,7 @@ export const CAPITULOS: Capitulo[] = [
         },
         {
           id: 3295,
-          enunciado: 'Un columnista defiende la idea de que "los impuestos altos ahogan la innovación de cualquier empresa y deberían eliminarse". ¿Qué postura adoptaría ante impuestos a las grandes corporaciones tecnológicas?',
+          enunciado: 'Un columnista defiende la idea de que "los impuestos altos ahogan la innovación y deberían eliminarse para las startups". ¿Qué postura adoptaría ante impuestos a las grandes corporaciones tecnológicas?',
           tipo_alternativas: 'texto',
           alternativas: {
             A: 'Apoyaría los impuestos para las grandes empresas, ya que solo defiende a las pequeñas.',
@@ -5923,12 +5924,12 @@ export const CAPITULOS: Capitulo[] = [
           tipo_alternativas: 'texto',
           alternativas: {
             A: 'Como una prueba de que los ciudadanos querían asfixiarse.',
-            B: 'Como una evidencia de la ignorancia de la época frente a un virus desconocido, que el propio autor ya reconoce como ineficaz.',
+            B: 'Como una evidencia de la ignorancia de la época frente a un virus desconocido, juzgada en retrospectiva por el autor.',
             C: 'Como una crítica política a los materiales de construcción de la época.',
             D: 'Como la causa real por la que moría la gente en Filadelfia.'
           },
           respuesta_correcta: 'B',
-          feedback_acierto: '¡Correcto! El uso de la palabra "ingenuamente" indica que el autor ya reconoce, incluso mientras vive los hechos, la ineficacia de las medidas tomadas.',
+          feedback_acierto: '¡Correcto! El uso de la palabra "ingenuamente" indica que el autor valora retrospectivamente la ineficacia de las medidas tomadas.',
           feedback_error: 'El autor dice que "ingenuamente" creían que eso los protegería. Está juzgando el conocimiento científico de la época.'
         },
         {
@@ -5995,7 +5996,7 @@ export const CAPITULOS: Capitulo[] = [
           tipo_alternativas: 'texto',
           alternativas: {
             A: 'Son insuficientes, pues no cita la opinión de ningún político.',
-            B: 'Son suficientes, ya que aporta datos satelitales (40%), causas químicas y un contraargumento reconocido y sopesado.',
+            B: 'Son suficientes, ya que aporta datos satelitales (40%), causas químicas y un contraargumento refutado.',
             C: 'Son nulos, ya que el texto se basa puramente en suposiciones.',
             D: 'Son excesivos, dificultando la comprensión del lector común.'
           },

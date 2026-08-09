@@ -9,7 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
-type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean };
+type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean, isProTip?: boolean };
 
 type PathItem = {
   type: 'chapter' | 'node-row';
@@ -284,11 +284,16 @@ type PathItem = {
                             <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.55 18.55 20 18 20H6C5.45 20 5 19.55 5 19V18H19V19Z"/>
                           </svg>
                           <!-- PRACTICE SVG -->
-                          <svg *ngIf="!node.isCrown && isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
+                          <!-- PROTIP SVG -->
+                            <svg *ngIf="!node.isCrown && node.isProTip && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-pro-tip" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
+                            </svg>
+                            <!-- PRACTICE SVG -->
+                            <svg *ngIf="!node.isCrown && !node.isProTip && isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
                           </svg>
                           <!-- STAR SVG -->
-                          <svg *ngIf="!node.isCrown && !isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                          <svg *ngIf="!node.isCrown && !node.isProTip && !isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                           </svg>
                           <!-- LOCK SVG -->
@@ -302,7 +307,8 @@ type PathItem = {
                         [class.text-active]="node.status === 'active'"
                         [class.historia-title]="hasTreeLayout()"
                         [class.title-crown]="node.isCrown"
-                        [class.title-practice]="!node.isCrown && isPracticeNode(node)"
+                        [class.title-practice]="!node.isCrown && !node.isProTip && isPracticeNode(node)"
+                        [class.title-pro-tip]="node.isProTip"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
                         {{ node.title }}
                       </div>
@@ -2657,7 +2663,8 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
             nodeIndex: nodeIndex++,
             tags: sec.tags,
             isBoss: this.materiaId() === 'mat2' ? false : sec.id === lastSectionId,
-            isCrown: (sec as any).isCrown || false
+            isCrown: (sec as any).isCrown || false,
+            isProTip: (sec as any).isProTip || false
           } as any;
         });
 

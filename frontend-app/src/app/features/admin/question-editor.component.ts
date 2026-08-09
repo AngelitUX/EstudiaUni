@@ -486,7 +486,7 @@ export class QuestionEditorComponent implements OnInit {
     enunciado: string;
     formula_latex: string;
     tipo_alternativas: 'texto' | 'imagen';
-    alternativas: { A: string; B: string; C: string; D: string };
+    alternativas: { A: string; B: string; C?: string; D?: string };
     respuesta_correcta: 'A' | 'B' | 'C' | 'D';
     feedback_acierto: string;
     feedback_error: string;
@@ -519,7 +519,12 @@ export class QuestionEditorComponent implements OnInit {
           enunciado: pregunta.enunciado,
           formula_latex: pregunta.formula_latex || '',
           tipo_alternativas: pregunta.tipo_alternativas,
-          alternativas: { ...pregunta.alternativas },
+          alternativas: {
+            A: pregunta.alternativas?.A || '',
+            B: pregunta.alternativas?.B || '',
+            C: pregunta.alternativas?.C || '',
+            D: pregunta.alternativas?.D || '',
+          },
           respuesta_correcta: pregunta.respuesta_correcta,
           feedback_acierto: pregunta.feedback_acierto,
           feedback_error: pregunta.feedback_error,
@@ -533,10 +538,10 @@ export class QuestionEditorComponent implements OnInit {
       this.form.materiaId &&
       this.form.tema.trim() &&
       this.form.enunciado.trim() &&
-      this.form.alternativas.A.trim() &&
-      this.form.alternativas.B.trim() &&
-      this.form.alternativas.C.trim() &&
-      this.form.alternativas.D.trim() &&
+      this.form.alternativas.A?.trim() &&
+      this.form.alternativas.B?.trim() &&
+      (this.form.alternativas.C === undefined || this.form.alternativas.C.trim()) &&
+      (this.form.alternativas.D === undefined || this.form.alternativas.D.trim()) &&
       this.form.feedback_acierto.trim() &&
       this.form.feedback_error.trim()
     );

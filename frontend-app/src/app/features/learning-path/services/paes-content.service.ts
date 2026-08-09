@@ -13,6 +13,7 @@ const LOCAL_MATERIAS: Materia[] = [
 ];
 
 import { CAPITULOS } from '../data/seed-data';
+import { HISTORIA_CAPITULOS, HISTORIA_MATERIA } from '../data/seed-historia';
 
 const LOCAL_POOL_PREGUNTAS: any[] = [
   // Competencia Lectora
@@ -336,15 +337,26 @@ export class PaesContentService {
       const materiasRes = await fetch('/assets/mocks/materias-mock-local.json');
       if (!materiasRes.ok) throw new Error('materias-mock-local.json not found');
       const materias = await materiasRes.json() as Materia[];
+      
+      const hist = materias.find(m => m.id === 'historia');
+      if (hist) {
+        hist.isActive = true;
+        hist.title = 'Historia y Cs. Sociales';
+      } else {
+        materias.push(HISTORIA_MATERIA);
+      }
+
       this._materias.set(materias.sort((a, b) => a.order - b.order));
 
       // 2. Cargar capítulos mock (usando ruta absoluta)
       const capitulosRes = await fetch('/assets/mocks/capitulos-mock-local.json?v=' + Date.now());
       if (!capitulosRes.ok) throw new Error('capitulos-mock-local.json not found');
       const capitulos = await capitulosRes.json() as Capitulo[];
-      this._capitulos.set(capitulos.sort((a, b) => a.order - b.order));
+      const sortedCapitulos = capitulos.sort((a, b) => a.order - b.order);
+      this._capitulos.set(this.syncLocalChapters(sortedCapitulos));
 
-
+      // 3. Set pool preguntas from local hardcoded variable (just in case)
+      this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
     } catch (error) {
       console.warn('⚠️ [EstudiaUni Testing] Failed to load local mocks. Falling back to Firestore...', error);
       await this.loadDataFromFirestore();
@@ -359,9 +371,61 @@ export class PaesContentService {
 
   }
 
+  private syncLocalChapters(capitulosList: Capitulo[]): Capitulo[] {
+    if (!capitulosList) capitulosList = [];
+
+    const validHistoriaIds = ['cap-hist-1', 'cap-hist-2', 'cap-hist-3', 'cap-hist-4', 'cap-hist-5'];
+
+    // Filtrar primero los capítulos fantasmas de historia que vengan del caché
+    const filteredInput = capitulosList.filter(cap => {
+      if (cap.materiaId === 'historia' && !validHistoriaIds.includes(cap.id)) {
+        console.warn(`🗑️ [Historia] Eliminando capítulo fantasma del caché: ${cap.id} - "${cap.title}"`);
+        return false;
+      }
+      return true;
+    });
+
+    const result = filteredInput.map(cap => {
+      // Comp-lectora overrides
+      if (cap.id === 'cap-1' || cap.id === 'cap-interpretar' || cap.id === 'cap-evaluar') {
+        const localSeed = CAPITULOS.find(c => c.id === cap.id);
+        if (localSeed) {
+          return localSeed;
+        }
+      }
+      // Historia overrides — reemplaza secciones con el mock local
+      if (cap.materiaId === 'historia') {
+        const historiaSeed = HISTORIA_CAPITULOS.find(c => c.id === cap.id);
+        if (historiaSeed) {
+          return historiaSeed;
+        }
+      }
+      return cap;
+    });
+
+    // Añadir de comp-lectora si faltan
+    for (const capId of ['cap-1', 'cap-interpretar', 'cap-evaluar']) {
+      if (!result.some(c => c.id === capId)) {
+        const localSeed = CAPITULOS.find(c => c.id === capId);
+        if (localSeed) {
+          result.push(localSeed);
+        }
+      }
+    }
+
+    // Añadir de historia si faltan
+    for (const histCap of HISTORIA_CAPITULOS) {
+      if (!result.some(c => c.id === histCap.id)) {
+        result.push(histCap);
+      }
+    }
+
+    return result.sort((a, b) => a.order - b.order);
+  }
+
   private async loadDataFromFirestore() {
-    const CACHE_KEY = 'paes_content_cache_v35';
-    const cacheTimeKey = 'paes_content_cache_timestamp_v30';
+    const CACHE_KEY = 'learning_path_cache_v117';
+    const cacheTimeKey = 'paes_content_cache_timestamp_v117';
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
@@ -377,7 +441,7 @@ export class PaesContentService {
 
             this._materias.set(cached.materias);
             this._poolPreguntas.set(cached.poolPreguntas);
-            this._capitulos.set(cached.capitulos);
+            this._capitulos.set(this.syncLocalChapters(cached.capitulos));
             this.loading.set(false);
             return;
           }
@@ -489,8 +553,41 @@ export class PaesContentService {
       // 6. Armar los capítulos
       capitulosSnap.docs.forEach(doc => {
         const capData = doc.data() as any;
-        const secciones = seccionesByCapitulo.get(doc.id) || [];
-        secciones.sort((a, b) => a.order - b.order);
+
+        if (capData.materiaId === 'comp-lectora') {
+            // Permitimos los 3 capítulos válidos. cap-localizar es el duplicado de 6 lecciones.
+            if (doc.id !== 'cap-1' && doc.id !== 'cap-interpretar' && doc.id !== 'cap-evaluar') {
+                return; // IGNORAR CAPITULOS FANTASMAS VIEJOS COMO cap-localizar
+            }
+        }
+
+        // IGNORAR CAPITULOS FANTASMAS DE HISTORIA — solo aceptamos los 5 del mock local
+        if (capData.materiaId === 'historia') {
+            const validHistoriaIds = ['cap-hist-1', 'cap-hist-2', 'cap-hist-3', 'cap-hist-4', 'cap-hist-5'];
+            if (!validHistoriaIds.includes(doc.id)) {
+                return; // IGNORAR capítulos viejos/fantasmas de historia
+            }
+        }
+
+        let secciones = seccionesByCapitulo.get(doc.id) || [];
+        
+        // OVERRIDE CAP-1, CAP-INTERPRETAR, AND CAP-EVALUAR WITH LOCAL SEED DATA
+        if (doc.id === 'cap-1' || doc.id === 'cap-evaluar' || doc.id === 'cap-interpretar') {
+           const localSeed = CAPITULOS.find((c: any) => c.id === doc.id);
+           if (localSeed && localSeed.secciones) {
+               secciones = localSeed.secciones;
+           }
+        }
+
+        // OVERRIDE HISTORIA CHAPTERS WITH LOCAL MOCK DATA
+        if (doc.id.startsWith('cap-hist-')) {
+           const localSeed = HISTORIA_CAPITULOS.find((c: any) => c.id === doc.id);
+           if (localSeed && localSeed.secciones) {
+               secciones = localSeed.secciones;
+           }
+        }
+        
+        secciones.sort((a: any, b: any) => a.order - b.order);
 
         capitulos.push({
           ...capData,
@@ -498,6 +595,7 @@ export class PaesContentService {
           secciones
         } as Capitulo);
       });
+
 
       if (materias.length > 0) {
         // Enforce active status and existence of M2 and Historia
@@ -515,6 +613,8 @@ export class PaesContentService {
         if (hist) {
           hist.isActive = true;
           hist.title = 'Historia y Cs. Sociales';
+        } else {
+          materias.push(HISTORIA_MATERIA);
         }
         
         const mat1 = materias.find(m => m.id === 'mat1' || m.slug === 'matematica-1');
@@ -539,16 +639,18 @@ export class PaesContentService {
         this.applyHistoriaImageMapping(sortedCapitulos);
         this.enrichHistoriaChapters4And5(sortedCapitulos);
 
+        const syncedCapitulos = this.syncLocalChapters(sortedCapitulos);
+
         this._materias.set(sortedMaterias);
         this._poolPreguntas.set(finalPool);
-        this._capitulos.set(sortedCapitulos);
+        this._capitulos.set(syncedCapitulos);
 
         // Guardar en caché
         try {
           const cacheData = {
             materias: sortedMaterias,
             poolPreguntas: finalPool,
-            capitulos: sortedCapitulos
+            capitulos: syncedCapitulos
           };
           localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
           localStorage.setItem(cacheTimeKey, Date.now().toString());

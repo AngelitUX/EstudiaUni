@@ -5,7 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
-import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2 } from './guide-slides-data';
+import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, CAP1_SUMMARY_SLIDES, CAP2_SUMMARY_SLIDES, CAP3_SUMMARY_SLIDES, HIST_CAP1_SUMMARY_SLIDES, HIST_CAP2_SUMMARY_SLIDES, HIST_CAP3_SUMMARY_SLIDES, HIST_CAP4_SUMMARY_SLIDES, HIST_CAP5_SUMMARY_SLIDES } from './guide-slides-data';
 
 @Component({
   selector: 'app-capitulo-detail',
@@ -223,13 +223,20 @@ export class CapituloDetailComponent {
 
   // --- SLIDE HELPERS ---
   hasSlides(cap: any): boolean {
-    return cap.id === 'cap-localizar'
+    return cap.id === 'cap-localizar' || cap.id === 'cap-1'
       || (cap.slides && cap.slides.length > 0)
       || (cap.secciones && cap.secciones.length > 0);
   }
 
   getSlides(cap: any): any[] {
-    if (cap.id === 'cap-localizar') return LOCALIZAR_SLIDES;
+    if (cap.id === 'cap-localizar' || cap.id === 'cap-1') return CAP1_SUMMARY_SLIDES;
+    if (cap.id === 'cap-interpretar' || cap.id === 'cap-2') return CAP2_SUMMARY_SLIDES;
+    if (cap.id === 'cap-evaluar' || cap.id === 'cap-3') return CAP3_SUMMARY_SLIDES;
+    if (cap.id === 'cap-hist-1') return HIST_CAP1_SUMMARY_SLIDES;
+    if (cap.id === 'cap-hist-2') return HIST_CAP2_SUMMARY_SLIDES;
+    if (cap.id === 'cap-hist-3') return HIST_CAP3_SUMMARY_SLIDES;
+    if (cap.id === 'cap-hist-4') return HIST_CAP4_SUMMARY_SLIDES;
+    if (cap.id === 'cap-hist-5') return HIST_CAP5_SUMMARY_SLIDES;
     if (cap.slides && cap.slides.length > 0) return cap.slides;
     if (cap.secciones && cap.secciones.length > 0) return this.buildDynamicSlides(cap);
     return [];
@@ -254,7 +261,7 @@ export class CapituloDetailComponent {
 
   private buildDynamicSlides(cap: any): any[] {
     if (!cap?.secciones || cap.secciones.length === 0) return [];
-    const isHistoria = cap.materiaId === 'historia' || (cap.id && cap.id.startsWith('cap-hist'));
+
     return cap.secciones.map((sec: any, index: number) => {
       const theme = this.getSlideTheme(index);
       return {
@@ -262,9 +269,7 @@ export class CapituloDetailComponent {
         title: sec.title,
         bgGradient: theme.bgGradient,
         iconBg: theme.iconBg,
-        content: isHistoria
-          ? this.buildHistoriaSummarySlideContent(sec)
-          : this.buildDynamicSlideContent(sec)
+        content: this.buildDynamicSlideContent(sec)
       };
     });
   }
@@ -279,22 +284,8 @@ export class CapituloDetailComponent {
       : '';
     const imgHtml = sec.imageUrl ? `<div class="slide-image-wrap-large"><img src="${sec.imageUrl}" class="slide-image-premium" alt="Imagen ${sec.title}"></div>` : '';
     const svgHtml = sec.svgContent ? `<div class="slide-svg-wrap-large">${sec.svgContent}</div>` : '';
-    
-    return `${intro}${tips}${imgHtml}${svgHtml}`;
-  }
 
-  /**
-   * Resumen ejecutivo para Historia: solo muestra la introducción + imagen.
-   * El detalle (datos_claves, guia_contenido) queda en los niveles individuales.
-   */
-  private buildHistoriaSummarySlideContent(sec: any): string {
-    const intro = sec.introduccion
-      ? `<p class="theory-intro">${sec.introduccion}</p>`
-      : '';
-    const imgHtml = sec.imageUrl
-      ? `<div class="slide-image-wrap-large"><img src="${sec.imageUrl}" class="slide-image-premium" alt="${sec.title}"></div>`
-      : '';
-    return `${intro}${imgHtml}`;
+    return `${intro}${tips}${imgHtml}${svgHtml}`;
   }
 
   private getSlideIcon(index: number): string {

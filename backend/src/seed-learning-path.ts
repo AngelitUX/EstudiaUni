@@ -39,14 +39,12 @@ async function seedFirestore() {
       // Secciones collection under capitulo
       const seccionesRef = capitulosRef.doc(cap.id).collection('secciones');
       
-      // SOLO PARA CAPITULO 1: Borrar nodos antiguos para evitar duplicados
-      if (cap.id === 'cap-1') {
-        const oldSecciones = await seccionesRef.get();
-        for (const doc of oldSecciones.docs) {
-          await doc.ref.delete();
-        }
-        console.log(`🧹 Limpiadas secciones antiguas de ${cap.id}`);
+      // Borrar nodos antiguos para evitar duplicados y fantasmas
+      const oldSecciones = await seccionesRef.get();
+      for (const doc of oldSecciones.docs) {
+        await doc.ref.delete();
       }
+      console.log(`🧹 Limpiadas secciones antiguas de ${cap.id}`);
 
       for (const sec of secciones) {
         const { test, ...seccionData } = sec;
