@@ -213,7 +213,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
           "contexto_base": "Tras consolidar su independencia, Chile enfrentó el desafío de organizar su naciente república. Después de una etapa de aprendizaje conocida como 'Ensayos Constitucionales' (1823-1830), el bando conservador triunfó. Bajo la influencia de Diego Portales, que privilegiaba el orden y la autoridad por sobre las libertades, se promulgó la Constitución de 1833. Ésta instauró un régimen presidencialista autoritario, otorgando al Presidente el poder de vetar leyes y la reelección inmediata. Además, estableció un sufragio de tipo censitario, donde solo hombres con cierto nivel de renta y propiedades tenían derecho a voto.",
           "preguntas": [
             {
-              "id": 3103,
+              "id": 3111,
               "enunciado": "Una de las características principales de la Constitución de 1833 en Chile fue:",
               "alternativas": {
                 "A": "Establecer un régimen parlamentario descentralizado.",
@@ -226,7 +226,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               "feedback_error": "La idea central de Portales era el \"orden\". Para ello, la Constitución le dio muchísimo poder al Presidente."
             },
             {
-              "id": 3104,
+              "id": 3112,
               "enunciado": "El sistema de \"voto censitario\" establecido en la época implicaba que:",
               "alternativas": {
                 "A": "Solo podían votar los militares en servicio activo.",
@@ -316,7 +316,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
             {
               "statement": "La Constitución de 1833 fue redactada bajo la influencia del ministro Diego Portales y estableció un régimen presidencialista y autoritario.",
               "isTrue": true,
-              "feedback": "Verdadero. Portales nunca fue Presidente, pero fue el gran arquitecto del orden conservador y la Constitución que rigió Chile por casi 60 años."
+              "feedback": "Verdadero. Portales nunca fue Presidente, pero fue el gran arquitecto del orden conservador y la Constitución que rigió Chile por 92 años, hasta 1925."
             },
             {
               "statement": "El ciclo del salitre integró a Chile en los mercados internacionales como proveedor de materias primas.",
@@ -372,6 +372,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
           "**Crecimiento hacia afuera:** Modelo económico donde el desarrollo del país depende de la demanda externa por sus materias primas, dejando a la economía vulnerable a las crisis internacionales.",
           "**Auge Agrícola:** Fiebres del oro en California y Australia generaron una demanda explosiva de trigo chileno, reactivando la agricultura del valle central y fortaleciendo a los latifundistas.",
           "**Ciclo Minero:** Descubrimiento de plata (Chañarcillo, Tres Puntas) y carbón (Lota). La minería atrajo capitales extranjeros y motivó la creación de las primeras redes ferroviarias.",
+          "**Ciclo del Cobre:** Entre 1850 y 1880, Chile se convirtió en el principal productor mundial de cobre, gracias a yacimientos del Norte Chico y avances en la fundición, antes de que el salitre tomara el protagonismo económico.",
           "**Valparaíso:** Se consolidó como el puerto principal del Pacífico Sur, atrayendo inmigrantes y casas comerciales británicas y alemanas, impulsando el libre comercio.",
           "**Estado Docente y Secularización:** En paralelo al auge económico, el Estado asumió el rol de educar (creación U. de Chile, 1842). Los liberales impulsaron las \"Leyes Laicas\" (cementerios, registro civil, matrimonio) restando poder a la Iglesia."
         ],
@@ -384,7 +385,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
           "contexto_base": "A mediados del siglo XIX, Chile se integró a la economía capitalista mundial asumiendo el rol de exportador de materias primas. Aprovechando el descubrimiento de oro en California y Australia, Chile exportó masivamente trigo. Además, despuntó la minería de plata y cobre. Este modelo primario exportador enriqueció a la élite y permitió modernizar el país mediante hitos como el ferrocarril de Copiapó a Caldera y la consolidación de Valparaíso como el puerto financiero del Pacífico Sur. No obstante, este modelo generó una profunda dependencia de los mercados extranjeros y no impulsó una industrialización real.",
           "preguntas": [
             {
-              "id": 3105,
+              "id": 3121,
               "enunciado": "El modelo económico adoptado por Chile a mediados del siglo XIX se conoce como \"Crecimiento hacia afuera\". ¿Qué significa esto?",
               "alternativas": {
                 "A": "El desarrollo de una fuerte industria manufacturera para competir en Europa.",
@@ -397,7 +398,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               "feedback_error": "Piensa en qué producía Chile (trigo, minerales) y adónde iban a parar esos productos."
             },
             {
-              "id": 3106,
+              "id": 3122,
               "enunciado": "Una consecuencia directa de este modelo exportador primario fue:",
               "alternativas": {
                 "A": "La dependencia de la economía chilena respecto a la demanda de los países industrializados.",
@@ -576,7 +577,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
           "**El rol del Estado y Privados:** El Estado no fue empresario, fue rentista. Empresarios como el inglés John Thomas North (\"El Rey del Salitre\") controlaron la producción, transporte y comercio del mineral.",
           "**Obras Públicas:** El dinero del salitre financió ferrocarriles de norte a sur, puertos, puentes (Viaducto del Malleco), edificios gubernamentales y expansión de la educación pública.",
           "**La vida en la Pampa:** Los obreros vivían aislados en \"Oficinas Salitreras\". Sufrían jornadas extenuantes, pagos en \"fichas\" (válidas solo en la pulpería de la empresa) y nula seguridad laboral.",
-          "**Dependencia Extrema:** Más del 50% de los ingresos del Estado dependían de un solo producto. Cuando Alemania inventó el salitre sintético durante la Primera Guerra Mundial, la economía chilena colapsó."
+          "**Dependencia Extrema:** Más del 50% de los ingresos del Estado dependían de un solo producto. Alemania desarrolló el salitre sintético (proceso Haber-Bosch) poco antes de la Primera Guerra Mundial y lo masificó durante esta, y la economía chilena colapsó."
         ],
         "order": 9,
         "imageUrl": "https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905042/tja4smjac8eqy59wzxhi.jpg",
@@ -909,6 +910,19 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               "respuesta_correcta": "C",
               "feedback_acierto": "¡Correcto! Los obreros aportaban cuotas voluntarias para ayudarse en caso de enfermedad o muerte.",
               "feedback_error": "Al no tener salud pública, los obreros debieron unirse para socorrerse mutuamente."
+            },
+            {
+              "id": 31054,
+              "enunciado": "¿Cuál de los siguientes eventos representa el episodio más trágico de represión estatal durante la Cuestión Social?",
+              "alternativas": {
+                "A": "La Matanza de la Escuela Santa María de Iquique (1907).",
+                "B": "La Revolución de 1891.",
+                "C": "La Guerra del Pacífico.",
+                "D": "El motín de la Escuadra (1931)."
+              },
+              "respuesta_correcta": "A",
+              "feedback_acierto": "¡Correcto! El Ejército disparó contra miles de obreros salitreros y sus familias que exigían mejores condiciones laborales, dejando cientos de muertos.",
+              "feedback_error": "Ocurrió en 1907 en el norte del país, cuando obreros salitreros en huelga fueron masacrados dentro de una escuela."
             }
           ],
           "seccionId": "sec-hist-1-5"
@@ -941,7 +955,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "A",
               "feedback_acierto": "Sí. Fue la principal crisis de vivienda en Santiago y puertos.",
-              "feedback_error": "Sí. Fue la principal crisis de vivienda en Santiago y puertos."
+              "feedback_error": "Incorrecto. Sí fue real: fue la principal crisis de vivienda en Santiago y los puertos."
             },
             {
               "id": 15001,
@@ -953,7 +967,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "B",
               "feedback_acierto": "No. Al principio no existían leyes laborales; las huelgas eran reprimidas violentamente.",
-              "feedback_error": "No. Al principio no existían leyes laborales; las huelgas eran reprimidas violentamente."
+              "feedback_error": "Incorrecto. No existía ese derecho: al principio no había leyes laborales y las huelgas eran reprimidas violentamente."
             },
             {
               "id": 15002,
@@ -965,7 +979,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "A",
               "feedback_acierto": "Sí. Fueron las primeras organizaciones obreras para ayudarse económicamente.",
-              "feedback_error": "Sí. Fueron las primeras organizaciones obreras para ayudarse económicamente."
+              "feedback_error": "Incorrecto. Sí existieron: fueron las primeras organizaciones obreras para ayudarse económicamente."
             },
             {
               "id": 15003,
@@ -977,7 +991,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "B",
               "feedback_acierto": "No. Las AFPs se crearon en 1981, mucho después.",
-              "feedback_error": "No. Las AFPs se crearon en 1981, mucho después."
+              "feedback_error": "Incorrecto. No existían: las AFP se crearon recién en 1981, mucho después."
             },
             {
               "id": 15004,
@@ -989,7 +1003,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "A",
               "feedback_acierto": "Sí. No existía límite a la jornada de trabajo.",
-              "feedback_error": "Sí. No existía límite a la jornada de trabajo."
+              "feedback_error": "Incorrecto. Sí eran comunes: no existía límite legal a la jornada de trabajo."
             },
             {
               "id": 15005,
@@ -1001,7 +1015,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "A",
               "feedback_acierto": "Sí. Obligaba a los obreros a comprar en la pulpería de la misma empresa.",
-              "feedback_error": "Sí. Obligaba a los obreros a comprar en la pulpería de la misma empresa."
+              "feedback_error": "Incorrecto. Sí ocurría: obligaba a los obreros a comprar en la pulpería de la misma empresa."
             },
             {
               "id": 15006,
@@ -1013,7 +1027,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "A",
               "feedback_acierto": "Sí. Las enfermedades infecciosas causaban estragos debido a la insalubridad de los conventillos.",
-              "feedback_error": "Sí. Las enfermedades infecciosas causaban estragos debido a la insalubridad de los conventillos."
+              "feedback_error": "Incorrecto. Sí existía esa carencia: las enfermedades infecciosas causaban estragos por la insalubridad de los conventillos."
             },
             {
               "id": 15007,
@@ -1025,7 +1039,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "A",
               "feedback_acierto": "Sí. Fueron las primeras organizaciones sindicales obreras en el norte salitrero para defender sus derechos.",
-              "feedback_error": "Sí. Fueron las primeras organizaciones sindicales obreras en el norte salitrero para defender sus derechos."
+              "feedback_error": "Incorrecto. Sí lo fueron: las Mancomunales fueron las primeras organizaciones sindicales obreras en el norte salitrero."
             },
             {
               "id": 15008,
@@ -1037,7 +1051,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "B",
               "feedback_acierto": "No. Durante el auge del salitre, no existía sueldo mínimo y el pago muchas veces era en fichas de pulpería.",
-              "feedback_error": "No. Durante el auge del salitre, no existía sueldo mínimo y el pago muchas veces era en fichas de pulpería."
+              "feedback_error": "Incorrecto. No existía: durante el auge del salitre no había sueldo mínimo y el pago muchas veces era en fichas de pulpería."
             },
             {
               "id": 15009,
@@ -1049,7 +1063,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               },
               "respuesta_correcta": "B",
               "feedback_acierto": "No. En los inicios de la Cuestión Social, si un obrero se accidentaba, quedaba totalmente desprotegido.",
-              "feedback_error": "No. En los inicios de la Cuestión Social, si un obrero se accidentaba, quedaba totalmente desprotegido."
+              "feedback_error": "Incorrecto. No existían: si un obrero se accidentaba, quedaba totalmente desprotegido."
             }
           ]
         }
@@ -1146,7 +1160,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Federalistas"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Los Pelucones (conservadores) triunfaron en la Batalla de Lircay (1830) e instauraron el orden portaliano.",
               "feedback_error": "Fueron los Pelucones tras su victoria en Lircay."
             },
             {
@@ -1160,7 +1174,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Separar definitivamente la Iglesia del Estado"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue redactada bajo la influencia de Diego Portales y consagró un presidente con amplios poderes.",
               "feedback_error": "Fue redactada bajo la influencia de Diego Portales y consagraba un presidente con amplios poderes."
             },
             {
@@ -1173,9 +1187,9 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "C": "Carbón",
                 "D": "Litio"
               },
-              "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
-              "feedback_error": "El descubrimiento del mineral de plata de Chañarcillo en 1832 fue fundamental."
+              "respuesta_correcta": "A",
+              "feedback_acierto": "¡Correcto! Entre 1850 y 1880, Chile fue el principal productor mundial de cobre, antes de que el salitre tomara el protagonismo económico.",
+              "feedback_error": "La plata de Chañarcillo (1832) fue un boom real pero más acotado. El gran motor exportador de mediados de siglo fue el cobre: Chile llegó a ser el primer productor mundial."
             },
             {
               "id": 19009,
@@ -1188,7 +1202,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Estar afiliado a un partido político"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El voto censitario exigía saber leer y escribir además de un patrimonio o renta mínima, excluyendo a la mayoría del pueblo.",
               "feedback_error": "El voto censitario exigía requisitos económicos, excluyendo a la mayoría del pueblo."
             },
             {
@@ -1202,7 +1216,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Guerra Civil de 1891"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La Guerra del Pacífico (1879-1884) permitió a Chile anexar Tarapacá y Antofagasta, ricas en salitre.",
               "feedback_error": "La Guerra del Pacífico permitió a Chile anexar Tarapacá y Antofagasta."
             },
             {
@@ -1216,7 +1230,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El reconocimiento constitucional del pueblo Mapuche"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue una ocupación militar del Estado chileno que despojó a los mapuches de sus tierras ancestrales y los confinó en reducciones.",
               "feedback_error": "Fue una ocupación militar por parte del Estado chileno que despojó a los mapuches de sus tierras ancestrales."
             },
             {
@@ -1230,7 +1244,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La promulgación de una nueva Constitución federal"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El bando congresista triunfó, Balmaceda se suicidó y se instauró el parlamentarismo.",
               "feedback_error": "El bando congresista triunfó, instaurando el parlamentarismo."
             },
             {
@@ -1244,7 +1258,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Impuestos a la renta de los obreros"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El salitre era extraído por privados (principalmente ingleses), y el Estado chileno cobraba un alto impuesto de exportación en las aduanas.",
               "feedback_error": "El salitre era extraído por privados (ingleses en su mayoría), y el Estado chileno cobraba un alto impuesto de exportación."
             },
             {
@@ -1258,7 +1272,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "A la disputa entre liberales y conservadores"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue el conjunto de problemas de pobreza, hacinamiento y malas condiciones laborales que afectó a la clase trabajadora a fines del siglo XIX y comienzos del XX.",
               "feedback_error": "Fue la crisis de precariedad de obreros y campesinos a fines del XIX y principios del XX."
             },
             {
@@ -1272,7 +1286,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Entregaba bonos compensatorios"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El Estado respondió con represión militar, masacrando a los obreros en huelga para defender los intereses patronales.",
               "feedback_error": "El Estado masacró a los obreros para acabar con la huelga sin conceder derechos."
             }
           ]
@@ -1492,13 +1506,13 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               "enunciado": "¿Qué factor económico facilitó el apoyo popular al Nazismo en Alemania durante la década de 1930?",
               "alternativas": {
                 "A": "La enorme riqueza generada por sus colonias americanas.",
-                "B": "La profunda crisis económica, hiperinflación y desempleo masivo tras 1929.",
+                "B": "La profunda crisis económica y el desempleo masivo tras la Gran Depresión de 1929.",
                 "C": "El éxito de las políticas de libre comercio con Gran Bretaña.",
                 "D": "La consolidación del Estado de Bienestar impulsado por la República de Weimar."
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Muy bien! El hambre y el desespero de la crisis hicieron que la gente buscara soluciones radicales y líderes fuertes.",
-              "feedback_error": "Recuerda el impacto devastador de la Gran Depresión de 1929 en un país que ya estaba arruinado por perder la Primera Guerra Mundial."
+              "feedback_acierto": "¡Muy bien! El hambre y el desespero de la crisis de 1929 hicieron que la gente buscara soluciones radicales y líderes fuertes.",
+              "feedback_error": "Recuerda el impacto devastador de la Gran Depresión de 1929 en un país que ya estaba arruinado por perder la Primera Guerra Mundial. (Ojo: la hiperinflación alemana fue en 1923, un episodio distinto y anterior a esta crisis)."
             },
             {
               "id": 32021,
@@ -1546,62 +1560,64 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
       {
         "id": "sec-hist-2-prac-4",
         "title": "Práctica: Verdadero o Falso — Totalitarismos",
-        "description": "Evalúa tus conocimientos sobre los regímenes totalitarios del siglo XX.",
-        "type": "practice",
+        "introduccion": "Evalúa tus conocimientos sobre los regímenes totalitarios del siglo XX.",
         "isPractice": true,
         "practiceType": "true-false",
+        "datos_claves": [],
         "order": 5,
         "level": 5,
+        "materiaId": "historia",
+        "capituloId": "cap-hist-2",
         "practiceData": {
           "items": [
             {
-              "text": "El fascismo italiano promovía la lucha de clases y la revolución obrera.",
-              "isCorrect": false,
+              "statement": "El fascismo italiano promovía la lucha de clases y la revolución obrera.",
+              "isTrue": false,
               "feedback": "Falso. El fascismo rechazaba la lucha de clases y promovía el corporativismo (unidad nacional)."
             },
             {
-              "text": "El régimen de Stalin se caracterizó por las purgas masivas y la eliminación de opositores.",
-              "isCorrect": true,
+              "statement": "El régimen de Stalin se caracterizó por las purgas masivas y la eliminación de opositores.",
+              "isTrue": true,
               "feedback": "Verdadero. Stalin implementó un régimen de terror conocido como la Gran Purga."
             },
             {
-              "text": "El nazismo alemán consideraba que la democracia liberal era el mejor sistema político.",
-              "isCorrect": false,
+              "statement": "El nazismo alemán consideraba que la democracia liberal era el mejor sistema político.",
+              "isTrue": false,
               "feedback": "Falso. El nazismo despreciaba la democracia liberal y creía en el liderazgo de un solo hombre (Führer)."
             },
             {
-              "text": "Una característica común de los totalitarismos fue el control monopólico de los medios de comunicación.",
-              "isCorrect": true,
+              "statement": "Una característica común de los totalitarismos fue el control monopólico de los medios de comunicación.",
+              "isTrue": true,
               "feedback": "Verdadero. Controlaban la propaganda para manipular a las masas."
             },
             {
-              "text": "El comunismo soviético defendía fervientemente la propiedad privada de las fábricas.",
-              "isCorrect": false,
+              "statement": "El comunismo soviético defendía fervientemente la propiedad privada de las fábricas.",
+              "isTrue": false,
               "feedback": "Falso. El comunismo eliminó la propiedad privada de los medios de producción, dejándolos en manos del Estado."
             },
             {
-              "text": "Los regímenes totalitarios toleraban la existencia de múltiples partidos políticos.",
-              "isCorrect": false,
+              "statement": "Los regímenes totalitarios toleraban la existencia de múltiples partidos políticos.",
+              "isTrue": false,
               "feedback": "Falso. Se instauraron sistemas de partido único."
             },
             {
-              "text": "El antisemitismo fue el pilar ideológico central del nazismo de Hitler.",
-              "isCorrect": true,
+              "statement": "El antisemitismo fue el pilar ideológico central del nazismo de Hitler.",
+              "isTrue": true,
               "feedback": "Verdadero. Culparon a los judíos de los males de Alemania y ejecutaron el Holocausto."
             },
             {
-              "text": "El fascismo buscaba expandir sus fronteras mediante el uso militar.",
-              "isCorrect": true,
+              "statement": "El fascismo buscaba expandir sus fronteras mediante el uso militar.",
+              "isTrue": true,
               "feedback": "Verdadero. Ambos regímenes (Italia y Alemania) eran profundamente expansionistas y militaristas."
             },
             {
-              "text": "Los totalitarismos daban gran importancia a la educación y adoctrinamiento de los jóvenes.",
-              "isCorrect": true,
+              "statement": "Los totalitarismos daban gran importancia a la educación y adoctrinamiento de los jóvenes.",
+              "isTrue": true,
               "feedback": "Verdadero. Crearon juventudes hitlerianas, fascistas y pioneros soviéticos para controlar a las nuevas generaciones."
             },
             {
-              "text": "El corporativismo fascista organizaba a trabajadores y empresarios bajo el control estricto del Estado.",
-              "isCorrect": true,
+              "statement": "El corporativismo fascista organizaba a trabajadores y empresarios bajo el control estricto del Estado.",
+              "isTrue": true,
               "feedback": "Verdadero. El Estado arbitraba las relaciones laborales para evitar huelgas."
             }
           ]
@@ -1618,7 +1634,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
           "**Alianzas Militares:** EE.UU. creó la OTAN (Organización del Tratado del Atlántico Norte) para defensa mutua, mientras la URSS respondió creando el Pacto de Varsovia con sus países satélites de Europa del Este.",
           "**Guerras \"Proxy\" (Subsidiarias):** Aunque no pelearon directamente, EE.UU. y la URSS financiaron bandos opuestos en sangrientos conflictos locales como la Guerra de Corea, la Guerra de Vietnam y la Guerra de Afganistán.",
           "**La Carrera Espacial y Armamentista:** El espacio se volvió un campo de batalla propagandístico. La URSS tomó la delantera (primer satélite Sputnik, primer hombre en el espacio Yuri Gagarin), pero EE.UU. triunfó al llegar a la Luna en 1969.",
-          "**El \"Telón de Acero\" y el Muro de Berlín:** El límite físico e ideológico que dividió a Europa. En 1961, la URSS construyó el Muro de Berlín para evitar la fuga de ciudadanos al lado capitalista, convirtiéndose en el símbolo máximo de la Guerra Fría."
+          "**El \"Telón de Acero\" y el Muro de Berlín:** El límite físico e ideológico que dividió a Europa. En 1961, la Alemania Oriental (RDA), con respaldo soviético, construyó el Muro de Berlín para evitar la fuga de ciudadanos al lado capitalista, convirtiéndose en el símbolo máximo de la Guerra Fría."
         ],
         "order": 6,
         "level": 6,
@@ -1701,83 +1717,97 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
       {
         "id": "sec-hist-2-prac-5",
         "title": "Práctica: Clasificador — La Guerra Fría",
-        "description": "Clasifica a qué bloque corresponde cada característica o institución.",
-        "type": "practice",
+        "introduccion": "Clasifica a qué bloque corresponde cada característica o institución.",
         "isPractice": true,
         "practiceType": "categorize",
+        "datos_claves": [],
         "order": 7,
         "level": 7,
+        "materiaId": "historia",
+        "capituloId": "cap-hist-2",
         "practiceData": {
           "categories": [
             {
               "id": "capitalista",
-              "name": "Bloque Capitalista (EE.UU.)"
+              "label": "Bloque Capitalista (EE.UU.)"
             },
             {
               "id": "comunista",
-              "name": "Bloque Comunista (URSS)"
+              "label": "Bloque Comunista (URSS)"
             }
           ],
           "items": [
             {
               "id": 1,
               "text": "OTAN (Alianza Militar)",
-              "categoryId": "capitalista"
+              "category": "capitalista",
+              "hint": "OTAN fue la alianza militar creada por EE.UU. y Europa Occidental."
             },
             {
               "id": 2,
               "text": "Pacto de Varsovia (Alianza Militar)",
-              "categoryId": "comunista"
+              "category": "comunista",
+              "hint": "Fue la respuesta militar de la URSS y sus satélites de Europa del Este."
             },
             {
               "id": 3,
               "text": "Plan Marshall (Ayuda Económica)",
-              "categoryId": "capitalista"
+              "category": "capitalista",
+              "hint": "EE.UU. financió la reconstrucción de Europa Occidental tras la guerra."
             },
             {
               "id": 4,
               "text": "COMECON (Asistencia Económica)",
-              "categoryId": "comunista"
+              "category": "comunista",
+              "hint": "Fue el organismo de cooperación económica del bloque soviético."
             },
             {
               "id": 5,
               "text": "Economía de Libre Mercado",
-              "categoryId": "capitalista"
+              "category": "capitalista",
+              "hint": "Propiedad privada y precios regulados por la oferta y la demanda."
             },
             {
               "id": 6,
               "text": "Economía de Planificación Central",
-              "categoryId": "comunista"
+              "category": "comunista",
+              "hint": "El Estado decide qué, cuánto y cómo se produce."
             },
             {
               "id": 7,
               "text": "Democracias Liberales",
-              "categoryId": "capitalista"
+              "category": "capitalista",
+              "hint": "Elecciones multipartidistas y economía de mercado."
             },
             {
               "id": 8,
               "text": "Democracias Populares (Partido Único)",
-              "categoryId": "comunista"
+              "category": "comunista",
+              "hint": "Sistemas de partido único alineados con Moscú."
             },
             {
               "id": 9,
               "text": "Apoyo a la Revolución Cubana",
-              "categoryId": "comunista"
+              "category": "comunista",
+              "hint": "La URSS respaldó al gobierno de Fidel Castro tras 1959."
             },
             {
               "id": 10,
               "text": "Intervención en Vietnam del Sur",
-              "categoryId": "capitalista"
+              "category": "capitalista",
+              "hint": "EE.UU. intervino militarmente para frenar el avance comunista."
             },
             {
               "id": 11,
               "text": "Misión Apolo 11 (Llegada a la Luna)",
-              "categoryId": "capitalista"
+              "category": "capitalista",
+              "hint": "EE.UU. ganó la carrera espacial con el alunizaje de 1969."
             },
             {
               "id": 12,
               "text": "Satélite Sputnik y Yuri Gagarin",
-              "categoryId": "comunista"
+              "category": "comunista",
+              "hint": "La URSS tomó la delantera inicial en la carrera espacial."
             }
           ]
         }
@@ -1785,11 +1815,15 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
       {
         "id": "sec-hist-2-4",
         "title": "4. América Latina y la Doctrina de Seguridad Nacional",
-        "introduccion": "El triunfo de la Revolución Cubana en 1959 alertó a Estados Unidos sobre la posible expansión del comunismo en su 'patio trasero'. Como respuesta, implementó estrategias que cambiarían el destino del continente. La principal fue la Doctrina de Seguridad Nacional (DSN), la cual redefinió el rol de los ejércitos latinoamericanos: el verdadero peligro ya no era una invasión externa, sino el 'enemigo interno' (marxistas, sindicalistas y opositores). Esta doctrina sirvió de justificación ideológica para que los militares derrocaran las frágiles democracias e instauraran violentas dictaduras cívico-militares (como en Chile, Argentina, Uruguay y Brasil), coordinadas a través de la siniestra Operación Cóndor.",
+        "introduccion": "El triunfo de la Revolución Cubana en 1959 encendió las alarmas en Washington. La respuesta de Estados Unidos cambiaría para siempre el rol de los ejércitos latinoamericanos.",
+        "guia_titulo": "📖 Teoría y Contexto Histórico",
+        "guia_contenido": "El triunfo de la Revolución Cubana en 1959 alertó a Estados Unidos sobre la posible expansión del comunismo en su 'patio trasero'. Como respuesta, implementó estrategias que cambiarían el destino del continente. La principal fue la Doctrina de Seguridad Nacional (DSN), la cual redefinió el rol de los ejércitos latinoamericanos: el verdadero peligro ya no era una invasión externa, sino el 'enemigo interno' (marxistas, sindicalistas y opositores). Esta doctrina sirvió de justificación ideológica para que los militares derrocaran las frágiles democracias e instauraran violentas dictaduras cívico-militares (como en Chile, Argentina, Uruguay y Brasil), coordinadas a través de la siniestra Operación Cóndor.",
         "datos_claves": [
-          "La Revolución Cubana (1959) alarmó a Estados Unidos.",
-          "EE.UU. impulsó la Doctrina de Seguridad Nacional (DSN).",
-          "La DSN veía al marxismo como un \"enemigo interno\", justificando dictaduras militares."
+          "**Revolución Cubana (1959):** Instaló el primer régimen comunista aliado de la URSS en América, a solo 150 km de Estados Unidos, generando pánico en Washington.",
+          "**Doctrina de Seguridad Nacional (DSN):** Redefinió la misión de las Fuerzas Armadas latinoamericanas: ya no cuidar las fronteras, sino combatir al \"enemigo interno\" (marxistas, sindicalistas, opositores).",
+          "**Alianza para el Progreso:** Estrategia económica de EE.UU. (impulsada por JFK) para financiar reformas sociales en la región y así restar apoyo popular a la vía revolucionaria.",
+          "**Operación Cóndor:** Red de coordinación represiva entre las dictaduras del Cono Sur (Chile, Argentina, Uruguay, Brasil, Paraguay y Bolivia) para perseguir y eliminar opositores más allá de sus fronteras.",
+          "**Dictaduras cívico-militares:** La DSN sirvió de justificación ideológica para que los militares derrocaran gobiernos democráticos en Brasil (1964), Chile (1973), Uruguay (1973) y Argentina (1976)."
         ],
         "order": 8,
         "level": 8,
@@ -2039,11 +2073,15 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
       {
         "id": "sec-hist-2-5",
         "title": "5. La sociedad y las movilizaciones sociales",
-        "introduccion": "La segunda mitad del siglo XX estuvo marcada por profundas transformaciones sociales que desafiaron el orden tradicional. La inserción masiva de la mujer en el mundo laboral y público, junto con la legalización de métodos anticonceptivos como la píldora, redefinieron los roles de género y fortalecieron el movimiento feminista. Paralelamente, la juventud emergió como un actor social independiente y rebelde. Inspirados por el rock, la contracultura hippie, la lucha por los derechos civiles y protestas emblemáticas como el Mayo del 68, los jóvenes de todo el mundo exigieron mayores libertades, pacifismo y una ruptura definitiva con el conservadurismo de sus padres.",
+        "introduccion": "La segunda mitad del siglo XX no solo fue política: también trajo una revolución social y cultural que cambió para siempre los roles de género y el lugar de la juventud.",
+        "guia_titulo": "📖 Teoría y Contexto Histórico",
+        "guia_contenido": "La segunda mitad del siglo XX estuvo marcada por profundas transformaciones sociales que desafiaron el orden tradicional. La inserción masiva de la mujer en el mundo laboral y público, junto con la legalización de métodos anticonceptivos como la píldora, redefinieron los roles de género y fortalecieron el movimiento feminista. Paralelamente, la juventud emergió como un actor social independiente y rebelde. Inspirados por el rock, la contracultura hippie, la lucha por los derechos civiles y protestas emblemáticas como el Mayo del 68, los jóvenes de todo el mundo exigieron mayores libertades, pacifismo y una ruptura definitiva con el conservadurismo de sus padres.",
         "datos_claves": [
-          "El siglo XX vio el ingreso masivo de las mujeres al mundo público (voto, trabajo).",
-          "Surgieron movimientos juveniles y contraculturales (movimiento hippie, protestas estudiantiles de 1968).",
-          "La cultura de masas se expandió por el mundo a través del cine, radio y TV."
+          "**Incorporación de la mujer:** El ingreso masivo a la universidad y al mundo laboral, junto con la conquista del sufragio universal, redefinió los roles de género tradicionales.",
+          "**Movimiento feminista:** La legalización de métodos anticonceptivos como la píldora impulsó una nueva ola feminista y el debate por la autonomía de la mujer.",
+          "**Nuevo sujeto juvenil:** La juventud emergió como actor social independiente, cuestionando el consumismo, el autoritarismo y la moral conservadora de sus padres.",
+          "**Mayo del 68:** Movimiento estudiantil en Francia que se transformó en símbolo global de la protesta juvenil contra el orden tradicional.",
+          "**Cultura de masas:** La expansión de la radio, la televisión y el rock creó una cultura juvenil compartida a nivel planetario, acelerando la difusión de estas ideas."
         ],
         "order": 11,
         "level": 11,
@@ -2215,7 +2253,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Libre Cambio"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La CORFO (1939) fue el motor del modelo ISI, impulsando la industrialización nacional para sustituir importaciones.",
               "feedback_error": "La CORFO fue el motor del modelo ISI (Sustitución de Importaciones)."
             },
             {
@@ -2229,7 +2267,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Ramón Barros Luco"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue Arturo Alessandri, apodado el León de Tarapacá, quien impulsó la Constitución de 1925.",
               "feedback_error": "Fue Arturo Alessandri, apodado el León de Tarapacá."
             },
             {
@@ -2243,7 +2281,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "1952"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La ley se promulgó en 1949 y las mujeres votaron por primera vez en las presidenciales de 1952.",
               "feedback_error": "Fue en 1949, votando por primera vez en las presidenciales de 1952."
             },
             {
@@ -2257,7 +2295,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El terremoto de Chillán"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El salitre sintético alemán y el crack de 1929 hundieron las exportaciones chilenas.",
               "feedback_error": "El salitre sintético alemán y el crack del 29 hundieron nuestras exportaciones."
             },
             {
@@ -2271,10 +2309,192 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Anarquismo"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El Populismo se masificó con líderes como Perón (Argentina), Vargas (Brasil) e Ibáñez (Chile).",
               "feedback_error": "El Populismo, con líderes como Perón (Argentina), Vargas (Brasil) e Ibáñez (Chile)."
             }
           ]
+        }
+      },
+      {
+        "id": "sec-hist-2-6",
+        "title": "6. Descolonización y el Nuevo Orden Mundial",
+        "introduccion": "Tras 1945, decenas de pueblos de Asia y África dejaron de ser colonias europeas. Un nuevo mapa mundial —y un nuevo marco de reglas internacionales— empezaba a tomar forma.",
+        "guia_titulo": "📖 Teoría y Contexto Histórico",
+        "guia_contenido": "La Segunda Guerra Mundial dejó a las potencias coloniales europeas (Gran Bretaña, Francia, Países Bajos) económica y militarmente debilitadas, incapaces de sostener sus imperios de ultramar. Aprovechando esta coyuntura, los movimientos nacionalistas de Asia y África impulsaron sus procesos de independencia: Indonesia y Vietnam la proclamaron en 1945, e India la logró de Gran Bretaña en 1947; durante las décadas de 1950 y 1960 se sumaron decenas de nuevos países africanos y asiáticos. Muchos de estos nuevos Estados, para no quedar atrapados entre las dos superpotencias de la Guerra Fría, impulsaron el Movimiento de Países No Alineados, fundado formalmente en la Conferencia de Belgrado (1961) sobre la base de los principios sentados en la Conferencia de Bandung (1955). En paralelo, la creación de la ONU en 1945 y la Declaración Universal de los Derechos Humanos en 1948 buscaron instalar un marco de reglas comunes para el nuevo orden internacional, incluyendo el derecho de los pueblos a la autodeterminación.",
+        "datos_claves": [
+          "**Descolonización de Asia:** Debilitadas por la guerra, las potencias europeas no pudieron sostener sus imperios. Indonesia y Vietnam proclamaron su independencia en 1945, e India logró la suya de Gran Bretaña en 1947.",
+          "**Descolonización de África:** Entre 1950 y 1960, decenas de países africanos se independizaron impulsados por movimientos nacionalistas locales. 1960 es conocido como el \"Año de África\" por la cantidad de naciones que lograron su soberanía.",
+          "**Movimiento de Países No Alineados:** Sus principios surgieron en la Conferencia de Bandung (1955); se fundó formalmente en la Conferencia de Belgrado (1961), agrupando a los nuevos países que buscaban una \"tercera vía\", sin alinearse ni con EE.UU. ni con la URSS.",
+          "**ONU y Declaración Universal de los DDHH (1948):** El nuevo marco regulador de las relaciones internacionales promovió el derecho a la autodeterminación de los pueblos, legitimando los procesos de independencia.",
+          "**Legado y desafíos:** Muchos de estos nuevos Estados heredaron fronteras trazadas arbitrariamente por las antiguas potencias coloniales, lo que generó conflictos étnicos y territoriales que persisten hasta hoy."
+        ],
+        "order": 13,
+        "level": 13,
+        "imageUrl": "https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905037/kzhldetgmmdybpkywibq.jpg",
+        "materiaId": "historia",
+        "capituloId": "cap-hist-2",
+        "test": {
+          "id": "test-hist-2-6",
+          "contexto_base": "Al finalizar la Segunda Guerra Mundial, los imperios coloniales europeos entraron en una crisis irreversible. La guerra había agotado militar y económicamente a potencias como Gran Bretaña y Francia, mientras que las ideas de autodeterminación de los pueblos —promovidas incluso por la recién creada ONU— alimentaban a los movimientos nacionalistas de Asia y África. Entre 1945 (independencia de Indonesia y Vietnam) y fines de la década de 1960, decenas de nuevas naciones surgieron en ambos continentes. Muchas de ellas, para no ser arrastradas al conflicto entre EE.UU. y la URSS, formaron el Movimiento de Países No Alineados en la Conferencia de Belgrado (1961), sobre la base de los principios sentados en la Conferencia de Bandung (1955), buscando una tercera vía frente a la bipolaridad de la Guerra Fría.",
+          "preguntas": [
+            {
+              "id": 3211,
+              "enunciado": "¿Qué factor principal explica el proceso de descolonización de Asia y África después de la Segunda Guerra Mundial?",
+              "alternativas": {
+                "A": "El fortalecimiento militar y económico de las potencias coloniales europeas.",
+                "B": "El debilitamiento de las potencias europeas y el auge de los movimientos nacionalistas locales.",
+                "C": "La decisión voluntaria de las potencias europeas de abandonar sus colonias sin presión alguna.",
+                "D": "La intervención militar directa de la ONU para expulsar a los colonizadores."
+              },
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Correcto! La guerra dejó exhaustas a las potencias coloniales, justo cuando el nacionalismo local se fortalecía.",
+              "feedback_error": "Piensa en el estado de Europa tras 1945: arruinada por la guerra y sin fuerzas para sostener sus imperios."
+            },
+            {
+              "id": 3212,
+              "enunciado": "¿Qué buscaban los países que conformaron el Movimiento de Países No Alineados, fundado en la Conferencia de Belgrado de 1961?",
+              "alternativas": {
+                "A": "Aliarse militarmente con la Unión Soviética.",
+                "B": "Ingresar a la OTAN para protegerse de la URSS.",
+                "C": "Mantener una posición independiente frente a los dos bloques de la Guerra Fría.",
+                "D": "Restaurar el dominio colonial europeo en sus territorios."
+              },
+              "respuesta_correcta": "C",
+              "feedback_acierto": "¡Muy bien! Buscaban una \"tercera vía\" que no los subordinara ni a EE.UU. ni a la URSS.",
+              "feedback_error": "Estos países recién independizados no querían depender de ninguna de las dos superpotencias."
+            },
+            {
+              "id": 32061,
+              "enunciado": "¿Cuál fue el primer gran país asiático en lograr su independencia del dominio colonial, en 1947?",
+              "alternativas": {
+                "A": "Vietnam.",
+                "B": "Indonesia.",
+                "C": "India.",
+                "D": "China."
+              },
+              "respuesta_correcta": "C",
+              "feedback_acierto": "¡Correcto! India se independizó de Gran Bretaña en 1947, abriendo el ciclo de descolonización asiática.",
+              "feedback_error": "Fue la joya de la corona del Imperio Británico, liderada por figuras como Gandhi y Nehru."
+            },
+            {
+              "id": 32062,
+              "enunciado": "¿Por qué 1960 es conocido históricamente como el \"Año de África\"?",
+              "alternativas": {
+                "A": "Porque se celebraron los primeros Juegos Olímpicos africanos.",
+                "B": "Porque una gran cantidad de países africanos lograron su independencia ese año.",
+                "C": "Porque terminó definitivamente el Apartheid en Sudáfrica.",
+                "D": "Porque la ONU trasladó su sede a Nairobi."
+              },
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Exacto! 17 países africanos alcanzaron su soberanía durante 1960, el punto más intenso de la descolonización.",
+              "feedback_error": "Fue el año en que se concentró la mayor cantidad de independencias del continente africano."
+            },
+            {
+              "id": 32063,
+              "enunciado": "Un desafío heredado por muchos de los nuevos Estados de Asia y África tras su independencia fue:",
+              "alternativas": {
+                "A": "Contar con fronteras trazadas arbitrariamente por las antiguas potencias coloniales, lo que generó conflictos étnicos.",
+                "B": "Una total ausencia de recursos naturales explotables.",
+                "C": "La obligación de mantener sus antiguos gobiernos coloniales.",
+                "D": "La prohibición de ingresar a la Organización de Naciones Unidas."
+              },
+              "respuesta_correcta": "A",
+              "feedback_acierto": "¡Correcto! Las fronteras coloniales rara vez respetaron las divisiones étnicas o culturales reales, sembrando conflictos futuros.",
+              "feedback_error": "Las potencias coloniales trazaron límites según sus propios intereses, ignorando las fronteras étnicas y culturales locales."
+            }
+          ],
+          "seccionId": "sec-hist-2-6"
+        }
+      },
+      {
+        "id": "sec-hist-2-7",
+        "title": "7. El Fin de la Guerra Fría y la Globalización",
+        "introduccion": "Después de casi medio siglo de tensión, el bloque soviético colapsó desde dentro. Con su caída, el mundo entró en una nueva era: la del neoliberalismo global y la globalización.",
+        "guia_titulo": "📖 Teoría y Contexto Histórico",
+        "guia_contenido": "Hacia la década de 1980, la URSS enfrentaba un estancamiento económico profundo, incapaz de sostener la carrera armamentista frente a EE.UU. Para salvar al sistema, Mijaíl Gorbachov impulsó dos reformas: la Perestroika (reestructuración económica) y la Glasnost (apertura política e informativa). Sin embargo, estas reformas terminaron acelerando la crisis: en 1989 cayó el Muro de Berlín, símbolo del fin de la división de Europa, y uno tras otro los regímenes comunistas de Europa del Este colapsaron. En 1991, la propia Unión Soviética se disolvió, poniendo fin oficial a la Guerra Fría. En el nuevo escenario mundial, sin el contrapeso soviético, el modelo neoliberal (libre mercado, privatizaciones, apertura comercial) se expandió como consenso dominante, acelerando la globalización: la integración económica, tecnológica y cultural del planeta.",
+        "datos_claves": [
+          "**Perestroika y Glasnost:** Reformas de Mijaíl Gorbachov en la URSS desde 1985 (reestructuración económica y apertura política) que, buscando salvar al sistema soviético, terminaron acelerando su colapso.",
+          "**Caída del Muro de Berlín (1989):** Símbolo del fin de la división de Europa en bloques; marcó el principio del fin de los regímenes comunistas de Europa del Este.",
+          "**Disolución de la URSS (1991):** El colapso económico y político de la Unión Soviética puso fin oficial a la Guerra Fría y dio paso a un mundo unipolar liderado por Estados Unidos.",
+          "**Auge del Neoliberalismo:** Sin el contrapeso soviético, el modelo de libre mercado, privatizaciones y apertura comercial se expandió como consenso económico dominante a nivel mundial.",
+          "**Aceleración de la Globalización:** La caída de las barreras ideológicas impulsó la integración económica, tecnológica y cultural del mundo, intensificando el comercio internacional y los flujos de información."
+        ],
+        "order": 14,
+        "level": 14,
+        "imageUrl": "https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905038/oxf6xsjvlepxru9btgcp.png",
+        "materiaId": "historia",
+        "capituloId": "cap-hist-2",
+        "test": {
+          "id": "test-hist-2-7",
+          "contexto_base": "Hacia mediados de la década de 1980, la Unión Soviética atravesaba un severo estancamiento económico, incapaz de competir con Occidente en la carrera armamentista y tecnológica. El nuevo líder soviético, Mijaíl Gorbachov, impulsó la Perestroika (reestructuración económica) y la Glasnost (apertura política), buscando modernizar al país sin destruir el sistema. Pero las reformas destaparon décadas de descontento acumulado: entre 1989 y 1991, uno a uno cayeron los regímenes comunistas de Europa del Este, comenzando simbólicamente con la caída del Muro de Berlín en noviembre de 1989. En diciembre de 1991, la propia URSS se disolvió oficialmente, poniendo fin a más de cuatro décadas de Guerra Fría. El mundo que emergió de esta crisis fue unipolar, con Estados Unidos como única superpotencia, y vio la expansión acelerada del modelo neoliberal y de la globalización económica y cultural.",
+          "preguntas": [
+            {
+              "id": 3213,
+              "enunciado": "¿Qué reformas impulsó Mijaíl Gorbachov en la URSS durante la década de 1980, que terminarían acelerando el colapso del sistema soviético?",
+              "alternativas": {
+                "A": "La colectivización agraria y el Plan Quinquenal.",
+                "B": "La Perestroika y la Glasnost.",
+                "C": "La Doctrina de Seguridad Nacional.",
+                "D": "El Telón de Acero y el Pacto de Varsovia."
+              },
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Correcto! La reestructuración económica (Perestroika) y la apertura política (Glasnost) buscaban salvar al sistema, pero lo debilitaron aún más.",
+              "feedback_error": "Fueron dos reformas de Gorbachov: una económica y otra política, ambas terminadas en la misma vocal."
+            },
+            {
+              "id": 3214,
+              "enunciado": "¿Qué evento de 1989 se convirtió en el símbolo mundial del fin de la división de Europa en bloques?",
+              "alternativas": {
+                "A": "La firma del Tratado de Versalles.",
+                "B": "La caída del Muro de Berlín.",
+                "C": "El lanzamiento del Sputnik.",
+                "D": "La fundación de la Unión Europea."
+              },
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Exacto! La caída del Muro de Berlín en noviembre de 1989 marcó el inicio del fin de los regímenes comunistas de Europa del Este.",
+              "feedback_error": "Fue el muro que dividía a Alemania (y a Europa) entre el bloque capitalista y el comunista desde 1961."
+            },
+            {
+              "id": 32071,
+              "enunciado": "¿En qué año se disolvió oficialmente la Unión Soviética, poniendo fin a la Guerra Fría?",
+              "alternativas": {
+                "A": "1985.",
+                "B": "1989.",
+                "C": "1991.",
+                "D": "1994."
+              },
+              "respuesta_correcta": "C",
+              "feedback_acierto": "¡Correcto! En diciembre de 1991 la URSS se disolvió oficialmente, dando paso a un mundo unipolar liderado por EE.UU.",
+              "feedback_error": "Ocurrió dos años después de la caída del Muro de Berlín (1989)."
+            },
+            {
+              "id": 32072,
+              "enunciado": "Tras el fin de la Guerra Fría, ¿qué modelo económico se expandió como consenso dominante a nivel mundial?",
+              "alternativas": {
+                "A": "El comunismo de planificación central.",
+                "B": "El neoliberalismo, basado en el libre mercado y las privatizaciones.",
+                "C": "El Estado de Bienestar keynesiano clásico.",
+                "D": "El modelo de Industrialización por Sustitución de Importaciones (ISI)."
+              },
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Muy bien! Sin el contrapeso soviético, el libre mercado y las privatizaciones se impusieron como el modelo dominante.",
+              "feedback_error": "Piensa en el modelo opuesto a la planificación estatal: el que confía en el mercado y reduce el rol del Estado."
+            },
+            {
+              "id": 32073,
+              "enunciado": "El proceso de creciente integración económica, tecnológica y cultural del mundo que se aceleró tras el fin de la Guerra Fría se conoce como:",
+              "alternativas": {
+                "A": "Descolonización.",
+                "B": "Globalización.",
+                "C": "Guerra de Baja Intensidad.",
+                "D": "Doctrina de Seguridad Nacional."
+              },
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Correcto! La globalización intensificó el comercio internacional y los flujos de información a escala planetaria.",
+              "feedback_error": "Es el proceso que \"globaliza\" (interconecta) las economías, las culturas y las comunicaciones del mundo entero."
+            }
+          ],
+          "seccionId": "sec-hist-2-7"
         }
       },
       {
@@ -2283,8 +2503,8 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "introduccion": "El gran examen. Demuestra que entiendes la Crisis del 29, los totalitarismos y sus consecuencias con preguntas tipo PAES.",
         "isBoss": true,
         "datos_claves": [],
-        "order": 13,
-        "level": 13,
+        "order": 15,
+        "level": 15,
         "materiaId": "historia",
         "capituloId": "cap-hist-2",
         "test": {
@@ -2368,7 +2588,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El Frente Popular"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La Constitución de 1925 devolvió el poder al Presidente de la República, terminando con el parlamentarismo.",
               "feedback_error": "La Constitución de 1925 devolvió el poder al Presidente de la República."
             },
             {
@@ -2382,7 +2602,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Declarar la guerra a los países vecinos"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La joven oficialidad presionó al Congreso para que despachara las leyes sociales que llevaban meses estancadas.",
               "feedback_error": "Presionaron al Congreso para que despachara las leyes sociales que llevaban meses estancadas."
             },
             {
@@ -2396,7 +2616,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El inicio de la Segunda Guerra Mundial"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Chile era una economía vulnerable y monoexportadora, dependiente casi exclusivamente del salitre.",
               "feedback_error": "Chile era una economía vulnerable y monoexportadora."
             },
             {
@@ -2410,7 +2630,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Privatizar las empresas públicas"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El ISI buscaba producir localmente lo que antes se compraba afuera, para reducir la dependencia externa.",
               "feedback_error": "Se buscaba producir localmente lo que antes se compraba afuera."
             },
             {
@@ -2424,7 +2644,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Importar maquinaria agrícola de Europa"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La CORFO fundó empresas clave como ENAP y ENDESA para el desarrollo industrial, energético e infraestructural del país.",
               "feedback_error": "La CORFO fundó empresas clave para el desarrollo industrial, energético e infraestructural del país."
             },
             {
@@ -2438,7 +2658,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Fuerzas Armadas y empresarios"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue una coalición de centro-izquierda (radicales, socialistas y comunistas) apoyada fuertemente por los sindicatos.",
               "feedback_error": "Fue una coalición de centro-izquierda apoyada fuertemente por los sindicatos."
             },
             {
@@ -2452,7 +2672,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Gabriel González Videla"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Aguirre Cerda priorizó la educación técnica e industrial bajo el lema \"Gobernar es Educar\".",
               "feedback_error": "Aguirre Cerda priorizó la educación técnica e industrial."
             },
             {
@@ -2466,7 +2686,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El fin del voto censitario"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Las mujeres pudieron votar por primera vez en las elecciones presidenciales de 1952, tras la ley de 1949.",
               "feedback_error": "Las mujeres pudieron votar por primera vez en las elecciones presidenciales de 1952."
             },
             {
@@ -2480,7 +2700,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Expulsar a los empresarios extranjeros"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Se dictó en el contexto de la Guerra Fría para proscribir y perseguir al Partido Comunista.",
               "feedback_error": "Se dictó bajo el contexto internacional de la Guerra Fría para perseguir al comunismo."
             },
             {
@@ -2494,7 +2714,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El agotamiento de la tierra agrícola"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Campesinos y pampinos migraron a Santiago buscando los empleos que ofrecía la incipiente industrialización.",
               "feedback_error": "Campesinos y pampinos migraron a Santiago buscando los empleos que ofrecía la industrialización."
             }
           ]
@@ -2519,7 +2739,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "guia_contenido": "Hacia los años 60, el modelo económico desarrollista chileno (ISI) mostraba claros signos de agotamiento, generando inflación y estancamiento. Para superar el subdesarrollo, surgieron tres proyectos políticos excluyentes (Derecha, Centro DC e Izquierda UP) que proponían soluciones radicales, como la Reforma Agraria para modernizar el campo o la Chilenización/Nacionalización del cobre. La elección del socialista Salvador Allende en 1970 (\"La Vía Chilena al Socialismo\") polarizó al extremo a una sociedad ya cruzada por la tensión de la Guerra Fría. La severa crisis económica (desabastecimiento, boicot estadounidense) y la violencia callejera pavimentaron el camino hacia el colapso institucional.",
         "datos_claves": [
           "**Reforma Agraria:** Proceso clave iniciado por Alessandri (\"reforma de macetero\"), profundizado por Frei Montalva y radicalizado por Allende. Su fin era eliminar los enormes latifundios ineficientes y entregar \"la tierra al que la trabaja\".",
-          "**Nacionalización del Cobre:** Culminación del proceso iniciado por Frei. En 1971, bajo el gobierno de Allende, el Congreso aprobó por unanimidad expropiar la gran minería del cobre, hasta entonces en manos de EE.UU.",
+          "**Nacionalización del Cobre:** Culminación del proceso iniciado por Frei con la \"Chilenización\" (1966-67), que ya había dado al Estado el 51% de las grandes minas. En 1971, bajo el gobierno de Allende, el Congreso aprobó por unanimidad expropiar el 100% de la gran minería del cobre, hasta entonces todavía en parte en manos de capitales estadounidenses.",
           "**Polarización y Guerra Fría:** El contexto global fue clave. EE.UU., bajo la presidencia de Nixon, intervino activamente financiando a la oposición y paralizando la economía para evitar que el experimento marxista chileno tuviera éxito.",
           "**Proyectos Excluyentes:** Los tres tercios políticos de Chile no lograron acuerdos. La Democracia Cristiana propuso la \"Revolución en Libertad\", mientras que la Unidad Popular apostó por un rápido avance hacia el socialismo estatal.",
           "**Crisis Económica de 1973:** Hiperinflación superior al 300%, paros nacionales de camioneros, acaparamiento y mercado negro de alimentos ahogaron el gobierno de la Unidad Popular."
@@ -2795,7 +3015,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
           "**Organismos Represivos:** La DINA (Dirección de Inteligencia Nacional) y su sucesora, la CNI. Tenían poder ilimitado para arrestar e interrogar bajo tortura, sin responder a la justicia ordinaria.",
           "**Detenidos Desaparecidos:** Práctica perversa donde agentes del Estado secuestraban y asesinaban a opositores, ocultando sus cuerpos para negar su responsabilidad y prolongar el sufrimiento familiar.",
           "**Vicaría de la Solidaridad:** Organismo de la Iglesia Católica que jugó un rol crucial brindando apoyo legal (recursos de amparo) a los perseguidos y documentando los crímenes para el futuro.",
-          "**Comisiones de Verdad:** Ya en democracia, se crearon la Comisión Rettig (que acreditó los casos con resultado de muerte o desaparición) y la Comisión Valech (que acreditó más de 38.000 víctimas de prisión política y tortura)."
+          "**Comisiones de Verdad:** Ya en democracia, se crearon la Comisión Rettig (1991, que acreditó 2.279 casos de muerte o desaparición) y las comisiones Valech I (2004) y Valech II (2011), que en conjunto acreditaron a más de 38.000 víctimas de prisión política y tortura."
         ],
         "order": 4,
         "imageUrl": "https://res.cloudinary.com/dqm3syhwr/image/upload/v1783905039/eramr3kfqbyrqp6qrpct.jpg",
@@ -2883,7 +3103,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "guia_contenido": "Tras la severa crisis económica de 1982, estallaron grandes Protestas Nacionales que reorganizaron a la oposición política y civil. Respetando el cronograma trazado por la propia dictadura en la Constitución de 1980, en 1988 se celebró el Plebiscito Nacional donde la opción \"NO\" (rechazo a la continuidad de Pinochet) obtuvo la victoria. Esto forzó la realización de elecciones presidenciales libres en 1989. Aunque el demócratacristiano Patricio Aylwin asumió el mando en 1990, inició un proceso de \"Transición\" marcado por la fuerte presencia tutelar de las Fuerzas Armadas y la imposibilidad inicial de cambiar el modelo heredado.",
         "datos_claves": [
           "**Crisis de 1982 y Protestas:** La quiebra del modelo neoliberal detonó masivas y violentas protestas sociales, rompiendo el \"apagón cultural\" y forzando a los partidos políticos a salir de la clandestinidad.",
-          "**Plebiscito de 1988:** Consulta nacional donde el \"SÍ\" significaba 8 años más de Pinochet. La victoria del \"NO\" (55% a 43%) marcó el triunfo pacífico de la \"Concertación de Partidos por el NO\" (alianza de centro-izquierda).",
+          "**Plebiscito de 1988:** Consulta nacional donde el \"SÍ\" significaba 8 años más de Pinochet. La victoria del \"NO\" (55,99% a 44,01%) marcó el triunfo pacífico de la \"Concertación de Partidos por el NO\" (alianza de centro-izquierda).",
           "**Reformas de 1989:** Antes de entregar el poder, se negoció un paquete de reformas constitucionales para atenuar los aspectos más autoritarios de la Constitución del 80 (ej. aumentar número de senadores electos y facilitar futuras reformas).",
           "**Democracia de los Acuerdos:** Estilo político de los primeros gobiernos concertacionistas (Aylwin, Frei Ruiz-Tagle). Basado en negociar cada ley con la derecha en el Congreso, debido a la imposibilidad de conseguir mayorías absolutas.",
           "**Justicia en la medida de lo posible:** Frase del Presidente Aylwin que reflejaba la extrema tensión con el poder militar. Pinochet continuó siendo Comandante en Jefe del Ejército hasta 1998, realizando ejercicios de presión militar (\"Boinazo\", \"Ejercicio de Enlace\") cuando la justicia se acercaba a sus familiares u oficiales."
@@ -2980,6 +3200,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         ],
         "guia_titulo": "💡 Pensamiento Espacial (H1)",
         "guia_contenido": "Para los mapas de la PAES, siempre lee el título y la leyenda ANTES de mirar el mapa. El título te dice de qué época es y la leyenda te dice qué significa cada color. Con esa información, las preguntas sobre el mapa se vuelven triviales.",
+        "svgContent": "<svg viewBox=\"0 0 480 320\" xmlns=\"http://www.w3.org/2000/svg\">\n  <rect width=\"480\" height=\"320\" fill=\"#f8f9fa\" rx=\"10\"/>\n  <text x=\"240\" y=\"24\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"15\" font-weight=\"bold\" fill=\"#111827\">Mundo Bipolar: Guerra Fría (esquema)</text>\n\n  <ellipse cx=\"140\" cy=\"120\" rx=\"90\" ry=\"65\" fill=\"#2563eb\" opacity=\"0.8\"/>\n  <text x=\"140\" y=\"117\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"bold\" fill=\"#fff\">Bloque Occidental</text>\n  <text x=\"140\" y=\"135\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#fff\">EE.UU. y aliados (OTAN)</text>\n\n  <ellipse cx=\"330\" cy=\"120\" rx=\"90\" ry=\"65\" fill=\"#dc2626\" opacity=\"0.8\"/>\n  <text x=\"330\" y=\"117\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"bold\" fill=\"#fff\">Bloque Soviético</text>\n  <text x=\"330\" y=\"135\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#fff\">URSS y aliados (Pacto Varsovia)</text>\n\n  <text x=\"240\" y=\"215\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\" font-weight=\"bold\" fill=\"#78350f\">Países No Alineados (Tercer Mundo)</text>\n  <circle cx=\"150\" cy=\"235\" r=\"6\" fill=\"#eab308\"/>\n  <circle cx=\"200\" cy=\"244\" r=\"6\" fill=\"#eab308\"/>\n  <circle cx=\"250\" cy=\"235\" r=\"6\" fill=\"#eab308\"/>\n  <circle cx=\"300\" cy=\"244\" r=\"6\" fill=\"#eab308\"/>\n  <circle cx=\"340\" cy=\"235\" r=\"6\" fill=\"#eab308\"/>\n\n  <rect x=\"30\" y=\"270\" width=\"14\" height=\"14\" fill=\"#2563eb\"/>\n  <text x=\"48\" y=\"281\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#374151\">Occidental</text>\n  <rect x=\"150\" y=\"270\" width=\"14\" height=\"14\" fill=\"#dc2626\"/>\n  <text x=\"168\" y=\"281\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#374151\">Soviético</text>\n  <rect x=\"270\" y=\"270\" width=\"14\" height=\"14\" fill=\"#eab308\"/>\n  <text x=\"288\" y=\"281\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#374151\">No alineado</text>\n</svg>",
         "order": 6,
         "level": 6,
         "materiaId": "historia",
@@ -2987,8 +3208,8 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
       },
       {
         "id": "sec-hist-3-prac-1",
-        "title": "Práctica: Clasifica el Bloque — Guerra Fría",
-        "introduccion": "¿OTAN o Pacto de Varsovia? ¿Capitalismo o Comunismo? Clasifica correctamente cada elemento de la Guerra Fría.",
+        "title": "Práctica: Clasifica el Periodo — Chile Reciente",
+        "introduccion": "¿Gobierno de la Unidad Popular o Dictadura Militar? Clasifica correctamente cada hecho de la historia reciente de Chile.",
         "isPractice": true,
         "practiceType": "categorize",
         "datos_claves": [],
@@ -2998,69 +3219,81 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "capituloId": "cap-hist-3",
         "practiceData": {
           "categories": [
-            "Bloque Occidental (EE.UU.)",
-            "Bloque Soviético (URSS)"
+            "Gobierno de la UP (1970-1973)",
+            "Dictadura Militar (1973-1990)"
           ],
           "items": [
             {
               "id": "c1",
-              "text": "Plan Marshall (ayuda económica a Europa Occidental)",
-              "category": "Bloque Occidental (EE.UU.)"
+              "text": "Nacionalización del cobre y aceleración de la Reforma Agraria",
+              "category": "Gobierno de la UP (1970-1973)",
+              "hint": "Fueron medidas emblemáticas del programa de Salvador Allende."
             },
             {
               "id": "c2",
-              "text": "Pacto de Varsovia (alianza militar)",
-              "category": "Bloque Soviético (URSS)"
+              "text": "Cierre del Congreso Nacional y prohibición de los partidos políticos",
+              "category": "Dictadura Militar (1973-1990)",
+              "hint": "La Junta Militar concentró todo el poder tras el Golpe de 1973."
             },
             {
               "id": "c3",
-              "text": "OTAN (alianza político-militar)",
-              "category": "Bloque Occidental (EE.UU.)"
+              "text": "Estatización de la banca y de más de 500 empresas",
+              "category": "Gobierno de la UP (1970-1973)",
+              "hint": "Parte de la \"vía chilena al socialismo\" de Allende."
             },
             {
               "id": "c4",
-              "text": "COMECON (cooperación económica socialista)",
-              "category": "Bloque Soviético (URSS)"
+              "text": "Aplicación del modelo económico de los \"Chicago Boys\"",
+              "category": "Dictadura Militar (1973-1990)",
+              "hint": "El régimen militar adoptó el modelo neoliberal de libre mercado."
             },
             {
               "id": "c5",
-              "text": "Economía de mercado y libre empresa",
-              "category": "Bloque Occidental (EE.UU.)"
+              "text": "Desabastecimiento y mercado negro de productos básicos",
+              "category": "Gobierno de la UP (1970-1973)",
+              "hint": "Fue uno de los grandes problemas económicos previos al Golpe."
             },
             {
               "id": "c6",
-              "text": "Economía planificada por el Estado",
-              "category": "Bloque Soviético (URSS)"
+              "text": "Creación de la DINA y persecución sistemática de opositores",
+              "category": "Dictadura Militar (1973-1990)",
+              "hint": "La policía secreta del régimen militar reprimió a la disidencia."
             },
             {
               "id": "c7",
-              "text": "Revolución Cubana (Fidel Castro)",
-              "category": "Bloque Soviético (URSS)"
+              "text": "Movilizaciones opositoras y \"cacerolazos\" de la clase media",
+              "category": "Gobierno de la UP (1970-1973)",
+              "hint": "Reflejaban la creciente polarización social antes de 1973."
             },
             {
               "id": "c8",
-              "text": "Programa espacial Apolo (llegada a la luna)",
-              "category": "Bloque Occidental (EE.UU.)"
+              "text": "Promulgación de la Constitución de 1980",
+              "category": "Dictadura Militar (1973-1990)",
+              "hint": "Estableció la base legal de la \"democracia protegida\"."
             },
             {
               "id": 9,
-              "text": "Creación del pacto militar de la OTAN.",
-              "category": "Bloque Occidental (EE.UU.)"
+              "text": "Polarización extrema entre el gobierno de la UP y la oposición",
+              "category": "Gobierno de la UP (1970-1973)",
+              "hint": "El clima político se volvió cada vez más tenso hacia 1973."
             },
             {
               "id": 10,
-              "text": "Creación del Pacto de Varsovia.",
-              "category": "Bloque Soviético (URSS)"
+              "text": "Privatización de la salud (Isapres) y las pensiones (AFP)",
+              "category": "Dictadura Militar (1973-1990)",
+              "hint": "Reformas estructurales del modelo neoliberal impuesto en los 80."
             },
             {
               "id": 11,
-              "text": "Alunizaje del Apolo 11 (Llegada a la Luna).",
-              "category": "Bloque Occidental (EE.UU.)"
+              "text": "Nacionalización \"con pago oportuno y justo\" versus expropiaciones sin indemnización",
+              "category": "Gobierno de la UP (1970-1973)",
+              "hint": "Fue una de las principales tensiones económicas del periodo de Allende."
             },
             {
               "id": 12,
-              "text": "Envío del primer satélite artificial (Sputnik) al espacio.",
-              "category": "Bloque Soviético (URSS)"
+              "text": "Suspensión de las libertades políticas y estado de sitio permanente",
+              "category": "Dictadura Militar (1973-1990)",
+              "hint": "Característica central del régimen instaurado tras el Golpe."
             }
           ]
         }
@@ -3125,7 +3358,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
             {
               "statement": "Las violaciones sistemáticas a los Derechos Humanos durante la Dictadura fueron documentadas y reconocidas por el Informe Rettig.",
               "isTrue": true,
-              "feedback": "Verdadero. La Comisión Nacional de Verdad y Reconciliación (1991), conocida como Comisión Rettig, documentó más de 3.000 casos de muertos y desaparecidos."
+              "feedback": "Verdadero. La Comisión Nacional de Verdad y Reconciliación (1991), conocida como Comisión Rettig, documentó 2.279 casos de muertos y desaparecidos (cifra que creció con comisiones posteriores)."
             },
             {
               "statement": "Durante el gobierno de Salvador Allende, se logró nacionalizar el cobre con la aprobación unánime del Congreso.",
@@ -3220,6 +3453,66 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 {
                   "left": "Patricio Aylwin",
                   "right": "→ Transición a la democracia"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Reforma Agraria (Frei y Allende)",
+                  "right": "→ Fin del latifundio y expropiación de fundos"
+                },
+                {
+                  "left": "Chilenización y nacionalización del cobre",
+                  "right": "→ El Estado toma el control de la gran minería"
+                },
+                {
+                  "left": "Reformas y movilización sindical de la UP",
+                  "right": "→ Creciente polarización social y política"
+                },
+                {
+                  "left": "Desabastecimiento y mercado negro",
+                  "right": "→ Descontento de los sectores medios y la oposición"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "DINA y luego la CNI",
+                  "right": "→ Policía secreta encargada de la represión política"
+                },
+                {
+                  "left": "Vicaría de la Solidaridad",
+                  "right": "→ Organismo de la Iglesia que documentó violaciones a los DDHH"
+                },
+                {
+                  "left": "Operación Cóndor",
+                  "right": "→ Coordinación represiva entre dictaduras del Cono Sur"
+                },
+                {
+                  "left": "Exilio político masivo",
+                  "right": "→ Miles de chilenos abandonan el país por persecución"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Constitución de 1980",
+                  "right": "→ Base legal de la \"democracia protegida\""
+                },
+                {
+                  "left": "Senadores designados y sistema binominal",
+                  "right": "→ Mecanismos que limitaron el poder de las mayorías tras 1990"
+                },
+                {
+                  "left": "Concertación de Partidos por la Democracia",
+                  "right": "→ Nombre que tomó la coalición del \"NO\" para gobernar Chile durante la transición (1990-2000)"
+                },
+                {
+                  "left": "Consejo de Seguridad Nacional (COSENA)",
+                  "right": "→ Tutela militar sobre el nuevo gobierno civil"
                 }
               ]
             }
@@ -3318,7 +3611,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Revolución en Libertad"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue la Reforma Agraria, impulsada bajo el lema \"la tierra para el que la trabaja\".",
               "feedback_error": "Fue la Reforma Agraria, impulsada bajo el lema \"la tierra para el que la trabaja\"."
             },
             {
@@ -3332,7 +3625,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Apoyar la construcción del Muro de Berlín"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Era un plan de ayuda económica de John F. Kennedy para evitar más revoluciones como la cubana.",
               "feedback_error": "Era un plan de ayuda económica de John F. Kennedy para evitar más revoluciones como la cubana."
             },
             {
@@ -3346,7 +3639,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La educación básica"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Se privatizaron las pensiones (AFP) y la salud (Isapres) como parte del modelo neoliberal.",
               "feedback_error": "Se privatizaron las pensiones (AFP) y la salud (Isapres) como parte del modelo neoliberal."
             },
             {
@@ -3360,7 +3653,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Inicio del gobierno de Salvador Allende"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El triunfo de la opción NO forzó el fin del régimen y la transición a la democracia.",
               "feedback_error": "El triunfo de la opción NO forzó el fin del régimen y la transición a la democracia."
             },
             {
@@ -3374,7 +3667,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Implantar un modelo económico neoliberal"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Buscaba el socialismo \"con sabor a empanada y vino tinto\", respetando los marcos institucionales y democráticos.",
               "feedback_error": "Buscaba el socialismo \"con sabor a empanada y vino tinto\", respetando la democracia."
             }
           ]
@@ -3471,7 +3764,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Otorgar mayor independencia económica a los militares"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Buscaba neutralizar la expansión marxista entrenando militar e ideológicamente a los ejércitos latinoamericanos.",
               "feedback_error": "Buscaba neutralizar la expansión marxista entrenando militar e ideológicamente a los ejércitos latinoamericanos."
             },
             {
@@ -3485,7 +3778,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Aumentar los impuestos a las exportaciones agrícolas"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue una medida estructural para acabar con el atrasado sistema de haciendas y redistribuir la tierra.",
               "feedback_error": "Fue una medida estructural para acabar con el atrasado sistema de haciendas."
             },
             {
@@ -3499,7 +3792,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El cierre de las minas del norte"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue un paso previo a la Nacionalización total (que haría Allende), logrando el control mayoritario para el Estado.",
               "feedback_error": "Fue un paso previo a la Nacionalización total (que haría Allende), logrando el control mayoritario."
             },
             {
@@ -3513,7 +3806,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El retiro total de las Fuerzas Armadas de la vida pública"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El país vivió una profunda división social, crisis económica y enfrentamientos.",
               "feedback_error": "El país vivió una profunda división social, crisis económica y enfrentamientos."
             },
             {
@@ -3527,7 +3820,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La mantención del modelo económico socialista"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El terrorismo de Estado se usó sistemáticamente contra opositores y disidentes (DINA, CNI).",
               "feedback_error": "El terrorismo de Estado se usó contra opositores y disidentes (DINA, CNI)."
             },
             {
@@ -3541,7 +3834,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El mercantilismo proteccionista"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Instauraron un modelo ortodoxo de libre mercado, con privatizaciones y un menor rol del Estado.",
               "feedback_error": "Instauraron un modelo ortodoxo de libre mercado."
             },
             {
@@ -3555,7 +3848,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Voto voluntario"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fueron mecanismos (enclaves autoritarios) para asegurar la tutela militar sobre la futura democracia.",
               "feedback_error": "Fueron mecanismos (enclaves autoritarios) para asegurar la tutela militar sobre la futura democracia."
             },
             {
@@ -3569,7 +3862,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La muerte de Pinochet"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La crisis de 1982 disparó el desempleo y detonó la movilización popular contra el régimen.",
               "feedback_error": "La crisis de 1982 disparó el desempleo y detonó la movilización popular contra el régimen."
             },
             {
@@ -3583,7 +3876,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La renuncia voluntaria de Pinochet"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El Plebiscito de 1988 (triunfo del NO) obligó a convocar elecciones.",
               "feedback_error": "El Plebiscito de 1988 (triunfo del NO) obligó a convocar elecciones."
             },
             {
@@ -3597,7 +3890,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Suprimir la Constitución de 1980 por decreto"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Fue una \"transición pactada\" donde el poder militar aún tenía fuerte influencia.",
               "feedback_error": "Fue una \"transición pactada\" donde el poder militar aún tenía fuerte influencia."
             }
           ]
@@ -3611,7 +3904,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
     "title": "Ciudadanía y Justicia en el Mundo Actual",
     "introduccion": "Aprende los pilares de la democracia, los desafíos de la desinformación y cómo funciona el sistema judicial.",
     "order": 4,
-    "paesWeight": "25% de la PAES",
+    "paesWeight": "20% de la PAES",
     "imageUrl": "https://res.cloudinary.com/dqm3syhwr/image/upload/v1783833825/vx0jfetabtqg3jsgkdfi.jpg",
     "secciones": [
       {
@@ -3767,16 +4060,16 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
             },
             {
               "id": 34021,
-              "enunciado": "La \"Rendición de Cuentas\" (o accountability) es un deber de las autoridades que consiste en:",
+              "enunciado": "Según la Ley de Transparencia (N° 20.285), los organismos del Estado están obligados a:",
               "alternativas": {
-                "A": "Aceptar sobornos de manera transparente.",
-                "B": "Censurar las críticas de los ciudadanos.",
-                "C": "Explicar, justificar y transparentar ante la ciudadanía el uso de los recursos y las decisiones tomadas.",
-                "D": "Rechazar la fiscalización de la prensa."
+                "A": "Mantener en secreto los sueldos de sus funcionarios.",
+                "B": "Publicar activamente sus contratos, sueldos y gastos, y responder las solicitudes de información ciudadana.",
+                "C": "Entregar información solo a los medios de comunicación.",
+                "D": "Negar cualquier solicitud de acceso a la información pública."
               },
-              "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto! En democracia, el político es un empleado público, por lo que debe dar cuentas a sus jefes (los ciudadanos).",
-              "feedback_error": "Significa \"rendir cuentas\". ¿Qué hace alguien cuando rinde cuentas?"
+              "respuesta_correcta": "B",
+              "feedback_acierto": "¡Correcto! La Ley de Transparencia obliga a los organismos públicos a publicar activamente su información y a responder las solicitudes ciudadanas.",
+              "feedback_error": "La ley busca que el uso de los recursos públicos sea visible para toda la ciudadanía, no ocultarlo."
             },
             {
               "id": 34022,
@@ -3858,16 +4151,16 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
             },
             {
               "id": 34031,
-              "enunciado": "Las \"Cámaras de Eco\" en redes sociales afectan negativamente a la democracia porque:",
+              "enunciado": "¿Cuál es la principal herramienta ciudadana para protegerse de la desinformación y las fake news?",
               "alternativas": {
-                "A": "Fomentan el debate constructivo con ideas opuestas.",
-                "B": "Aíslan a los usuarios, mostrándoles solo opiniones que refuerzan sus prejuicios y dificultando el diálogo.",
-                "C": "Bloquean automáticamente las noticias falsas.",
-                "D": "Mejoran la comprensión lectora de la población."
+                "A": "Confiar en cualquier información que tenga muchos \"me gusta\" o comparticiones.",
+                "B": "La alfabetización mediática: verificar la fuente, el autor, la fecha y las referencias antes de creer o compartir algo.",
+                "C": "Evitar por completo el uso de internet y las redes sociales.",
+                "D": "Compartir la información de inmediato para advertir a otros."
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Muy bien! Generan polarización porque las personas creen que todo el mundo piensa igual que ellas.",
-              "feedback_error": "Si un algoritmo solo te muestra lo que tú ya crees, ¿cómo afecta eso a tu tolerancia hacia quienes piensan distinto?"
+              "feedback_acierto": "¡Correcto! La alfabetización mediática —verificar de dónde viene la información antes de creerla— es la mejor defensa ciudadana contra la desinformación.",
+              "feedback_error": "Antes de creer o compartir algo, siempre conviene revisar quién lo dijo, cuándo y con qué pruebas."
             },
             {
               "id": 34032,
@@ -4082,6 +4375,66 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                   "right": "→ Permite la competencia entre diversas ideologías"
                 }
               ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Voto",
+                  "right": "→ Mecanismo de participación ciudadana en las elecciones"
+                },
+                {
+                  "left": "Accountability (rendición de cuentas)",
+                  "right": "→ Obligación de las autoridades de responder por sus actos"
+                },
+                {
+                  "left": "Ley de Transparencia",
+                  "right": "→ Garantiza el acceso ciudadano a la información pública"
+                },
+                {
+                  "left": "Plebiscito",
+                  "right": "→ Consulta directa a la ciudadanía sobre una decisión política"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Fake News",
+                  "right": "→ Información falsa difundida para desinformar"
+                },
+                {
+                  "left": "Posverdad",
+                  "right": "→ Predominio de las emociones sobre los hechos objetivos"
+                },
+                {
+                  "left": "Cámaras de eco (echo chambers)",
+                  "right": "→ Espacios digitales que solo refuerzan las propias ideas"
+                },
+                {
+                  "left": "Pensamiento crítico",
+                  "right": "→ Herramienta clave para verificar fuentes y evitar la desinformación"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Reforma Procesal Penal",
+                  "right": "→ Reemplazó el sistema inquisitivo por uno acusatorio y oral"
+                },
+                {
+                  "left": "Presunción de inocencia",
+                  "right": "→ Toda persona es inocente hasta que se demuestre lo contrario"
+                },
+                {
+                  "left": "Juez de Garantía",
+                  "right": "→ Vela por los derechos del imputado durante el proceso"
+                },
+                {
+                  "left": "Corte Suprema",
+                  "right": "→ Máximo tribunal de justicia del país"
+                }
+              ]
             }
           ]
         }
@@ -4263,7 +4616,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Conducir las relaciones exteriores"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Los tribunales son los únicos facultados para juzgar los conflictos y hacer cumplir sus fallos.",
               "feedback_error": "Los tribunales (Poder Judicial) son los únicos que pueden juzgar y dictar sentencias."
             },
             {
@@ -4277,7 +4630,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La Contraloría"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El Tribunal Constitucional vela por la supremacía constitucional y puede declarar inaplicable o inconstitucional una ley.",
               "feedback_error": "El Tribunal Constitucional vela por la supremacía de la Constitución."
             },
             {
@@ -4291,7 +4644,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Que no existen municipalidades"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! En un Estado unitario como Chile existe un solo centro de poder político y una misma legislación rige en todo el territorio.",
               "feedback_error": "Un Estado unitario (como Chile) tiene una sola ley y gobierno central, a diferencia de uno federal (como EE.UU.)."
             },
             {
@@ -4305,7 +4658,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Redactar sentencias judiciales"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Los partidos canalizan las demandas ciudadanas y organizan la competencia democrática por el poder.",
               "feedback_error": "Los partidos agrupan visiones de sociedad y presentan candidatos para representar al pueblo."
             },
             {
@@ -4319,8 +4672,141 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La inversión extranjera"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La probidad y la transparencia buscan prevenir la corrupción y el mal uso de los recursos públicos.",
               "feedback_error": "La probidad exige un actuar honesto de las autoridades para prevenir la corrupción."
+            }
+          ]
+        }
+      },
+      {
+        "id": "sec-hist-4-prac-4",
+        "title": "Práctica: Ordena el Proceso de una Ley",
+        "introduccion": "¿Sabes cómo un proyecto se convierte en ley en Chile? Ordena correctamente cada etapa del proceso legislativo.",
+        "isPractice": true,
+        "practiceType": "sort",
+        "datos_claves": [],
+        "order": 10,
+        "level": 10,
+        "materiaId": "historia",
+        "capituloId": "cap-hist-4",
+        "practiceData": {
+          "instruction": "Arrastra las etapas del proceso legislativo chileno en el orden correcto (desde la primera hasta la última).",
+          "items": [
+            {
+              "id": 1,
+              "text": "Mensaje (Presidente) o Moción (parlamentarios): se presenta el proyecto de ley"
+            },
+            {
+              "id": 2,
+              "text": "Discusión y votación en la Cámara de origen"
+            },
+            {
+              "id": 3,
+              "text": "Discusión y votación en la Cámara revisora"
+            },
+            {
+              "id": 4,
+              "text": "Control de constitucionalidad ante el Tribunal Constitucional (si corresponde)"
+            },
+            {
+              "id": 5,
+              "text": "Promulgación de la ley por el Presidente de la República"
+            },
+            {
+              "id": 6,
+              "text": "Publicación en el Diario Oficial: la ley entra en vigencia"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sec-hist-4-prac-5",
+        "title": "Práctica: ¿Fuente Confiable o Fake News?",
+        "introduccion": "En la era digital, no toda la información que circula es verdadera. Clasifica cada situación según su nivel de confiabilidad.",
+        "isPractice": true,
+        "practiceType": "categorize",
+        "datos_claves": [],
+        "order": 11,
+        "level": 11,
+        "materiaId": "historia",
+        "capituloId": "cap-hist-4",
+        "practiceData": {
+          "categories": [
+            "Fuente Confiable",
+            "Fake News / Desinformación"
+          ],
+          "items": [
+            {
+              "id": 1,
+              "text": "Una noticia publicada por un medio reconocido, con autor identificado y fuentes citadas",
+              "category": "Fuente Confiable",
+              "hint": "La transparencia sobre el autor y las fuentes es clave para verificar la información."
+            },
+            {
+              "id": 2,
+              "text": "Un mensaje viral de WhatsApp sin autor ni fuente, que pide reenviarlo \"antes de que lo borren\"",
+              "category": "Fake News / Desinformación",
+              "hint": "La urgencia y el anonimato son señales clásicas de desinformación."
+            },
+            {
+              "id": 3,
+              "text": "Un estudio científico revisado por otros expertos (peer review) antes de publicarse",
+              "category": "Fuente Confiable",
+              "hint": "La revisión por pares es un filtro de calidad de la información científica."
+            },
+            {
+              "id": 4,
+              "text": "Un titular sensacionalista que exagera los hechos para generar más clics",
+              "category": "Fake News / Desinformación",
+              "hint": "El \"clickbait\" prioriza la reacción emocional por sobre la precisión de los hechos."
+            },
+            {
+              "id": 5,
+              "text": "Una cuenta anónima en redes sociales que difunde una cifra sin citar ninguna fuente oficial",
+              "category": "Fake News / Desinformación",
+              "hint": "Sin una fuente verificable, un dato no puede confirmarse como cierto."
+            },
+            {
+              "id": 6,
+              "text": "Datos oficiales publicados por el Instituto Nacional de Estadísticas (INE)",
+              "category": "Fuente Confiable",
+              "hint": "Los organismos estatales especializados son fuentes primarias verificables."
+            },
+            {
+              "id": 7,
+              "text": "Una imagen sacada de contexto, presentada como si fuera de un hecho actual",
+              "category": "Fake News / Desinformación",
+              "hint": "Sacar contenido real de su contexto original es una forma común de manipulación."
+            },
+            {
+              "id": 8,
+              "text": "Un reportaje que contrasta versiones de distintas fuentes antes de sacar una conclusión",
+              "category": "Fuente Confiable",
+              "hint": "Contrastar múltiples fuentes reduce el riesgo de sesgo o error."
+            },
+            {
+              "id": 9,
+              "text": "Un sitio web que imita el diseño de un medio real, pero con una URL ligeramente distinta",
+              "category": "Fake News / Desinformación",
+              "hint": "Los sitios \"clon\" buscan engañar a simple vista para parecer legítimos."
+            },
+            {
+              "id": 10,
+              "text": "Una entrevista directa a la autoridad involucrada, publicada íntegramente",
+              "category": "Fuente Confiable",
+              "hint": "El testimonio directo y completo, sin editar de forma engañosa, es más verificable."
+            },
+            {
+              "id": 11,
+              "text": "Un video editado para hacer parecer que alguien dijo algo que nunca dijo",
+              "category": "Fake News / Desinformación",
+              "hint": "La edición manipuladora del contenido audiovisual es una forma grave de desinformación."
+            },
+            {
+              "id": 12,
+              "text": "Un artículo que cita explícitamente sus fuentes y permite verificarlas de forma independiente",
+              "category": "Fuente Confiable",
+              "hint": "La verificabilidad independiente es uno de los pilares del periodismo serio."
             }
           ]
         }
@@ -4331,8 +4817,8 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "introduccion": "El gran examen. Demuestra que dominas la democracia chilena, la institucionalidad y el sistema judicial con preguntas tipo PAES.",
         "isBoss": true,
         "datos_claves": [],
-        "order": 10,
-        "level": 10,
+        "order": 12,
+        "level": 12,
         "materiaId": "historia",
         "capituloId": "cap-hist-4",
         "test": {
@@ -4416,7 +4902,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Favorecer a familiares en licitaciones"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La probidad exige honestidad y anteponer el interés público al privado en el ejercicio de la función pública.",
               "feedback_error": "La probidad es el antídoto contra la corrupción."
             },
             {
@@ -4430,7 +4916,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Censitaria"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! En un plebiscito la ciudadanía decide directamente sobre un asunto, sin intermediarios.",
               "feedback_error": "Es directa porque los ciudadanos votan sobre un asunto sin intermediarios."
             },
             {
@@ -4444,7 +4930,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El respaldo del Tribunal Constitucional"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Las leyes de quórum calificado y las reformas constitucionales requieren mayorías superiores a la simple en el Congreso.",
               "feedback_error": "Requieren altos quórums (mayorías superiores a la simple) en el Congreso."
             },
             {
@@ -4458,7 +4944,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Dependen de la clase social"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Nadie puede ser despojado de sus derechos humanos ni renunciar a ellos.",
               "feedback_error": "No se pueden transferir, quitar ni renunciar a ellos."
             },
             {
@@ -4472,7 +4958,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El control estatal de los medios"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El pluralismo garantiza la coexistencia y competencia de distintas ideologías dentro de la democracia.",
               "feedback_error": "El pluralismo asegura la competencia de distintas ideas y visiones."
             },
             {
@@ -4486,7 +4972,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El Servicio Electoral"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La Contraloría General de la República fiscaliza la legalidad de los actos administrativos y el uso de los recursos públicos.",
               "feedback_error": "La Contraloría es el ente fiscalizador del uso de los recursos públicos y legalidad administrativa."
             },
             {
@@ -4500,7 +4986,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Confiar ciegamente en las autoridades"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Ser un buen ciudadano implica también cumplir las leyes y pagar los impuestos correspondientes.",
               "feedback_error": "El pago de tributos y el respeto a la ley son deberes básicos."
             },
             {
@@ -4514,7 +5000,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Instituciones del Poder Judicial"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Los partidos son asociaciones autónomas de ciudadanos que comparten principios y compiten por el poder político.",
               "feedback_error": "Agrupan a ciudadanos para competir en elecciones y proponer políticas."
             },
             {
@@ -4528,7 +5014,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La educación pública"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El recurso de amparo protege la libertad personal y la seguridad individual frente a detenciones arbitrarias.",
               "feedback_error": "Protege contra la prisión o detención ilegal."
             },
             {
@@ -4542,7 +5028,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Militar"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El Servel y el Tricel garantizan la limpieza y autonomía de los procesos electorales.",
               "feedback_error": "La justicia e instituciones electorales dan garantías de limpieza democrática."
             }
           ]
@@ -4556,7 +5042,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
     "title": "Economía, Desarrollo y Trabajo",
     "introduccion": "Mecanismos del mercado, el modelo chileno y la importancia de los derechos de los trabajadores.",
     "order": 5,
-    "paesWeight": "25% de la PAES",
+    "paesWeight": "20% de la PAES",
     "imageUrl": "https://res.cloudinary.com/dqm3syhwr/image/upload/v1783833826/gfhv2l7brhvkrjrj3erb.jpg",
     "secciones": [
       {
@@ -4611,7 +5097,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
               "enunciado": "El modelo económico en el cual los precios de los bienes y servicios son determinados exclusivamente por la interacción de la oferta y la demanda, sin intervención del Estado, se conoce teóricamente como:",
               "alternativas": {
                 "A": "Economía de planificación central.",
-                "B": "Economía de libre mercado perfecto.",
+                "B": "Economía de libre mercado.",
                 "C": "Economía mixta.",
                 "D": "Mercantilismo estatal."
               },
@@ -4837,9 +5323,9 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "title": "4. Derechos Laborales y Sindicatos",
         "introduccion": "En el mercado laboral existe una asimetría de poder natural entre el empleador y el trabajador, por lo que el Estado establece leyes protectoras contenidas en el Código del Trabajo.",
         "guia_titulo": "📖 Teoría y Contexto Histórico",
-        "guia_contenido": "El mercado laboral presenta una asimetría de poder estructural: el empleador tiene el capital y puede reemplazar trabajadores; el trabajador depende del salario para subsistir. Para equilibrar esta relación, el Estado establece el Derecho Laboral, contenido principalmente en el Código del Trabajo. Este cuerpo legal consagra derechos irrenunciables: sueldo mínimo (fijado anualmente por ley), jornada máxima de 40 horas semanales (reducción progresiva implementada desde 2024), feriado legal de 15 días hábiles al año, fuero maternal (protección contra el despido desde el embarazo hasta un año después del postnatal) e indemnización por años de servicio al ser despedido. La herramienta colectiva más poderosa de los trabajadores es el Sindicato: una organización voluntaria que los une para negociar colectivamente con el empleador condiciones mejores a las mínimas legales (sueldos, bonos, jornada). Si no hay acuerdo durante la Negociación Colectiva, los trabajadores pueden ejercer su derecho a Huelga: paralizar las actividades de la empresa para presionar al empleador a ceder. La Dirección del Trabajo (DT) y sus Inspectores fiscalizan el cumplimiento del Código del Trabajo y tramitan las denuncias de los trabajadores.",
+        "guia_contenido": "El mercado laboral presenta una asimetría de poder estructural: el empleador tiene el capital y puede reemplazar trabajadores; el trabajador depende del salario para subsistir. Para equilibrar esta relación, el Estado establece el Derecho Laboral, contenido principalmente en el Código del Trabajo. Este cuerpo legal consagra derechos irrenunciables: sueldo mínimo (fijado anualmente por ley), jornada máxima semanal (reducción progresiva por la Ley 21.561, desde 45 hrs hasta llegar a 40 hrs en 2028), feriado legal de 15 días hábiles al año, fuero maternal (protección contra el despido desde el embarazo hasta un año después del postnatal) e indemnización por años de servicio al ser despedido. La herramienta colectiva más poderosa de los trabajadores es el Sindicato: una organización voluntaria que los une para negociar colectivamente con el empleador condiciones mejores a las mínimas legales (sueldos, bonos, jornada). Si no hay acuerdo durante la Negociación Colectiva, los trabajadores pueden ejercer su derecho a Huelga: paralizar las actividades de la empresa para presionar al empleador a ceder. La Dirección del Trabajo (DT) y sus Inspectores fiscalizan el cumplimiento del Código del Trabajo y tramitan las denuncias de los trabajadores.",
         "datos_claves": [
-          "**Código del Trabajo y Derechos Irrenunciables:** Ley que protege al trabajador con derechos mínimos que no pueden ser eliminados por contrato: sueldo mínimo, jornada máxima de 40 hrs, vacaciones, fuero maternal.",
+          "**Código del Trabajo y Derechos Irrenunciables:** Ley que protege al trabajador con derechos mínimos que no pueden ser eliminados por contrato: sueldo mínimo, jornada máxima (en reducción progresiva hacia 40 hrs en 2028, Ley 21.561), vacaciones, fuero maternal.",
           "**Sindicatos y Libertad Sindical:** Organizaciones voluntarias de trabajadores que los representan ante el empleador; tienen derecho constitucional a formarse libremente sin autorización previa.",
           "**Negociación Colectiva:** Proceso formal donde el sindicato y la empresa señalan sus condiciones para llegar a un Contrato Colectivo con mejores condiciones que el mínimo legal.",
           "**Derecho a Huelga:** Último recurso legal de los trabajadores durante una negociación colectiva sin acuerdo; consiste en paralizar las actividades de la empresa para presionar al empleador.",
@@ -4937,6 +5423,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         ],
         "guia_titulo": "💡 Interpretación de Fuentes Económicas (H2)",
         "guia_contenido": "Los gráficos económicos en la PAES no requieren saber economía avanzada. Solo necesitas leer correctamente los ejes, identificar tendencias y aplicar los conceptos básicos del temario.",
+        "svgContent": "<svg viewBox=\"0 0 480 320\" xmlns=\"http://www.w3.org/2000/svg\">\n  <rect width=\"480\" height=\"320\" fill=\"#f8f9fa\" rx=\"10\"/>\n  <text x=\"240\" y=\"22\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"15\" font-weight=\"bold\" fill=\"#111827\">Gráfico de Oferta y Demanda</text>\n\n  <line x1=\"60\" y1=\"260\" x2=\"440\" y2=\"260\" stroke=\"#374151\" stroke-width=\"2\"/>\n  <line x1=\"60\" y1=\"260\" x2=\"60\" y2=\"40\" stroke=\"#374151\" stroke-width=\"2\"/>\n  <text x=\"250\" y=\"290\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"13\" fill=\"#374151\">Cantidad</text>\n  <text x=\"25\" y=\"150\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"13\" fill=\"#374151\" transform=\"rotate(-90 25 150)\">Precio</text>\n\n  <line x1=\"80\" y1=\"50\" x2=\"420\" y2=\"240\" stroke=\"#2563eb\" stroke-width=\"3\"/>\n  <text x=\"390\" y=\"233\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"bold\" fill=\"#2563eb\">Demanda (D)</text>\n\n  <line x1=\"80\" y1=\"240\" x2=\"420\" y2=\"50\" stroke=\"#dc2626\" stroke-width=\"3\"/>\n  <text x=\"360\" y=\"60\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"bold\" fill=\"#dc2626\">Oferta (O)</text>\n\n  <circle cx=\"250\" cy=\"145\" r=\"6\" fill=\"#059669\"/>\n  <line x1=\"250\" y1=\"145\" x2=\"250\" y2=\"260\" stroke=\"#059669\" stroke-width=\"1.5\" stroke-dasharray=\"4,4\"/>\n  <line x1=\"60\" y1=\"145\" x2=\"250\" y2=\"145\" stroke=\"#059669\" stroke-width=\"1.5\" stroke-dasharray=\"4,4\"/>\n  <text x=\"250\" y=\"275\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#059669\">Q equilibrio</text>\n  <text x=\"40\" y=\"142\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#059669\">P eq.</text>\n  <text x=\"250\" y=\"128\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\" font-weight=\"bold\" fill=\"#059669\">Equilibrio</text>\n</svg>",
         "order": 5,
         "level": 5,
         "materiaId": "historia",
@@ -5012,6 +5499,66 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 {
                   "left": "Oferta y Demanda",
                   "right": "→ Fuerzas que determinan los precios en un mercado libre"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Estado Subsidiario",
+                  "right": "El Estado interviene solo cuando los privados no pueden o no quieren actuar"
+                },
+                {
+                  "left": "IVA (Impuesto al Valor Agregado)",
+                  "right": "Impuesto indirecto y regresivo que se paga al consumir bienes y servicios"
+                },
+                {
+                  "left": "Impuesto a la Renta",
+                  "right": "Impuesto directo y progresivo que grava según el nivel de ingresos"
+                },
+                {
+                  "left": "Presupuesto Nacional",
+                  "right": "Ley anual que establece cómo se gastarán los ingresos fiscales del Estado"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Modelo Primario-Exportador",
+                  "right": "Economía basada en exportar materias primas sin mayor procesamiento"
+                },
+                {
+                  "left": "Tratado de Libre Comercio (TLC)",
+                  "right": "Acuerdo que elimina o reduce aranceles entre países"
+                },
+                {
+                  "left": "Zona de Sacrificio",
+                  "right": "Territorio con alta contaminación industrial que afecta la salud de sus habitantes"
+                },
+                {
+                  "left": "ERNC (Energías Renovables No Convencionales)",
+                  "right": "Fuentes de energía limpia como la solar y la eólica"
+                }
+              ]
+            },
+            {
+              "pairs": [
+                {
+                  "left": "Código del Trabajo",
+                  "right": "Conjunto de normas que regulan las relaciones laborales en Chile"
+                },
+                {
+                  "left": "Negociación Colectiva",
+                  "right": "Proceso donde trabajadores organizados negocian condiciones con el empleador"
+                },
+                {
+                  "left": "Derecho a Huelga",
+                  "right": "Herramienta legal de presión de los trabajadores frente al empleador"
+                },
+                {
+                  "left": "FNE (Fiscalía Nacional Económica)",
+                  "right": "Organismo que persigue y sanciona la colusión y los monopolios"
                 }
               ]
             }
@@ -5195,7 +5742,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Se genera inflación generalizada"
               },
               "respuesta_correcta": "A",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! A mayor oferta y menor demanda, los precios bajan para incentivar la compra.",
               "feedback_error": "A mayor oferta y menor demanda, los precios bajan para incentivar la compra."
             },
             {
@@ -5209,7 +5756,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Patente Municipal"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Es un impuesto a la renta progresivo, que cobra un porcentaje mayor a quienes ganan más.",
               "feedback_error": "Es un impuesto a la renta progresivo, cobra un porcentaje mayor a quienes ganan más."
             },
             {
@@ -5223,7 +5770,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Fijación de salario"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La colusión es el acuerdo ilegal entre competidores para fijar precios o repartirse el mercado.",
               "feedback_error": "La colusión es el acuerdo ilegal entre competidores para fijar precios o repartirse el mercado."
             },
             {
@@ -5237,7 +5784,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El aumento del sueldo mínimo"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Una externalidad negativa ocurre cuando una actividad económica daña a terceros que no participan en ella.",
               "feedback_error": "Una externalidad negativa ocurre cuando una actividad económica daña a terceros que no participan en ella."
             },
             {
@@ -5251,8 +5798,125 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Un pan amasado"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Nadie puede ser excluido de disfrutar el alumbrado público, y que tú lo uses no impide que otro también lo haga.",
               "feedback_error": "Nadie puede ser excluido de disfrutar el alumbrado público, y que tú lo uses no impide que otro también lo haga."
+            }
+          ]
+        }
+      },
+      {
+        "id": "sec-hist-5-prac-4",
+        "title": "Práctica: Ordena la Negociación Colectiva",
+        "introduccion": "¿Cómo consiguen los trabajadores mejores condiciones laborales? Ordena correctamente el proceso de una negociación colectiva.",
+        "isPractice": true,
+        "practiceType": "sort",
+        "datos_claves": [],
+        "order": 10,
+        "level": 10,
+        "materiaId": "historia",
+        "capituloId": "cap-hist-5",
+        "practiceData": {
+          "instruction": "Arrastra las etapas de una negociación colectiva en el orden correcto (desde la primera hasta la última).",
+          "items": [
+            {
+              "id": 1,
+              "text": "Los trabajadores se organizan y forman un sindicato"
+            },
+            {
+              "id": 2,
+              "text": "El sindicato presenta un proyecto de contrato colectivo al empleador"
+            },
+            {
+              "id": 3,
+              "text": "Negociación entre el sindicato y la empresa"
+            },
+            {
+              "id": 4,
+              "text": "Si no hay acuerdo, los trabajadores pueden votar y declarar la huelga legal"
+            },
+            {
+              "id": 5,
+              "text": "Firma del nuevo contrato colectivo de trabajo"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sec-hist-5-prac-5",
+        "title": "Práctica: Clasifica el Impuesto",
+        "introduccion": "¿Directo o indirecto? Clasifica correctamente cada impuesto según cómo afecta a las personas.",
+        "isPractice": true,
+        "practiceType": "categorize",
+        "datos_claves": [],
+        "order": 11,
+        "level": 11,
+        "materiaId": "historia",
+        "capituloId": "cap-hist-5",
+        "practiceData": {
+          "categories": [
+            "Impuesto Directo",
+            "Impuesto Indirecto"
+          ],
+          "items": [
+            {
+              "id": 1,
+              "text": "Impuesto a la Renta (grava según el nivel de ingresos de cada persona)",
+              "category": "Impuesto Directo",
+              "hint": "Es progresivo: quien gana más, paga una tasa mayor."
+            },
+            {
+              "id": 2,
+              "text": "IVA (Impuesto al Valor Agregado, se paga al consumir bienes y servicios)",
+              "category": "Impuesto Indirecto",
+              "hint": "Lo paga igual un rico y un pobre al comprar el mismo producto: es regresivo."
+            },
+            {
+              "id": 3,
+              "text": "Impuesto Territorial (contribuciones sobre bienes raíces)",
+              "category": "Impuesto Directo",
+              "hint": "Grava directamente el patrimonio (la propiedad) de una persona."
+            },
+            {
+              "id": 4,
+              "text": "Impuesto específico a los combustibles",
+              "category": "Impuesto Indirecto",
+              "hint": "Se paga indirectamente al comprar bencina, sin importar el ingreso del comprador."
+            },
+            {
+              "id": 5,
+              "text": "Impuesto a las Herencias y Donaciones",
+              "category": "Impuesto Directo",
+              "hint": "Grava directamente el patrimonio que una persona recibe."
+            },
+            {
+              "id": 6,
+              "text": "Impuesto al tabaco y al alcohol",
+              "category": "Impuesto Indirecto",
+              "hint": "Se aplica sobre el consumo de un producto específico, sin considerar el ingreso."
+            },
+            {
+              "id": 7,
+              "text": "Impuesto de Primera Categoría (grava las utilidades de las empresas)",
+              "category": "Impuesto Directo",
+              "hint": "Grava directamente las ganancias obtenidas por una empresa."
+            },
+            {
+              "id": 8,
+              "text": "Aranceles a las importaciones",
+              "category": "Impuesto Indirecto",
+              "hint": "Se cobra al internar productos al país, encareciendo su precio final."
+            },
+            {
+              "id": 9,
+              "text": "Impuesto Global Complementario (grava el total de ingresos anuales de una persona)",
+              "category": "Impuesto Directo",
+              "hint": "Considera directamente la capacidad económica total de cada persona."
+            },
+            {
+              "id": 10,
+              "text": "Impuesto de timbres y estampillas (grava ciertos documentos y créditos)",
+              "category": "Impuesto Indirecto",
+              "hint": "Se paga al realizar una operación específica, no según el ingreso de quien la realiza."
             }
           ]
         }
@@ -5263,14 +5927,14 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
         "introduccion": "El gran examen final. Domina el mercado, el Estado, el desarrollo sustentable y los derechos laborales con preguntas tipo PAES.",
         "isBoss": true,
         "datos_claves": [],
-        "order": 10,
-        "level": 10,
+        "order": 12,
+        "level": 12,
         "materiaId": "historia",
         "capituloId": "cap-hist-5",
         "test": {
           "id": "test-hist-5-boss",
           "seccionId": "sec-hist-5-boss",
-          "contexto_base": "\"En Chile, la llamada Gran Huelga del Carbón de 1960 dejó una lección histórica: los trabajadores que actúan colectivamente a través de sus sindicatos tienen mucho más poder de negociación que cuando actúan individualmente. Esta experiencia se repitió en los movimientos de mineros del cobre, que durante décadas lograron mejoras sustanciales en salarios, seguridad y beneficios. Hoy, sin embargo, la tasa de sindicalización en Chile es una de las más bajas de América Latina, lo que genera una asimetría de poder entre empleadores y trabajadores.\" (Adaptado de estudio de relaciones laborales)",
+          "contexto_base": "\"En Chile, la llamada Gran Huelga del Carbón de 1960 dejó una lección histórica: los trabajadores que actúan colectivamente a través de sus sindicatos tienen mucho más poder de negociación que cuando actúan individualmente. Esta experiencia se repitió en los movimientos de mineros del cobre, que durante décadas lograron mejoras sustanciales en salarios, seguridad y beneficios. Hoy, sin embargo, la tasa de sindicalización en Chile ronda apenas el 20%, muy lejos del máximo histórico de cerca del 34% que alcanzó entre los años 60 y 70, lo que genera una asimetría de poder entre empleadores y trabajadores.\" (Adaptado de estudio de relaciones laborales)",
           "preguntas": [
             {
               "id": 35801,
@@ -5348,7 +6012,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "El precio se fija por ley"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Producir más barato aumenta la oferta, desplazando el precio hacia abajo.",
               "feedback_error": "Producir más barato aumenta la oferta, desplazando el precio hacia abajo."
             },
             {
@@ -5362,7 +6026,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "No puede ser comprado"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La escasez y el trabajo humano necesario para obtenerlo le dan valor económico.",
               "feedback_error": "La escasez y el trabajo humano le dan valor económico."
             },
             {
@@ -5376,7 +6040,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Información perfecta"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! En el monopsonio, el único comprador impone el precio (ej. una única gran planta lechera comprando a muchos campesinos).",
               "feedback_error": "En el monopsonio, el único comprador impone el precio (ej. una única gran planta lechera comprando a muchos campesinos)."
             },
             {
@@ -5390,7 +6054,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "La inflación mensual"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Si eliges estudiar en lugar de trabajar, tu costo de oportunidad es el sueldo que no ganaste.",
               "feedback_error": "Si eliges estudiar en lugar de trabajar, tu costo de oportunidad es el sueldo que no ganaste."
             },
             {
@@ -5404,7 +6068,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Aumentar los impuestos directos"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Al subir la tasa, endeudarse es más caro, la gente gasta menos y los precios se frenan.",
               "feedback_error": "Al subir la tasa, endeudarse es más caro, la gente gasta menos y los precios se frenan."
             },
             {
@@ -5418,7 +6082,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Bajan los precios a los consumidores"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El costo ambiental lo pagan terceros o toda la sociedad, no la empresa contaminante.",
               "feedback_error": "El costo ambiental lo pagan terceros o toda la sociedad, no la empresa contaminante."
             },
             {
@@ -5432,7 +6096,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Defender al consumidor por productos defectuosos"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! La FNE investiga delitos contra el libre mercado como la colusión.",
               "feedback_error": "La FNE investiga delitos contra el libre mercado como la colusión."
             },
             {
@@ -5446,7 +6110,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Prohibir el uso de recursos naturales"
               },
               "respuesta_correcta": "C",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Busca el equilibrio entre economía, sociedad y medio ambiente, sin comprometer a las futuras generaciones.",
               "feedback_error": "Busca el equilibrio entre economía, sociedad y medio ambiente."
             },
             {
@@ -5460,7 +6124,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "Fomentar la desigualdad"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! El Estado provee lo que el mercado libremente no ofrecería en cantidad suficiente o para todos.",
               "feedback_error": "El Estado provee lo que el mercado libremente no ofrecería en cantidad suficiente o para todos."
             },
             {
@@ -5474,7 +6138,7 @@ export const HISTORIA_CAPITULOS: Capitulo[] = [
                 "D": "No participan en el mercado"
               },
               "respuesta_correcta": "B",
-              "feedback_acierto": "¡Correcto!",
+              "feedback_acierto": "¡Correcto! Las familias compran (consumen) y también proveen la mano de obra (factor productivo).",
               "feedback_error": "Las familias compran (consumen) y también proveen la mano de obra (factor productivo)."
             }
           ]

@@ -63,7 +63,6 @@ export interface Seccion {
   practiceType?: 'categorize' | 'fill-blanks' | 'synonyms' | 'match-pairs' | 'rapid' | 'true-false' | 'sort';
   practiceData?: any; // Para guardar configuracion especifica de juegos (match-pairs, categorize)
   imageUrl?: string;
-  svgContent?: string | null;
   tags?: string[];
   test?: TestPaes;
 }

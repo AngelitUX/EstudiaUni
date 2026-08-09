@@ -459,3 +459,210 @@ export const CAP3_SUMMARY_SLIDES: GuideSlide[] = [
     `
   }
 ];
+
+// ─── HISTORIA Y CS. SOCIALES: RESÚMENES DE CAPÍTULO ───
+
+export const HIST_CAP1_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '🏛️', title: '¡Bienvenido al Capítulo 1!',
+    bgGradient: 'linear-gradient(135deg, rgba(133,92,214,0.08), rgba(133,92,214,0.02))',
+    iconBg: 'linear-gradient(135deg, #855cd6, #6b46b8)',
+    content: `
+      <p>Estás a punto de comenzar tu recorrido por el <span class="hl">siglo XIX</span>, la época en que Chile dejó de ser colonia y se convirtió en república.</p>
+      <div class="callout">
+        🏛️ <strong>Tu misión principal:</strong> Entender cómo las ideas liberales, el orden portaliano y el auge del salitre construyeron —y luego pusieron en crisis— el Chile decimonónico.
+      </div>
+      <p>Desde Diego Portales hasta la Escuela Santa María de Iquique, este capítulo es la base de todo lo que viene después. ¡Empecemos!</p>
+    `
+  },
+  {
+    icon: '🗺️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Este capítulo recorre cinco grandes procesos del siglo XIX chileno y mundial:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Ideas Liberales:</strong> Liberalismo, nacionalismo y su impacto en América Latina.</div>
+        <div class="mc green">2️⃣ <strong>Formación de la República:</strong> Ensayos constitucionales y el orden portaliano.</div>
+        <div class="mc blue">3️⃣ <strong>Inserción Económica:</strong> El modelo de crecimiento hacia afuera.</div>
+        <div class="mc red" style="grid-column: 1 / -1;">4️⃣ <strong>Salitre y Cuestión Social:</strong> La riqueza del "oro blanco" y el costo humano detrás de ella.</div>
+      </div>
+    `
+  },
+  {
+    icon: '⚡', title: '¿Por qué es tan importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+    iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+    content: `
+      <p>Este capítulo representa el <span class="hl">15% de la PAES de Historia</span> y es la base temporal de todos los procesos posteriores: sin entender el siglo XIX, es imposible entender el XX.</p>
+      <div class="callout-gold">
+        ⚠️ <strong>Atención:</strong> La PAES ama preguntar por continuidad y cambio entre periodos. Dominar bien las fechas y procesos de este capítulo te dará una ventaja enorme más adelante.
+      </div>
+      <p>¡Prepárate para viajar en el tiempo! 🕰️</p>
+    `
+  }
+];
+
+export const HIST_CAP2_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '⚔️', title: '¡Bienvenido al Capítulo 2!',
+    bgGradient: 'linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))',
+    iconBg: 'linear-gradient(135deg, #ef4444, #dc2626)',
+    content: `
+      <p>El mundo se parte en dos. Estás a punto de recorrer las crisis, guerras y revoluciones que definieron el <span class="hl">siglo XX</span>, desde la Gran Depresión hasta la caída del Muro de Berlín.</p>
+      <div class="callout">
+        ⚔️ <strong>Tu misión principal:</strong> Comprender cómo la crisis del liberalismo económico dio paso a los totalitarismos, a la Guerra Fría y, finalmente, a un nuevo orden mundial.
+      </div>
+      <p>Es el capítulo más largo de la ruta, pero también el más determinante para entender el mundo de hoy. ¡Vamos con todo!</p>
+    `
+  },
+  {
+    icon: '🗺️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Recorrerás los grandes procesos políticos y sociales del siglo XX:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Crisis y Totalitarismos:</strong> La Gran Depresión, el fascismo, el nazismo y el estalinismo.</div>
+        <div class="mc green">2️⃣ <strong>Guerra Fría:</strong> El mundo bipolar y la Doctrina de Seguridad Nacional en América Latina.</div>
+        <div class="mc red" style="grid-column: 1 / -1;">3️⃣ <strong>Movimientos Sociales:</strong> El feminismo, la juventud contestataria y el Mayo del 68.</div>
+        <div class="mc blue" style="grid-column: 1 / -1;">4️⃣ <strong>Descolonización y Fin de la Guerra Fría:</strong> La independencia de Asia y África, y el colapso de la URSS.</div>
+      </div>
+    `
+  },
+  {
+    icon: '🚀', title: '¿Por qué es tan importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+    iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+    content: `
+      <p>Este capítulo representa el <strong>20% de la prueba PAES</strong> y conecta directamente con la historia reciente de Chile que verás en el próximo capítulo.</p>
+      <div class="callout-gold">
+        🚀 Entender por qué colapsó el liberalismo, cómo se enfrentaron los bloques y por qué terminó la Guerra Fría te dará las herramientas para analizar cualquier proceso histórico del siglo XX.
+      </div>
+      <p><em>¿Listo para recorrer cien años de historia mundial? ¡Comencemos!</em></p>
+    `
+  }
+];
+
+export const HIST_CAP3_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '🕊️', title: '¡Bienvenido al Capítulo 3!',
+    bgGradient: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(236,72,153,0.02))',
+    iconBg: 'linear-gradient(135deg, #ec4899, #db2777)',
+    content: `
+      <p>Llegamos al corazón de la <span class="hl">historia reciente de Chile</span>: el quiebre de la democracia en 1973, la dictadura militar y el largo camino de vuelta a la democracia.</p>
+      <div class="callout">
+        🕊️ <strong>Tu misión principal:</strong> Comprender las causas del quiebre democrático, las características del régimen militar y del modelo neoliberal, y el proceso de transición hasta 1990.
+      </div>
+      <p>Es un capítulo denso y con alta carga histórica. Estúdialo con la seriedad que merece: ¡es de los más preguntados en la PAES!</p>
+    `
+  },
+  {
+    icon: '🗺️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Recorrerás los procesos centrales de la segunda mitad del siglo XX en Chile:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Chile a mediados de siglo:</strong> Reforma Agraria, nacionalización del cobre y la Unidad Popular.</div>
+        <div class="mc red">2️⃣ <strong>El Quiebre de 1973:</strong> El Golpe de Estado y la instalación de la Junta Militar.</div>
+        <div class="mc green">3️⃣ <strong>Modelo Neoliberal y Constitución de 1980:</strong> Los "Chicago Boys" y la "democracia protegida".</div>
+        <div class="mc red" style="grid-column: 1 / -1;">4️⃣ <strong>DDHH y Transición:</strong> Las violaciones sistemáticas a los Derechos Humanos y el retorno a la democracia (1988-1990).</div>
+      </div>
+    `
+  },
+  {
+    icon: '⚠️', title: '¿Por qué es tan importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+    iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+    content: `
+      <p>Este capítulo representa el <strong>25% de la prueba PAES</strong>, el más alto de toda la ruta de Historia.</p>
+      <div class="callout-gold">
+        ⚠️ <strong>Atención:</strong> La PAES evalúa distintas interpretaciones historiográficas de este periodo. No se trata de memorizar una sola versión, sino de entender los distintos enfoques y la evidencia sobre lo ocurrido.
+      </div>
+      <p>Aborda este capítulo con rigor y pensamiento crítico. ¡Comencemos!</p>
+    `
+  }
+];
+
+export const HIST_CAP4_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '🗳️', title: '¡Bienvenido al Capítulo 4!',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Ahora pasamos de la historia al presente: bienvenido al mundo de la <span class="hl">ciudadanía, la democracia y la justicia</span> en el Chile de hoy.</p>
+      <div class="callout">
+        🗳️ <strong>Tu misión principal:</strong> Entender cómo funciona la institucionalidad democrática chilena, qué significa ser un ciudadano activo y cómo opera el sistema judicial.
+      </div>
+      <p>Este es el eje de Formación Ciudadana: menos fechas, más comprensión de conceptos y su aplicación a la vida real.</p>
+    `
+  },
+  {
+    icon: '⚖️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(88,204,2,0.08), rgba(88,204,2,0.02))',
+    iconBg: 'linear-gradient(135deg, #58cc02, #46a302)',
+    content: `
+      <p>Recorrerás los pilares de la ciudadanía y la institucionalidad chilena:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Fundamentos de la Democracia:</strong> Separación de poderes y Estado de Derecho.</div>
+        <div class="mc green">2️⃣ <strong>Ciudadanía Activa:</strong> Voto, transparencia y rendición de cuentas.</div>
+        <div class="mc red">3️⃣ <strong>Medios y Desinformación:</strong> Fake news, posverdad y pensamiento crítico.</div>
+        <div class="mc blue" style="grid-column: 1 / -1;">4️⃣ <strong>Sistema Judicial:</strong> Reforma Procesal Penal y acceso a la justicia.</div>
+      </div>
+    `
+  },
+  {
+    icon: '💡', title: '¿Por qué es tan importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+    iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+    content: `
+      <p>Este capítulo representa el <strong>20% de la prueba PAES</strong> y es clave para tu formación como ciudadano informado, no solo para el puntaje.</p>
+      <div class="callout-gold">
+        💡 La PAES busca que apliques estos conceptos a situaciones de la vida real: noticias, casos judiciales o decisiones políticas concretas.
+      </div>
+      <p><em>¿Listo para entender cómo funciona el Chile de hoy? ¡Comencemos!</em></p>
+    `
+  }
+];
+
+export const HIST_CAP5_SUMMARY_SLIDES: GuideSlide[] = [
+  {
+    icon: '💰', title: '¡Bienvenido al Capítulo 5!',
+    bgGradient: 'linear-gradient(135deg, rgba(88,204,2,0.08), rgba(88,204,2,0.02))',
+    iconBg: 'linear-gradient(135deg, #58cc02, #46a302)',
+    content: `
+      <p>Cerramos la ruta con el <span class="hl">sistema económico</span>: cómo funciona el mercado, qué rol cumple el Estado y por qué importan los derechos laborales.</p>
+      <div class="callout">
+        💰 <strong>Tu misión principal:</strong> Comprender el funcionamiento del mercado, los impuestos, el desarrollo sustentable y los derechos de los trabajadores en Chile.
+      </div>
+      <p>Es el último tramo de tu preparación para la PAES de Historia y Ciencias Sociales. ¡Termínalo con fuerza!</p>
+    `
+  },
+  {
+    icon: '🗺️', title: 'Lo que dominarás aquí',
+    bgGradient: 'linear-gradient(135deg, rgba(28,176,246,0.08), rgba(28,176,246,0.02))',
+    iconBg: 'linear-gradient(135deg, #1cb0f6, #0d8ecf)',
+    content: `
+      <p>Recorrerás los conceptos económicos esenciales para la PAES:</p>
+      <div class="mini-cards">
+        <div class="mc blue">1️⃣ <strong>Funcionamiento del Mercado:</strong> Oferta, demanda, monopolios y colusión.</div>
+        <div class="mc green">2️⃣ <strong>Estado e Impuestos:</strong> Estado subsidiario, IVA e impuesto a la renta.</div>
+        <div class="mc red">3️⃣ <strong>Desarrollo Sustentable:</strong> Modelo exportador, zonas de sacrificio y ERNC.</div>
+        <div class="mc blue" style="grid-column: 1 / -1;">4️⃣ <strong>Derechos Laborales:</strong> Sindicatos, negociación colectiva y huelga.</div>
+      </div>
+    `
+  },
+  {
+    icon: '🚀', title: '¿Por qué es tan importante?',
+    bgGradient: 'linear-gradient(135deg, rgba(255,200,0,0.08), rgba(255,200,0,0.02))',
+    iconBg: 'linear-gradient(135deg, #ffc800, #e0a800)',
+    content: `
+      <p>Este capítulo representa el <strong>20% de la prueba PAES</strong> y suele ser el que más nervios genera... ¡pero no tiene por qué!</p>
+      <div class="callout-gold">
+        🚀 No necesitas saber economía avanzada: con los conceptos básicos bien entendidos, respondes la gran mayoría de las preguntas.
+      </div>
+      <p><em>¿Listo para cerrar tu preparación de Historia con broche de oro? ¡Vamos!</em></p>
+    `
+  }
+];

@@ -10,17 +10,21 @@ import { SynonymPracticeComponent } from './synonym-practice.component';
 import { MatchPracticeComponent } from './match-practice.component';
 import { CategorizePracticeComponent } from './categorize-practice.component';
 import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
+import { TrueFalsePracticeComponent } from './true-false-practice/true-false-practice.component';
+import { SortPracticeComponent } from './sort-practice/sort-practice.component';
 
 @Component({
   selector: 'app-seccion-detail',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    SynonymPracticeComponent, 
-    MatchPracticeComponent, 
-    CategorizePracticeComponent, 
+    CommonModule,
+    RouterModule,
+    SynonymPracticeComponent,
+    MatchPracticeComponent,
+    CategorizePracticeComponent,
     FillBlanksPracticeComponent,
+    TrueFalsePracticeComponent,
+    SortPracticeComponent,
     GuideSlidesComponent
   ],
   template: `
@@ -94,6 +98,20 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
       <ng-container *ngIf="sec.isPractice && sec.practiceType === 'synonyms'">
         <div class="content-card practice-card">
           <app-synonym-practice [data]="sec.practiceData" (onComplete)="completePractice()"></app-synonym-practice>
+        </div>
+      </ng-container>
+
+      <!-- TRUE/FALSE MODE -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'true-false'">
+        <div class="content-card practice-card">
+          <app-true-false-practice [practiceData]="sec.practiceData" (completed)="completePractice()"></app-true-false-practice>
+        </div>
+      </ng-container>
+
+      <!-- SORT MODE -->
+      <ng-container *ngIf="sec.isPractice && sec.practiceType === 'sort'">
+        <div class="content-card practice-card">
+          <app-sort-practice [practiceData]="sec.practiceData" (completed)="completePractice()"></app-sort-practice>
         </div>
       </ng-container>
 
@@ -174,12 +192,30 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
           <h3>{{ isScienceOrMath() ? 'Ejemplo Resuelto' : 'Texto de práctica' }}</h3>
           <span class="pregunta-count" *ngIf="!isScienceOrMath()">{{ sec.test?.preguntas?.length || 0 }} {{ (sec.test?.preguntas?.length || 0) === 1 ? 'pregunta' : 'preguntas' }}</span>
         </div>
-        <div class="context-body">
-          <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
-            <span class="p-num" *ngIf="!p.isTitle && !isScienceOrMath()">[{{ p.number }}]</span>
-            <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
-          </p>
-        </div>
+
+        <!-- Paginado por texto (solo Competencia Lectora, cuando hay varios textos) -->
+        <ng-container *ngIf="materiaId() === 'comp-lectora' && hasMultipleTextos(sec.test?.contexto_base); else singleTexto">
+          <div class="context-pager">
+            <button class="pager-btn" (click)="prevPreviewText()" [disabled]="previewTextIndex() === 0">← Anterior</button>
+            <span class="pager-label">Texto {{ previewTextIndex() + 1 }} de {{ getTextos(sec.test?.contexto_base || '').length }}</span>
+            <button class="pager-btn" (click)="nextPreviewText(sec.test?.contexto_base || '')" [disabled]="previewTextIndex() >= getTextos(sec.test?.contexto_base || '').length - 1">Siguiente →</button>
+          </div>
+          <div class="context-body">
+            <p *ngFor="let p of getFormattedParagraphs(getTextos(sec.test?.contexto_base || '')[previewTextIndex()])">
+              <span class="p-num" *ngIf="!p.isTitle">[{{ p.number }}]</span>
+              <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
+            </p>
+          </div>
+        </ng-container>
+
+        <ng-template #singleTexto>
+          <div class="context-body">
+            <p *ngFor="let p of getFormattedParagraphs(sec.test?.contexto_base || '')">
+              <span class="p-num" *ngIf="!p.isTitle && !isScienceOrMath()">[{{ p.number }}]</span>
+              <span class="p-text" [class.p-title]="p.isTitle" [innerHTML]="parseMixed(p.text)"></span>
+            </p>
+          </div>
+        </ng-template>
       </div>
 
 
@@ -204,6 +240,9 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
           <div class="pro-tip-body">
             <h3>{{ sec.title }}</h3>
             <p [innerHTML]="parseMixed(sec.guia_contenido || sec.introduccion)"></p>
+          </div>
+          <div class="sec-svg-wrap-large" *ngIf="sec.svgContent">
+            <div class="sec-svg-container" [innerHTML]="renderSvg(sec.svgContent)"></div>
           </div>
           <div class="tips-list" *ngIf="sec.datos_claves?.length">
             <div *ngFor="let dato of sec.datos_claves; let i = index" class="tip-item tip-item-pro">
@@ -256,6 +295,11 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
     ::ng-deep .sec-svg-container svg { width: 100%; height: 100%; display: block; overflow: visible; }
     
     /* CONTEXT */
+    .context-pager { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.85rem; }
+    .pager-btn { background: rgba(133,92,214,0.08); color: var(--accent-primary); border: none; border-radius: 10px; padding: 0.5rem 0.9rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .pager-btn:hover:not(:disabled) { background: rgba(133,92,214,0.16); }
+    .pager-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .pager-label { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-align: center; }
     .context-body { background: rgba(133,92,214,0.03); border-left: 4px solid var(--accent-primary); border-radius: 0 12px 12px 0; padding: 1.25rem; }
     .context-body p { margin: 0 0 0.85rem; padding-left: 0.5rem; line-height: 1.6; display: flex; gap: 0.6rem; align-items: baseline; }
     .context-body p:last-child { margin-bottom: 0; }
@@ -362,6 +406,7 @@ export class SeccionDetailComponent {
   capituloId = signal('');
   seccionId = signal('');
   practiceCompleted = signal(false);
+  previewTextIndex = signal(0);
   voiceMenuOpen = false;
 
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
@@ -390,6 +435,7 @@ export class SeccionDetailComponent {
       this.capituloId.set(params.get('capituloId') || '');
       this.seccionId.set(params.get('seccionId') || '');
       this.practiceCompleted.set(false);
+      this.previewTextIndex.set(0);
     });
   }
 
@@ -454,6 +500,24 @@ export class SeccionDetailComponent {
   getParagraphs(text: string | null | undefined): string[] {
     if (!text) return [];
     return text.split('\n\n').map(p => p.trim()).filter(p => p !== '');
+  }
+
+  hasMultipleTextos(text: string | null | undefined): boolean {
+    return !!text && text.includes('--- DIVISION_TEXTOS ---');
+  }
+
+  getTextos(text: string | null | undefined): string[] {
+    if (!text) return [];
+    return text.split('--- DIVISION_TEXTOS ---').map(t => t.trim()).filter(t => t !== '');
+  }
+
+  prevPreviewText() {
+    this.previewTextIndex.update(i => Math.max(0, i - 1));
+  }
+
+  nextPreviewText(contexto: string) {
+    const max = this.getTextos(contexto).length - 1;
+    this.previewTextIndex.update(i => Math.min(max, i + 1));
   }
 
   completePractice() {
