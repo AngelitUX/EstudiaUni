@@ -7,7 +7,7 @@ if (!cap2) process.exit(1);
 const oldNodes = cap2.secciones;
 
 // We will map them to strings
-function serializeNode(node) {
+function serializeNode(node: any) {
   return JSON.stringify(node, null, 2);
 }
 

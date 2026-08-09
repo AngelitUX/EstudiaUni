@@ -342,11 +342,11 @@ type PathItem = {
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <!-- PHYSICS SIMULATOR PANEL (only for ciencias-fisica) -->
-    <ng-container *ngIf="isPhysicsRoute()">
+    <ng-container *ngIf="isM1Route()">
       <!-- Tab trigger button -->
       <button class="sim-tab-trigger" (click)="toggleSimPanel()" [class.panel-open]="simPanelOpen" [class.expanded]="simExpanded">
-        <span class="sim-tab-icon">⚗️</span>
-        <span class="sim-tab-label">Simulador</span>
+        <span class="sim-tab-icon">📐</span>
+        <span class="sim-tab-label">Simulador M1</span>
         <span class="sim-tab-arrow">{{ simPanelOpen ? '▶' : '◀' }}</span>
       </button>
 
@@ -355,9 +355,9 @@ type PathItem = {
         <div class="sim-drawer-inner">
           <div class="sim-header">
             <div class="sim-header-left">
-              <span class="sim-header-icon">⚗️</span>
+              <span class="sim-header-icon">📐</span>
               <div>
-                <h3 class="sim-title">Simuladores de Física</h3>
+                <h3 class="sim-title">Simuladores de Matemáticas M1</h3>
               </div>
             </div>
             <div class="sim-header-actions">
@@ -368,270 +368,267 @@ type PathItem = {
             </div>
           </div>
 
+          <div style="font-size: 0.85rem; color: #4b5563; text-align: center; margin-bottom: 1rem; padding: 0.6rem; background: rgba(0,0,0,0.04); border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 500; border: 1px solid rgba(0,0,0,0.05);">
+            💡 <span>Si no visualizas bien la simulación, usa el botón <strong>↗ Ampliar</strong> de arriba.</span>
+          </div>
+          
           <div class="sim-chapter-groups">
             <select class="sim-chapter-select" (change)="setSimChapter($event)">
-              <option value="0" [selected]="selectedSimChapterIndex === 0">1 — Mecánica</option>
-              <option value="1" [selected]="selectedSimChapterIndex === 1">2 — Ondas</option>
-              <option value="2" [selected]="selectedSimChapterIndex === 2">3 — Energía</option>
-              <option value="3" [selected]="selectedSimChapterIndex === 3">4 — Electricidad</option>
-              <option value="4" [selected]="selectedSimChapterIndex === 4">5 — Tierra y Universo</option>
+              <option value="0" [selected]="selectedSimChapterIndex === 0">Eje: Números</option>
+              <option value="1" [selected]="selectedSimChapterIndex === 1">Eje: Álgebra y Funciones</option>
+              <option value="2" [selected]="selectedSimChapterIndex === 2">Eje: Geometría</option>
+              <option value="3" [selected]="selectedSimChapterIndex === 3">Eje: Probabilidad y Estadística</option>
             </select>
             
-            <!-- CAP 1: Mecánica -->
+            <!-- EJE 1: Números -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-              <button class="sim-tab" [class.active]="activeSimTab === 'projectile'" (click)="setSimTab('projectile')">🎯 Proyectil</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'inclined'" (click)="setSimTab('inclined')">📐 Plano Inclinado</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">📊 Porcentajes</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">🌳 Potencias y Crecimiento</button>
             </div>
-            <!-- CAP 2: Ondas -->
+            <!-- EJE 2: Álgebra -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-              <button class="sim-tab" [class.active]="activeSimTab === 'waves'" (click)="setSimTab('waves')">〜 Onda Sinusoidal</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'interference'" (click)="setSimTab('interference')">🔀 Interferencia</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">📈 F. Lineal y Afín</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">📉 F. Cuadrática</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">🧮 Graficador Libre</button>
             </div>
-            <!-- CAP 3: Energía -->
+            <!-- EJE 3: Geometría -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-              <button class="sim-tab" [class.active]="activeSimTab === 'pendulum'" (click)="setSimTab('pendulum')">🕰️ Péndulo</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">📐 T. de Pitágoras</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">🔄 Transf. Isométricas</button>
             </div>
-            <!-- CAP 4: Electricidad -->
+            <!-- EJE 4: Estadística -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-              <button class="sim-tab" [class.active]="activeSimTab === 'coulomb'" (click)="setSimTab('coulomb')">⚡ Ley de Coulomb</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'circuit'" (click)="setSimTab('circuit')">🔋 Circuito Ohm</button>
-            </div>
-            <!-- CAP 5: Tierra y Universo -->
-            <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 4">
-              <button class="sim-tab" [class.active]="activeSimTab === 'orbit'" (click)="setSimTab('orbit')">🪐 Órbita Planetaria</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">🎲 Tirada de Dados</button>
             </div>
           </div>
 
-          <!-- ═══ PROJECTILE SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'projectile'">
-            <div class="sim-info-badge">🎯 Movimiento parabólico — velocidad inicial, ángulo y gravedad</div>
-            <canvas #projectileCanvas class="sim-canvas"></canvas>
+          <!-- ═══ 1.1 PERCENTAGE SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'percentage'">
+            <div class="sim-info-badge">📊 Representación visual de porcentajes, fracciones y decimales</div>
+            <canvas #percentageCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Velocidad: <strong>{{ projVelocity }} m/s</strong></label>
-                <input type="range" min="10" max="50" [value]="projVelocity" (input)="projVelocity = +$any($event.target).value">
+                <label>Porcentaje: <strong>{{ simPercentage }}%</strong></label>
+                <input type="range" min="0" max="100" [value]="simPercentage" (input)="simPercentage = +$any($event.target).value; drawPercentage()">
               </div>
               <div class="sim-control-row">
-                <label>Ángulo: <strong>{{ projAngle }}°</strong></label>
-                <input type="range" min="5" max="85" [value]="projAngle" (input)="projAngle = +$any($event.target).value">
-              </div>
-              <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="launchProjectile()">🚀 Lanzar</button>
-              </div>
-            </div>
-            <div class="sim-stats" *ngIf="projMaxHeight > 0">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'y_max = (v₀·sin(θ))² / 2g'" (mouseleave)="hoveredFormula = ''"><span>Altura máx.</span><strong>{{ projMaxHeight | number:'1.1-1' }} m</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'x_max = (v₀²·sin(2θ)) / g'" (mouseleave)="hoveredFormula = ''"><span>Alcance</span><strong>{{ projRange | number:'1.1-1' }} m</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 't_total = 2·v₀·sin(θ) / g'" (mouseleave)="hoveredFormula = ''"><span>Tiempo</span><strong>{{ projTime | number:'1.1-1' }} s</strong></div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Pos. Y</span><span class="formula-text">y = v₀·sin(θ)t − ½gt²</span></div>
-              <div class="sim-formula"><span class="formula-label">Pos. X</span><span class="formula-text">x = v₀·cos(θ)t</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ INCLINED PLANE SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'inclined'">
-            <div class="sim-info-badge">📐 Plano inclinado — fuerzas componentes y aceleración</div>
-            <canvas #inclinedCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Ángulo θ: <strong>{{ inclinedAngle }}°</strong></label>
-                <input type="range" min="5" max="75" [value]="inclinedAngle" (input)="inclinedAngle = +$any($event.target).value; drawInclined()">
-              </div>
-              <div class="sim-control-row">
-                <label>Masa: <strong>{{ inclinedMass }} kg</strong></label>
-                <input type="range" min="1" max="20" [value]="inclinedMass" (input)="inclinedMass = +$any($event.target).value; drawInclined()">
-              </div>
-              <div class="sim-control-row">
-                <label>μ rozamiento: <strong>{{ inclinedMu }}</strong></label>
-                <input type="range" min="0" max="60" [value]="inclinedMu * 100" (input)="inclinedMu = +$any($event.target).value / 100; drawInclined()">
-              </div>
-            </div>
-            <div class="sim-stats">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'F∥ = m·g·sin(θ)'" (mouseleave)="hoveredFormula = ''"><span>F paralela</span><strong>{{ getInclinedFp() | number:'1.1-1' }} N</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'N = m·g·cos(θ)'" (mouseleave)="hoveredFormula = ''"><span>F normal</span><strong>{{ getInclinedFn() | number:'1.1-1' }} N</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Fr = μ·N'" (mouseleave)="hoveredFormula = ''"><span>F rozamiento</span><strong>{{ getInclinedFr() | number:'1.1-1' }} N</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'a = (F∥ - Fr) / m'" (mouseleave)="hoveredFormula = ''"><span>Aceleración</span><strong>{{ getInclinedAcc() | number:'1.2-2' }} m/s²</strong></div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Paralela</span><span class="formula-text">F∥ = m·g·sin(θ)</span></div>
-              <div class="sim-formula"><span class="formula-label">Fricción</span><span class="formula-text">Fr = μ·m·g·cos(θ)</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ WAVE SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'waves'">
-            <div class="sim-info-badge">〜 Onda sinusoidal — amplitud, frecuencia y longitud de onda</div>
-            <canvas #waveCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Amplitud: <strong>{{ waveAmplitude }}</strong></label>
-                <input type="range" min="10" max="60" [value]="waveAmplitude" (input)="waveAmplitude = +$any($event.target).value; drawWave()">
-              </div>
-              <div class="sim-control-row">
-                <label>Frecuencia: <strong>{{ waveFrequency }}</strong></label>
-                <input type="range" min="1" max="8" [value]="waveFrequency" (input)="waveFrequency = +$any($event.target).value; drawWave()">
-              </div>
-              <div class="sim-control-row">
-                <label>Animación</label>
-                <button class="sim-btn" (click)="toggleWaveAnimation()">{{ waveAnimating ? '⏸ Pausar' : '▶ Animar' }}</button>
-              </div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Velocidad</span><span class="formula-text">v = f · λ</span></div>
-              <div class="sim-formula"><span class="formula-label">Período</span><span class="formula-text">T = 1/f</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ INTERFERENCE SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'interference'">
-            <div class="sim-info-badge">🔀 Superposición de ondas — constructiva y destructiva</div>
-            <canvas #interferenceCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Frec. onda 1: <strong>{{ interfFreq1 }}</strong></label>
-                <input type="range" min="1" max="6" [value]="interfFreq1" (input)="interfFreq1 = +$any($event.target).value; drawInterference()">
-              </div>
-              <div class="sim-control-row">
-                <label>Frec. onda 2: <strong>{{ interfFreq2 }}</strong></label>
-                <input type="range" min="1" max="6" [value]="interfFreq2" (input)="interfFreq2 = +$any($event.target).value; drawInterference()">
-              </div>
-              <div class="sim-control-row">
-                <label>Fase onda 2: <strong>{{ interfPhase }}°</strong></label>
-                <input type="range" min="0" max="360" [value]="interfPhase" (input)="interfPhase = +$any($event.target).value; drawInterference()">
-              </div>
-              <div class="sim-control-row">
-                <label>Animación</label>
-                <button class="sim-btn" (click)="toggleInterfAnimation()">{{ interfAnimating ? '⏸ Pausar' : '▶ Animar' }}</button>
-              </div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Superposición</span><span class="formula-text">y = y₁ + y₂</span></div>
-              <div class="sim-formula"><span class="formula-label">Constructiva</span><span class="formula-text">Δx = nλ</span></div>
-              <div class="sim-formula"><span class="formula-label">Destructiva</span><span class="formula-text">Δx = (n+½)λ</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ PENDULUM SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'pendulum'">
-            <div class="sim-info-badge">🕰️ Péndulo simple — conservación de energía mecánica</div>
-            <canvas #pendulumCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Longitud: <strong>{{ pendulumLength }} m</strong></label>
-                <input type="range" min="1" max="10" [value]="pendulumLength" (input)="pendulumLength = +$any($event.target).value; resetPendulum()">
-              </div>
-              <div class="sim-control-row">
-                <label>Ángulo inicial: <strong>{{ pendulumAngle0 }}°</strong></label>
-                <input type="range" min="5" max="60" [value]="pendulumAngle0" (input)="pendulumAngle0 = +$any($event.target).value; resetPendulum()">
-              </div>
-              <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="togglePendulum()">{{ pendulumRunning ? '⏸ Pausar' : '▶ Oscilar' }}</button>
-              </div>
-            </div>
-            <div class="sim-stats">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'T = 2π √(L/g)'" (mouseleave)="hoveredFormula = ''"><span>Período T</span><strong>{{ getPendulumPeriod() | number:'1.2-2' }} s</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Ec = ½·m·v²'" (mouseleave)="hoveredFormula = ''"><span>E cinética</span><strong>{{ pendulumKE | number:'1.1-1' }} J</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Ep = m·g·h'" (mouseleave)="hoveredFormula = ''"><span>E potencial</span><strong>{{ pendulumPE | number:'1.1-1' }} J</strong></div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Período</span><span class="formula-text">T = 2π √(L/g)</span></div>
-              <div class="sim-formula"><span class="formula-label">Energía</span><span class="formula-text">Em = Ec + Ep = Const</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ COULOMB SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'coulomb'">
-            <div class="sim-info-badge">⚡ Ley de Coulomb — fuerza entre cargas eléctricas</div>
-            <canvas #coulombCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Carga q₁: <strong>{{ coulombQ1 }} μC</strong></label>
-                <input type="range" min="1" max="10" [value]="coulombQ1" (input)="coulombQ1 = +$any($event.target).value; drawCoulomb()">
-              </div>
-              <div class="sim-control-row">
-                <label>Carga q₂: <strong>{{ coulombQ2 }} μC</strong></label>
-                <input type="range" min="1" max="10" [value]="coulombQ2" (input)="coulombQ2 = +$any($event.target).value; drawCoulomb()">
-              </div>
-              <div class="sim-control-row">
-                <label>Distancia: <strong>{{ coulombDist }} m</strong></label>
-                <input type="range" min="1" max="10" [value]="coulombDist" (input)="coulombDist = +$any($event.target).value; drawCoulomb()">
-              </div>
-            </div>
-            <div class="sim-stats">
-              <div class="proj-stat full" (mouseenter)="hoveredFormula = 'F = k·|q₁·q₂| / r²'" (mouseleave)="hoveredFormula = ''">
-                <span>Fuerza eléctrica</span>
-                <strong>{{ getCoulombForce() | number:'1.2-2' }} N</strong>
-              </div>
-            </div>
-            <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Fuerza Eléctrica</span><span class="formula-text">F = k·|q₁·q₂| / r²</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ CIRCUIT SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'circuit'">
-            <div class="sim-info-badge">🔋 Ley de Ohm — voltaje, corriente y resistencia en circuitos</div>
-            <canvas #circuitCanvas class="sim-canvas"></canvas>
-            <div class="sim-controls">
-              <div class="sim-control-row">
-                <label>Voltaje V: <strong>{{ circuitV }} V</strong></label>
-                <input type="range" min="1" max="24" [value]="circuitV" (input)="circuitV = +$any($event.target).value; drawCircuit()">
-              </div>
-              <div class="sim-control-row">
-                <label>R₁: <strong>{{ circuitR1 }} Ω</strong></label>
-                <input type="range" min="1" max="20" [value]="circuitR1" (input)="circuitR1 = +$any($event.target).value; drawCircuit()">
-              </div>
-              <div class="sim-control-row">
-                <label>R₂: <strong>{{ circuitR2 }} Ω</strong></label>
-                <input type="range" min="1" max="20" [value]="circuitR2" (input)="circuitR2 = +$any($event.target).value; drawCircuit()">
-              </div>
-              <div class="sim-control-row">
-                <label>Tipo:</label>
+                <label>Tema de color:</label>
                 <div style="display:flex;gap:0.35rem">
-                  <button class="sim-btn" [class.sim-btn-outline]="circuitType !== 'series'" (click)="circuitType='series'; drawCircuit()">Serie</button>
-                  <button class="sim-btn" [class.sim-btn-outline]="circuitType !== 'parallel'" (click)="circuitType='parallel'; drawCircuit()">Paralelo</button>
+                  <button class="sim-btn" [class.sim-btn-outline]="simPercentageTheme !== 'purple'" (click)="simPercentageTheme='purple'; drawPercentage()">Morado</button>
+                  <button class="sim-btn" [class.sim-btn-outline]="simPercentageTheme !== 'teal'" (click)="simPercentageTheme='teal'; drawPercentage()">Turquesa</button>
+                  <button class="sim-btn" [class.sim-btn-outline]="simPercentageTheme !== 'crimson'" (click)="simPercentageTheme='crimson'; drawPercentage()">Carmesí</button>
                 </div>
               </div>
             </div>
             <div class="sim-stats">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = circuitType === 'series' ? 'Rs = R₁ + R₂' : 'Rp = (R₁·R₂) / (R₁ + R₂)'" (mouseleave)="hoveredFormula = ''"><span>R total</span><strong>{{ getCircuitRt() | number:'1.1-1' }} Ω</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'I = V / R_total'" (mouseleave)="hoveredFormula = ''"><span>Corriente</span><strong>{{ getCircuitI() | number:'1.2-2' }} A</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'P = V · I'" (mouseleave)="hoveredFormula = ''"><span>Potencia</span><strong>{{ getCircuitP() | number:'1.1-1' }} W</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Fracción = Valor / 100'" (mouseleave)="hoveredFormula = ''"><span>Fracción</span><strong>{{ getPercentageFraction() }}</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Decimal = Valor / 100'" (mouseleave)="hoveredFormula = ''"><span>Decimal</span><strong>{{ (simPercentage / 100).toFixed(2) }}</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Resto = 100% - Valor'" (mouseleave)="hoveredFormula = ''"><span>Restante</span><strong>{{ 100 - simPercentage }}%</strong></div>
             </div>
             <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">Voltaje</span><span class="formula-text">V = I · R</span></div>
-              <div class="sim-formula"><span class="formula-label">Potencia</span><span class="formula-text">P = V · I</span></div>
-              <div class="sim-formula"><span class="formula-label">R Serie</span><span class="formula-text">Rs = R₁+R₂</span></div>
-              <div class="sim-formula"><span class="formula-label">R Paralelo</span><span class="formula-text">1/Rp = 1/R₁+1/R₂</span></div>
+              <div class="sim-formula"><span class="formula-label">Fracción</span><span class="formula-text">P/100 = simplificado</span></div>
+              <div class="sim-formula"><span class="formula-label">Decimal</span><span class="formula-text">d = P / 100</span></div>
             </div>
           </div>
 
-          <!-- ═══ ORBIT SIMULATOR ═══ -->
-          <div class="sim-content" *ngIf="activeSimTab === 'orbit'">
-            <div class="sim-info-badge">🪐 Órbita planetaria — gravedad y velocidad orbital</div>
-            <canvas #orbitCanvas class="sim-canvas"></canvas>
+          <!-- ═══ 1.2 EXPONENTIAL/POTENCIAS SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'exponential'">
+            <div class="sim-info-badge">🌳 Crecimiento y ramificación por potencias (ej. Duplicación)</div>
+            <canvas #exponentialCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Masa estrella: <strong>{{ orbitMassStar }}</strong></label>
-                <input type="range" min="1" max="10" [value]="orbitMassStar" (input)="orbitMassStar = +$any($event.target).value">
+                <label>Nivel de ramificación: <strong>{{ simExpA }}</strong></label>
+                <input type="range" min="1" max="5" [value]="simExpA" (input)="simExpA = +$any($event.target).value; drawExponential()">
               </div>
               <div class="sim-control-row">
-                <label>Radio órbita: <strong>{{ orbitRadius }}</strong></label>
-                <input type="range" min="40" max="110" [value]="orbitRadius" (input)="orbitRadius = +$any($event.target).value">
-              </div>
-              <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="toggleOrbit()">{{ orbitRunning ? '⏸ Pausar' : '▶ Orbitar' }}</button>
+                <label>Factor base: <strong>{{ simExpBase }}</strong></label>
+                <input type="range" min="2" max="3" [value]="simExpBase" (input)="simExpBase = +$any($event.target).value; drawExponential()">
               </div>
             </div>
             <div class="sim-stats">
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'v = √(G·M / r)'" (mouseleave)="hoveredFormula = ''"><span>Vel. orbital</span><strong>{{ getOrbitVel() | number:'1.2-2' }} ua/s</strong></div>
-              <div class="proj-stat" (mouseenter)="hoveredFormula = 'T = 2π·r / v'" (mouseleave)="hoveredFormula = ''"><span>Período</span><strong>{{ getOrbitPeriod() | number:'1.1-1' }} s</strong></div>
+              <div class="proj-stat full" (mouseenter)="hoveredFormula = 'Nodos = Base^Nivel'" (mouseleave)="hoveredFormula = ''">
+                <span>Nodos finales en este nivel</span>
+                <strong>{{ Math.pow(simExpBase, simExpA) }}</strong>
+              </div>
             </div>
             <div class="sim-formulas-container">
-              <div class="sim-formula"><span class="formula-label">F. Gravedad</span><span class="formula-text">F = G·M·m/r²</span></div>
-              <div class="sim-formula"><span class="formula-label">Velocidad</span><span class="formula-text">v = √(G·M/r)</span></div>
+              <div class="sim-formula"><span class="formula-label">Potencia</span><span class="formula-text">Valor = Base ^ Nivel</span></div>
+            </div>
+          </div>
+
+          <!-- ═══ 2.1 LINEAR FUNCTION SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'linear'">
+            <div class="sim-info-badge">📈 Función lineal y afín — pendiente m e intercepto n</div>
+            <canvas #linearCanvas class="sim-canvas"></canvas>
+            <div class="sim-controls">
+              <div class="sim-control-row">
+                <label>Pendiente m: <strong>{{ simLineSlope }}</strong></label>
+                <input type="range" min="-30" max="30" [value]="simLineSlope * 10" (input)="simLineSlope = +$any($event.target).value / 10; drawLinear()">
+              </div>
+              <div class="sim-control-row">
+                <label>Intercepto n: <strong>{{ simLineIntercept }}</strong></label>
+                <input type="range" min="-4" max="4" [value]="simLineIntercept" (input)="simLineIntercept = +$any($event.target).value; drawLinear()">
+              </div>
+            </div>
+            <div class="sim-stats">
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'm > 0 (Creciente), m < 0 (Decreciente)'" (mouseleave)="hoveredFormula = ''"><span>Tipo</span><strong>{{ simLineSlope > 0 ? 'Creciente' : simLineSlope < 0 ? 'Decreciente' : 'Constante' }}</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Intersección Y = (0, n)'" (mouseleave)="hoveredFormula = ''"><span>Corte Y</span><strong>(0, {{ simLineIntercept }})</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Corte X = (-n / m, 0)'" (mouseleave)="hoveredFormula = ''"><span>Corte X</span><strong>{{ getLinearXIntercept() }}</strong></div>
+            </div>
+            <div class="sim-formulas-container">
+              <div class="sim-formula"><span class="formula-label">Ecuación</span><span class="formula-text">y = mx + n</span></div>
+              <div class="sim-formula"><span class="formula-label">Pendiente</span><span class="formula-text">m = Δy / Δx</span></div>
+            </div>
+          </div>
+
+          <!-- ═══ 2.2 QUADRATIC FUNCTION SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'quadratic'">
+            <div class="sim-info-badge">📉 Función cuadrática — concavidad, vértice e intersecciones</div>
+            <canvas #quadraticCanvas class="sim-canvas"></canvas>
+            <div class="sim-controls">
+              <div class="sim-control-row">
+                <label>Coeficiente a: <strong>{{ simQuadA }}</strong></label>
+                <input type="range" min="-20" max="20" [value]="simQuadA * 10" (input)="setQuadA($event)">
+              </div>
+              <div class="sim-control-row">
+                <label>Coeficiente b: <strong>{{ simQuadB }}</strong></label>
+                <input type="range" min="-40" max="40" [value]="simQuadB * 10" (input)="simQuadB = +$any($event.target).value / 10; drawQuadratic()">
+              </div>
+              <div class="sim-control-row">
+                <label>Coeficiente c: <strong>{{ simQuadC }}</strong></label>
+                <input type="range" min="-4" max="4" [value]="simQuadC" (input)="simQuadC = +$any($event.target).value; drawQuadratic()">
+              </div>
+            </div>
+            <div class="sim-stats">
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'a > 0 (Cóncava arriba), a < 0 (abajo)'" (mouseleave)="hoveredFormula = ''"><span>Abertura</span><strong>{{ simQuadA > 0 ? 'Arriba' : 'Abajo' }}</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Vér = (-b/2a, f(-b/2a))'" (mouseleave)="hoveredFormula = ''"><span>Vértice</span><strong>{{ getQuadraticVertex() }}</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Δ = b² − 4ac'" (mouseleave)="hoveredFormula = ''"><span>Discriminante</span><strong>{{ getQuadraticDisc() | number:'1.1-1' }}</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Cortes X según signo de Δ'" (mouseleave)="hoveredFormula = ''"><span>Cortes X</span><strong>{{ getQuadraticDisc() > 0 ? '2 cortes' : getQuadraticDisc() === 0 ? '1 corte' : '0 cortes' }}</strong></div>
+            </div>
+            <div class="sim-formulas-container">
+              <div class="sim-formula"><span class="formula-label">Vértice X</span><span class="formula-text">Xv = −b / 2a</span></div>
+              <div class="sim-formula"><span class="formula-label">Discriminante</span><span class="formula-text">Δ = b² − 4ac</span></div>
+            </div>
+          </div>
+
+          <!-- ═══ 2.3 FREE GRAPH SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'free-graph'">
+            <div class="sim-info-badge">🧮 Graficador Libre — escribe cualquier fórmula en función de x (ej. sin(x) + cos(2*x))</div>
+            <canvas #freeCanvas class="sim-canvas"></canvas>
+            <div class="sim-controls">
+              <div class="sim-control-row">
+                <label>Fórmula f(x):</label>
+                <input type="text" style="flex: 1; padding: 0.35rem 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; font-size: 0.9rem;" [value]="simFreeExpression" (input)="updateFreeExpression($event)" placeholder="ej. sin(x) + 0.5*x">
+              </div>
+              <div class="sim-control-row">
+                <label>Zoom (escala): <strong>{{ simFreeScale }} px/u</strong></label>
+                <input type="range" min="10" max="80" [value]="simFreeScale" (input)="simFreeScale = +$any($event.target).value; drawFreeGraph()">
+              </div>
+              <div class="sim-control-row">
+                <label>Ejemplos rápidos:</label>
+                <div style="display:flex;gap:0.35rem;flex-wrap:wrap">
+                  <button class="sim-btn sim-btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" (click)="setFreeExample('sin(x)')">sin(x)</button>
+                  <button class="sim-btn sim-btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" (click)="setFreeExample('x^3 - 3*x')">x³ - 3x</button>
+                  <button class="sim-btn sim-btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" (click)="setFreeExample('cos(x)*x')">cos(x)·x</button>
+                  <button class="sim-btn sim-btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" (click)="setFreeExample('abs(x) - 2')">|x| - 2</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ 3.1 PYTHAGORAS SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'pythagoras'">
+            <div class="sim-info-badge">📐 Teorema de Pitágoras — suma de áreas de los catetos y la hipotenusa</div>
+            <canvas #pythagorasCanvas class="sim-canvas"></canvas>
+            <div class="sim-controls">
+              <div class="sim-control-row">
+                <label>Cateto a: <strong>{{ simPythA }}</strong></label>
+                <input type="range" min="30" max="90" [value]="simPythA" (input)="simPythA = +$any($event.target).value; drawPythagoras()">
+              </div>
+              <div class="sim-control-row">
+                <label>Cateto b: <strong>{{ simPythB }}</strong></label>
+                <input type="range" min="30" max="90" [value]="simPythB" (input)="simPythB = +$any($event.target).value; drawPythagoras()">
+              </div>
+            </div>
+            <div class="sim-stats">
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Área cateto a = a²'" (mouseleave)="hoveredFormula = ''"><span>Área a²</span><strong>{{ simPythA * simPythA }} px²</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Área cateto b = b²'" (mouseleave)="hoveredFormula = ''"><span>Área b²</span><strong>{{ simPythB * simPythB }} px²</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Área hipotenusa = a² + b²'" (mouseleave)="hoveredFormula = ''"><span>Área c²</span><strong>{{ simPythA * simPythA + simPythB * simPythB }} px²</strong></div>
+              <div class="proj-stat" (mouseenter)="hoveredFormula = 'Hipotenusa c = √(a² + b²)'" (mouseleave)="hoveredFormula = ''"><span>Hipotenusa c</span><strong>{{ Math.sqrt(simPythA * simPythA + simPythB * simPythB) | number:'1.1-1' }}</strong></div>
+            </div>
+            <div class="sim-formulas-container">
+              <div class="sim-formula"><span class="formula-label">Fórmula</span><span class="formula-text">c² = a² + b²</span></div>
+              <div class="sim-formula"><span class="formula-label">Hipotenusa</span><span class="formula-text">c = √(a² + b²)</span></div>
+            </div>
+          </div>
+
+          <!-- ═══ 3.2 ISOMETRIC TRANSFORMATIONS SIMULATOR ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'homothetic'">
+            <div class="sim-info-badge">🔄 Transformaciones isométricas — traslación, rotación y reflexión</div>
+            <canvas #homotheticCanvas class="sim-canvas"></canvas>
+            <div class="sim-controls">
+              <div class="sim-control-row">
+                <label>Traslación X: <strong>{{ (simHomoK * 10 - 15).toFixed(0) }}</strong></label>
+                <input type="range" min="0" max="30" [value]="simHomoK * 10" (input)="simHomoK = +$any($event.target).value / 10; drawHomothetic()">
+              </div>
+              <div class="sim-control-row">
+                <label>Rotación θ: <strong>{{ simCircAngle }}°</strong></label>
+                <input type="range" min="0" max="360" [value]="simCircAngle" (input)="simCircAngle = +$any($event.target).value; drawHomothetic()">
+              </div>
+              <div class="sim-control-row">
+                <label>Reflexión:</label>
+                <div style="display:flex;gap:0.35rem">
+                  <button class="sim-btn" [class.sim-btn-outline]="simHomoCenter !== 'origin'" (click)="simHomoCenter='origin'; drawHomothetic()">Eje X</button>
+                  <button class="sim-btn" [class.sim-btn-outline]="simHomoCenter !== 'offset'" (click)="simHomoCenter='offset'; drawHomothetic()">Eje Y</button>
+                </div>
+              </div>
+            </div>
+            <div class="sim-stats">
+              <div class="proj-stat full" (mouseenter)="hoveredFormula = 'Conservan área, forma y dimensiones'" (mouseleave)="hoveredFormula = ''">
+                <span>Propiedad Isométrica</span>
+                <strong>Área y Ángulos Congruentes</strong>
+              </div>
+            </div>
+            <div class="sim-formulas-container">
+              <div class="sim-formula"><span class="formula-label">Rotación 90°</span><span class="formula-text">(x, y) ➔ (-y, x)</span></div>
+              <div class="sim-formula"><span class="formula-label">Reflexión X</span><span class="formula-text">(x, y) ➔ (x, -y)</span></div>
+              <div class="sim-formula"><span class="formula-label">Reflexión Y</span><span class="formula-text">(x, y) ➔ (-x, y)</span></div>
+            </div>
+          </div>
+
+          <!-- ═══ 4.1 DICE SIMULATION ═══ -->
+          <div class="sim-content" *ngIf="activeSimTab === 'dice-simulation'">
+            <div class="sim-info-badge">🎲 Frecuencias relativas y Ley de los Grandes Números</div>
+            <canvas #diceCanvas class="sim-canvas"></canvas>
+            <div class="sim-controls">
+              <div class="sim-control-row">
+                <label>Dados:</label>
+                <div style="display:flex;gap:0.35rem;flex:1">
+                  <button class="sim-btn" style="flex:1" [class.sim-btn-outline]="simDiceCount !== 1" (click)="simDiceCount=1; clearDiceData()">1 Dado</button>
+                  <button class="sim-btn" style="flex:1" [class.sim-btn-outline]="simDiceCount !== 2" (click)="simDiceCount=2; clearDiceData()">2 Dados</button>
+                </div>
+              </div>
+              <div class="sim-control-row">
+                <label>Lanzamientos:</label>
+                <div style="display:flex;gap:0.35rem;flex:1">
+                  <button class="sim-btn" style="flex:1" (click)="simDiceThrows=10; simulateDiceRolls()">+10</button>
+                  <button class="sim-btn" style="flex:1" (click)="simDiceThrows=100; simulateDiceRolls()">+100</button>
+                  <button class="sim-btn" style="flex:1" (click)="simDiceThrows=1000; simulateDiceRolls()">+1000</button>
+                </div>
+              </div>
+              <div class="sim-control-row">
+                <button class="sim-btn" style="flex:1;background:#ef4444" (click)="clearDiceData()">🗑️ Limpiar Historial</button>
+              </div>
+            </div>
+            <div class="sim-stats">
+              <div class="proj-stat full" (mouseenter)="hoveredFormula = 'Frec. experimental tiende a prob. teórica'" (mouseleave)="hoveredFormula = ''">
+                <span>Total lanzamientos acumulados</span>
+                <strong>{{ simDiceTotalRolls }}</strong>
+              </div>
+            </div>
+            <div class="sim-formulas-container">
+              <div class="sim-formula"><span class="formula-label">Frec. Relativa</span><span class="formula-text">Fr = Frec. Absoluta / Total</span></div>
+              <div class="sim-formula"><span class="formula-label">L.G.N.</span><span class="formula-text">Fr ➔ P(Teórica) si N ➔ ∞</span></div>
             </div>
           </div>
 
@@ -1478,94 +1475,65 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
   showProfileModal = false;
   showLogoutConfirm = false;
 
-  // ─── Physics Simulator State ───
+  // ─── Math Simulator State ───
+  Math = Math;
   simPanelOpen = false;
   simExpanded = false;
   selectedSimChapterIndex = 0;
-  activeSimTab: 'waves' | 'interference' | 'projectile' | 'inclined' | 'pendulum' | 'coulomb' | 'circuit' | 'orbit' = 'projectile';
+  activeSimTab: 'percentage' | 'exponential' | 'linear' | 'quadratic' | 'pythagoras' | 'homothetic' | 'dice-simulation' | 'free-graph' = 'percentage';
   hoveredFormula = '';
 
-  toggleSimExpand() {
-    this.simExpanded = !this.simExpanded;
-    setTimeout(() => this.initCurrentSim(), 300); // redraw after transition
-  }
+  // 1.1 Percentage simulator
+  simPercentage = 25;
+  simPercentageTheme: 'purple' | 'teal' | 'crimson' = 'purple';
 
-  setSimChapter(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    const index = Number(target.value);
-    this.selectedSimChapterIndex = index;
-    if (index === 0) this.setSimTab('projectile');
-    else if (index === 1) this.setSimTab('waves');
-    else if (index === 2) this.setSimTab('pendulum');
-    else if (index === 3) this.setSimTab('coulomb');
-    else if (index === 4) this.setSimTab('orbit');
-  }
+  // 1.2 Exponential simulator
+  simExpType: 'exponential' | 'logarithmic' = 'exponential';
+  simExpBase = 2.0;
+  simExpA = 1.0;
 
-  // Wave simulator
-  waveAmplitude = 35;
-  waveFrequency = 3;
-  waveAnimating = false;
-  private wavePhase = 0;
-  private waveAnimFrame: any;
+  // 2.1 Linear function
+  simLineSlope = 1.0;
+  simLineIntercept = 0.0;
 
-  // Interference simulator
-  interfFreq1 = 3;
-  interfFreq2 = 4;
-  interfPhase = 0;
-  interfAnimating = false;
-  private interfPhaseAnim = 0;
-  private interfAnimFrame: any;
+  // 2.2 Quadratic function
+  simQuadA = 0.5;
+  simQuadB = 0.0;
+  simQuadC = 0.0;
 
-  // Projectile simulator
-  projVelocity = 30;
-  projAngle = 45;
-  projMaxHeight = 0;
-  projRange = 0;
-  projTime = 0;
-  private projAnimFrame: any;
-  private projAnimating = false;
+  // 2.3 Free Graphing Simulator
+  simFreeExpression = 'sin(x)';
+  simFreeScale = 20;
 
-  // Inclined plane simulator
-  inclinedAngle = 30;
-  inclinedMass = 5;
-  inclinedMu = 0.2;
+  // 3.1 Pythagoras
+  simPythA = 60;
+  simPythB = 80;
 
-  // Pendulum simulator
-  pendulumLength = 3;
-  pendulumAngle0 = 30;
-  pendulumRunning = false;
-  pendulumKE = 0;
-  pendulumPE = 0;
-  private pendulumAngle = 30 * Math.PI / 180;
-  private pendulumOmega = 0;
-  private pendulumAnimFrame: any;
+  // 3.2 Homothecy
+  simHomoK = 1.5;
+  simHomoCenter: 'origin' | 'offset' = 'origin';
 
-  // Coulomb simulator
-  coulombQ1 = 3;
-  coulombQ2 = 5;
-  coulombDist = 4;
+  // 3.3 Circumference theorems
+  simCircAngle = 60;
 
-  // Circuit simulator
-  circuitV = 12;
-  circuitR1 = 4;
-  circuitR2 = 6;
-  circuitType: 'series' | 'parallel' = 'series';
+  // 4.1 Dice simulation
+  simDiceCount = 1;
+  simDiceThrows = 100;
+  simDiceFrequencies: number[] = [];
+  simDiceTotalRolls = 0;
 
-  // Orbit simulator
-  orbitMassStar = 5;
-  orbitRadius = 80;
-  orbitRunning = false;
-  private orbitAngle = 0;
-  private orbitAnimFrame: any;
+  // Sine animation properties (needed for lifecycle cleanup)
+  simSineAnimating = false;
+  simSineAnimFrame: any;
 
-  @ViewChild('waveCanvas') waveCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('interferenceCanvas') interferenceCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('projectileCanvas') projectileCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('inclinedCanvas') inclinedCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('pendulumCanvas') pendulumCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('coulombCanvas') coulombCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('circuitCanvas') circuitCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('orbitCanvas') orbitCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('percentageCanvas') percentageCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('exponentialCanvas') exponentialCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('linearCanvas') linearCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('quadraticCanvas') quadraticCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('freeCanvas') freeCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('pythagorasCanvas') pythagorasCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('homotheticCanvas') homotheticCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('diceCanvas') diceCanvasRef!: ElementRef<HTMLCanvasElement>;
 
 
   get herramientasExpanded(): boolean {
@@ -1619,29 +1587,26 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.waveAnimFrame) cancelAnimationFrame(this.waveAnimFrame);
-    if (this.interfAnimFrame) cancelAnimationFrame(this.interfAnimFrame);
-    if (this.projAnimFrame) cancelAnimationFrame(this.projAnimFrame);
-    if (this.pendulumAnimFrame) cancelAnimationFrame(this.pendulumAnimFrame);
-    if (this.orbitAnimFrame) cancelAnimationFrame(this.orbitAnimFrame);
+    if (this.simSineAnimFrame) cancelAnimationFrame(this.simSineAnimFrame);
   }
 
-  getSimChapterLabel(): string {
-    const labels: Record<string, string> = {
-      projectile: 'Cap. 1 — Mecánica',
-      inclined: 'Cap. 1 — Mecánica',
-      waves: 'Cap. 2 — Ondas',
-      interference: 'Cap. 2 — Ondas',
-      pendulum: 'Cap. 3 — Energía',
-      coulomb: 'Cap. 4 — Electricidad',
-      circuit: 'Cap. 4 — Electricidad',
-      orbit: 'Cap. 5 — Tierra y Universo'
-    };
-    return labels[this.activeSimTab] || 'Simuladores de Física';
+  isM1Route(): boolean {
+    return this.materiaId() === 'mat1';
   }
 
-  isPhysicsRoute(): boolean {
-    return this.materiaId() === 'ciencias-fisica';
+  toggleSimExpand() {
+    this.simExpanded = !this.simExpanded;
+    setTimeout(() => this.initCurrentSim(), 300);
+  }
+
+  setSimChapter(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const index = Number(target.value);
+    this.selectedSimChapterIndex = index;
+    if (index === 0) this.setSimTab('percentage');
+    else if (index === 1) this.setSimTab('linear');
+    else if (index === 2) this.setSimTab('pythagoras');
+    else if (index === 3) this.setSimTab('dice-simulation');
   }
 
   toggleSimPanel() {
@@ -1649,19 +1614,27 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     if (this.simPanelOpen) {
       setTimeout(() => this.initCurrentSim(), 100);
     } else {
-      this.waveAnimating = false;
-      if (this.waveAnimFrame) cancelAnimationFrame(this.waveAnimFrame);
+      this.simSineAnimating = false;
+      if (this.simSineAnimFrame) cancelAnimationFrame(this.simSineAnimFrame);
     }
   }
 
-  setSimTab(tab: 'waves' | 'interference' | 'projectile' | 'inclined' | 'pendulum' | 'coulomb' | 'circuit' | 'orbit') {
+  setSimTab(tab: 'percentage' | 'exponential' | 'linear' | 'quadratic' | 'pythagoras' | 'homothetic' | 'dice-simulation' | 'free-graph') {
     this.activeSimTab = tab;
-    // Stop all animations
-    this.waveAnimating = false; cancelAnimationFrame(this.waveAnimFrame);
-    this.interfAnimating = false; cancelAnimationFrame(this.interfAnimFrame);
-    this.pendulumRunning = false; cancelAnimationFrame(this.pendulumAnimFrame);
-    this.orbitRunning = false; cancelAnimationFrame(this.orbitAnimFrame);
+    this.simSineAnimating = false;
+    if (this.simSineAnimFrame) cancelAnimationFrame(this.simSineAnimFrame);
     setTimeout(() => this.initCurrentSim(), 50);
+  }
+
+  public initCurrentSim() {
+    if (this.activeSimTab === 'percentage') this.drawPercentage();
+    else if (this.activeSimTab === 'exponential') this.drawExponential();
+    else if (this.activeSimTab === 'linear') this.drawLinear();
+    else if (this.activeSimTab === 'quadratic') this.drawQuadratic();
+    else if (this.activeSimTab === 'pythagoras') this.drawPythagoras();
+    else if (this.activeSimTab === 'homothetic') this.drawHomothetic();
+    else if (this.activeSimTab === 'dice-simulation') this.drawDiceSimulation();
+    else if (this.activeSimTab === 'free-graph') this.drawFreeGraph();
   }
 
   private setupHighDpiCanvas(canvas: HTMLCanvasElement, cssW: number, cssH: number) {
@@ -1680,646 +1653,609 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     return { ctx, w: cssW, h: cssH };
   }
 
-  private initCurrentSim() {
-    if (this.activeSimTab === 'waves') this.drawWave();
-    else if (this.activeSimTab === 'interference') this.drawInterference();
-    else if (this.activeSimTab === 'projectile') this.drawProjectileStatic();
-    else if (this.activeSimTab === 'inclined') this.drawInclined();
-    else if (this.activeSimTab === 'pendulum') this.resetPendulum();
-    else if (this.activeSimTab === 'coulomb') this.drawCoulomb();
-    else if (this.activeSimTab === 'circuit') this.drawCircuit();
-    else if (this.activeSimTab === 'orbit') this.resetOrbit();
+  // ─── 1.1 Percentage Simulator ───
+  getPercentageFraction(): string {
+    const gcd = (x: number, y: number): number => (!y ? x : gcd(y, x % y));
+    const divisor = gcd(this.simPercentage, 100);
+    return `${this.simPercentage / divisor} / ${100 / divisor}`;
   }
 
-  // ─── Wave Simulator ───
-  drawWave() {
-    const canvas = this.waveCanvasRef?.nativeElement;
+  drawPercentage() {
+    const canvas = this.percentageCanvasRef?.nativeElement;
     if (!canvas) return;
     const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
     ctx.clearRect(0, 0, w, h);
 
-    // Background grid
-    ctx.strokeStyle = 'rgba(124,58,237,0.08)';
+    const gridSz = Math.min(w * 0.45, h - 30);
+    const startX = 20;
+    const startY = (h - gridSz) / 2;
+    const cellSz = gridSz / 10;
+
+    const themes = {
+      purple: { fill: '#7c3aed', empty: 'rgba(124,58,237,0.08)', stroke: 'rgba(124,58,237,0.2)' },
+      teal: { fill: '#0d9488', empty: 'rgba(13,148,136,0.08)', stroke: 'rgba(13,148,136,0.2)' },
+      crimson: { fill: '#e11d48', empty: 'rgba(225,29,72,0.08)', stroke: 'rgba(225,29,72,0.2)' }
+    };
+    const t = themes[this.simPercentageTheme] || themes.purple;
+
+    for (let r = 0; r < 10; r++) {
+      for (let c = 0; c < 10; c++) {
+        const idx = r * 10 + c;
+        const x = startX + c * cellSz;
+        const y = startY + (9 - r) * cellSz;
+
+        ctx.fillStyle = idx < this.simPercentage ? t.fill : t.empty;
+        ctx.fillRect(x + 1, y + 1, cellSz - 2, cellSz - 2);
+        ctx.strokeStyle = t.stroke;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, cellSz, cellSz);
+      }
+    }
+
+    const textX = startX + gridSz + (this.simExpanded ? 40 : 20);
+    ctx.fillStyle = '#111827';
+    ctx.font = this.simExpanded ? 'bold 24px sans-serif' : 'bold 16px sans-serif';
+    ctx.fillText(`${this.simPercentage}% Representado`, textX, h / 2 - 20);
+
+    ctx.font = this.simExpanded ? '18px monospace' : '13px monospace';
+    ctx.fillStyle = '#4b5563';
+    ctx.fillText(`Fracción: ${this.getPercentageFraction()}`, textX, h / 2 + 10);
+    ctx.fillText(`Decimal: ${(this.simPercentage / 100).toFixed(2)}`, textX, h / 2 + 35);
+  }
+
+  // ─── 1.2 Exponential/Potencias Simulator ───
+  drawExponential() {
+    const canvas = this.exponentialCanvasRef?.nativeElement;
+    if (!canvas) return;
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
+    ctx.clearRect(0, 0, w, h);
+
+    const drawBranch = (x: number, y: number, length: number, angle: number, depth: number) => {
+      if (depth > this.simExpA) return;
+      
+      const endX = x + length * Math.cos(angle);
+      const endY = y + length * Math.sin(angle);
+
+      ctx.strokeStyle = '#0d9488';
+      ctx.lineWidth = Math.max(1, 6 - depth * 1.2);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+
+      if (depth === this.simExpA) {
+        ctx.fillStyle = '#0f766e';
+        ctx.beginPath();
+        ctx.arc(endX, endY, 5, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      const newLen = length * 0.68;
+      const spread = Math.PI / 4.2;
+
+      drawBranch(endX, endY, newLen, angle - spread / 2, depth + 1);
+      drawBranch(endX, endY, newLen, angle + spread / 2, depth + 1);
+      if (this.simExpBase === 3) {
+        drawBranch(endX, endY, newLen, angle, depth + 1);
+      }
+    };
+
+    drawBranch(w / 2, h - 15, h * 0.28, -Math.PI / 2, 0);
+  }
+
+  // ─── 2.1 Linear Function ───
+  getLinearXIntercept(): string {
+    if (this.simLineSlope === 0) {
+      return this.simLineIntercept === 0 ? 'Infinitos' : 'No existe';
+    }
+    return `(${(-this.simLineIntercept / this.simLineSlope).toFixed(1)}, 0)`;
+  }
+
+  drawLinear() {
+    const canvas = this.linearCanvasRef?.nativeElement;
+    if (!canvas) return;
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
+    ctx.clearRect(0, 0, w, h);
+
+    const originX = w / 2;
+    const originY = h / 2;
+    const scale = this.simExpanded ? 40 : 20;
+
+    // Draw grid and axis numbers
+    ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 30) {
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    const maxUnitsX = Math.ceil(w / scale);
+    for (let u = -maxUnitsX; u <= maxUnitsX; u++) {
+      const x = originX + u * scale;
+      if (x < 0 || x > w) continue;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      if (u !== 0) {
+        ctx.fillText(u.toString(), x, originY + 5);
+      }
+    }
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'right';
+    const maxUnitsY = Math.ceil(h / scale);
+    for (let u = -maxUnitsY; u <= maxUnitsY; u++) {
+      const y = originY - u * scale;
+      if (y < 0 || y > h) continue;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      if (u !== 0) {
+        ctx.fillText(u.toString(), originX - 5, y);
+      }
+    }
+
+    // Draw main axes
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+    // Label axes
+    ctx.fillStyle = '#374151';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('X', w - 10, originY - 10);
+    ctx.textAlign = 'left';
+    ctx.fillText('Y', originX + 10, 10);
+
+    // Plot line
+    ctx.strokeStyle = '#7c3aed';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    const xLeft = (0 - originX) / scale;
+    const yLeft = this.simLineSlope * xLeft + this.simLineIntercept;
+    ctx.moveTo(0, originY - yLeft * scale);
+
+    const xRight = (w - originX) / scale;
+    const yRight = this.simLineSlope * xRight + this.simLineIntercept;
+    ctx.lineTo(w, originY - yRight * scale);
+    ctx.stroke();
+
+    // Intercept dot
+    ctx.fillStyle = '#e11d48';
+    ctx.beginPath();
+    ctx.arc(originX, originY - this.simLineIntercept * scale, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
+  // ─── 2.2 Quadratic Function ───
+  setQuadA(event: Event) {
+    const val = +(event.target as HTMLInputElement).value / 10;
+    this.simQuadA = val === 0 ? 0.1 : val;
+    this.drawQuadratic();
+  }
+
+  getQuadraticVertex(): string {
+    const xv = -this.simQuadB / (2 * this.simQuadA);
+    const yv = this.simQuadA * xv * xv + this.simQuadB * xv + this.simQuadC;
+    return `(${xv.toFixed(1)}, ${yv.toFixed(1)})`;
+  }
+
+  getQuadraticDisc(): number {
+    return this.simQuadB * this.simQuadB - 4 * this.simQuadA * this.simQuadC;
+  }
+
+  drawQuadratic() {
+    const canvas = this.quadraticCanvasRef?.nativeElement;
+    if (!canvas) return;
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
+    ctx.clearRect(0, 0, w, h);
+
+    const originX = w / 2;
+    const originY = h * 0.6;
+    const scale = this.simExpanded ? 40 : 20;
+
+    // Draw grid and axis numbers
+    ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    const maxUnitsX = Math.ceil(w / scale);
+    for (let u = -maxUnitsX; u <= maxUnitsX; u++) {
+      const x = originX + u * scale;
+      if (x < 0 || x > w) continue;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      if (u !== 0) {
+        ctx.fillText(u.toString(), x, originY + 5);
+      }
+    }
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'right';
+    const maxUnitsY = Math.ceil(h / scale);
+    for (let u = -maxUnitsY; u <= maxUnitsY; u++) {
+      const y = originY - u * scale;
+      if (y < 0 || y > h) continue;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      if (u !== 0) {
+        ctx.fillText(u.toString(), originX - 5, y);
+      }
+    }
+
+    // Draw main axes
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+    // Label axes
+    ctx.fillStyle = '#374151';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('X', w - 10, originY - 10);
+    ctx.textAlign = 'left';
+    ctx.fillText('Y', originX + 10, 10);
+
+    // Plot parabola
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    let first = true;
+    for (let px = 0; px < w; px++) {
+      const x = (px - originX) / scale;
+      const y = this.simQuadA * x * x + this.simQuadB * x + this.simQuadC;
+      const py = originY - y * scale;
+      if (py >= 0 && py <= h) {
+        if (first) { ctx.moveTo(px, py); first = false; }
+        else ctx.lineTo(px, py);
+      }
+    }
+    ctx.stroke();
+
+    // Vertex dot
+    const xv = -this.simQuadB / (2 * this.simQuadA);
+    const yv = this.simQuadA * xv * xv + this.simQuadB * xv + this.simQuadC;
+    ctx.fillStyle = '#e11d48';
+    ctx.beginPath();
+    ctx.arc(originX + xv * scale, originY - yv * scale, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
+  // ─── 2.3 Free Graph ───
+  updateFreeExpression(event: Event) {
+    this.simFreeExpression = (event.target as HTMLInputElement).value;
+    this.drawFreeGraph();
+  }
+
+  setFreeExample(expr: string) {
+    this.simFreeExpression = expr;
+    this.drawFreeGraph();
+  }
+
+  cleanExpressionForEval(expr: string): string {
+    let clean = expr.toLowerCase();
+    
+    clean = clean.replace(/\bpi\b/g, 'Math.PI');
+    clean = clean.replace(/\be\b/g, 'Math.E');
+
+    const functions = ['sin', 'cos', 'tan', 'sqrt', 'exp', 'log', 'abs', 'pow', 'asin', 'acos', 'atan'];
+    functions.forEach(f => {
+      const regex = new RegExp('\\b' + f + '\\b', 'g');
+      clean = clean.replace(regex, 'Math.' + f);
+    });
+
+    for (let k = 0; k < 3; k++) {
+      clean = clean.replace(/([a-zA-Z0-9_x().]+)\^([a-zA-Z0-9_().]+)/g, 'Math.pow($1, $2)');
+    }
+
+    return clean;
+  }
+
+  evaluateExpression(cleanExpr: string, x: number): number {
+    try {
+      const fn = new Function('x', `
+        try {
+          return ${cleanExpr};
+        } catch(e) {
+          return NaN;
+        }
+      `);
+      const val = fn(x);
+      return typeof val === 'number' && !isNaN(val) ? val : NaN;
+    } catch (e) {
+      return NaN;
+    }
+  }
+
+  drawFreeGraph() {
+    const canvas = this.freeCanvasRef?.nativeElement;
+    if (!canvas) return;
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
+    ctx.clearRect(0, 0, w, h);
+
+    const originX = w / 2;
+    const originY = h / 2;
+    const scale = this.simFreeScale;
+
+    // Draw grid and axis numbers
+    ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    const maxUnitsX = Math.ceil(w / scale);
+    for (let u = -maxUnitsX; u <= maxUnitsX; u++) {
+      const x = originX + u * scale;
+      if (x < 0 || x > w) continue;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      if (u !== 0 && u % 2 === 0) {
+        ctx.fillText(u.toString(), x, originY + 5);
+      }
+    }
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'right';
+    const maxUnitsY = Math.ceil(h / scale);
+    for (let u = -maxUnitsY; u <= maxUnitsY; u++) {
+      const y = originY - u * scale;
+      if (y < 0 || y > h) continue;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      if (u !== 0 && u % 2 === 0) {
+        ctx.fillText(u.toString(), originX - 5, y);
+      }
+    }
+
+    // Axes
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+    // Label axes
+    ctx.fillStyle = '#374151';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('X', w - 10, originY - 10);
+    ctx.textAlign = 'left';
+    ctx.fillText('Y', originX + 10, 10);
+
+    // Plot graph of f(x)
+    ctx.strokeStyle = '#059669'; // Green curve
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    
+    let first = true;
+    const cleanExpr = this.cleanExpressionForEval(this.simFreeExpression);
+
+    for (let px = 0; px < w; px++) {
+      const x = (px - originX) / scale;
+      const y = this.evaluateExpression(cleanExpr, x);
+      if (isNaN(y) || !isFinite(y)) continue;
+      
+      const py = originY - y * scale;
+      if (py >= -100 && py <= h + 100) {
+        if (first) {
+          ctx.moveTo(px, py);
+          first = false;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+    }
+    ctx.stroke();
+  }
+
+  // ─── 3.1 Pythagoras ───
+  drawPythagoras() {
+    const canvas = this.pythagorasCanvasRef?.nativeElement;
+    if (!canvas) return;
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
+    ctx.clearRect(0, 0, w, h);
+
+    const scale = this.simExpanded ? 1.6 : 0.8;
+    const baseSizeA = this.simPythA * scale;
+    const baseSizeB = this.simPythB * scale;
+
+    const cornerX = w * 0.4;
+    const cornerY = h * 0.65;
+
+    const ax = cornerX;
+    const ay = cornerY - baseSizeA;
+    const bx = cornerX + baseSizeB;
+    const by = cornerY;
+
+    ctx.fillStyle = 'rgba(239,68,68,0.15)';
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(ax - baseSizeA, ay, baseSizeA, baseSizeA);
+    ctx.strokeRect(ax - baseSizeA, ay, baseSizeA, baseSizeA);
+
+    ctx.fillStyle = 'rgba(37,99,235,0.15)';
+    ctx.strokeStyle = '#2563eb';
+    ctx.fillRect(cornerX, cornerY, baseSizeB, baseSizeB);
+    ctx.strokeRect(cornerX, cornerY, baseSizeB, baseSizeB);
+
+    ctx.fillStyle = 'rgba(168,85,247,0.18)';
+    ctx.strokeStyle = '#a855f7';
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    const dx = bx - ax;
+    const dy = by - ay;
+    ctx.lineTo(bx - dy, by + dx);
+    ctx.lineTo(ax - dy, ay + dx);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = '#f3f4f6';
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cornerX, cornerY);
+    ctx.lineTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cornerX, cornerY - 8, 8, 8);
+  }
+
+  // ─── 3.2 Isometric Transformations ───
+  drawHomothetic() {
+    const canvas = this.homotheticCanvasRef?.nativeElement;
+    if (!canvas) return;
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
+    ctx.clearRect(0, 0, w, h);
+
+    const originX = w / 2;
+    const originY = h / 2;
+    const scale = this.simExpanded ? 24 : 12;
+
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 15) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
     }
-    for (let y = 0; y < h; y += 30) {
+    for (let y = 0; y < h; y += 15) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
     }
 
-    // Center axis
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
 
-    // Wave
-    const gradient = ctx.createLinearGradient(0, 0, w, 0);
-    gradient.addColorStop(0, '#7c3aed');
-    gradient.addColorStop(0.5, '#a78bfa');
-    gradient.addColorStop(1, '#4f46e5');
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 3;
-    ctx.shadowColor = '#a78bfa';
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    for (let x = 0; x <= w; x++) {
-      const y = h / 2 + this.waveAmplitude * Math.sin(2 * Math.PI * this.waveFrequency * x / w + this.wavePhase);
-      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+    const t1 = { x: 2, y: 1 };
+    const t2 = { x: 6, y: 1 };
+    const t3 = { x: 3, y: 5 };
 
-    // Labels
-    ctx.fillStyle = 'rgba(167,139,250,0.8)';
-    ctx.font = '11px monospace';
-    ctx.fillText(`A = ${this.waveAmplitude}px`, 8, 16);
-    ctx.fillText(`f = ${this.waveFrequency} Hz`, 8, 30);
-    ctx.fillText(`λ = ${(w / this.waveFrequency).toFixed(0)}px`, 8, 44);
-  }
-
-  toggleWaveAnimation() {
-    this.waveAnimating = !this.waveAnimating;
-    if (this.waveAnimating) {
-      const animate = () => {
-        if (!this.waveAnimating) return;
-        this.wavePhase += 0.06;
-        this.drawWave();
-        this.waveAnimFrame = requestAnimationFrame(animate);
-      };
-      animate();
-    } else {
-      cancelAnimationFrame(this.waveAnimFrame);
-    }
-  }
-
-  // ─── Projectile Simulator ───
-  drawProjectileStatic() {
-    const canvas = this.projectileCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 400 : 200);
-    ctx.clearRect(0, 0, w, h);
-
-    // Ground
-    ctx.strokeStyle = 'rgba(124,58,237,0.3)';
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+    ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, h - 20); ctx.lineTo(w, h - 20); ctx.stroke();
-
-    // Prompt
-    ctx.fillStyle = 'rgba(167,139,250,0.6)';
-    ctx.font = '13px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('Ajusta los parámetros y', w / 2, h / 2 - 10);
-    ctx.fillText('presiona 🚀 Lanzar', w / 2, h / 2 + 10);
-    ctx.textAlign = 'left';
-
-    // Launch point
-    ctx.fillStyle = '#7c3aed';
     ctx.beginPath();
-    ctx.arc(20, h - 20, 6, 0, Math.PI * 2);
-    ctx.fill();
-  }
+    ctx.moveTo(originX + t1.x * scale, originY - t1.y * scale);
+    ctx.lineTo(originX + t2.x * scale, originY - t2.y * scale);
+    ctx.lineTo(originX + t3.x * scale, originY - t3.y * scale);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
 
-  launchProjectile() {
-    if (this.projAnimating) {
-      cancelAnimationFrame(this.projAnimFrame);
-    }
-    const canvas = this.projectileCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 400 : 200);
-    const g = 9.8;
-    const v0 = this.projVelocity;
-    const angle = this.projAngle * Math.PI / 180;
-    const vx = v0 * Math.cos(angle);
-    const vy = v0 * Math.sin(angle);
-    const totalTime = (2 * vy) / g;
-    const maxRange = vx * totalTime;
-    const maxHeight = (vy * vy) / (2 * g);
+    const tx = this.simHomoK * 10 - 15;
+    const ty = 0;
+    const angleRad = (this.simCircAngle * Math.PI) / 180;
+    const reflectAcrossX = this.simHomoCenter === 'origin';
+    const reflectAcrossY = this.simHomoCenter === 'offset';
 
-    this.projMaxHeight = maxHeight;
-    this.projRange = maxRange;
-    this.projTime = totalTime;
+    const transform = (p: { x: number, y: number }) => {
+      let x = p.x + tx;
+      let y = p.y + ty;
 
-    const scale = Math.min((w - 40) / maxRange, (h - 40) / maxHeight) * 0.8;
-    const ox = 20;
-    const oy = h - 20;
+      const rx = x * Math.cos(angleRad) - y * Math.sin(angleRad);
+      const ry = x * Math.sin(angleRad) + y * Math.cos(angleRad);
+      x = rx;
+      y = ry;
 
-    const dt = totalTime / 100;
-    const points: { x: number, y: number }[] = [];
-    for (let i = 0; i <= 100; i++) {
-      const ti = i * dt;
-      const px = vx * ti;
-      const py = vy * ti - 0.5 * g * ti * ti;
-      points.push({ x: ox + px * scale, y: oy - py * scale });
-    }
+      if (reflectAcrossX) y = -y;
+      if (reflectAcrossY) x = -x;
 
-    ctx.clearRect(0, 0, w, h);
-    // Ground
-    ctx.strokeStyle = 'rgba(124,58,237,0.3)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, h - 20); ctx.lineTo(w, h - 20); ctx.stroke();
-
-    let idx = 0;
-    this.projAnimating = true;
-    const draw = () => {
-      if (idx >= points.length) {
-        this.projAnimating = false;
-        return;
-      }
-      ctx.clearRect(0, 0, w, h);
-      // Ground
-      ctx.strokeStyle = 'rgba(124,58,237,0.3)';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(0, h - 20); ctx.lineTo(w, h - 20); ctx.stroke();
-
-      // Trajectory so far
-      ctx.strokeStyle = 'rgba(167,139,250,0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i <= idx; i++) ctx.lineTo(points[i].x, points[i].y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Ball
-      const grad = ctx.createRadialGradient(points[idx].x, points[idx].y, 0, points[idx].x, points[idx].y, 8);
-      grad.addColorStop(0, '#c4b5fd');
-      grad.addColorStop(1, '#7c3aed');
-      ctx.fillStyle = grad;
-      ctx.shadowColor = '#a78bfa';
-      ctx.shadowBlur = 12;
-      ctx.beginPath();
-      ctx.arc(points[idx].x, points[idx].y, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      // Velocity vectors
-      const ti = idx * dt;
-      const curVx = vx;
-      const curVy = vy - g * ti;
-      const vecScale = 2;
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(points[idx].x, points[idx].y);
-      ctx.lineTo(points[idx].x + curVx * vecScale, points[idx].y - curVy * vecScale);
-      ctx.stroke();
-
-      idx++;
-      this.projAnimFrame = requestAnimationFrame(draw);
+      return { x, y };
     };
-    draw();
-  }
 
-  resetProjectile() {
-    if (this.projAnimating) {
-      this.projAnimating = false;
-      cancelAnimationFrame(this.projAnimFrame);
-    }
-    this.projMaxHeight = 0;
-    this.projRange = 0;
-    this.projTime = 0;
-    this.drawProjectileStatic();
-  }
+    const nt1 = transform(t1);
+    const nt2 = transform(t2);
+    const nt3 = transform(t3);
 
-  // ─── Coulomb Simulator ───
-  getCoulombForce(): number {
-    const k = 8.99e9;
-    const q1 = this.coulombQ1 * 1e-6;
-    const q2 = this.coulombQ2 * 1e-6;
-    const r = this.coulombDist;
-    return k * Math.abs(q1 * q2) / (r * r);
-  }
-
-  drawCoulomb() {
-    const canvas = this.coulombCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 400 : 200);
-    ctx.clearRect(0, 0, w, h);
-
-    const cx = w / 2;
-    const cy = h / 2;
-    // Scale distance based on canvas width to prevent it looking tiny when expanded
-    const halfDist = Math.min(this.coulombDist * (w / 24), (w / 2) - 40);
-
-    // Distance line
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath(); ctx.moveTo(cx - halfDist, cy); ctx.lineTo(cx + halfDist, cy); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Distance label
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '10px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`r = ${this.coulombDist} m`, cx, cy - 8);
-
-    // Charge q1 (left)
-    const q1Grad = ctx.createRadialGradient(cx - halfDist, cy, 0, cx - halfDist, cy, 24);
-    q1Grad.addColorStop(0, '#fbbf24');
-    q1Grad.addColorStop(1, 'rgba(251,191,36,0.1)');
-    ctx.fillStyle = q1Grad;
-    ctx.shadowColor = '#fbbf24';
-    ctx.shadowBlur = 16;
-    ctx.beginPath();
-    ctx.arc(cx - halfDist, cy, 20, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#111';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`+${this.coulombQ1}μC`, cx - halfDist, cy + 4);
-
-    // Charge q2 (right)
-    const q2Grad = ctx.createRadialGradient(cx + halfDist, cy, 0, cx + halfDist, cy, 24);
-    q2Grad.addColorStop(0, '#60a5fa');
-    q2Grad.addColorStop(1, 'rgba(96,165,250,0.1)');
-    ctx.fillStyle = q2Grad;
-    ctx.shadowColor = '#60a5fa';
-    ctx.shadowBlur = 16;
-    ctx.beginPath();
-    ctx.arc(cx + halfDist, cy, 20, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#111';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`+${this.coulombQ2}μC`, cx + halfDist, cy + 4);
-
-    // Force arrows
-    const force = this.getCoulombForce();
-    const arrowLen = Math.min(force * 0.003 + 20, 50);
-    ctx.strokeStyle = '#f87171';
+    ctx.fillStyle = 'rgba(168, 85, 247, 0.18)';
+    ctx.strokeStyle = '#a855f7';
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#f87171';
-    ctx.shadowBlur = 6;
-    // q1 arrow (pointing left)
-    this.drawArrow(ctx, cx - halfDist + 22, cy - 30, cx - halfDist + 22 - arrowLen, cy - 30);
-    // q2 arrow (pointing right)
-    this.drawArrow(ctx, cx + halfDist - 22, cy - 30, cx + halfDist - 22 + arrowLen, cy - 30);
-    ctx.shadowBlur = 0;
-
-    // Force label
-    this.drawBadge(ctx, `F = ${this.getCoulombForce().toFixed(2)} N`, cx, h - 14, '#fca5a5', 'center');
-  }
-
-  private drawArrow(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number) {
-    const headLen = 8;
-    const angle = Math.atan2(toY - fromY, toX - fromX);
     ctx.beginPath();
-    ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(toX, toY);
-    ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
-    ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+    ctx.moveTo(originX + nt1.x * scale, originY - nt1.y * scale);
+    ctx.lineTo(originX + nt2.x * scale, originY - nt2.y * scale);
+    ctx.lineTo(originX + nt3.x * scale, originY - nt3.y * scale);
     ctx.closePath();
-    ctx.fillStyle = '#f87171';
-    ctx.fill();
+    ctx.fill(); ctx.stroke();
   }
 
-  private drawBadge(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string, align: 'left' | 'center' | 'right' = 'left') {
-    ctx.font = 'bold 11px monospace';
-    const m = ctx.measureText(text);
-    const w = m.width + 10;
-    const h = 18;
-    const r = 4;
-
-    let boxX = x;
-    if (align === 'center') boxX = x - w / 2;
-    else if (align === 'right') boxX = x - w;
-
-    ctx.fillStyle = 'rgba(15, 12, 41, 0.85)';
-    ctx.beginPath();
-    ctx.moveTo(boxX + r, y - 13);
-    ctx.lineTo(boxX + w - r, y - 13);
-    ctx.quadraticCurveTo(boxX + w, y - 13, boxX + w, y - 13 + r);
-    ctx.lineTo(boxX + w, y - 13 + h - r);
-    ctx.quadraticCurveTo(boxX + w, y - 13 + h, boxX + w - r, y - 13 + h);
-    ctx.lineTo(boxX + r, y - 13 + h);
-    ctx.quadraticCurveTo(boxX, y - 13 + h, boxX, y - 13 + h - r);
-    ctx.lineTo(boxX, y - 13 + r);
-    ctx.quadraticCurveTo(boxX, y - 13, boxX + r, y - 13);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.textAlign = 'left';
-    ctx.fillStyle = color;
-    ctx.fillText(text, boxX + 5, y);
+  // ─── 4.1 Dice Simulation ───
+  clearDiceData() {
+    this.simDiceFrequencies = [];
+    this.simDiceTotalRolls = 0;
+    this.drawDiceSimulation();
   }
 
-  // ─── Inclined Plane Simulator ───
-  getInclinedFp(): number { return this.inclinedMass * 9.8 * Math.sin(this.inclinedAngle * Math.PI / 180); }
-  getInclinedFn(): number { return this.inclinedMass * 9.8 * Math.cos(this.inclinedAngle * Math.PI / 180); }
-  getInclinedFr(): number { return this.inclinedMu * this.getInclinedFn(); }
-  getInclinedAcc(): number { return Math.max(0, (this.getInclinedFp() - this.getInclinedFr()) / this.inclinedMass); }
+  simulateDiceRolls() {
+    const rollsCount = this.simDiceThrows;
+    const isTwo = this.simDiceCount === 2;
+    const outcomes = isTwo ? 11 : 6;
+    const minVal = isTwo ? 2 : 1;
 
-  drawInclined() {
-    const canvas = this.inclinedCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 400 : 200);
-    ctx.clearRect(0, 0, w, h);
-    const ang = this.inclinedAngle * Math.PI / 180;
-    const baseW = w - 40; const baseH = Math.tan(ang) * baseW;
-    const clampH = Math.min(baseH, h - 40);
-    const actualBaseW = clampH / Math.tan(ang);
-    const ox = 20; const oy = h - 20;
-    // Triangle
-    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + actualBaseW, oy); ctx.lineTo(ox, oy - clampH); ctx.closePath();
-    ctx.fillStyle = 'rgba(124,58,237,0.15)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(124,58,237,0.6)'; ctx.lineWidth = 2; ctx.stroke();
-    // Angle arc
-    ctx.beginPath(); ctx.arc(ox + actualBaseW, oy, 28, Math.PI, Math.PI + ang); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = '#fbbf24'; ctx.font = '10px monospace'; ctx.fillText(`${this.inclinedAngle}°`, ox + actualBaseW - 48, oy - 8);
-    // Block on slope
-    const slopeT = 0.5;
-    const midX = ox + actualBaseW * slopeT;
-    const midY = oy - clampH * (1 - slopeT);
-    const blockSize = 20;
-    ctx.save(); ctx.translate(midX, midY); ctx.rotate(-ang);
-    ctx.fillStyle = 'rgba(167,139,250,0.85)'; ctx.fillRect(-blockSize / 2, -blockSize, blockSize, blockSize);
-    ctx.strokeStyle = '#a78bfa'; ctx.strokeRect(-blockSize / 2, -blockSize, blockSize, blockSize);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`${this.inclinedMass}kg`, 0, -6); ctx.textAlign = 'left';
-    // Weight component arrow (parallel to slope - red)
-    const fpScale = this.getInclinedFp() * 0.8;
-    ctx.strokeStyle = '#f87171'; ctx.fillStyle = '#f87171'; ctx.lineWidth = 2;
-    const fpLen = Math.min(fpScale, 50);
-    this.drawArrow(ctx, 0, 0, fpLen, 0);
-    // Friction arrow (up-slope - blue)
-    const frLen = Math.min(this.getInclinedFr() * 0.8, 40);
-    ctx.strokeStyle = '#60a5fa'; ctx.fillStyle = '#60a5fa';
-    this.drawArrow(ctx, 0, 0, -frLen, 0);
-    ctx.restore();
-    // Labels
-    this.drawBadge(ctx, `F∥=${this.getInclinedFp().toFixed(1)}N`, w - 8, 18, '#f87171', 'right');
-    this.drawBadge(ctx, `Fr=${this.getInclinedFr().toFixed(1)}N`, w - 8, 38, '#60a5fa', 'right');
-    this.drawBadge(ctx, `a=${this.getInclinedAcc().toFixed(2)}m/s²`, w - 8, 58, '#4ade80', 'right');
-  }
-
-  // ─── Interference Simulator ───
-  drawInterference() {
-    const canvas = this.interferenceCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 400 : 200);
-    ctx.clearRect(0, 0, w, h);
-    const h3 = h / 3;
-    const phaseRad = (this.interfPhase * Math.PI / 180) + this.interfPhaseAnim;
-    // Wave 1 (blue)
-    ctx.beginPath(); ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 1.5;
-    for (let x = 0; x <= w; x++) {
-      const y = h3 * 0.5 + 25 * Math.sin(2 * Math.PI * this.interfFreq1 * x / w + this.interfPhaseAnim);
-      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    } ctx.stroke();
-    ctx.fillStyle = '#60a5fa'; ctx.font = '9px monospace'; ctx.fillText('y₁', 4, h3 * 0.5 - 28);
-    // Wave 2 (orange)
-    ctx.beginPath(); ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 1.5;
-    for (let x = 0; x <= w; x++) {
-      const y = h3 + 25 * Math.sin(2 * Math.PI * this.interfFreq2 * x / w + phaseRad);
-      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    } ctx.stroke();
-    ctx.fillStyle = '#fb923c'; ctx.fillText('y₂', 4, h3 - 28);
-    // Resulting wave (white)
-    ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(0, h3 * 1.8, w, h3 * 1.2);
-    ctx.beginPath();
-    const grad = ctx.createLinearGradient(0, 0, w, 0);
-    grad.addColorStop(0, '#a78bfa'); grad.addColorStop(0.5, '#c4b5fd'); grad.addColorStop(1, '#7c3aed');
-    ctx.strokeStyle = grad; ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 6;
-    for (let x = 0; x <= w; x++) {
-      const y1 = 25 * Math.sin(2 * Math.PI * this.interfFreq1 * x / w + this.interfPhaseAnim);
-      const y2 = 25 * Math.sin(2 * Math.PI * this.interfFreq2 * x / w + phaseRad);
-      const y = h3 * 2.4 + (y1 + y2) * 0.6;
-      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    } ctx.stroke(); ctx.shadowBlur = 0;
-    ctx.fillStyle = '#c4b5fd'; ctx.fillText('y₁+y₂', 4, h3 * 1.85);
-    // Center lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-    [h3 * 0.5, h3, h3 * 2.4].forEach(y => { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); });
-    ctx.setLineDash([]);
-  }
-
-  toggleInterfAnimation() {
-    this.interfAnimating = !this.interfAnimating;
-    if (this.interfAnimating) {
-      const animate = () => {
-        if (!this.interfAnimating) return;
-        this.interfPhaseAnim += 0.04;
-        this.drawInterference();
-        this.interfAnimFrame = requestAnimationFrame(animate);
-      }; animate();
-    } else { cancelAnimationFrame(this.interfAnimFrame); }
-  }
-
-  // ─── Pendulum Simulator ───
-  getPendulumPeriod(): number { return 2 * Math.PI * Math.sqrt(this.pendulumLength / 9.8); }
-
-  resetPendulum() {
-    this.pendulumRunning = false;
-    cancelAnimationFrame(this.pendulumAnimFrame);
-    this.pendulumAngle = this.pendulumAngle0 * Math.PI / 180;
-    this.pendulumOmega = 0;
-    this.pendulumKE = 0;
-    const m = 1; const g = 9.8; const L = this.pendulumLength;
-    this.pendulumPE = m * g * L * (1 - Math.cos(this.pendulumAngle));
-    this.drawPendulum();
-  }
-
-  togglePendulum() {
-    this.pendulumRunning = !this.pendulumRunning;
-    if (this.pendulumRunning) {
-      const dt = 0.03; const m = 1; const g = 9.8;
-      const animate = () => {
-        if (!this.pendulumRunning) return;
-        const L = this.pendulumLength;
-        const alpha = -(g / L) * Math.sin(this.pendulumAngle);
-        this.pendulumOmega += alpha * dt;
-        this.pendulumAngle += this.pendulumOmega * dt;
-        const h = L * (1 - Math.cos(this.pendulumAngle));
-        this.pendulumPE = m * g * h;
-        this.pendulumKE = 0.5 * m * (L * this.pendulumOmega) ** 2;
-        this.drawPendulum();
-        this.pendulumAnimFrame = requestAnimationFrame(animate);
-      }; animate();
-    } else { cancelAnimationFrame(this.pendulumAnimFrame); }
-  }
-
-  private drawPendulum() {
-    const canvas = this.pendulumCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 440 : 220);
-    ctx.clearRect(0, 0, w, h);
-    const pivotX = w / 2; const pivotY = 30;
-    const L = this.pendulumLength; const scale = Math.min((h - 60) / L, 60);
-    const bobX = pivotX + L * scale * Math.sin(this.pendulumAngle);
-    const bobY = pivotY + L * scale * Math.cos(this.pendulumAngle);
-    // Ceiling
-    ctx.fillStyle = 'rgba(124,58,237,0.3)'; ctx.fillRect(0, 0, w, 8);
-    // Trajectory arc
-    ctx.beginPath(); ctx.arc(pivotX, pivotY, L * scale, -Math.PI / 2 - this.pendulumAngle0 * Math.PI / 180, -Math.PI / 2 + this.pendulumAngle0 * Math.PI / 180);
-    ctx.strokeStyle = 'rgba(167,139,250,0.15)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-    // String
-    ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(bobX, bobY);
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2; ctx.stroke();
-    // Pivot
-    ctx.beginPath(); ctx.arc(pivotX, pivotY, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#a78bfa'; ctx.fill();
-    // Bob
-    const bobGrad = ctx.createRadialGradient(bobX - 3, bobY - 3, 2, bobX, bobY, 14);
-    bobGrad.addColorStop(0, '#c4b5fd'); bobGrad.addColorStop(1, '#7c3aed');
-    ctx.beginPath(); ctx.arc(bobX, bobY, 14, 0, Math.PI * 2);
-    ctx.fillStyle = bobGrad; ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 16; ctx.fill(); ctx.shadowBlur = 0;
-    // Energy bar
-    const totalE = this.pendulumKE + this.pendulumPE;
-    const barW = 90; const barH = 10; const barX = 10; const barY = h - 20;
-    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(barX, barY, barW, barH); ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.strokeRect(barX, barY, barW, barH);
-    if (totalE > 0) {
-      const keW = barW * (this.pendulumKE / totalE);
-      const peW = barW * (this.pendulumPE / totalE);
-      ctx.fillStyle = '#f59e0b'; ctx.fillRect(barX, barY, keW, barH);
-      ctx.fillStyle = '#60a5fa'; ctx.fillRect(barX + keW, barY, peW, barH);
+    if (this.simDiceFrequencies.length === 0) {
+      this.simDiceFrequencies = Array(outcomes).fill(0);
     }
-    ctx.fillStyle = '#f59e0b'; ctx.font = '9px monospace'; ctx.fillText('Ec', barX, barY - 3);
-    ctx.fillStyle = '#60a5fa'; ctx.fillText('Ep', barX + 24, barY - 3);
+
+    for (let i = 0; i < rollsCount; i++) {
+      const roll1 = Math.floor(Math.random() * 6) + 1;
+      const roll2 = isTwo ? (Math.floor(Math.random() * 6) + 1) : 0;
+      const sum = roll1 + roll2;
+      this.simDiceFrequencies[sum - minVal]++;
+    }
+
+    this.simDiceTotalRolls += rollsCount;
+    this.drawDiceSimulation();
   }
 
-  // ─── Circuit Simulator ───
-  getCircuitRt(): number {
-    return this.circuitType === 'series' ? this.circuitR1 + this.circuitR2 : (this.circuitR1 * this.circuitR2) / (this.circuitR1 + this.circuitR2);
-  }
-  getCircuitI(): number { return this.circuitV / this.getCircuitRt(); }
-  getCircuitP(): number { return this.circuitV * this.getCircuitI(); }
-
-  drawCircuit() {
-    const canvas = this.circuitCanvasRef?.nativeElement;
+  drawDiceSimulation() {
+    const canvas = this.diceCanvasRef?.nativeElement;
     if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 400 : 200);
+    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 360 : 180);
     ctx.clearRect(0, 0, w, h);
-    const lw = 2.5;
-    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = lw;
 
-    ctx.save();
-    // Shift coordinate system to center the 340px-wide drawing on larger canvases
-    const offsetX = (w - 340) / 2;
-    ctx.translate(offsetX, 0);
+    const outcomes = this.simDiceCount === 2 ? 11 : 6;
+    const minVal = this.simDiceCount === 2 ? 2 : 1;
 
-    if (this.circuitType === 'series') {
-      // Series: battery -> R1 -> R2 -> back
-      ctx.beginPath();
-      ctx.moveTo(30, h / 2); ctx.lineTo(80, h / 2);       // left wire
-      ctx.moveTo(80, h / 2 - 20); ctx.lineTo(80, h / 2 + 20); // battery
-      ctx.moveTo(80, h / 2); ctx.lineTo(120, h / 2);       // to R1
-      ctx.moveTo(120, h / 2 - 15); ctx.lineTo(165, h / 2 - 15); ctx.lineTo(165, h / 2 + 15); ctx.lineTo(120, h / 2 + 15); ctx.closePath(); // R1 box
-      ctx.moveTo(165, h / 2); ctx.lineTo(200, h / 2);       // between
-      ctx.moveTo(200, h / 2 - 15); ctx.lineTo(245, h / 2 - 15); ctx.lineTo(245, h / 2 + 15); ctx.lineTo(200, h / 2 + 15); ctx.closePath(); // R2 box
-      ctx.moveTo(245, h / 2); ctx.lineTo(310, h / 2);       // right wire
-      ctx.stroke();
-      // Battery symbol
-      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(75, h / 2 - 18); ctx.lineTo(75, h / 2 + 18); ctx.stroke();
-      ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(68, h / 2 - 10); ctx.lineTo(68, h / 2 + 10); ctx.stroke();
-      // Labels
-      this.drawBadge(ctx, 'R₁', 142, h / 2 + 28, '#c4b5fd', 'center');
-      this.drawBadge(ctx, `${this.circuitR1}Ω`, 142, h / 2 + 48, '#c4b5fd', 'center');
-      this.drawBadge(ctx, 'R₂', 222, h / 2 + 28, '#c4b5fd', 'center');
-      this.drawBadge(ctx, `${this.circuitR2}Ω`, 222, h / 2 + 48, '#c4b5fd', 'center');
-      this.drawBadge(ctx, `${this.circuitV}V`, 68, h / 2 - 28, '#fbbf24', 'center');
-      this.drawBadge(ctx, `I=${this.getCircuitI().toFixed(2)}A`, 170, h - 14, '#4ade80', 'center');
+    const chartW = w * 0.85;
+    const chartH = h * 0.7;
+    const startX = w * 0.08;
+    const startY = h * 0.8;
+    const barW = chartW / outcomes;
+
+    if (this.simDiceFrequencies.length === 0) {
+      this.simDiceFrequencies = Array(outcomes).fill(0);
+    }
+
+    for (let i = 0; i < outcomes; i++) {
+      const freq = this.simDiceFrequencies[i];
+      const relFreq = this.simDiceTotalRolls > 0 ? freq / this.simDiceTotalRolls : 0;
+
+      const barH = relFreq * chartH * 3.5;
+      const x = startX + i * barW + 4;
+      const y = startY - Math.min(barH, chartH);
+
+      ctx.fillStyle = '#8b5cf6';
+      ctx.fillRect(x, y, barW - 8, Math.min(barH, chartH));
+
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${i + minVal}`, x + barW / 2 - 4, startY + 15);
+    }
+
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    if (this.simDiceCount === 1) {
+      const lineY = startY - (1 / 6) * chartH * 3.5;
+      ctx.moveTo(startX, lineY); ctx.lineTo(startX + chartW, lineY);
     } else {
-      // Parallel
-      const lx = 50; const rx = 290; const ty = 50; const by = h - 50;
-      const m1y = ty + (by - ty) * 0.33; const m2y = ty + (by - ty) * 0.67;
-      ctx.beginPath();
-      ctx.moveTo(lx, ty); ctx.lineTo(rx, ty);         // top wire
-      ctx.moveTo(lx, by); ctx.lineTo(rx, by);         // bottom wire
-      ctx.moveTo(lx, ty); ctx.lineTo(lx, by);          // left wire
-      ctx.moveTo(rx, ty); ctx.lineTo(rx, by);           // right wire
-      ctx.moveTo(lx, m1y); ctx.lineTo(lx + 50, m1y); ctx.lineTo(lx + 50, m2y); ctx.lineTo(lx, m2y); // R1
-      ctx.moveTo(rx - 50, m1y); ctx.lineTo(rx, m1y); ctx.moveTo(rx - 50, m1y); ctx.lineTo(rx - 50, m2y); ctx.lineTo(rx, m2y); // R2 right
-      ctx.stroke();
-      // Battery
-      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(170 - 5, ty - 5); ctx.lineTo(170 - 5, ty + 5); ctx.stroke();
-      ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(170 + 5, ty - 8); ctx.lineTo(170 + 5, ty + 8); ctx.stroke();
-      // Labels
-      this.drawBadge(ctx, `R₁=${this.circuitR1}Ω`, lx + 25, (m1y + m2y) / 2 + 4, '#c4b5fd', 'center');
-      this.drawBadge(ctx, `R₂=${this.circuitR2}Ω`, rx - 25, (m1y + m2y) / 2 + 4, '#c4b5fd', 'center');
-      this.drawBadge(ctx, `${this.circuitV}V`, 170, ty - 18, '#fbbf24', 'center');
-      this.drawBadge(ctx, `I=${this.getCircuitI().toFixed(2)}A  Rt=${this.getCircuitRt().toFixed(1)}Ω`, 170, by + 18, '#4ade80', 'center');
+      const lineY = startY - (6 / 36) * chartH * 3.5;
+      ctx.moveTo(startX, lineY); ctx.lineTo(startX + chartW, lineY);
     }
-
-    ctx.restore();
-  }
-
-  // ─── Orbit Simulator ───
-  getOrbitVel(): number { return Math.sqrt(this.orbitMassStar / this.orbitRadius) * 10; }
-  getOrbitPeriod(): number { return (2 * Math.PI * this.orbitRadius) / this.getOrbitVel(); }
-
-  resetOrbit() {
-    this.orbitRunning = false;
-    cancelAnimationFrame(this.orbitAnimFrame);
-    this.orbitAngle = 0;
-    this.drawOrbitFrame();
-  }
-
-  toggleOrbit() {
-    this.orbitRunning = !this.orbitRunning;
-    if (this.orbitRunning) {
-      const animate = () => {
-        if (!this.orbitRunning) return;
-        this.orbitAngle += (this.getOrbitVel() / this.orbitRadius) * 0.3;
-        this.drawOrbitFrame();
-        this.orbitAnimFrame = requestAnimationFrame(animate);
-      }; animate();
-    } else { cancelAnimationFrame(this.orbitAnimFrame); }
-  }
-
-  private drawOrbitFrame() {
-    const canvas = this.orbitCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const { ctx, w, h } = this.setupHighDpiCanvas(canvas, this.simExpanded ? 740 : 340, this.simExpanded ? 480 : 240);
-    ctx.clearRect(0, 0, w, h);
-    const cx = w / 2; const cy = h / 2;
-    // Stars background
-    const starSeeds = [[20, 15], [80, 60], [150, 20], [280, 80], [50, 100], [300, 30], [160, 110]];
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    starSeeds.forEach(([sx, sy]) => { ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill(); });
-    // Orbit path
-    ctx.beginPath(); ctx.arc(cx, cy, this.orbitRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(167,139,250,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-    // Star (center)
-    const starSize = 8 + this.orbitMassStar * 1.5;
-    const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, starSize);
-    starGrad.addColorStop(0, '#fffde7'); starGrad.addColorStop(0.5, '#fbbf24'); starGrad.addColorStop(1, 'rgba(251,191,36,0)');
-    ctx.beginPath(); ctx.arc(cx, cy, starSize, 0, Math.PI * 2);
-    ctx.fillStyle = starGrad; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 20; ctx.fill(); ctx.shadowBlur = 0;
-    ctx.fillStyle = '#fffde7'; ctx.font = '9px monospace'; ctx.textAlign = 'center'; ctx.fillText('★', cx, cy + 3);
-    // Velocity vector trail
-    for (let i = 1; i <= 6; i++) {
-      const trailAngle = this.orbitAngle - i * 0.12;
-      const tx = cx + this.orbitRadius * Math.cos(trailAngle);
-      const ty = cy + this.orbitRadius * Math.sin(trailAngle);
-      ctx.beginPath(); ctx.arc(tx, ty, 3 - i * 0.4, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(167,139,250,${0.4 - i * 0.06})`; ctx.fill();
-    }
-    // Planet
-    const px = cx + this.orbitRadius * Math.cos(this.orbitAngle);
-    const py = cy + this.orbitRadius * Math.sin(this.orbitAngle);
-    const planetGrad = ctx.createRadialGradient(px - 3, py - 3, 1, px, py, 10);
-    planetGrad.addColorStop(0, '#c4b5fd'); planetGrad.addColorStop(1, '#4f46e5');
-    ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2);
-    ctx.fillStyle = planetGrad; ctx.shadowColor = '#818cf8'; ctx.shadowBlur = 14; ctx.fill(); ctx.shadowBlur = 0;
-    // Velocity arrow
-    const velAngle = this.orbitAngle + Math.PI / 2;
-    const velLen = 22;
-    ctx.strokeStyle = '#4ade80'; ctx.fillStyle = '#4ade80'; ctx.lineWidth = 1.8;
-    this.drawArrow(ctx, px, py, px + velLen * Math.cos(velAngle), py + velLen * Math.sin(velAngle));
-    this.drawBadge(ctx, 'v', px + velLen * Math.cos(velAngle) + 4, py + velLen * Math.sin(velAngle) + 4, '#4ade80');
-    ctx.textAlign = 'left';
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
 
   constructor() {
