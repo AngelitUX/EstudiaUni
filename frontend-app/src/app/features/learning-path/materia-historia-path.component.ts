@@ -39,24 +39,24 @@ type PathItem = {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-          <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <span class="promo-crown">👑</span>
+            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -64,11 +64,11 @@ type PathItem = {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
+            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -84,29 +84,29 @@ type PathItem = {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <span class="nav-icon">⚙️</span>
+              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <span class="nav-icon">🚪</span>
+              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -138,7 +138,7 @@ type PathItem = {
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -147,7 +147,24 @@ type PathItem = {
           </div>
         </header>
 
-        <div class="dashboard-body">
+        <div class="dashboard-body" style="position: relative; overflow: hidden; min-height: 100vh;">
+          <!-- HISTORY BACKGROUND DECORATIONS -->
+          <div class="physics-bg-decorations">
+            <span class="bg-deco-orbit"></span>
+            <span class="bg-deco-orbit-alt"></span>
+            <span class="bg-deco" style="top: 4%; left: 4%; font-size: 2.4rem; transform: rotate(-12deg);">1810</span>
+            <span class="bg-deco" style="top: 16%; right: 5%; font-size: 2.6rem; transform: rotate(10deg);">🏛</span>
+            <span class="bg-deco" style="top: 30%; left: 3%; font-size: 2.1rem; transform: rotate(8deg);">República</span>
+            <span class="bg-deco" style="top: 42%; right: 4%; font-size: 2.2rem; transform: rotate(-8deg);">1973</span>
+            <span class="bg-deco" style="top: 54%; left: 4%; font-size: 2.2rem; transform: rotate(-10deg);">Independencia</span>
+            <span class="bg-deco" style="top: 65%; right: 3%; font-size: 2.5rem; transform: rotate(12deg);">⚖</span>
+            <span class="bg-deco" style="top: 76%; left: 5%; font-size: 2.1rem; transform: rotate(6deg);">Revolución</span>
+            <span class="bg-deco" style="top: 88%; right: 5%; font-size: 2.6rem; transform: rotate(-14deg);">📜</span>
+            <span class="bg-deco" style="top: 6%; right: 22%; font-size: 1.9rem; transform: rotate(-6deg);">1492</span>
+            <span class="bg-deco" style="top: 94%; left: 20%; font-size: 1.9rem; transform: rotate(9deg);">Constitución</span>
+            <span class="bg-deco" style="top: 22%; left: 16%; font-size: 1.8rem; transform: rotate(14deg);">👑</span>
+            <span class="bg-deco" style="top: 92%; right: 25%; font-size: 1.8rem; transform: rotate(7deg);">Colonia</span>
+          </div>
           <div class="materia-page">
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
@@ -244,7 +261,7 @@ type PathItem = {
                 <div class="node-wrapper" 
                      [style.display]="item.nodes!.length > 1 ? 'flex' : 'flex'"
                      [style.flex-direction]="item.nodes!.length > 1 ? 'row' : 'column'"
-                     [style.gap]="item.nodes!.length === 3 ? '10rem' : (item.nodes!.length === 2 ? '16rem' : '0')"
+                     [style.gap]="item.nodes!.length === 3 ? 'calc(180px - 72px)' : (item.nodes!.length === 2 ? 'calc(280px - 72px)' : '0')"
                      style="align-items: center; justify-content: center;">
                      
                   <ng-container *ngFor="let node of item.nodes; let nodeIdx = index; let isLast = last">
@@ -739,7 +756,7 @@ type PathItem = {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -857,6 +874,7 @@ type PathItem = {
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
     .confirm-content p { color: var(--text-secondary); margin: 0; }
     .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
@@ -887,10 +905,28 @@ type PathItem = {
     /* PATH CONTAINER */
     .duo-path-container { position: relative; padding: 2rem 0; display: flex; flex-direction: column; align-items: center; }
 
+    /* HISTORY BACKGROUND DECORATIONS */
+    .physics-bg-decorations {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+      background:
+        radial-gradient(ellipse 70% 45% at 15% -8%, rgba(194,65,12,0.08), transparent 60%),
+        radial-gradient(ellipse 70% 45% at 100% 105%, rgba(234,88,12,0.08), transparent 60%),
+        radial-gradient(rgba(194, 65, 12, 0.12) 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 32px 32px;
+    }
+    .bg-deco { position: absolute; color: #c2410c; opacity: 0.22; font-family: var(--font-heading, 'Nunito', sans-serif); font-weight: 800; user-select: none; }
+    .bg-deco-orbit { position: absolute; top: 6%; right: -10%; width: 460px; height: 460px; border: 2px dashed rgba(194, 65, 12, 0.16); border-radius: 50%; transform: rotate(-18deg); }
+    .bg-deco-orbit::before { content: ''; position: absolute; inset: 70px; border: 2px dashed rgba(194, 65, 12, 0.13); border-radius: 50%; }
+    .bg-deco-orbit::after { content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; margin: -6px; background: rgba(194, 65, 12, 0.28); border-radius: 50%; }
+    .bg-deco-orbit-alt { position: absolute; bottom: 4%; left: -8%; width: 320px; height: 320px; border: 2px dashed rgba(234, 88, 12, 0.15); border-radius: 50%; transform: rotate(12deg); }
+    .bg-deco-orbit-alt::before { content: ''; position: absolute; inset: 48px; border: 2px dashed rgba(234, 88, 12, 0.12); border-radius: 50%; }
+    .bg-deco-orbit-alt::after { content: ''; position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; margin: -5px; background: rgba(234, 88, 12, 0.25); border-radius: 50%; }
+    @media (max-width: 900px) { .bg-deco-orbit, .bg-deco-orbit-alt { display: none; } }
+
     /* CHAPTER SPLASH BANNER */
     .chapter-splash { width: 100%; max-width: 600px; position: relative; z-index: 15; border-radius: 28px; overflow: hidden; border: 1.5px solid rgba(133,92,214,0.25); box-shadow: 0 16px 40px rgba(133,92,214,0.12), inset 0 2px 4px rgba(255,255,255,0.8); background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 100%); transition: all 0.3s ease; }
-    .chapter-splash.chapter-completed { border: 2px solid #58cc02 !important; box-shadow: 0 16px 40px rgba(88,204,2,0.2), inset 0 2px 4px rgba(255,255,255,0.8) !important; background: linear-gradient(135deg, #f0ffeb 0%, #dcfce7 100%) !important; }
-    .chapter-splash.chapter-completed .splash-badge { background: #58cc02 !important; }
+    .chapter-splash.chapter-completed { border: 2px solid #c2410c !important; box-shadow: 0 16px 40px rgba(194,65,12,0.2), inset 0 2px 4px rgba(255,255,255,0.8) !important; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important; }
+    .chapter-splash.chapter-completed .splash-badge { background: #c2410c !important; }
     .chapter-splash.cap-localizar { background: linear-gradient(150deg, #f3eeff 0%, #e8dff8 40%, #f0ebff 100%); }
     .chapter-splash.cap-interpretar { background: linear-gradient(150deg, #e8f4fd 0%, #d6ecfa 40%, #eaf6ff 100%); }
     .chapter-splash.cap-evaluar { background: linear-gradient(150deg, #e8fde8 0%, #d6f5d6 40%, #eaffea 100%); }
@@ -2431,23 +2467,24 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
     if (item.nodes!.length === 1) {
       return `translateX(${this.getOffset(item.nodes[0].nodeIndex)}px)`;
     }
+    if (item.nodes!.length === 2) {
+      return `none`;
+    }
     const zig = this.getAccordionZigzag(item.rowIndex!);
-    if (item.nodes!.length === 3) {
+    if (false) {
       if (nodeIndex === 0) return `translateX(${zig}px)`;
-      if (nodeIndex === 1) return `none`; // Central goes straight down
+      if (nodeIndex === 1) return `none`;
       if (nodeIndex === 2) return `translateX(${-zig}px)`;
     }
-    const shift = nodeIndex === 0 ? zig : -zig;
-    return `translateX(${shift}px)`;
+    return 'none';
   }
 
   getOffsetsForNodes(item: any): number[] {
     if (!item.nodes) return [0];
     if (item.nodes.length === 1) return [this.getOffset(item.nodes[0].nodeIndex)];
-    const zig = this.getAccordionZigzag(item.rowIndex!);
-    if (item.nodes.length === 2) return [-164 + zig, 164 - zig];
+    if (item.nodes.length === 2) return [-140, 140];
     // For 3 nodes: left zigzags, center is 0, right zigzags opposite
-    if (item.nodes.length === 3) return [-232 + zig, 0, 232 - zig];
+    if (item.nodes.length === 3) return [-180, 0, 180];
     return [0];
   }
 
@@ -2483,7 +2520,7 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
 
     return endOffsets.map(x2 => {
       const d = `M 0 0 C 0 ${height * 0.35}, ${x2} ${height * 0.65}, ${x2} ${height}`;
-      return { d, color: isCompleted ? '#58cc02' : '#e5e5e5', dasharray: isCompleted ? 'none' : '8 8' };
+      return { d, color: isCompleted ? '#c2410c' : '#e5e5e5', dasharray: isCompleted ? 'none' : '8 8' };
     });
   }
 
@@ -2509,11 +2546,11 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
         if (item.nodes!.length === 3) return (idx === 0 && sourceOffset < -100) || (idx === 1 && sourceOffset === 0) || (idx === 2 && sourceOffset > 100);
         return false;
       });
-      return node?.status === 'completed' ? '#58cc02' : '#e5e5e5';
+      return node?.status === 'completed' ? '#c2410c' : '#e5e5e5';
     };
 
     const getDash = (sourceOffset: number) => {
-      return getColor(sourceOffset) === '#58cc02' ? 'none' : '8 8';
+      return getColor(sourceOffset) === '#c2410c' ? 'none' : '8 8';
     };
 
     if (nextItem.type === 'chapter') {

@@ -37,24 +37,24 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard" id="tour-nav-inicio">
-            <span class="nav-icon">🏠</span>
+            <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
             <span class="nav-text">Inicio</span>
           </a>
           <a class="nav-item" routerLink="/ruta" id="tour-nav-ruta">
-            <span class="nav-icon">🗺️</span>
+            <img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
             <span class="nav-text">Ruta de Aprendizaje</span>
           </a>
 
           <a class="nav-item" routerLink="/ensayos" id="tour-nav-ensayos">
-            <span class="nav-icon">📚</span>
+            <img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/>
             <span class="nav-text">Ensayos PAES</span>
           </a>
           <a class="nav-item" routerLink="/mini-ensayo" id="tour-nav-mini">
-            <span class="nav-icon">🎯</span>
+            <img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/>
             <span class="nav-text">Mini Ensayos</span>
           </a>
           <a class="nav-item" routerLink="/mente-veloz" id="tour-nav-mente">
-            <span class="nav-icon">⚡</span>
+            <img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/>
             <span class="nav-text">Mente Veloz</span>
           </a>
 
@@ -64,21 +64,21 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
             <a class="nav-item" routerLink="/encuentra-tu-carrera">
-              <span class="nav-icon">🎓</span>
+              <img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/>
               <span class="nav-text">Encuentra tu Carrera</span>
             </a>
             <a class="nav-item" routerLink="/calculadora-nem">
-              <span class="nav-icon">🧮</span>
+              <img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/>
               <span class="nav-text">Calculadora NEM</span>
             </a>
             <a class="nav-item" routerLink="/recursos">
-              <span class="nav-icon">📂</span>
+              <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
               <span class="nav-text">Recursos Adicionales</span>
             </a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
-            <span class="promo-crown">👑</span>
+            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -86,11 +86,11 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
+            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -110,7 +110,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" style="font-size:0.72rem;padding:0.3rem 0.65rem" (click)="paymentService.openPricingModal()">PRO ⚡</button>
           <button class="profile-trigger" (click)="openProfileModal('')" style="background:none;border:none;cursor:pointer;padding:0">
             <span class="profile-avatar-wrap">
-              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobile" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobile" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
               <ng-template #avatarMobile><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.85rem">{{ profileInitial() }}</span></ng-template>
             </span>
           </button>
@@ -126,24 +126,24 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           </div>
           <nav class="sidebar-nav">
             <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">🏠</span>
+              <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
               <span class="nav-text">Inicio</span>
             </a>
             <a class="nav-item" routerLink="/ruta" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">🗺️</span>
+              <img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
               <span class="nav-text">Ruta de Aprendizaje</span>
             </a>
 
             <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">📚</span>
+              <img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/>
               <span class="nav-text">Ensayos PAES</span>
             </a>
             <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">🎯</span>
+              <img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/>
               <span class="nav-text">Mini Ensayos</span>
             </a>
             <a class="nav-item" routerLink="/mente-veloz" (click)="mobileMenuOpen = false">
-              <span class="nav-icon">⚡</span>
+              <img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/>
               <span class="nav-text">Mente Veloz</span>
             </a>
 
@@ -153,22 +153,22 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
               <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileMenuOpen = false">
-                <span class="nav-icon">🎓</span>
+                <img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/>
                 <span class="nav-text">Encuentra tu Carrera</span>
               </a>
               <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileMenuOpen = false">
-                <span class="nav-icon">🧮</span>
+                <img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/>
                 <span class="nav-text">Calculadora NEM</span>
               </a>
               <a class="nav-item" routerLink="/recursos" (click)="mobileMenuOpen = false">
-                <span class="nav-icon">📂</span>
+                <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
                 <span class="nav-text">Recursos Adicionales</span>
               </a>
             </div>
             
             <!-- Sidebar Promo Card -->
             <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
-              <span class="promo-crown">👑</span>
+              <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
               <h4>Pásate a PRO</h4>
               <p>Explicaciones con IA y Ensayos Ilimitados</p>
               <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -176,11 +176,11 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
-              <span class="nav-icon">⚙️</span>
+              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileMenuOpen = false">
-              <span class="nav-icon">🚪</span>
+              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -192,12 +192,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         <!-- HEADER -->
         <header class="dashboard-header">
           <div class="header-welcome-text">
-            <h1 class="header-greeting">¡Hola, <span class="text-gradient" [class.pro-username]="isProPlan()">{{ userName() }}</span>! 👋</h1>
+            <h1 class="header-greeting">¡Hola, <span class="text-gradient" [class.pro-username]="isProPlan()">{{ userName() }}</span>!</h1>
           </div>
           <div class="welcome-actions">
-            <!-- BOTÓN TEMPORAL DE PRUEBA -->
-            <button class="btn-primary" style="margin-right: 1rem; padding: 0.4rem 0.8rem; font-size: 0.85rem;" (click)="mockSuperStreak()">Probar Súper Racha</button>
-
             <!-- STREAK ICON -->
             <app-streak-icon></app-streak-icon>
             <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" (click)="paymentService.openPricingModal()">
@@ -207,7 +204,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             <div class="profile-menu-wrap" id="tour-nav-profile">
               <button class="profile-trigger" (click)="openProfileModal('')">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -236,14 +233,12 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               <!-- TOP SIDEBAR KPIs (Estudio Semanal & Ensayos Realizados) -->
               <section class="kpis-row-sidebar-top">
                 <div class="kpi-card glass-card">
-                  <div class="kpi-icon">⏱️</div>
                   <div class="kpi-content">
                     <span class="kpi-value">{{ getWeeklyStudyHours() }} hrs</span>
                     <span class="kpi-label">Estudio semanal</span>
                   </div>
                 </div>
                 <div class="kpi-card glass-card">
-                  <div class="kpi-icon">📝</div>
                   <div class="kpi-content">
                     <span class="kpi-value">{{ getCompletedEnsayosCount() }}</span>
                     <span class="kpi-label">Ensayos realizados</span>
@@ -263,7 +258,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               
               <div class="metric-header" style="flex-direction: column; align-items: center; gap: 0.15rem; margin-bottom: 1.5rem; width: 100%;">
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 0.5rem;">
-                  <span class="ai-hero-badge" style="margin: 0; text-align: center;">🤖 Recomendación IA · <span>Personalizado</span></span>
+                  <span class="ai-hero-badge" style="margin: 0; text-align: center;">Recomendación IA · <span>Personalizado</span></span>
                 </div>
               </div>
 
@@ -311,7 +306,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               <ng-container *ngIf="firestoreService.profileSignal()?.targetScore as target; else noGoal">
                 <div class="goal-header" style="flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
                   <div class="goal-info" style="align-items: center;">
-                    <span class="goal-label">🎯 Meta PAES</span>
+                    <span class="goal-label">Meta PAES</span>
                     <span class="goal-target" style="text-align: center;">
                       <span style="display: block;">{{ firestoreService.profileSignal()?.targetCareer || 'Tu carrera' }}</span>
                       <span *ngIf="firestoreService.profileSignal()?.targetUniversity" style="display: block; font-weight: 600; opacity: 0.85; margin-top: 0.1rem;">{{ firestoreService.profileSignal()?.targetUniversity }}</span>
@@ -348,10 +343,10 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
                   </div>
                   <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
                     <button type="button" class="btn-meta-materias" (click)="showMetaPaesMateriasModal = true">
-                      📋 Materias del promedio
+                      Materias del promedio
                     </button>
                     <a routerLink="/encuentra-tu-carrera" class="btn-buscar-carreras">
-                      🔍 Buscar carreras
+                      Buscar carreras
                     </a>
                   </div>
                 </div>
@@ -359,7 +354,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               <ng-template #noGoal>
                 <div class="goal-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1rem; padding: 1rem 0;">
                   <div class="goal-empty-info" style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
-                    <span class="goal-label" style="font-size: 1.15rem; display: flex; align-items: center; gap: 0.4rem;">🎯 Meta PAES</span>
+                    <span class="goal-label" style="font-size: 1.15rem; display: flex; align-items: center; gap: 0.4rem;">Meta PAES</span>
                     <p style="margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.45;">
                       Establece tu carrera para ver tu proyección.
                     </p>
@@ -379,7 +374,6 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               <div class="metric-header" style="flex-direction: column; align-items: center; gap: 0.15rem; margin-bottom: 0.65rem; width: 100%;">
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 0.5rem;">
                   <span class="metric-label">Nivel de Dominio por Tema</span>
-                  <span class="metric-icon">🎯</span>
                 </div>
               </div>
               <div class="metric-body mastery-body" (scroll)="onMasteryScroll($event)">
@@ -428,7 +422,6 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               <div class="metric-header record-header" [class.no-arrows]="dashSvc.paesRecords().length < 2" style="flex-direction: column; gap: 0.4rem; align-items: center;">
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 0.5rem;">
                   <span class="metric-label">Récord Ensayo PAES</span>
-                  <span class="metric-icon" style="font-size: 1.1rem;">🏆</span>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 1rem;">
                   <button class="nav-arrow small" (click)="prevRecordSubject()" *ngIf="dashSvc.paesRecords().length >= 2">‹</button>
@@ -482,8 +475,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
                       <div class="preview-bar" style="height: 80%"></div>
                       <div class="preview-bar" style="height: 60%"></div>
                     </div>
-                    <span class="empty-icon" style="z-index: 1;">📝</span>
-                    <p style="z-index: 1;">Sin récord en esta área</p>
+                    <p class="record-empty-text" style="z-index: 1;">Sin récord en esta área</p>
                     <a routerLink="/ensayos" class="btn-cta-secondary btn-sm" style="z-index: 1; font-size:0.8rem; padding: 0.4rem 0.8rem;">Comenzar →</a>
                   </div>
                 </ng-template>
@@ -498,9 +490,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             <section class="activity-section-full" style="margin-bottom: 0;">
               <div class="recent-activity glass-card">
                 <div class="activity-header">
-                  <h3>📋 Actividad Reciente</h3>
+                  <h3>Actividad Reciente</h3>
                   <button class="btn-ver-todo" (click)="showHistoryModal = true">
-                    📋 Ver todo
+                    Ver todo
                   </button>
                 </div>
                 <div class="activity-list" *ngIf="dashSvc.activities().length > 0; else noActivity">
@@ -569,7 +561,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -734,6 +726,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .nav-item.active .nav-icon { filter: brightness(1.3); }
     .nav-item.active .nav-text { color: #c4b5fd; }
     .nav-icon { font-size: 1.35rem; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .nav-icon-img { width: 32px; height: 32px; object-fit: contain; opacity: 0.85; transition: opacity 0.2s; }
+    .nav-item:hover .nav-icon-img { opacity: 1; }
+    .nav-item.active .nav-icon-img { opacity: 1; filter: brightness(1.2); }
     .sidebar-section-title {
       font-size: 0.78rem;
       font-weight: 800;
@@ -815,6 +810,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .logout-confirm-modal { max-width: 420px !important; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
     .confirm-content p { color: var(--text-secondary); margin: 0; }
     .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -1012,7 +1008,8 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     }
     .empty-state-small .empty-icon { font-size: 1.5rem; opacity: 0.8; z-index: 1; }
     .empty-state-small p { font-size: 0.8rem; color: #4b5563; margin: 0 0 0.25rem 0; max-width: 200px; font-weight: 600; z-index: 1; }
-    .btn-ver-todo { padding: 0.45rem 0.9rem; border-radius: 10px; background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.8rem; font-weight: 700; border: 1.5px solid rgba(133,92,214,0.15); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
+    .empty-state-small p.record-empty-text { font-size: 1.05rem; font-weight: 800; max-width: 240px; }
+    .btn-ver-todo { padding: 0.45rem 0.9rem; border-radius: 10px; background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.8rem; font-weight: 700; border: 1.5px solid rgba(133,92,214,0.35); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
     .btn-ver-todo:hover { background: var(--accent-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(133,92,214,0.2); }
 
     /* MINI ENSAYOS PROMO */
@@ -1480,6 +1477,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .kpi-card { display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 1rem; border-radius: 12px; transition: all 0.2s; height: 62px; box-sizing: border-box; border: 2px solid var(--glass-border) !important; }
     .kpi-card:hover { transform: translateY(-2px); border-color: rgba(133,92,214,0.4) !important; }
     .kpi-icon { font-size: 1.2rem; width: 34px; height: 34px; border-radius: 8px; background: rgba(133,92,214,0.08); display: flex; align-items: center; justify-content: center; }
+    .kpi-icon-img { width: 22px; height: 22px; object-fit: contain; }
     .kpi-content { display: flex; flex-direction: column; }
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-heading); line-height: 1.1; }
     .kpi-label { font-size: 0.76rem; color: #4b5563; font-weight: 700; line-height: 1.1; }
@@ -1751,7 +1749,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       padding: 0.45rem 1rem;
       border-radius: 10px;
       background: rgba(133, 92, 214, 0.08);
-      border: 1.5px solid rgba(133, 92, 214, 0.18);
+      border: 1.5px solid rgba(133, 92, 214, 0.35);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-buscar-carreras:hover {
@@ -2048,12 +2046,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   showHelpModal = false;
   showTutorialModal = false;
 
-  mockSuperStreak() {
-    const svc = this.dashSvc as any;
-    svc._superStreakDays.set(3);
-    svc._streakDays.set(10);
-    this.toast.show('¡Súper racha simulada con éxito! (10 días / 3 súper días)', 'success');
-  }
   driverObj: any;
   currentDate = (() => {
     const formatted = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());

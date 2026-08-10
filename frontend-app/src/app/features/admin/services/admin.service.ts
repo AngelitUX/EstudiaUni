@@ -2,11 +2,13 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Firestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
 import { PoolPregunta, MateriaId } from '../../learning-path/models/paes.models';
+import { PaesContentService } from '../../learning-path/services/paes-content.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private firestore = inject(Firestore);
   private auth = inject(Auth);
+  private paesContent = inject(PaesContentService);
 
   // ─── Admin role ───
   private _isAdmin = signal<boolean | null>(null); // null = not checked yet
@@ -194,10 +196,9 @@ export class AdminService {
     };
 
     const docRef = await addDoc(collection(this.firestore, 'pool_preguntas'), data);
-    
-    // Invalidate PaesContentService cache
-    localStorage.removeItem('paes_content_cache');
-    localStorage.removeItem('paes_content_cache_timestamp');
+
+    // Invalidate PaesContentService's pool_preguntas cache so el propio admin vea el cambio de inmediato
+    this.paesContent.clearPoolPreguntasCache();
 
     // Update local state
     this._preguntas.update(list => [{ ...data, id: docRef.id } as PoolPregunta, ...list]);
@@ -215,9 +216,8 @@ export class AdminService {
 
     await updateDoc(doc(this.firestore, 'pool_preguntas', id), data);
 
-    // Invalidate PaesContentService cache
-    localStorage.removeItem('paes_content_cache');
-    localStorage.removeItem('paes_content_cache_timestamp');
+    // Invalidate PaesContentService's pool_preguntas cache so el propio admin vea el cambio de inmediato
+    this.paesContent.clearPoolPreguntasCache();
 
     // Update local state
     this._preguntas.update(list =>
@@ -227,10 +227,9 @@ export class AdminService {
 
   async deletePregunta(id: string): Promise<void> {
     await deleteDoc(doc(this.firestore, 'pool_preguntas', id));
-    
-    // Invalidate PaesContentService cache
-    localStorage.removeItem('paes_content_cache');
-    localStorage.removeItem('paes_content_cache_timestamp');
+
+    // Invalidate PaesContentService's pool_preguntas cache so el propio admin vea el cambio de inmediato
+    this.paesContent.clearPoolPreguntasCache();
 
     this._preguntas.update(list => list.filter(p => p.id !== id));
   }

@@ -54,48 +54,48 @@ type ExamMode = 'real' | 'asistido';
         
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard">
-            <span class="nav-icon">🏠</span>
+            <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
             <span class="nav-text">Inicio</span>
           </a>
           <a class="nav-item" routerLink="/ruta">
-            <span class="nav-icon">🗺️</span>
+            <img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
             <span class="nav-text">Ruta de Aprendizaje</span>
           </a>
 
           <a class="nav-item active" routerLink="/ensayos">
-            <span class="nav-icon">📚</span>
+            <img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/>
             <span class="nav-text">Ensayos PAES</span>
           </a>
           <a class="nav-item" routerLink="/mini-ensayo">
-            <span class="nav-icon">🎯</span>
+            <img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/>
             <span class="nav-text">Mini Ensayos</span>
           </a>
           <a class="nav-item" routerLink="/mente-veloz">
-            <span class="nav-icon">⚡</span>
+            <img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/>
             <span class="nav-text">Mente Veloz</span>
           </a>
-          
+
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
             <a class="nav-item" routerLink="/encuentra-tu-carrera">
-              <span class="nav-icon">🎓</span>
+              <img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/>
               <span class="nav-text">Encuentra tu Carrera</span>
             </a>
             <a class="nav-item" routerLink="/calculadora-nem">
-              <span class="nav-icon">🧮</span>
+              <img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/>
               <span class="nav-text">Calculadora NEM</span>
             </a>
             <a class="nav-item" routerLink="/recursos">
-              <span class="nav-icon">📂</span>
+              <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
               <span class="nav-text">Recursos Adicionales</span>
             </a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <span class="promo-crown">👑</span>
+            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -104,11 +104,11 @@ type ExamMode = 'real' | 'asistido';
         
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
+            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -126,7 +126,7 @@ type ExamMode = 'real' | 'asistido';
         <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
         <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
           <span class="profile-avatar-wrap">
-            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileE" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileE" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
             <ng-template #avatarMobileE><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
           </span>
         </button>
@@ -138,19 +138,19 @@ type ExamMode = 'real' | 'asistido';
             <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item active" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item active" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             <div class="sidebar-section-title">HERRAMIENTAS</div>
-            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </nav>
           <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
-            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
-            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/><span class="nav-text">Configuración</span></a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/><span class="nav-text">Cerrar Sesión</span></a>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ type ExamMode = 'real' | 'asistido';
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -244,7 +244,10 @@ type ExamMode = 'real' | 'asistido';
               class="prueba-card"
               (click)="seleccionarPrueba(prueba)"
               [class.prueba-card-selected]="pruebaSeleccionada?.id === prueba.id">
-              <div class="card-icon">{{ prueba.icono }}</div>
+              <div class="card-icon">
+                <img *ngIf="isImagePath(prueba.icono)" [src]="prueba.icono" [alt]="prueba.nombre"/>
+                <span *ngIf="!isImagePath(prueba.icono)">{{ prueba.icono }}</span>
+              </div>
               <div class="card-header">
                 <h3 class="card-title">{{ prueba.nombre }}</h3>
                 <p class="card-desc">{{ prueba.descripcion }}</p>
@@ -260,7 +263,10 @@ type ExamMode = 'real' | 'asistido';
             <div class="modal-content glass-card" (click)="$event.stopPropagation()" (scroll)="onModalScroll($event)">
               <button class="modal-close" (click)="cerrarSeleccion()">×</button>
 
-              <div class="modal-icon">{{ pruebaSeleccionada.icono }}</div>
+              <div class="modal-icon">
+                <img *ngIf="isImagePath(pruebaSeleccionada.icono)" [src]="pruebaSeleccionada.icono" [alt]="pruebaSeleccionada.nombre" style="width: 80px; height: 80px; object-fit: contain;"/>
+                <span *ngIf="!isImagePath(pruebaSeleccionada.icono)">{{ pruebaSeleccionada.icono }}</span>
+              </div>
               <h2 class="modal-title">¿Listo para iniciar {{ getNombreSeleccionado() }}?</h2>
 
               <div class="modal-message">
@@ -417,7 +423,7 @@ type ExamMode = 'real' | 'asistido';
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -657,6 +663,7 @@ type ExamMode = 'real' | 'asistido';
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
     .confirm-content p { color: var(--text-secondary); margin: 0; }
     .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
@@ -714,10 +721,20 @@ type ExamMode = 'real' | 'asistido';
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 1.5rem;
     }
+    @media (min-width: 1025px) {
+      .pruebas-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .pruebas-grid .prueba-card:nth-child(1) { grid-column: 1 / 3; }
+      .pruebas-grid .prueba-card:nth-child(2) { grid-column: 3 / 5; }
+      .pruebas-grid .prueba-card:nth-child(3) { grid-column: 5 / 7; }
+      .pruebas-grid .prueba-card:nth-child(4) { grid-column: 2 / 4; }
+      .pruebas-grid .prueba-card:nth-child(5) { grid-column: 4 / 6; }
+    }
 
     /* PRUEBA CARD */
     .prueba-card {
-      text-align: left;
+      text-align: center;
       background: #ffffff;
       border: 2px solid var(--glass-border);
       border-radius: 20px;
@@ -726,6 +743,7 @@ type ExamMode = 'real' | 'asistido';
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 1.5rem;
       position: relative;
       overflow: hidden;
@@ -757,9 +775,24 @@ type ExamMode = 'real' | 'asistido';
     .card-icon {
       font-size: 3rem;
       line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100px;
+      height: 100px;
+    }
+    .card-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
     .card-header {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
     .card-title {
       font-size: 1.75rem;
@@ -767,12 +800,14 @@ type ExamMode = 'real' | 'asistido';
       margin-bottom: 0.5rem;
       color: #0f172a;
       letter-spacing: -0.02em;
+      text-align: center;
     }
     .card-desc {
       font-size: 1.1rem;
       color: #64748b;
       line-height: 1.5;
       font-weight: 500;
+      text-align: center;
     }
 
     .card-meta {
@@ -1351,6 +1386,10 @@ export class EnsayosListComponent implements OnInit {
     localStorage.setItem('herramientasExpanded', String(!current));
   }
 
+  isImagePath(path: string): boolean {
+    return typeof path === 'string' && path.includes('assets/');
+  }
+
   isCollapsible = false;
   mobileOpen = false;
   scrolledToBottom = false;
@@ -1368,7 +1407,7 @@ export class EnsayosListComponent implements OnInit {
     {
       id: 'm1',
       nombre: 'M1',
-      icono: '📐',
+      icono: 'assets/images/iconosParaElementos/P_m1.png',
       descripcion: 'Competencia Matemática 1',
       tiempo: 140,
       preguntas: 65,
@@ -1403,7 +1442,7 @@ export class EnsayosListComponent implements OnInit {
     {
       id: 'm2',
       nombre: 'M2',
-      icono: '📊',
+      icono: 'assets/images/iconosParaElementos/P_m2.png',
       descripcion: 'Matemática 2',
       tiempo: 140,
       preguntas: 55,
@@ -1443,7 +1482,7 @@ export class EnsayosListComponent implements OnInit {
     {
       id: 'lenguaje',
       nombre: 'Competencia Lectora',
-      icono: '📖',
+      icono: 'assets/images/iconosParaElementos/P_Lenguaje.png',
       descripcion: 'Comprensión de textos y vocabulario',
       tiempo: 150,
       preguntas: 65,
@@ -1490,7 +1529,7 @@ export class EnsayosListComponent implements OnInit {
     {
       id: 'ciencias',
       nombre: 'Ciencias',
-      icono: '🧬',
+      icono: 'assets/images/iconosParaElementos/P_Biologia.png',
       descripcion: 'Biología, Química, Física y Ciencias Técnico-Profesional',
       tiempo: 160,
       preguntas: 80,
@@ -1649,7 +1688,7 @@ export class EnsayosListComponent implements OnInit {
     {
       id: 'historia',
       nombre: 'Historia y Ciencias Sociales',
-      icono: '🏛️',
+      icono: 'assets/images/iconosParaElementos/P_Historia.png',
       descripcion: 'Historia y Ciencias Sociales',
       tiempo: 120,
       preguntas: 65,

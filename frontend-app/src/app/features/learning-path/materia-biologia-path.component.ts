@@ -39,24 +39,24 @@ type PathItem = {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-          <a class="nav-item active" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <span class="promo-crown">👑</span>
+            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -64,11 +64,11 @@ type PathItem = {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
+            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -84,29 +84,29 @@ type PathItem = {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <span class="nav-icon">⚙️</span>
+              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <span class="nav-icon">🚪</span>
+              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -138,7 +138,7 @@ type PathItem = {
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -148,64 +148,22 @@ type PathItem = {
         </header>
 
         <div class="dashboard-body" style="position: relative; overflow: hidden; min-height: 100vh;">
-          <!-- PHYSICS BACKGROUND DECORATIONS -->
+          <!-- BIOLOGY BACKGROUND DECORATIONS -->
           <div class="physics-bg-decorations">
-            <!-- Formules -->
-            <span class="bg-deco" style="top: 2%; left: 5%; font-size: 2.5rem; transform: rotate(-15deg);">E = mc²</span>
-            <span class="bg-deco" style="top: 8%; right: 12%; font-size: 2rem; transform: rotate(10deg);">F = ma</span>
-            <span class="bg-deco" style="top: 15%; left: 18%; font-size: 2.2rem; transform: rotate(5deg);">v = d/t</span>
-            <span class="bg-deco" style="top: 22%; right: 2%; font-size: 1.8rem; transform: rotate(-25deg);">λ = h/p</span>
-            <span class="bg-deco" style="top: 28%; left: -5%; font-size: 2.2rem; transform: rotate(15deg);">W = F·d</span>
-            <span class="bg-deco" style="top: 35%; right: 15%; font-size: 2rem; transform: rotate(-10deg);">∑F = 0</span>
-            <span class="bg-deco" style="top: 42%; left: 8%; font-size: 2.5rem; transform: rotate(20deg);">K = ½mv²</span>
-            <span class="bg-deco" style="top: 50%; right: -3%; font-size: 1.8rem; transform: rotate(-15deg);">p = mv</span>
-            <span class="bg-deco" style="top: 58%; left: 12%; font-size: 2rem; transform: rotate(5deg);">V = I·R</span>
-            <span class="bg-deco" style="top: 65%; right: 10%; font-size: 2.2rem; transform: rotate(-20deg);">Q = mcΔT</span>
-            <span class="bg-deco" style="top: 72%; left: -2%; font-size: 2rem; transform: rotate(15deg);">τ = r × F</span>
-            <span class="bg-deco" style="top: 80%; right: 5%; font-size: 1.8rem; transform: rotate(10deg);">ω = Δθ/Δt</span>
-            <span class="bg-deco" style="top: 88%; left: 5%; font-size: 2.5rem; transform: rotate(-5deg);">F = G(m₁m₂)/r²</span>
-            <span class="bg-deco" style="top: 95%; right: 15%; font-size: 2rem; transform: rotate(-15deg);">P = W/t</span>
-
-            <!-- Symbols -->
-            <span class="bg-deco" style="top: 5%; right: -5%; font-size: 3.5rem; transform: rotate(15deg);">⚛</span>
-            <span class="bg-deco" style="top: 12%; left: -2%; font-size: 3rem; transform: rotate(-10deg);">🧲</span>
-            <span class="bg-deco" style="top: 18%; right: 25%; font-size: 2.8rem; transform: rotate(25deg);">🔭</span>
-            <span class="bg-deco" style="top: 25%; left: 10%; font-size: 2.5rem; transform: rotate(10deg);">⚡</span>
-            <span class="bg-deco" style="top: 32%; right: 8%; font-size: 4rem; transform: rotate(-5deg);">Ω</span>
-            <span class="bg-deco" style="top: 40%; left: -8%; font-size: 3.5rem; transform: rotate(15deg);">Δ</span>
-            <span class="bg-deco" style="top: 48%; right: 20%; font-size: 2.8rem; transform: rotate(-15deg);">π</span>
-            <span class="bg-deco" style="top: 55%; left: 2%; font-size: 3rem; transform: rotate(10deg);">∑</span>
-            <span class="bg-deco" style="top: 62%; right: -5%; font-size: 2.5rem; transform: rotate(-20deg);">θ</span>
-            <span class="bg-deco" style="top: 70%; left: 15%; font-size: 3.5rem; transform: rotate(5deg);">∞</span>
-            <span class="bg-deco" style="top: 78%; right: 22%; font-size: 3rem; transform: rotate(15deg);">∫</span>
-            <span class="bg-deco" style="top: 85%; left: -5%; font-size: 2.8rem; transform: rotate(-10deg);">μ</span>
-            <span class="bg-deco" style="top: 92%; right: -2%; font-size: 3.5rem; transform: rotate(20deg);">∇</span>
-            <span class="bg-deco" style="top: 98%; left: 10%; font-size: 2.5rem; transform: rotate(-5deg);">Φ</span>
-
-            <!-- Constants & Central Elements -->
-            <span class="bg-deco" style="top: 3%; left: 35%; font-size: 2rem; transform: rotate(10deg);">c = 3×10⁸ m/s</span>
-            <span class="bg-deco" style="top: 10%; right: 38%; font-size: 2.2rem; transform: rotate(-15deg);">h = 6.626×10⁻³⁴</span>
-            <span class="bg-deco" style="top: 17%; left: 45%; font-size: 3rem; transform: rotate(5deg);">E ⃗</span>
-            <span class="bg-deco" style="top: 24%; right: 40%; font-size: 2.5rem; transform: rotate(-20deg);">B ⃗</span>
-            <span class="bg-deco" style="top: 31%; left: 32%; font-size: 1.8rem; transform: rotate(12deg);">v = λf</span>
-            <span class="bg-deco" style="top: 38%; right: 35%; font-size: 2.8rem; transform: rotate(-8deg);">α</span>
-            <span class="bg-deco" style="top: 45%; left: 40%; font-size: 2rem; transform: rotate(18deg);">T = 2π√(L/g)</span>
-            <span class="bg-deco" style="top: 52%; right: 42%; font-size: 2.5rem; transform: rotate(-12deg);">β</span>
-            <span class="bg-deco" style="top: 59%; left: 35%; font-size: 2.2rem; transform: rotate(7deg);">F = qvB</span>
-            <span class="bg-deco" style="top: 66%; right: 38%; font-size: 3.5rem; transform: rotate(-25deg);">γ</span>
-            <span class="bg-deco" style="top: 73%; left: 45%; font-size: 1.8rem; transform: rotate(15deg);">I = V/R</span>
-            <span class="bg-deco" style="top: 82%; right: 40%; font-size: 2rem; transform: rotate(-5deg);">P = IV</span>
-            <span class="bg-deco" style="top: 89%; left: 38%; font-size: 2.8rem; transform: rotate(10deg);">ρ = m/V</span>
-            <span class="bg-deco" style="top: 96%; right: 35%; font-size: 2.5rem; transform: rotate(-18deg);">ε₀</span>
-
-            <!-- Extra Edge Elements -->
-            <span class="bg-deco" style="top: 4%; left: 1%; font-size: 1.8rem; transform: rotate(-30deg);">a = Δv/Δt</span>
-            <span class="bg-deco" style="top: 14%; right: 1%; font-size: 2.5rem; transform: rotate(20deg);">N</span>
-            <span class="bg-deco" style="top: 28%; left: 2%; font-size: 2rem; transform: rotate(-15deg);">J = FΔt</span>
-            <span class="bg-deco" style="top: 45%; right: 2%; font-size: 2.2rem; transform: rotate(12deg);">U = mgh</span>
-            <span class="bg-deco" style="top: 60%; left: 1%; font-size: 2.8rem; transform: rotate(-8deg);">L = Iω</span>
-            <span class="bg-deco" style="top: 76%; right: 1%; font-size: 1.8rem; transform: rotate(25deg);">Q = CΔV</span>
-            <span class="bg-deco" style="top: 90%; left: 2%; font-size: 2.4rem; transform: rotate(-12deg);">B = μ₀nI</span>
+            <span class="bg-deco-orbit"></span>
+            <span class="bg-deco-orbit-alt"></span>
+            <span class="bg-deco" style="top: 4%; left: 4%; font-size: 2.4rem; transform: rotate(-12deg);">🧬</span>
+            <span class="bg-deco" style="top: 16%; right: 5%; font-size: 2.1rem; transform: rotate(10deg);">ATP</span>
+            <span class="bg-deco" style="top: 30%; left: 3%; font-size: 2.1rem; transform: rotate(8deg);">Célula</span>
+            <span class="bg-deco" style="top: 42%; right: 4%; font-size: 2.6rem; transform: rotate(-8deg);">🦠</span>
+            <span class="bg-deco" style="top: 54%; left: 4%; font-size: 2.2rem; transform: rotate(-10deg);">Mitosis</span>
+            <span class="bg-deco" style="top: 65%; right: 3%; font-size: 2rem; transform: rotate(12deg);">ADN</span>
+            <span class="bg-deco" style="top: 76%; left: 5%; font-size: 2.1rem; transform: rotate(6deg);">O₂</span>
+            <span class="bg-deco" style="top: 88%; right: 5%; font-size: 2.5rem; transform: rotate(-14deg);">🌱</span>
+            <span class="bg-deco" style="top: 6%; right: 22%; font-size: 1.9rem; transform: rotate(-6deg);">CO₂</span>
+            <span class="bg-deco" style="top: 94%; left: 20%; font-size: 1.9rem; transform: rotate(9deg);">Genoma</span>
+            <span class="bg-deco" style="top: 22%; left: 16%; font-size: 1.8rem; transform: rotate(14deg);">Enzima</span>
+            <span class="bg-deco" style="top: 92%; right: 25%; font-size: 1.8rem; transform: rotate(7deg);">Núcleo</span>
           </div>
 
           <div class="materia-page">
@@ -798,7 +756,7 @@ type PathItem = {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -916,6 +874,7 @@ type PathItem = {
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
     .confirm-content p { color: var(--text-secondary); margin: 0; }
     .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
@@ -940,12 +899,22 @@ type PathItem = {
         .materia-page { max-width: 600px; margin: 0 auto; padding-bottom: 6rem; position: relative; }
 
     /* BIOLOGY BG DECORATIONS */
-    .biology-bg-decorations { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; background-image: radial-gradient(rgba(6, 95, 70, 0.1) 1.5px, transparent 1.5px); background-size: 24px 24px; }
-    .bg-deco { position: absolute; color: #047857; opacity: 0.25; font-family: var(--font-heading, 'Nunito', sans-serif); font-weight: 800; user-select: none; }
-    
-    /* PHYSICS BG DECORATIONS */
-    .physics-bg-decorations { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; background-image: radial-gradient(rgba(30, 58, 138, 0.1) 1.5px, transparent 1.5px); background-size: 24px 24px; }
-    .bg-deco { position: absolute; color: var(--accent-primary, #10b981); opacity: 0.25; font-family: var(--font-heading, 'Nunito', sans-serif); font-weight: 800; user-select: none; }
+    .physics-bg-decorations {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+      background:
+        radial-gradient(ellipse 70% 45% at 15% -8%, rgba(6,95,70,0.08), transparent 60%),
+        radial-gradient(ellipse 70% 45% at 100% 105%, rgba(16,185,129,0.08), transparent 60%),
+        radial-gradient(rgba(6, 95, 70, 0.12) 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 32px 32px;
+    }
+    .bg-deco { position: absolute; color: #047857; opacity: 0.22; font-family: var(--font-heading, 'Nunito', sans-serif); font-weight: 800; user-select: none; }
+    .bg-deco-orbit { position: absolute; top: 6%; right: -10%; width: 460px; height: 460px; border: 2px dashed rgba(6, 95, 70, 0.16); border-radius: 50%; transform: rotate(-18deg); }
+    .bg-deco-orbit::before { content: ''; position: absolute; inset: 70px; border: 2px dashed rgba(6, 95, 70, 0.13); border-radius: 50%; }
+    .bg-deco-orbit::after { content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; margin: -6px; background: rgba(6, 95, 70, 0.28); border-radius: 50%; }
+    .bg-deco-orbit-alt { position: absolute; bottom: 4%; left: -8%; width: 320px; height: 320px; border: 2px dashed rgba(16, 185, 129, 0.15); border-radius: 50%; transform: rotate(12deg); }
+    .bg-deco-orbit-alt::before { content: ''; position: absolute; inset: 48px; border: 2px dashed rgba(16, 185, 129, 0.12); border-radius: 50%; }
+    .bg-deco-orbit-alt::after { content: ''; position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; margin: -5px; background: rgba(16, 185, 129, 0.25); border-radius: 50%; }
+    @media (max-width: 900px) { .bg-deco-orbit, .bg-deco-orbit-alt { display: none; } }
 
     /* BACK BUTTON OVERRIDES */
     .btn-back { background: transparent; border: none; font-size: 1.5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.2s; }
