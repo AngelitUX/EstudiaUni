@@ -32,7 +32,7 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
             <span class="nav-text">Nueva Pregunta</span>
           </a>
           <a routerLink="/admin/recursos" class="nav-item active">
-            <span class="nav-icon">📂</span>
+            <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
             <span class="nav-text">Recursos</span>
           </a>
           <a routerLink="/admin/bugs" class="nav-item">
@@ -45,7 +45,7 @@ import { PaesContentService } from '../learning-path/services/paes-content.servi
 
         <div class="sidebar-footer" style="padding: 1.25rem 0.75rem;">
           <a class="nav-item logout-btn-sidebar" routerLink="/dashboard">
-            <span class="nav-icon">🏠</span>
+            <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
             <span class="nav-text">Dashboard</span>
           </a>
         </div>

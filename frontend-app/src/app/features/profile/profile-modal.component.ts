@@ -30,7 +30,7 @@ import { CareerService, Career } from '../../core/services/career.service';
             <aside class="profile-sidebar">
               <div class="avatar-container">
                 <div class="avatar-wrap clickable" (click)="(isProPlan() || adminService.isAdmin()) ? photoInput.click() : showPremiumToast()" title="Foto de perfil">
-                  <img *ngIf="profileForm.photoURL; else avatarFallback" [src]="profileForm.photoURL" class="avatar" alt="Foto de perfil"/>
+                  <img *ngIf="profileForm.photoURL; else avatarFallback" [src]="profileForm.photoURL" [class.avatar-preset]="isPresetAvatar()" class="avatar" alt="Foto de perfil"/>
                   <ng-template #avatarFallback><div class="avatar fallback">{{ initial }}</div></ng-template>
                   <div class="avatar-overlay">
                     <span>Cambiar foto</span>
@@ -242,7 +242,7 @@ import { CareerService, Career } from '../../core/services/career.service';
         </div>
         <div class="confirm-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -357,11 +357,12 @@ import { CareerService, Career } from '../../core/services/career.service';
     .profile-subtitle{margin:0;color:var(--text-secondary);font-size:.9rem;line-height:1.5;font-weight:500}
     .admin-badge{display:inline-block;margin-top:.5rem;background:#fee2e2;border:2px solid #fecaca;color:#dc2626;padding:.35rem .75rem;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;transition:all .2s}
     .admin-badge:hover{background:#fecaca;transform:translateY(-2px)}
-    .avatar-container{position:relative;width:100px;height:100px}
+    .avatar-container{position:relative;width:100px;height:100px;background:#f5e6d3;border-radius:50%;display:flex;align-items:center;justify-content:center}
     .avatar-wrap{position:relative;width:100px;height:100px;flex-shrink:0;cursor:pointer;overflow:hidden;border-radius:50%}
     .avatar-wrap:hover .avatar-overlay{opacity:1}
     .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:white;font-size:0.85rem;font-weight:800;text-align:center;padding:0.5rem;line-height:1.2}
     .avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid var(--accent-primary);box-shadow:0 0 15px rgba(133,92,214,0.2)}
+    .avatar.avatar-preset{object-fit:contain;padding:12%;box-sizing:border-box}
     .avatar.fallback{display:grid;place-items:center;background:linear-gradient(135deg,#855cd6,#6b46b8);font-size:2rem;font-weight:700}
     .emoji-pill{position:absolute;right:0;bottom:0;background:#111827;border:1.5px solid rgba(255,255,255,0.2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;z-index:2;animation:emote-swing 2s ease-in-out infinite;transform-origin:center bottom}
     @keyframes emote-swing{
@@ -390,6 +391,7 @@ import { CareerService, Career } from '../../core/services/career.service';
     .confirm-body { padding: 2rem 1.5rem; }
     .confirm-content { text-align: center; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; font-weight: 800; }
     .confirm-content p { margin: 0; color: var(--text-secondary); font-weight: 500; }
     .confirm-footer { padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--glass-border); background: var(--bg-secondary); }
@@ -497,7 +499,7 @@ import { CareerService, Career } from '../../core/services/career.service';
     .avatars-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
     .avatar-option-btn {
       border: 2px solid var(--glass-border);
@@ -511,6 +513,9 @@ import { CareerService, Career } from '../../core/services/career.service';
       align-items: center;
       justify-content: center;
       transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
     }
     .avatar-option-btn:hover {
       transform: scale(1.1);
@@ -525,6 +530,7 @@ import { CareerService, Career } from '../../core/services/career.service';
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center;
     }
 
     .emoji-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9500}
@@ -741,6 +747,10 @@ export class ProfileModalComponent implements OnInit {
     this.profileForm.photoURL = avatar;
   }
 
+  isPresetAvatar(): boolean {
+    return this.profileForm.photoURL?.includes('assets/images/avatars/') ?? false;
+  }
+
   showPremiumToast(): void {
     this.toast.error('La carga de imágenes personalizadas es una función Premium ⚡.');
   }
@@ -820,7 +830,7 @@ export class ProfileModalComponent implements OnInit {
       next: (profile) => {
         if (profile) {
           this.profileForm.displayName = profile.displayName || '';
-          this.profileForm.photoURL = profile.photoURL || '';
+          this.profileForm.photoURL = profile.photoURL || 'assets/images/avatars/avatar_predeterminado.png';
           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
           this.profileForm.school = profile.school || '';

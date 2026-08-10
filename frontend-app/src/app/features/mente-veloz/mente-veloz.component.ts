@@ -42,24 +42,24 @@ interface PlayedQuestion {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-          <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item active" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item active" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <span class="promo-crown">👑</span>
+            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -67,11 +67,11 @@ interface PlayedQuestion {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
+            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -92,29 +92,29 @@ interface PlayedQuestion {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item active" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item active" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <span class="nav-icon">⚙️</span>
+              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <span class="nav-icon">🚪</span>
+              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -151,7 +151,7 @@ interface PlayedQuestion {
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -177,7 +177,8 @@ interface PlayedQuestion {
                       [class.selected]="selectedMaterias.has(m.id)"
                       [class.locked]="isMateriaLockedForFree(m.id)"
                       (click)="toggleMateria(m.id)">
-                <span class="subj-icon">{{ m.icon || '📚' }}</span>
+                <img *ngIf="getMateriaIconPath(m.id) as iconPath" [src]="iconPath" [alt]="m.title" class="subj-icon-img"/>
+                <span class="subj-icon" *ngIf="!getMateriaIconPath(m.id)">{{ m.icon || '📚' }}</span>
                 <span class="subj-title">{{ m.title }}</span>
                 <span class="checkbox-indicator" *ngIf="!isMateriaLockedForFree(m.id)"></span>
                 <span class="lock-indicator" *ngIf="isMateriaLockedForFree(m.id)">🔒 PRO</span>
@@ -185,7 +186,7 @@ interface PlayedQuestion {
             </div>
             <p class="warning-text" *ngIf="!isProPlan() && !adminService.isAdmin()">Plan Básico: solo Competencia Lectora y M1 disponibles. <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejora a PRO</a> para todas las materias.</p>
             <div class="pool-counter" *ngIf="selectedMaterias.size > 0">
-              📋 {{ getPoolCount() }} preguntas disponibles en {{ selectedMaterias.size }} materia{{ selectedMaterias.size > 1 ? 's' : '' }}
+              {{ getPoolCount() }} preguntas disponibles en {{ selectedMaterias.size }} materia{{ selectedMaterias.size > 1 ? 's' : '' }}
             </div>
             <div class="setup-summary" style="margin-top: 1.25rem; justify-content: center; margin-bottom: 0;" *ngIf="selectedMaterias.size > 0">
               <div class="summary-pill personal-record-badge" style="background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3); color: #d97706; padding: 0.6rem 1.2rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; border: 2px solid rgba(245,158,11,0.3);">
@@ -211,9 +212,12 @@ interface PlayedQuestion {
               <button class="preset-btn" [class.locked]="!isProPlan() && !adminService.isAdmin()" [class.active]="timeLimit() === 300" (click)="setTime(300)">
                 ⏱️ 5 Minutos @if (!isProPlan() && !adminService.isAdmin()) { <span class="lock-indicator">🔒</span> }
               </button>
-              <div class="custom-time-input-group" [class.locked]="!isProPlan() && !adminService.isAdmin()">
-                <input type="number" [(ngModel)]="customTimeMinutes" placeholder="Personalizado" min="1" max="60" [disabled]="!isProPlan() && !adminService.isAdmin()" (change)="setCustomTime()">
-                <span class="input-unit">min {{ (!isProPlan() && !adminService.isAdmin()) ? '🔒' : '' }}</span>
+              <div class="custom-time-wrap">
+                <span class="custom-time-label">Personalizado</span>
+                <div class="custom-time-input-group" [class.locked]="!isProPlan() && !adminService.isAdmin()">
+                  <input type="number" [(ngModel)]="customTimeMinutes" placeholder="Ej: 10" min="1" max="60" [disabled]="!isProPlan() && !adminService.isAdmin()" (change)="setCustomTime()">
+                  <span class="input-unit">min {{ (!isProPlan() && !adminService.isAdmin()) ? '🔒' : '' }}</span>
+                </div>
               </div>
             </div>
             <p class="warning-text" *ngIf="!isProPlan() && !adminService.isAdmin()">Plan Básico: solo 1 o 3 minutos. <a (click)="paymentService.openPricingModal()" style="color: var(--accent-primary); cursor: pointer; font-weight: 700;">Mejora a PRO</a> para 5 min o tiempo personalizado.</p>
@@ -396,10 +400,10 @@ interface PlayedQuestion {
           <!-- VOLVER/REPETIR ACTIONS (Moved to the top before all details) -->
           <div class="results-actions" style="margin-bottom: 2rem; display: flex; justify-content: center; gap: 1rem; width: 100%;">
             <button class="btn-primary-lg" (click)="resetGame()">
-              <span>Jugar otra Ronda 🔄</span>
+              <span>Jugar otra Ronda</span>
             </button>
             <a routerLink="/dashboard" class="btn-outline-lg">
-              Volver al Inicio 🏠
+              Volver al Inicio
             </a>
           </div>
 
@@ -500,7 +504,7 @@ interface PlayedQuestion {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -682,6 +686,7 @@ interface PlayedQuestion {
     .subject-btn.selected .checkbox-indicator { border-color: var(--accent-primary); background: var(--accent-primary); }
     .subject-btn.selected .checkbox-indicator::after { content: '✓'; color: white; font-size: 0.7rem; font-weight: 900; line-height: 1; display: block; margin-top: -1px; }
     .subj-icon { font-size: 1.35rem; flex-shrink: 0; }
+    .subj-icon-img { width: 48px; height: 48px; object-fit: contain; flex-shrink: 0; }
     .subj-title { font-size: 0.95rem; flex: 1; min-width: 0; margin-right: 0.25rem; }
     .pool-counter { margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(133, 92, 214, 0.04); border: 2.5px solid rgba(133, 92, 214, 0.18); border-radius: 12px; color: var(--accent-primary); font-weight: 600; font-size: 0.9rem; text-align: center; }
     .setup-error-alert { background: rgba(239, 68, 68, 0.08); border-left: 5px solid #ef4444; border-radius: 0 12px 12px 0; color: #ef4444; font-weight: 600; padding: 1rem; margin-top: 1rem; font-size: 0.95rem; border: 2.5px solid rgba(239, 68, 68, 0.15); border-left: none; }
@@ -694,7 +699,9 @@ interface PlayedQuestion {
     .preset-btn { flex: 1; min-width: 130px; background: #ffffff; border: 2.5px solid rgba(0, 0, 0, 0.12); padding: 1rem; border-radius: 16px; color: var(--text-secondary); font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .preset-btn:hover { border-color: rgba(133, 92, 214, 0.45); background: #fafafa; }
     .preset-btn.active { border-color: var(--accent-primary); background: rgba(133, 92, 214, 0.08); color: var(--accent-primary); border-width: 3px; }
-    .custom-time-input-group { display: flex; align-items: center; background: #ffffff; border: 2.5px solid rgba(0, 0, 0, 0.12); border-radius: 16px; padding-right: 1rem; max-width: 140px; }
+    .custom-time-wrap { display: flex; flex-direction: column; gap: 0.35rem; max-width: 140px; }
+    .custom-time-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; }
+    .custom-time-input-group { display: flex; align-items: center; background: #ffffff; border: 2.5px solid rgba(0, 0, 0, 0.12); border-radius: 16px; padding-right: 1rem; }
     .custom-time-input-group input { width: 100%; border: none; background: transparent; padding: 1rem; color: var(--text-primary); font-weight: 700; outline: none; text-align: center; font-size: 1rem; }
     .input-unit { color: var(--text-muted); font-weight: 700; font-size: 0.9rem; }
     .custom-time-input-group:focus-within { border-color: var(--accent-primary); }
@@ -933,6 +940,7 @@ interface PlayedQuestion {
     .logout-confirm-modal { max-width: 420px !important; padding: 0 !important; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
     .confirm-content p { color: var(--text-secondary); margin: 0; }
     .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -1064,7 +1072,7 @@ interface PlayedQuestion {
       .subjects-grid, .modes-grid { grid-template-columns: 1fr !important; }
       .time-presets { flex-direction: column; }
       .preset-btn { min-width: 100%; }
-      .custom-time-input-group { max-width: 100%; }
+      .custom-time-wrap { max-width: 100%; }
       .timer-box { font-size: 1.3rem; padding: 0.3rem 0.65rem; }
       .q-header { gap: 0.5rem; }
       .q-enunciado { font-size: 1.1rem; }
@@ -1352,6 +1360,9 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     });
     this.updateSessionStatus();
 
+    // El banco de preguntas se carga bajo demanda (no es parte de la carga inicial de la app)
+    this.paesContent.ensurePoolPreguntasLoaded();
+
     // Load personal records when auth is resolved
     this.authService.user$.subscribe(user => {
       if (user) {
@@ -1436,6 +1447,21 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     this.updateCurrentRecord();
   }
 
+  getMateriaIconPath(id: string): string | null {
+    if (!id) return null;
+    const norm = id.toLowerCase();
+    if (norm.includes('lectora')) return 'assets/images/iconosParaElementos/P_Lenguaje.png';
+    if (norm.includes('biologia')) return 'assets/images/iconosParaElementos/P_Biologia.png';
+    if (norm.includes('fisica')) return 'assets/images/iconosParaElementos/P_Fisica.png';
+    if (norm.includes('quimica')) return 'assets/images/iconosParaElementos/P_Quimica.png';
+    if (norm.includes('tp') || norm.includes('tecnico')) return 'assets/images/iconosParaElementos/P_TecnicoProfesional.png';
+    if (norm.includes('historia')) return 'assets/images/iconosParaElementos/P_Historia.png';
+    if (norm === 'mat1' || norm.includes('m1') || norm.includes('matematica-1') || norm.includes('matematicas-m1')) return 'assets/images/iconosParaElementos/P_m1.png';
+    if (norm === 'mat2' || norm.includes('m2') || norm.includes('matematica-2') || norm.includes('matematicas-m2')) return 'assets/images/iconosParaElementos/P_m2.png';
+    if (norm.includes('ciencias')) return 'assets/images/iconosParaElementos/P_Biologia.png';
+    return null;
+  }
+
   normalizeMateriaId(id: string): string {
     if (!id) return '';
     const norm = id.toLowerCase().trim();
@@ -1479,7 +1505,7 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     }
   }
 
-  startGame() {
+  async startGame() {
     if (this.selectedMaterias.size === 0) {
       this.setupError = true;
       return;
@@ -1499,6 +1525,7 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
       this.recordSessionStart();
     }
 
+    await this.paesContent.ensurePoolPreguntasLoaded();
     const allQuestions = this.paesContent.poolPreguntas();
     this.poolQuestions = allQuestions.filter(q => this.isMateriaSelected(q.materiaId));
     this.poolQuestions = this.shuffleArray([...this.poolQuestions]);

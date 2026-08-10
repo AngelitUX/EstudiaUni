@@ -98,8 +98,10 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
             </div>
           </div>
           <div class="action-bar">
-            <button class="btn-report" (click)="showReportBugModal = true">🐛 Reportar un problema</button>
-            <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
+            <button class="btn-report" (click)="showReportBugModal = true">
+              <img src="assets/images/iconosParaElementos/P_ReportarBug.png" alt="Reportar un problema" class="report-bug-icon"/>
+            </button>
+            <button class="primary" [class.dirty]="isDirty()" [class.shake]="shakeSaveButton" (click)="saveSettings()" [disabled]="saving || loading || !isDirty()">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>
         </div>
       </div>
@@ -129,12 +131,22 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
     input:focus,select:focus{outline:none;border-color:var(--accent-primary);box-shadow:0 0 0 2px rgba(133,92,214,0.2)}
     .switch{display:flex;align-items:center;gap:.5rem;margin-top:.25rem}
     .switch input{width:auto;margin:0}
-    .primary{margin-top:.3rem;border:0;border-radius:9px;background:linear-gradient(135deg,#855cd6,#6b46b8);color:#fff;padding:.62rem .95rem;font-weight:600;cursor:pointer;transition:all .2s}
-    .primary:hover{filter:brightness(1.1)}
+    .primary{margin-top:.3rem;border:0;border-radius:9px;background:#94a3b8;color:#fff;padding:.62rem .95rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+    .primary.dirty{background:linear-gradient(135deg,#855cd6,#6b46b8);box-shadow:0 4px 12px rgba(133,92,214,0.3)}
+    .primary:hover:not([disabled]){filter:brightness(1.1);transform:translateY(-2px)}
     .primary[disabled]{opacity:.6;cursor:not-allowed}
+    .primary.shake{animation:shake-btn 0.6s cubic-bezier(.36,.07,.19,.97) both;box-shadow:0 0 0 2px #ef4444,0 4px 12px rgba(239,68,68,0.4) !important}
+    @keyframes shake-btn{
+      0%,100%{transform:translate3d(0,0,0)}
+      10%,90%{transform:translate3d(-1px,0,0)}
+      20%,80%{transform:translate3d(2px,0,0)}
+      30%,50%,70%{transform:translate3d(-4px,0,0)}
+      40%,60%{transform:translate3d(4px,0,0)}
+    }
     .action-bar{display:flex;justify-content:space-between;align-items:center}
-    .btn-report{border:none;background:transparent;color:var(--text-secondary);font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:color 0.2s}
-    .btn-report:hover{color:var(--text-primary)}
+    .btn-report{border:2px solid var(--glass-border);background:var(--bg-secondary);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0.5rem;width:60px;height:60px;transition:all 0.2s}
+    .btn-report:hover{border-color:var(--accent-primary);background:rgba(133,92,214,0.08);transform:translateY(-2px);box-shadow:0 4px 12px rgba(133,92,214,0.2)}
+    .report-bug-icon{width:100%;height:100%;object-fit:contain}
     .notification-status{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text-secondary);padding:.5rem .75rem;background:var(--bg-secondary);border-radius:10px;border:2px solid var(--glass-border);font-weight:600}
     .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .status-dot.granted{background:#10b981}
@@ -168,6 +180,7 @@ export class SettingsModalComponent implements OnInit {
   notifPermissionGranted = false;
   useLocalMocks = false;
   showReportBugModal = false;
+  shakeSaveButton = false;
 
   settingsForm = {
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche' | 'ninguno',
@@ -178,7 +191,11 @@ export class SettingsModalComponent implements OnInit {
     fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
     textSpacing: 'normal' as 'normal' | 'wide' | 'xwide'
   };
+  initialSettingsForm = '';
 
+  isDirty(): boolean {
+    return this.initialSettingsForm !== JSON.stringify(this.settingsForm);
+  }
 
   ngOnInit(): void {
     this.useLocalMocks = localStorage.getItem('USE_LOCAL_MOCKS') === 'true';
@@ -194,6 +211,7 @@ export class SettingsModalComponent implements OnInit {
           this.settingsForm.fontSize = profile.fontSize || 'normal';
           this.settingsForm.textSpacing = profile.textSpacing || 'normal';
         }
+        this.initialSettingsForm = JSON.stringify(this.settingsForm);
         this.loading = false;
       },
       error: () => { this.loading = false; this.toast.error('No se pudo cargar la información.'); }
@@ -212,7 +230,15 @@ export class SettingsModalComponent implements OnInit {
     }, 1500);
   }
 
-  closeModal() { this.close.emit(); }
+  closeModal() {
+    if (this.isDirty()) {
+      this.toast.info('Debes guardar tus cambios antes de salir.');
+      this.shakeSaveButton = true;
+      setTimeout(() => this.shakeSaveButton = false, 600);
+      return;
+    }
+    this.close.emit();
+  }
 
   async requestNotifPermission() {
     // Si ya está bloqueado a nivel de navegador, el API de Notification no abrirá el prompt
@@ -275,6 +301,7 @@ export class SettingsModalComponent implements OnInit {
           notificationsEnabled: true,
         }, false);
       }
+      this.initialSettingsForm = JSON.stringify(this.settingsForm);
       this.toast.success('Configuración guardada.');
       this.close.emit();
     } catch { this.toast.error('No se pudo guardar la configuración.'); } finally { this.saving = false; }
