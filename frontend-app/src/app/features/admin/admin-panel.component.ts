@@ -13,7 +13,9 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="adminSvc.isAdmin() ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
           <div class="admin-panel-tag">ADMIN PANEL</div>
         </div>
 
@@ -34,6 +36,10 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
           <a routerLink="/admin/recursos" class="nav-item">
             <span class="nav-icon">📂</span>
             <span class="nav-text">Recursos</span>
+          </a>
+          <a routerLink="/admin/bugs" class="nav-item">
+            <span class="nav-icon">🐛</span>
+            <span class="nav-text">Reportes de Bug</span>
           </a>
         </nav>
 
@@ -149,14 +155,16 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
 
                   <div class="alternativas-preview">
                     @for (key of optionKeys; track key) {
-                      <span class="alt-chip" [class.correct]="key === pregunta.respuesta_correcta">
-                        <strong>{{ key }})</strong>
-                        @if (pregunta.tipo_alternativas === 'texto') {
-                          {{ pregunta.alternativas[key] | slice:0:40 }}{{ pregunta.alternativas[key].length > 40 ? '...' : '' }}
-                        } @else {
-                          🖼️ Imagen
-                        }
-                      </span>
+                      @if (pregunta.alternativas && pregunta.alternativas[key]) {
+                        <span class="alt-chip" [class.correct]="key === pregunta.respuesta_correcta">
+                          <strong>{{ key }})</strong>
+                          @if (pregunta.tipo_alternativas === 'texto') {
+                            {{ pregunta.alternativas[key] | slice:0:40 }}{{ pregunta.alternativas[key].length > 40 ? '...' : '' }}
+                          } @else {
+                            🖼️ Imagen
+                          }
+                        </span>
+                      }
                     }
                   </div>
                 </div>
@@ -267,6 +275,9 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     }
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
@@ -289,22 +300,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       height: 100vh; 
       z-index: 100; 
     }
-    .sidebar-header { 
-      padding: 2.5rem 1.5rem 1.5rem; 
-      border-bottom: 1px solid rgba(133,92,214,0.15); 
-      text-align: center;
-    }
-    .sidebar-logo { 
-      font-family: var(--font-heading); 
-      font-size: 2.2rem; 
-      font-weight: 900; 
-      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.04em; 
-      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-      position: relative;
-    }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .admin-panel-tag {
       font-size: 0.65rem; 
       background: rgba(139, 92, 246, 0.25); 
@@ -449,7 +446,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       margin: 0.5rem 0 0; 
       font-weight: 500;
     }
-    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
     
     .btn-refresh {
       padding: 0.75rem 1.25rem; 
@@ -740,6 +737,22 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     @media (max-width: 600px) {
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
       .content-header h1 { font-size: 2.2rem; }
+    }
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .content-header h1 { font-size: 1.7rem; }
+      .subtitle { font-size: 1rem; }
+      .header-actions { width: 100%; }
+      .header-actions .btn-refresh,
+      .header-actions .btn-create { flex: 1 1 auto; justify-content: center; font-size: 0.85rem; padding: 0.65rem 0.9rem; }
+      .card-header { flex-direction: column; align-items: flex-start; }
+      .card-actions { align-self: flex-end; }
+      .modal-actions { grid-template-columns: 1fr; }
+      .glass-modal { padding: 1.5rem; }
+    }
+    @media (max-width: 380px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .glass-card-simple { padding: 1.1rem; }
     }
 
     /* IMPORT MODAL SPECIFICS */

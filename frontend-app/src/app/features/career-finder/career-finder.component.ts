@@ -23,7 +23,9 @@ import { PaymentService } from '../../core/services/payment.service';
       <!-- SIDEBAR (Consistente con el resto de la app) -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -161,14 +163,19 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="ai-promo-banner">
             <div class="ai-promo-content">
               <div style="width: 60px; height: 60px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.15); flex-shrink: 0;">
-                <img src="assets/img/gif.gif" style="width: 100%; height: 100%; object-fit: contain;" alt="Foco" />
+                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" style="width: 100%; height: 100%; object-fit: contain;" alt="Foco" />
               </div>
-              <div class="ai-promo-text">
+              <div class="ai-promo-text" *ngIf="isProPlan() || adminService.isAdmin()">
                 <strong>¿Dudas vocacionales?</strong>
                 <span>Pregúntale a Foco: "¿Qué podría estudiar?", "¿Qué significa NEM?", etc.</span>
               </div>
+              <div class="ai-promo-text" *ngIf="!isProPlan() && !adminService.isAdmin()">
+                <strong>¿No sabes qué carrera escoger?</strong>
+                <span>Foco te ayudará a decidir 🐙 — chat con IA disponible solo para el Plan PRO.</span>
+              </div>
             </div>
-            <button class="btn btn-primary" (click)="toggleAi()">Abrir 🐙</button>
+            <button class="btn btn-primary" *ngIf="isProPlan() || adminService.isAdmin()" (click)="toggleAi()">Abrir 🐙</button>
+            <button class="btn btn-primary" *ngIf="!isProPlan() && !adminService.isAdmin()" (click)="paymentService.openPricingModal()">🔒 Mejorar a PRO</button>
           </div>
         </div>
 
@@ -292,10 +299,18 @@ import { PaymentService } from '../../core/services/payment.service';
               </div>
               
               <h2 class="career-title">{{ career.nombre }}</h2>
-              <p class="career-desc">{{ career.descripcion }}</p>
+              <p class="career-desc">{{ career.descripcionDetallada || career.descripcion }}</p>
 
               <div class="interest-pills">
                 <span *ngFor="let int of career.intereses" class="pill">{{ int }}</span>
+              </div>
+
+              <!-- REAL ENROLLMENT FACTS (SIES/MINEDUC Matrícula 2025) -->
+              <div class="matricula-facts" *ngIf="career.matriculaData as md">
+                <span class="fact-badge" [class.accredited]="md.acreditada">{{ md.acreditada ? '✅ Acreditada' : '⚠️ Sin acreditación' }}</span>
+                <span class="fact-badge">👥 {{ md.totalMatricula.toLocaleString('es-CL') }} matriculados</span>
+                <span class="fact-badge" *ngIf="md.pctMujeres !== null">⚖️ {{ md.pctMujeres }}% mujeres</span>
+                <span class="fact-badge" *ngIf="md.jornadas.length">🕐 {{ md.jornadas.join('/') }}</span>
               </div>
 
               <div class="score-section">
@@ -368,7 +383,7 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="ai-header">
           <div class="ai-header-left">
             <div class="ai-avatar">
-              <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+              <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             <div>
               <h4 class="ai-title">Foco, tu Pulpo Orientador</h4>
@@ -442,9 +457,9 @@ import { PaymentService } from '../../core/services/payment.service';
       </aside>
 
       <!-- FLOATING BOT FAB BUTTON -->
-      <button class="ai-fab-btn" (click)="toggleAi()" *ngIf="!isAiOpen()" title="Hablar con Foco AI">
+      <button class="ai-fab-btn" (click)="toggleAi()" *ngIf="!isAiOpen()" [title]="(isProPlan() || adminService.isAdmin()) ? 'Hablar con Foco AI' : 'Foco AI — exclusivo PRO'">
         <span class="fab-emoji">🐙</span>
-        <span class="fab-text">Hablar con Foco</span>
+        <span class="fab-text">{{ (isProPlan() || adminService.isAdmin()) ? 'Hablar con Foco' : 'Foco (PRO) 🔒' }}</span>
       </button>
     </div>
 
@@ -473,12 +488,15 @@ import { PaymentService } from '../../core/services/payment.service';
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     .career-layout { display: flex; min-height: 100vh; background: var(--bg-color); }
     
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13, 15, 23, 0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); position: relative; }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .sidebar-nav {
       flex: 1;
       padding: 1rem 0.75rem;
@@ -705,6 +723,9 @@ import { PaymentService } from '../../core/services/payment.service';
 
     .interest-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
     .pill { font-size: 0.75rem; background: var(--bg-secondary); color: var(--text-secondary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600; }
+    .matricula-facts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .fact-badge { font-size: 0.72rem; background: rgba(0,0,0,0.04); color: var(--text-secondary); padding: 0.25rem 0.6rem; border-radius: 99px; font-weight: 700; border: 1px solid var(--glass-border); white-space: nowrap; }
+    .fact-badge.accredited { background: rgba(34,197,94,0.1); color: #15803d; border-color: rgba(34,197,94,0.3); }
 
     .score-section { background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; }
     .score-header { display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
@@ -1051,12 +1072,23 @@ import { PaymentService } from '../../core/services/payment.service';
       .page-header h1 { font-size: 2.2rem; }
       .careers-grid { grid-template-columns: 1fr; }
       .ai-fab-btn { bottom: 1rem; right: 1rem; padding: 0.65rem 1rem; font-size: 0.85rem; }
+      .finder-form { padding: 1.5rem; }
+      .welcome-search { padding: 3rem 1.5rem; }
     }
 
     @media (max-width: 480px) {
       .main-content { padding-top: 60px !important; }
       .page-header h1 { font-size: 1.8rem; }
       .form-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+      .welcome-search { padding: 2.5rem 1.25rem; }
+      .welcome-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+      .welcome-search h2 { font-size: 1.6rem; }
+      .welcome-search p { font-size: 1rem; }
+      .finder-form { padding: 1.25rem; }
+      .interests-grid { gap: 0.5rem; }
+      .interest-pill { padding: 0.5rem 1rem; font-size: 0.85rem; }
+      .career-card { padding: 1.25rem; }
+      .favorites-wrapper { width: 100%; }
     }
   `]
 })
@@ -1303,6 +1335,10 @@ export class CareerFinderComponent implements OnInit {
 
   // --- AI ASSISTANT LOGIC ---
   toggleAi() {
+    if (!this.isAiOpen() && !this.isProPlan() && !this.adminService.isAdmin()) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     this.isAiOpen.set(!this.isAiOpen());
     if (this.isAiOpen()) {
       setTimeout(() => this.scrollChatToBottom(), 100);

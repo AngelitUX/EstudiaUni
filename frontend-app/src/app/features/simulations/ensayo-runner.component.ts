@@ -6,6 +6,7 @@ import { FirestoreService, Pregunta } from '../../core/services/firestore.servic
 import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.service';
 import { ToastService } from '../../core/services/toast.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 interface Question {
   id: string;
@@ -59,6 +60,9 @@ interface AiMessage {
           <span class="mode-badge" [class.assisted]="isAssisted">
             {{ isAssisted ? 'Asistido' : 'Real' }}
           </span>
+          <span class="foco-tokens-badge" *ngIf="isAssisted" (click)="focoRemaining <= 0 ? paymentService.openPricingModal() : null" style="background: rgba(124,58,237,0.1); color: #7c3aed; font-weight: 800; font-size: 0.8rem; padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid rgba(124,58,237,0.3); display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+            💡 Foco: {{ focoRemaining }}/{{ focoLimit }} hoy
+          </span>
           <div class="timer" [class.warning]="timeWarning" [class.critical]="timeCritical">
             <span class="timer-icon">⏱️</span>
             <span class="timer-value">{{ formattedTime }}</span>
@@ -89,7 +93,10 @@ interface AiMessage {
 
         <!-- QUESTION NAVIGATOR (Left Column) -->
         <aside class="question-nav" *ngIf="!isNavCollapsed">
-          <h4 class="nav-title">Navegador</h4>
+          <div class="nav-panel-header">
+            <h4 class="nav-title">Navegador</h4>
+            <button class="panel-close-btn" (click)="toggleNav()" aria-label="Cerrar navegador">✕</button>
+          </div>
           <div class="question-grid">
             <button 
               *ngFor="let q of questions; let i = index"
@@ -146,7 +153,8 @@ interface AiMessage {
                 <button class="focus-btn" 
                         (click)="toggleFocus('reading')" 
                         [title]="focusedPanel === 'reading' ? 'Ver ambos' : 'Expandir texto'">
-                  {{ focusedPanel === 'reading' ? '🔲' : '🔳' }}
+                  <span style="font-size: 1.1rem; line-height: 1;">{{ focusedPanel === 'reading' ? '◨' : '⛶' }}</span>
+                  {{ focusedPanel === 'reading' ? 'Dividir' : 'Ampliar Texto' }}
                 </button>
               </div>
             </div>
@@ -175,7 +183,8 @@ interface AiMessage {
                   <button class="focus-btn" 
                           (click)="toggleFocus('question')" 
                           [title]="focusedPanel === 'question' ? 'Ver ambos' : 'Expandir pregunta'">
-                    {{ focusedPanel === 'question' ? '🔲' : '🔳' }}
+                    <span style="font-size: 1.1rem; line-height: 1;">{{ focusedPanel === 'question' ? '◧' : '⛶' }}</span>
+                    {{ focusedPanel === 'question' ? 'Dividir' : 'Ampliar Pregunta' }}
                   </button>
                   <!-- AI quick toggle only when collapsed in language module -->
                   <button 
@@ -183,14 +192,14 @@ interface AiMessage {
                     class="btn-ai-float"
                     (click)="toggleAi()"
                     title="Abrir Tutor Foco">
-                    🐙 Foco
+                    Consultar a Foco
                   </button>
                   <button
                     *ngIf="isAssisted && !isAiCollapsed"
                     class="btn-ai-float active"
                     (click)="toggleAi()"
                     title="Cerrar Tutor Foco">
-                    🐙 Cerrar
+                    ✕ Cerrar Foco
                   </button>
                 </div>
               </div>
@@ -288,7 +297,7 @@ interface AiMessage {
           <div class="ai-header">
             <div class="ai-header-left">
               <div class="ai-avatar">
-                <img src="assets/img/gif.gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
               </div>
               <div>
                 <h4 class="ai-title">Foco, tu Pulpo Tutor</h4>
@@ -296,6 +305,7 @@ interface AiMessage {
               </div>
             </div>
             <button class="btn-icon-sm" (click)="clearChat()" title="Limpiar chat">🗑️</button>
+            <button class="btn-icon-sm panel-close-btn-ai" (click)="toggleAi()" title="Cerrar tutor" aria-label="Cerrar tutor">✕</button>
           </div>
 
           <div class="ai-messages" #chatScrollContainer>
@@ -355,6 +365,14 @@ interface AiMessage {
           </div>
           <p class="ai-disclaimer">⚠️ El tutor no revela respuestas directas.</p>
         </aside>
+
+        <!-- MOBILE FLOATING ACTION BUTTONS -->
+        <button class="mobile-fab mobile-nav-fab" *ngIf="isNavCollapsed" (click)="toggleNav()" aria-label="Abrir navegador de preguntas">
+          📋 <span class="fab-badge">{{ answeredCount }}/{{ totalQuestions }}</span>
+        </button>
+        <button class="mobile-fab mobile-ai-fab" *ngIf="isAssisted && isAiCollapsed" (click)="toggleAi()" aria-label="Abrir tutor Foco">
+          🐙
+        </button>
       </div>
 
       <!-- PAUSE MODAL -->
@@ -620,16 +638,20 @@ interface AiMessage {
       border-radius: 16px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
+      padding: 1.5rem;
     }
 
     .reading-text-header {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 1.5rem;
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
+      min-height: 68px;
+      border-radius: 12px 12px 0 0;
+      margin-bottom: 1.5rem;
     }
 
     .reading-text-header h4 {
@@ -672,20 +694,20 @@ interface AiMessage {
     }
 
     .focus-btn {
-      background: #e2e8f0;
-      border: 1px solid #cbd5e1;
-      width: 30px;
-      height: 30px;
-      border-radius: 6px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      font-size: 1rem;
+      gap: 0.4rem;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #475569;
       cursor: pointer;
       transition: all 0.2s;
-      flex-shrink: 0;
     }
-    .focus-btn:hover { background: #bfdbfe; border-color: #93c5fd; }
+    .focus-btn:hover { background: #e2e8f0; color: #0f172a; }
 
 
 
@@ -782,10 +804,8 @@ interface AiMessage {
       border-radius: 16px;
       background: #ffffff;
       border: 2px solid var(--glass-border);
-      height: calc(100vh - 130px);
-      max-height: 750px;
-      position: sticky;
-      top: 80px;
+      height: fit-content;
+      max-height: 600px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1032,7 +1052,12 @@ interface AiMessage {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      border-radius: 12px 12px 0 0;
+      min-height: 68px;
     }
     .question-number {
       font-size: 0.9rem;
@@ -1044,20 +1069,30 @@ interface AiMessage {
     .btn-ai-float {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.7rem;
+      gap: 0.4rem;
+      padding: 0.45rem 1rem;
       border-radius: 20px;
-      border: 1px solid #bfdbfe;
-      background: #eff6ff;
-      color: #3b82f6;
-      font-size: 0.78rem;
-      font-weight: 600;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
       white-space: nowrap;
     }
-    .btn-ai-float:hover { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-    .btn-ai-float.active { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+    .btn-ai-float:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+      filter: brightness(1.1);
+    }
+    .btn-ai-float.active {
+      background: #f1f5f9;
+      color: #64748b;
+      box-shadow: none;
+      border: 1px solid #cbd5e1;
+    }
     .flag-btn {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
@@ -1210,13 +1245,129 @@ interface AiMessage {
     .glass-card { background: #ffffff; border: 2px solid var(--glass-border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
 
     /* ===== RESPONSIVE ===== */
+    .nav-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .nav-panel-header .nav-title { margin-bottom: 0; }
+    .panel-close-btn {
+      display: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 0.9rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .panel-close-btn-ai { display: none; }
+    .mobile-fab {
+      display: none;
+      position: fixed;
+      bottom: 1.25rem;
+      z-index: 1500;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.1rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      color: #fff;
+    }
+    .mobile-nav-fab { left: 1.25rem; background: #3b82f6; }
+    .mobile-ai-fab { right: 1.25rem; background: linear-gradient(135deg, #7c3aed, #4338ca); }
+    .fab-badge { font-size: 0.8rem; font-weight: 800; font-family: var(--font-body); }
+
     @media (max-width: 900px) {
-      .exam-body { grid-template-columns: 1fr; }
-      .exam-body.assisted-layout { grid-template-columns: 1fr; }
-      .question-nav { position: relative; top: 0; }
-      .ai-panel { position: relative; top: 0; }
+      html, body { overflow-x: hidden; }
+      .exam-container { min-height: 100vh; overflow-x: hidden; }
+      /* !important is required here: it beats the higher-specificity
+         .exam-body.nav-collapsed / .ai-collapsed combos above (which set extra
+         0px grid tracks for the desktop collapse toggles) that would otherwise
+         still apply on mobile and leave the sole remaining grid child
+         (question-area) auto-placed into a 0-width column. */
+      .exam-body {
+        grid-template-columns: 1fr !important;
+        height: auto;
+        min-height: calc(100vh - 64px);
+        overflow: visible;
+        padding: 0.75rem;
+      }
       .header-center { display: none; }
       .exam-title { display: none; }
+
+      /* Question nav & AI panel become full-screen slide-over drawers instead of
+         being stacked inline (avoids forcing the student to scroll past a big
+         question grid or chat panel before reaching the actual question). */
+      .question-nav, .ai-panel {
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        z-index: 2000 !important;
+        margin: 0 !important;
+      }
+      .panel-close-btn, .panel-close-btn-ai { display: flex; }
+      .mobile-fab { display: flex; }
+
+      .question-area { height: auto; overflow: visible; }
+      .question-content-container { height: auto; overflow: visible; padding: 0; }
+
+      .question-area.with-reading-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .question-area.with-reading-text .reading-text-container {
+        height: auto;
+        max-height: 48vh;
+        flex-shrink: 0;
+      }
+      .question-area.with-reading-text.focus-reading .question-content-container { display: none; }
+      .question-area.with-reading-text.focus-question .reading-text-container { display: none; }
+
+      .exam-header { padding: 0.75rem 1rem; flex-wrap: wrap; row-gap: 0.5rem; }
+      .header-right { flex-wrap: wrap; gap: 0.5rem; row-gap: 0.5rem; }
+      .header-right .mode-badge { display: none; }
+      .timer { padding: 0.4rem 0.7rem; font-size: 1.05rem; }
+      .header-right .btn.btn-ghost { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+
+      .question-card { padding: 1rem; }
+      .question-header { padding: 0.6rem 1rem; min-height: auto; flex-wrap: wrap; gap: 0.5rem; }
+
+      .options-nav-row { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+      .btn-nav-inline { width: 100%; min-width: 0; }
+      .bubble-sheet-inline { flex-wrap: wrap; order: -1; }
+    }
+
+    @media (max-width: 480px) {
+      .exam-header { padding: 0.6rem 0.75rem; }
+      .btn-icon { width: 32px; height: 32px; font-size: 1rem; }
+      .header-right { gap: 0.4rem; }
+      .foco-tokens-badge { font-size: 0.7rem !important; padding: 0.25rem 0.5rem !important; }
+      .timer { font-size: 0.95rem; padding: 0.35rem 0.55rem; gap: 0.3rem; }
+      .header-right .btn.btn-ghost { padding: 0.4rem 0.6rem; font-size: 0.78rem; }
+      .option-btn.bubble-btn { width: 38px; height: 38px; font-size: 0.9rem; }
+      .modal { padding: 1.5rem; max-width: 92vw; }
+      .mobile-fab { padding: 0.75rem 0.95rem; font-size: 1.15rem; bottom: 1rem; }
+      .mobile-nav-fab { left: 0.75rem; }
+      .mobile-ai-fab { right: 0.75rem; }
     }
 
     /* ===== MATH RENDERING & FOCO STYLING ===== */
@@ -1299,6 +1450,23 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private aiAssistService = inject(AiAssistService);
   private toast = inject(ToastService);
   private dashboardService = inject(DashboardService);
+  public paymentService = inject(PaymentService);
+
+  get isProPlan(): boolean {
+    return this.firestoreService.profileSignal()?.plan === 'premium';
+  }
+
+  get focoLimit(): number {
+    return this.isProPlan ? 500 : 5;
+  }
+
+  get focoUsed(): number {
+    return this.firestoreService.profileSignal()?.dailyCredits?.focoTokensUsedToday || 0;
+  }
+
+  get focoRemaining(): number {
+    return Math.max(0, this.focoLimit - this.focoUsed);
+  }
 
   @ViewChild('chatScrollContainer') private chatContainer!: ElementRef;
 
@@ -1378,6 +1546,13 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   }
 
   ngOnInit() {
+    // En pantallas angostas arrancamos con el navegador de preguntas y el panel del
+    // tutor colapsados (se abren como paneles flotantes) para que la pregunta quede
+    // visible de inmediato sin tener que hacer scroll.
+    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
+      this.isNavCollapsed = true;
+      this.isAiCollapsed = true;
+    }
     this.examId = this.route.snapshot.paramMap.get('id') || '';
     this.intentoId = this.route.snapshot.queryParamMap.get('intento') || '';
     const modeParam = this.route.snapshot.queryParamMap.get('mode');
@@ -1638,9 +1813,18 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     this.router.navigate(['/ensayos']);
   }
 
-  exitRealExam() {
+  async exitRealExam() {
     this.pauseTimer();
     this.showRealExitModal = false;
+
+    if (this.intentoId) {
+      try {
+        await this.firestoreService.abandonIntento(this.intentoId);
+      } catch (e) {
+        // Continuar aunque falle
+      }
+    }
+
     this.router.navigate(['/ensayos']);
   }
 
@@ -1688,10 +1872,16 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       console.warn('[EnsayoRunner] Error logging to dashboard:', err);
     }
     
-    // Finalizar intento en Firestore
+    // Finalizar intento en Firestore enviando respuestas completas y lista de preguntas
     if (this.intentoId) {
       try {
-        await this.firestoreService.finishIntento(this.intentoId, timeSpent, this.totalQuestions);
+        await this.firestoreService.finishIntento(
+          this.intentoId,
+          timeSpent,
+          this.totalQuestions,
+          this.answers,
+          this.questions
+        );
       } catch (e) {
         // Continuar aunque falle
       }
@@ -1771,6 +1961,17 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private async callAiChat() {
     if (!this.currentQuestion) { this.aiLoading = false; return; }
 
+    if (this.focoRemaining <= 0) {
+      this.aiLoading = false;
+      this.aiMessages.push({
+        role: 'assistant',
+        content: `⚠️ Has alcanzado tus ${this.focoLimit} fichas/tokens diarias de Foco IA. Se recargarán mañana a la misma hora. ¡Pásate a PRO para tener 200 fichas diarias! 👑`,
+        timestamp: new Date()
+      });
+      this.paymentService.openPricingModal();
+      return;
+    }
+
     const historyForApi = this.aiMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
     try {
@@ -1783,6 +1984,17 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         imageUrl: this.currentQuestion.imageUrl,
         history: historyForApi,
       });
+
+      // Update local profile signal with used token count
+      const profile = this.firestoreService.profileSignal();
+      if (profile) {
+        const currentUsed = profile.dailyCredits?.focoTokensUsedToday || 0;
+        profile.dailyCredits = {
+          ...(profile.dailyCredits || {}),
+          focoTokensUsedToday: currentUsed + 1
+        };
+      }
+
       this.aiMessages.push({ role: 'assistant', content: response.reply, timestamp: new Date() });
     } catch {
       this.toast.error('No se pudo conectar con el tutor IA.');

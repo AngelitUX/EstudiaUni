@@ -218,6 +218,69 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       color: #9ca3af;
       font-size: 1.1rem;
     }
+
+    @media (max-width: 1024px) {
+      .topic-detail-container {
+        padding: 1.5rem;
+      }
+      .glass-card {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topic-detail-container {
+        padding: 1.25rem;
+      }
+      .topic-header h2 {
+        font-size: 1.6rem;
+      }
+      .glass-card {
+        padding: 1.25rem;
+      }
+      .action-section {
+        padding: 1.75rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topic-detail-container {
+        padding: 1rem;
+      }
+      .topic-header h2 {
+        font-size: 1.4rem;
+      }
+      .badges {
+        gap: 0.5rem;
+      }
+      .badge {
+        padding: 0.35rem 0.8rem;
+        font-size: 0.8rem;
+      }
+      .glass-card {
+        padding: 1rem;
+      }
+      .action-section {
+        padding: 1.5rem;
+      }
+      .content-section h3,
+      .action-section h3 {
+        font-size: 1.25rem;
+      }
+      .summary {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .topic-detail-container {
+        padding: 0.75rem;
+      }
+      .glass-card,
+      .action-section {
+        padding: 0.85rem;
+      }
+    }
   `]
 })
 export class TopicDetailComponent implements OnInit {

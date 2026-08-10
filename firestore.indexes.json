@@ -1,4 +1,48 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "attempts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "attempts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "finishedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "attempts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "moduleId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "questions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "topicId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "difficulty", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "manual_payments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "transferNumber", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

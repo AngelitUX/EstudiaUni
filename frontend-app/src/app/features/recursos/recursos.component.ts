@@ -21,7 +21,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -604,14 +606,17 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .app-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
-    .sidebar-logo { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; text-shadow: 0 0 15px rgba(139, 92, 246, 0.3); }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .sidebar-nav {
       flex: 1;
       padding: 1rem 0.75rem;
@@ -2026,15 +2031,35 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       .dashboard-header .subtitle { font-size: 0.82rem !important; line-height: 1.35 !important; }
       .dashboard-body { padding: 0.85rem 0.85rem 2rem !important; width: 100% !important; box-sizing: border-box !important; }
       .filters-container { flex-direction: column; align-items: stretch; }
+      .recursos-grid { grid-template-columns: 1fr !important; }
       .preview-modal { height: 95vh; max-height: none; }
+      .preview-body-container { padding: 1.25rem !important; }
+      .modal-header { padding: 1.25rem !important; }
+      .preview-modal-title { font-size: 1.15rem !important; }
+      .viewer-toolbar { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; padding: 0.75rem 1rem !important; }
+      .book-controls { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; text-align: center; }
+      .video-controls { flex-wrap: wrap; gap: 0.75rem !important; }
+      .video-progress-container { min-width: 100%; order: 3; }
       .mock-book { flex-direction: column; height: auto; }
-      .book-page.left-page { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); padding-right: 2.25rem; }
-      .book-page.right-page { padding-left: 2.25rem; }
+      .book-page { padding: 1.5rem !important; }
+      .book-page.left-page { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); padding-right: 1.5rem !important; }
+      .book-page.right-page { padding-left: 1.5rem !important; }
+      .pdf-page-mock { padding: 1.25rem !important; height: auto !important; min-height: 420px; }
+      .site-body-mock { padding: 1.5rem !important; }
+      .browser-window-mock { height: auto !important; }
+      .otro-view-card, .quiz-question-card { padding: 1.25rem !important; }
     }
 
     @media (max-width: 480px) {
       .main-content { padding-top: 60px !important; }
       .filters-container { gap: 0.5rem; }
+      .recursos-grid { grid-template-columns: 1fr !important; }
+      .preview-body-container { padding: 1rem !important; }
+      .modal-header { padding: 1rem !important; }
+      .preview-modal-footer { padding: 1rem !important; flex-direction: column-reverse; }
+      .preview-modal-footer .btn { width: 100%; }
+      .viewer-toolbar, .book-controls { gap: 0.5rem !important; }
+      .site-body-mock { padding: 1rem !important; }
     }
   `]
 })

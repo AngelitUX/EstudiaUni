@@ -53,9 +53,12 @@ export class AppComponent implements OnInit {
         const classList = document.body.classList;
         if (profile.dyslexiaFont) classList.add('dyslexia-font'); else classList.remove('dyslexia-font');
         if (profile.highContrast) classList.add('high-contrast'); else classList.remove('high-contrast');
-        classList.remove('font-large', 'font-xlarge');
+        classList.remove('font-large', 'font-xlarge', 'spacing-wide', 'spacing-xwide');
         if (profile.fontSize === 'large') classList.add('font-large');
         else if (profile.fontSize === 'xlarge') classList.add('font-xlarge');
+        
+        if (profile.textSpacing === 'wide') classList.add('spacing-wide');
+        else if (profile.textSpacing === 'xwide') classList.add('spacing-xwide');
       }
     });
   }

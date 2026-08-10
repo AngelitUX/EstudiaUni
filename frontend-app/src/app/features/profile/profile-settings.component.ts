@@ -71,21 +71,21 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
 
             <!-- CARGA DE ARCHIVO LOCAL (Solo Premium) -->
-            <div class="premium-photo-section" [class.locked]="!isProPlan()">
+            <div class="premium-photo-section" [class.locked]="!isProPlan() && !adminService.isAdmin()">
               <label class="upload-card">
                 <span class="upload-title">Sube tu foto</span>
                 <span class="upload-text">JPG, PNG o WebP · Máx 2MB</span>
                 <span class="upload-btn">Seleccionar archivo</span>
-                <input type="file" accept="image/*" (change)="onPhotoFileSelected($event)" [disabled]="!isProPlan()" />
+                <input type="file" accept="image/*" (change)="onPhotoFileSelected($event)" [disabled]="!isProPlan() && !adminService.isAdmin()" />
               </label>
 
               <label class="sidebar-field">
                 URL de foto
-                <input [(ngModel)]="profileForm.photoURL" type="url" placeholder="https://..." [disabled]="!isProPlan()" />
+                <input [(ngModel)]="profileForm.photoURL" type="url" placeholder="https://..." [disabled]="!isProPlan() && !adminService.isAdmin()" />
               </label>
-              
+
               <!-- Alerta de Bloqueo Freemium -->
-              <div class="freemium-lock-message" *ngIf="!isProPlan()" (click)="paymentService.openPricingModal()">
+              <div class="freemium-lock-message" *ngIf="!isProPlan() && !adminService.isAdmin()" (click)="paymentService.openPricingModal()">
                 <span>🔒 Carga de fotos es una función ⚡ PRO. ¡Pásate a Premium para subir la tuya!</span>
               </div>
             </div>
@@ -806,6 +806,52 @@ import { PaymentService } from '../../core/services/payment.service';
         grid-template-columns: repeat(5, minmax(40px, 1fr));
       }
     }
+
+    @media (max-width: 480px) {
+      .page {
+        padding: 1rem 0.75rem 2rem;
+      }
+      .topbar {
+        padding: 0.75rem 1rem;
+      }
+      h1 {
+        font-size: 1.05rem;
+      }
+      .profile-card, .card {
+        padding: 0.9rem;
+      }
+      .profile-sidebar {
+        padding: 0.85rem;
+      }
+      .avatar-wrap {
+        width: 76px;
+        height: 76px;
+      }
+      .avatars-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .emoji-grid {
+        grid-template-columns: repeat(4, minmax(36px, 1fr));
+      }
+      .emoji-panel {
+        padding: 0.85rem 1rem 1rem;
+      }
+      .action-bar {
+        justify-content: stretch;
+      }
+      .action-bar .primary {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .avatars-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .emoji-grid {
+        grid-template-columns: repeat(4, minmax(32px, 1fr));
+      }
+    }
   `],
 })
 export class ProfileSettingsComponent implements OnInit, OnDestroy {
@@ -965,7 +1011,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   onPhotoFileSelected(event: Event): void {
-    if (!this.isProPlan()) {
+    if (!this.isProPlan() && !this.adminService.isAdmin()) {
       this.toast.error('La carga de fotos personalizadas es una función Premium ⚡.');
       return;
     }
@@ -988,9 +1034,35 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const reader = new FileReader();
     reader.onload = () => {
       const result = typeof reader.result === 'string' ? reader.result : '';
-      this.profileForm.photoURL = result || this.profileForm.photoURL;
+      if (!result) return;
+      this.resizeImageToWebp(result, 400)
+        .then(webp => { this.profileForm.photoURL = webp; })
+        .catch(() => { this.toast.error('No se pudo procesar la imagen.'); });
     };
     reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  /** Downscale + compress an uploaded photo before it's stored in Firestore (center-cropped square WebP). */
+  private resizeImageToWebp(dataUrl: string, exportSize: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = exportSize;
+        canvas.height = exportSize;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('No canvas context')); return; }
+
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, exportSize, exportSize);
+        resolve(canvas.toDataURL('image/webp', 0.8));
+      };
+      img.onerror = () => reject(new Error('Invalid image'));
+      img.src = dataUrl;
+    });
   }
 
   private normalizeEmoji(value?: string | null): string {

@@ -487,7 +487,7 @@ import { PaymentService } from '../../core/services/payment.service';
                   </svg>
                 </div>
 
-                <img src="assets/img/gif.gif" alt="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" loading="lazy" decoding="async">
+                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" loading="lazy" decoding="async">
               </div>
             </div>
           </div>
@@ -1193,7 +1193,7 @@ import { PaymentService } from '../../core/services/payment.service';
                 </div>
                 <h3 class="news-title">{{ item.title }}</h3>
                 <p class="news-excerpt">{{ item.excerpt }}</p>
-                <a [href]="item.linkUrl" target="_blank" class="news-link">
+                <a [href]="item.linkUrl" target="_blank" rel="noopener noreferrer" class="news-link">
                   Leer Noticia Completa 
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>
@@ -1416,6 +1416,9 @@ import { PaymentService } from '../../core/services/payment.service';
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     
     /* ===== DYNAMIC BACKGROUND ===== */
     .dynamic-bg {
@@ -2030,6 +2033,16 @@ import { PaymentService } from '../../core/services/payment.service';
       .hero-top-badges {
         flex-wrap: wrap;
         gap: 0.5rem;
+      }
+      .hero-offer-badge, .active-students-badge {
+        max-width: 100%;
+      }
+      .hero-offer-badge {
+        white-space: normal;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        row-gap: 0.2rem;
       }
     }
 
@@ -4988,7 +5001,40 @@ import { PaymentService } from '../../core/services/payment.service';
       font-weight: 500;
     }
 
-    
+    @media (max-width: 1024px) {
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem 2rem;
+      }
+    }
+    @media (max-width: 768px) {
+      .footer {
+        padding: 3rem 1.25rem 1.5rem;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem 1.5rem;
+        margin-bottom: 2.5rem;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .footer-bottom-right {
+        flex-wrap: wrap;
+      }
+    }
+    @media (max-width: 480px) {
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .footer-desc {
+        max-width: 100%;
+      }
+    }
+
     /* ===== FOCO SECTION ===== */
     .inline-badge {
       font-size: 0.9rem;
@@ -5392,6 +5438,21 @@ import { PaymentService } from '../../core/services/payment.service';
       .pricing-card { padding: 1.5rem 1.25rem; }
       .legal-modal-content { width: 95%; padding: 1.25rem; max-height: 85vh; }
       .legal-modal-header .close-btn { width: 44px; height: 44px; font-size: 1.3rem; }
+      .billing-toggle-container {
+        gap: 0.4rem;
+        padding: 0.3rem;
+        max-width: 100%;
+      }
+      .billing-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        gap: 0.35rem;
+        white-space: nowrap;
+      }
+      .discount-pill {
+        font-size: 0.62rem;
+        padding: 0.12rem 0.4rem;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-badge,
@@ -5793,6 +5854,23 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   heroSimTypedText = '';
   heroSimTypingTimer: any = null;
   heroSimCycleTimer: any = null;
+  private heroSimTimeouts: any[] = [];
+  private destroyed = false;
+  private globalListeners: Array<{ target: EventTarget; type: string; handler: EventListener; options?: any }> = [];
+
+  /** Registers a window/document listener and remembers it so ngOnDestroy can remove it —
+   *  these are added via zone.runOutsideAngular() and otherwise outlive this component. */
+  private registerGlobalListener(target: EventTarget, type: string, handler: EventListener, options?: any) {
+    target.addEventListener(type, handler, options);
+    this.globalListeners.push({ target, type, handler, options });
+  }
+
+  private removeGlobalListeners() {
+    this.globalListeners.forEach(({ target, type, handler, options }) => {
+      target.removeEventListener(type, handler, options);
+    });
+    this.globalListeners = [];
+  }
 
   get currentSimExercise() {
     return this.heroSimExercises[this.heroSimIndex];
@@ -5802,6 +5880,18 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     this.runHeroSimCycle();
   }
 
+  /** setTimeout wrapper that tracks the handle and no-ops after ngOnDestroy, so the
+   *  animation chain below (which nests several nested setTimeout calls) can't keep
+   *  firing against a destroyed component. */
+  private trackedTimeout(fn: () => void, delay: number) {
+    const handle = setTimeout(() => {
+      if (this.destroyed) return;
+      fn();
+    }, delay);
+    this.heroSimTimeouts.push(handle);
+    return handle;
+  }
+
   runHeroSimCycle() {
     this.heroSimStep = 0;
     this.heroSimTypedText = '';
@@ -5809,30 +5899,31 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.heroSimCycleTimer) clearTimeout(this.heroSimCycleTimer);
 
     // Step 1 (t = 2.2s): Select Option
-    this.heroSimCycleTimer = setTimeout(() => {
+    this.heroSimCycleTimer = this.trackedTimeout(() => {
       this.heroSimStep = 1;
 
       // Step 2 (t = 3.8s): Analyzing Response
-      setTimeout(() => {
+      this.trackedTimeout(() => {
         this.heroSimStep = 2;
 
         // Step 3 (t = 5.2s): Start Typewriter
-        setTimeout(() => {
+        this.trackedTimeout(() => {
           this.heroSimStep = 3;
           const fullText = this.currentSimExercise.explanation;
           let charIdx = 0;
           this.heroSimTypingTimer = setInterval(() => {
+            if (this.destroyed) { clearInterval(this.heroSimTypingTimer); return; }
             if (charIdx < fullText.length) {
               this.heroSimTypedText += fullText.charAt(charIdx);
               charIdx++;
             } else {
               clearInterval(this.heroSimTypingTimer);
               // Step 4 (t = +1s): Show Concept Pill
-              setTimeout(() => {
+              this.trackedTimeout(() => {
                 this.heroSimStep = 4;
 
                 // Step 5 (t = +3.2s): Transition to next exercise
-                setTimeout(() => {
+                this.trackedTimeout(() => {
                   this.heroSimIndex = (this.heroSimIndex + 1) % this.heroSimExercises.length;
                   this.runHeroSimCycle();
                 }, 3200);
@@ -5852,9 +5943,15 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     if (this.activeStudentsTimer) {
       clearInterval(this.activeStudentsTimer);
     }
+    if (this.heroSimTypingTimer) clearInterval(this.heroSimTypingTimer);
+    if (this.heroSimCycleTimer) clearTimeout(this.heroSimCycleTimer);
+    this.heroSimTimeouts.forEach(h => clearTimeout(h));
+    this.heroSimTimeouts = [];
+    this.removeGlobalListeners();
   }
 
   startActiveStudentsFluctuation() {
@@ -5912,11 +6009,11 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       };
 
       updateRects();
-      window.addEventListener('resize', updateRects, { passive: true });
-      window.addEventListener('scroll', updateRects, { passive: true });
+      this.registerGlobalListener(window, 'resize', updateRects, { passive: true });
+      this.registerGlobalListener(window, 'scroll', updateRects, { passive: true });
 
       let mouseTicking = false;
-      document.addEventListener('mousemove', (e: MouseEvent) => {
+      const onMouseMove = (e: MouseEvent) => {
         if (this.hoveredBenefitIndex !== null || !sectionEl || !mascotEl) return;
 
         if (!mouseTicking) {
@@ -5958,13 +6055,15 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           });
           mouseTicking = true;
         }
-      }, { passive: true });
+      };
+      this.registerGlobalListener(document, 'mousemove', onMouseMove as EventListener, { passive: true });
 
-      document.addEventListener('mouseleave', () => {
+      const onMouseLeave = () => {
         if (mascotEl) {
           mascotEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
         }
-      }, { passive: true });
+      };
+      this.registerGlobalListener(document, 'mouseleave', onMouseLeave, { passive: true });
 
       // Optimized scroll listener outside Angular zone to fix lag
       const gridOverlay = document.querySelector('.hero-grid-overlay') as HTMLElement;
@@ -5972,7 +6071,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       const blobBlue = document.querySelector('.hero-blob-blue') as HTMLElement;
 
       let ticking = false;
-      window.addEventListener('scroll', () => {
+      const onParallaxScroll = () => {
         const currentScrollY = window.scrollY;
 
         if (!ticking) {
@@ -6003,7 +6102,8 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           });
           ticking = true;
         }
-      }, { passive: true });
+      };
+      this.registerGlobalListener(window, 'scroll', onParallaxScroll, { passive: true });
     });
 
     // Scroll Reveal Animation Logic (Unobserve once revealed for maximum performance)

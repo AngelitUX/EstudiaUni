@@ -1,6 +1,8 @@
-import { Component, inject, OnInit, OnDestroy, computed, effect } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, computed, effect, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { FirestoreService } from '../../core/services/firestore.service';
@@ -29,7 +31,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard" id="tour-nav-inicio">
@@ -282,10 +286,22 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
                   <button type="button" class="nav-arrow-rec" (click)="nextRecommendation()">›</button>
                 </div>
               </div>
-              <div class="ai-hero-actions">
+              <div class="ai-hero-actions" style="flex-wrap: wrap; gap: 0.75rem;">
                 <button class="btn-cta-primary btn-hero" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
                    Ir
                 </button>
+                <button *ngIf="isProPlan() || adminService.isAdmin()" class="btn-cta-secondary btn-hero" [disabled]="aiRecoLoading()" (click)="viewAiRecommendations()">
+                  {{ aiRecoLoading() ? '🤖 Pensando...' : '🤖 Ver Recomendaciones IA' }}
+                </button>
+                <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-cta-secondary btn-hero" (click)="paymentService.openPricingModal()">
+                  🔒 Recomendaciones IA (PRO)
+                </button>
+              </div>
+              <div class="ai-reco-panel" *ngIf="aiRecoText() || aiRecoError()">
+                <ng-container *ngIf="aiRecoText()">
+                  <p>{{ aiRecoText() }}</p>
+                </ng-container>
+                <p *ngIf="aiRecoError()" class="ai-reco-error">{{ aiRecoError() }}</p>
               </div>
               </div>
             </section>
@@ -488,7 +504,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
                   </button>
                 </div>
                 <div class="activity-list" *ngIf="dashSvc.activities().length > 0; else noActivity">
-                  <div *ngFor="let act of dashSvc.activities().slice(0, 5)" 
+                  <div *ngFor="let act of dashSvc.activities().slice(0, (isProPlan() || adminService.isAdmin()) ? 5 : 3)"
                        class="activity-item"
                        [class.clickable]="act.type === 'ensayo' || act.type === 'mente-veloz' || act.type === 'mini-ensayo'"
                        (click)="onActivityClick(act)">
@@ -692,6 +708,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
@@ -701,22 +720,8 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .sidebar::-webkit-scrollbar-track { background: transparent; }
     .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; transition: background 0.2s; }
     .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-    .sidebar-header { 
-      padding: 2.5rem 1.5rem 2rem; 
-      border-bottom: 1px solid rgba(255,255,255,0.15); 
-      text-align: center;
-    }
-    .sidebar-logo { 
-      font-family: var(--font-heading); 
-      font-size: 3.5rem; 
-      font-weight: 900; 
-      background: linear-gradient(135deg, #ffffff 40%, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.04em; 
-      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-      position: relative;
-    }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
+    
     .sidebar-nav {
       padding: 1rem 0.75rem;
       display: flex;
@@ -1352,6 +1357,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       transform: scale(1.1);
     }
     .ai-hero-actions { display: flex; flex-direction: column; align-items: center; gap: 0.65rem; flex-shrink: 0; }
+    .ai-reco-panel { width: 100%; margin-top: 1.25rem; padding: 1rem 1.25rem; border-radius: 14px; background: rgba(255,255,255,0.6); border: 1.5px solid rgba(133,92,214,0.25); font-size: 0.92rem; line-height: 1.6; color: var(--text-primary); animation: fadeIn 0.3s ease; }
+    .ai-reco-panel p { margin: 0; white-space: pre-line; }
+    .ai-reco-error { color: #ef4444 !important; }
     .btn-hero {
       font-family: inherit;
       padding: 0.7rem 2.2rem;
@@ -1972,6 +1980,28 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         max-height: 90vh !important;
         border-radius: 16px !important;
       }
+      .ai-hero-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100%;
+      }
+      .ai-hero-actions .btn-hero {
+        width: 100%;
+        white-space: normal;
+        text-align: center;
+        padding: 0.75rem 1rem;
+      }
+      .meta-paes-materias-list li {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.6rem;
+      }
+      .btn-toggle-materia {
+        width: 100%;
+      }
+      .logout-confirm-modal .confirm-actions {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })
@@ -2053,6 +2083,41 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
+
+  private http = inject(HttpClient);
+  aiRecoLoading = signal(false);
+  aiRecoText = signal<string | null>(null);
+  aiRecoError = signal<string | null>(null);
+
+  async viewAiRecommendations() {
+    if (this.aiRecoLoading()) return;
+    this.aiRecoLoading.set(true);
+    this.aiRecoError.set(null);
+    this.aiRecoText.set(null);
+
+    const activities = this.dashSvc.activities().slice(0, 10).map(a => ({
+      type: a.type,
+      title: a.title,
+      subject: a.subject,
+      score: a.score,
+      totalCorrect: a.totalCorrect,
+      totalQuestions: a.totalQuestions,
+      timestamp: a.timestamp,
+    }));
+
+    try {
+      const baseUrl = environment.apiUrl || 'http://localhost:3000';
+      const res: any = await firstValueFrom(
+        this.http.post(`${baseUrl}/api/ai/recommendations`, { activities })
+      );
+      this.aiRecoText.set(res.recommendation);
+    } catch (err: any) {
+      const msg = err?.error?.message || 'No se pudo generar la recomendación. Intenta de nuevo más tarde.';
+      this.aiRecoError.set(msg);
+    } finally {
+      this.aiRecoLoading.set(false);
+    }
+  }
 
   profileInitial = computed(() => {
     const p = this.firestoreService.profileSignal();
@@ -2216,6 +2281,109 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Matches the CSS breakpoint where the desktop .sidebar is hidden and .mobile-header takes over. */
+  private isMobileViewport(): boolean {
+    return window.innerWidth < 1024;
+  }
+
+  private buildTutorialSteps(mobile: boolean): any[] {
+    const isPro = this.isProPlan() || this.adminService.isAdmin();
+    const navScope = mobile ? '.mobile-menu' : '.sidebar';
+    const side = mobile ? 'bottom' : 'right';
+
+    const steps: any[] = [
+      {
+        popover: {
+          title: '👋 ¡Bienvenido a tu Dashboard!',
+          description: 'El corazón de EstudiaUni. Aquí encontrarás el resumen de tu progreso, rachas de estudio y el tiempo que falta para la PAES.'
+        }
+      },
+      {
+        element: '.help-fab',
+        popover: {
+          title: '💡 Información del Dashboard',
+          description: 'Si haces clic en este botón, podrás ver una guía rápida que te explica para qué sirve cada sección.',
+          side: mobile ? 'top' : 'left',
+          align: 'start'
+        }
+      },
+      {
+        element: `${navScope} .nav-item[routerLink="/dashboard"]`,
+        popover: {
+          title: '🏠 Inicio',
+          description: 'Siempre puedes volver aquí para ver tus estadísticas y recomendaciones guiadas por nuestra Inteligencia Artificial.',
+          side, align: 'start'
+        }
+      },
+      {
+        element: `${navScope} .nav-item[routerLink="/ruta"]`,
+        popover: {
+          title: '🗺️ Ruta de Aprendizaje',
+          description: 'Un camino estructurado paso a paso con clases, videos y guías teóricas personalizadas para dominar cada materia desde cero.',
+          side, align: 'start'
+        }
+      },
+      {
+        element: `${navScope} .nav-item[routerLink="/ensayos"]`,
+        popover: {
+          title: '📚 Ensayos PAES',
+          description: 'Rinde simulacros completos bajo condiciones reales. Analizaremos tu puntaje y te diremos exactamente qué temas necesitas reforzar.',
+          side, align: 'start'
+        }
+      },
+      {
+        element: `${navScope} .nav-item[routerLink="/mini-ensayo"]`,
+        popover: {
+          title: '🎯 Mini Ensayos',
+          description: '¿Tienes poco tiempo? Practica con ensayos cortos enfocados en ejes temáticos específicos.',
+          side, align: 'start'
+        }
+      },
+      {
+        element: `${navScope} .nav-item[routerLink="/mente-veloz"]`,
+        popover: {
+          title: '⚡ Mente Veloz',
+          description: 'Desafíos dinámicos de respuestas rápidas para agilizar tu mente, mejorar tu velocidad de cálculo y comprensión lectora.',
+          side, align: 'start'
+        }
+      },
+      {
+        element: `${navScope} .sidebar-sub-items`,
+        popover: {
+          title: '🛠️ Herramientas Extra',
+          description: 'Un set de utilidades clave: Explora carreras universitarias, calcula tu puntaje NEM y accede a recursos adicionales de estudio en un solo lugar.',
+          side, align: 'start'
+        }
+      }
+    ];
+
+    if (!mobile) {
+      steps.push({
+        element: '.profile-menu-wrap',
+        popover: {
+          title: '👤 Tu Perfil',
+          description: 'Desde aquí puedes actualizar tus metas de puntaje, cambiar tu avatar y ver tu historial de ensayos.',
+          side: 'bottom',
+          align: 'end'
+        }
+      });
+    }
+
+    // Only exists in the DOM for Free users — skip for PRO/admin so the last step doesn't target a missing element
+    if (!isPro) {
+      steps.push({
+        element: `${navScope} .sidebar-promo-card`,
+        popover: {
+          title: '🚀 Desbloquea tu potencial PRO',
+          description: 'Pásate a Premium para acceder a ensayos ilimitados, explicaciones paso a paso con Inteligencia Artificial, simulacros personalizados y mucho más. ¡Haz que tu puntaje despegue!',
+          side, align: 'start'
+        }
+      });
+    }
+
+    return steps;
+  }
+
   async startTutorial() {
     this.showTutorialModal = false;
     localStorage.setItem('estudiauni_tutorial_seen', 'true');
@@ -2228,6 +2396,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.herramientasExpanded = true;
     localStorage.setItem('herramientasExpanded', 'true');
 
+    const mobile = this.isMobileViewport();
+    if (mobile) {
+      // Open the slide-out menu up front so every nav step below is actually visible on screen
+      this.mobileMenuOpen = true;
+    }
+
     this.driverObj = driver({
       showProgress: true,
       animate: true,
@@ -2239,7 +2413,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (element && element.classList && element.classList.contains('help-fab')) {
           element.style.pointerEvents = 'none';
         }
-        const sidebar = document.querySelector('.sidebar');
+        const sidebar = document.querySelector(mobile ? '.mobile-menu' : '.sidebar');
         if (sidebar && element && sidebar.contains(element)) {
           sidebar.scrollTo({
             top: (element as HTMLElement).offsetTop - 150,
@@ -2252,101 +2426,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
           element.style.pointerEvents = 'auto';
         }
       },
-      steps: [
-        {
-          popover: {
-            title: '👋 ¡Bienvenido a tu Dashboard!',
-            description: 'El corazón de EstudiaUni. Aquí encontrarás el resumen de tu progreso, rachas de estudio y el tiempo que falta para la PAES.'
-          }
-        },
-        {
-          element: '.help-fab',
-          popover: {
-            title: '💡 Información del Dashboard',
-            description: 'Si haces clic en este botón, podrás ver una guía rápida que te explica para qué sirve cada sección.',
-            side: 'left',
-            align: 'start'
-          }
-        },
-        {
-          element: '.sidebar .nav-item[routerLink="/dashboard"]',
-          popover: {
-            title: '🏠 Inicio',
-            description: 'Siempre puedes volver aquí para ver tus estadísticas y recomendaciones guiadas por nuestra Inteligencia Artificial.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '.sidebar .nav-item[routerLink="/ruta"]',
-          popover: {
-            title: '🗺️ Ruta de Aprendizaje',
-            description: 'Un camino estructurado paso a paso con clases, videos y guías teóricas personalizadas para dominar cada materia desde cero.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '.sidebar .nav-item[routerLink="/ensayos"]',
-          popover: {
-            title: '📚 Ensayos PAES',
-            description: 'Rinde simulacros completos bajo condiciones reales. Analizaremos tu puntaje y te diremos exactamente qué temas necesitas reforzar.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '.sidebar .nav-item[routerLink="/mini-ensayo"]',
-          popover: {
-            title: '🎯 Mini Ensayos',
-            description: '¿Tienes poco tiempo? Practica con ensayos cortos de 15 a 30 preguntas, enfocados en ejes temáticos específicos.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '.sidebar .nav-item[routerLink="/mente-veloz"]',
-          popover: {
-            title: '⚡ Mente Veloz',
-            description: 'Desafíos dinámicos de respuestas rápidas para agilizar tu mente, mejorar tu velocidad de cálculo y comprensión lectora.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '.sidebar .sidebar-sub-items',
-          popover: {
-            title: '🛠️ Herramientas Extra',
-            description: 'Un set de utilidades clave: Explora carreras universitarias, calcula tu puntaje NEM y accede a recursos adicionales de estudio en un solo lugar.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '.profile-menu-wrap',
-          popover: {
-            title: '👤 Tu Perfil',
-            description: 'Desde aquí puedes actualizar tus metas de puntaje, cambiar tu avatar y ver tu historial de ensayos.',
-            side: 'bottom',
-            align: 'end'
-          }
-        },
-        {
-          element: '.sidebar-promo-card',
-          popover: {
-            title: '🚀 Desbloquea tu potencial PRO',
-            description: 'Pásate a Premium para acceder a ensayos ilimitados, explicaciones paso a paso con Inteligencia Artificial, simulacros personalizados y mucho más. ¡Haz que tu puntaje despegue!',
-            side: 'right',
-            align: 'start'
-          }
-        }
-      ]
+      onDestroyStarted: () => {
+        this.mobileMenuOpen = false;
+        this.driverObj.destroy();
+      },
+      steps: this.buildTutorialSteps(mobile)
     });
 
-    // Ejecutar con un pequeño delay para asegurar renderizado
+    // Ejecutar con un pequeño delay para asegurar renderizado (y que el menú móvil ya esté abierto/animado)
     setTimeout(() => {
       this.driverObj.drive();
-    }, 200);
+    }, mobile ? 350 : 200);
   }
 
   ngOnDestroy() {

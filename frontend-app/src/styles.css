@@ -317,6 +317,43 @@ body.font-xlarge h2 { font-size: 2rem !important; }
 body.font-xlarge h3 { font-size: 1.6rem !important; }
 body.font-xlarge h4 { font-size: 1.45rem !important; }
 
+body.spacing-wide,
+body.spacing-wide p,
+body.spacing-wide li,
+body.spacing-wide span,
+body.spacing-wide a,
+body.spacing-wide button,
+body.spacing-wide input,
+body.spacing-wide textarea {
+  line-height: 1.8 !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.15em !important;
+}
+
+body.spacing-xwide,
+body.spacing-xwide p,
+body.spacing-xwide li,
+body.spacing-xwide span,
+body.spacing-xwide a,
+body.spacing-xwide button,
+body.spacing-xwide input,
+body.spacing-xwide textarea {
+  line-height: 2.2 !important;
+  letter-spacing: 0.1em !important;
+  word-spacing: 0.25em !important;
+}
+
+
+/* ==========================================
+   BREAKPOINT CONVENTION (usar estos 4 puntos de corte en todo el proyecto
+   en vez de inventar nuevos valores ad-hoc, para que el comportamiento sea
+   consistente entre paginas):
+     max-width: 1024px  -> tablet / colapso de sidebar a mobile-header
+     max-width: 768px   -> tablet chica / telefono en landscape
+     max-width: 480px   -> telefono en portrait
+     max-width: 380px   -> telefonos muy angostos (iPhone SE y similares)
+   El shell (sidebar/mobile-header) ya usa 1024px como ancla mas abajo.
+   ========================================== */
 
 /* ==========================================
    ADVANCED RESPONSIVE SIDEBAR & LAYOUT OVERRIDES
@@ -612,7 +649,7 @@ body .plan-badge-inline.pro {
   font-weight: 800 !important;
   font-size: 0.85rem !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(230, 161, 0, 0.3) !important;
+  box-shadow: 0 0 15px rgba(255, 180, 0, 0.6), 0 0 30px rgba(245, 158, 11, 0.4) !important;
   text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
   transition: all 0.25s ease !important;
   display: inline-flex !important;
@@ -620,19 +657,45 @@ body .plan-badge-inline.pro {
   gap: 0.25rem !important;
   font-family: inherit !important;
   line-height: 1 !important;
-  animation: goldPulseUpgrade 2.5s infinite !important;
+  animation: goldGlowUpgrade 2s infinite alternate !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.btn-upgrade-pro::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg) translateX(-150px);
+  animation: shimmerUpgrade 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  pointer-events: none;
 }
 
 .btn-upgrade-pro:hover {
   transform: translateY(-2px) scale(1.03) !important;
-  box-shadow: 0 8px 18px rgba(230, 161, 0, 0.5) !important;
-  filter: brightness(1.05) !important;
+  box-shadow: 0 0 25px rgba(255, 200, 0, 0.9), 0 0 45px rgba(245, 158, 11, 0.6) !important;
+  filter: brightness(1.1) !important;
 }
 
-@keyframes goldPulseUpgrade {
-  0% { box-shadow: 0 0 0 0 rgba(230, 161, 0, 0.4); }
-  70% { box-shadow: 0 0 0 8px rgba(230, 161, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(230, 161, 0, 0); }
+@keyframes goldGlowUpgrade {
+  0% { box-shadow: 0 0 12px rgba(255, 180, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.3) !important; }
+  100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 40px rgba(245, 158, 11, 0.7) !important; }
+}
+
+@keyframes shimmerUpgrade {
+  0% { transform: skewX(-25deg) translateX(-150px); opacity: 0; }
+  5% { opacity: 1; }
+  25% { transform: skewX(-25deg) translateX(300px); opacity: 0; }
+  100% { transform: skewX(-25deg) translateX(300px); opacity: 0; }
 }
 
 /* Sidebar Promo Card */

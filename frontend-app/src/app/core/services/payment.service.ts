@@ -23,10 +23,6 @@ export interface WebpayCommitResponse {
   };
 }
 
-export interface RandomRecipientResponse {
-  uid: string;
-  email: string;
-}
 
 export interface CouponValidationResponse {
   valid: boolean;
@@ -128,15 +124,6 @@ export class PaymentService {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     const url = `${baseUrl}/api/subscriptions/transfer/submit`;
     return this.http.post<{ success: boolean; message: string; transferId: string }>(url, data);
-  }
-
-  /**
-   * Get a random free-tier user to gift premium to
-   */
-  getRandomFreeUser(): Observable<RandomRecipientResponse> {
-    const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    const url = `${baseUrl}/api/subscriptions/webpay/random-recipient`;
-    return this.http.get<RandomRecipientResponse>(url);
   }
 
   // ── ADMIN PAYMENT ENDPOINTS ──

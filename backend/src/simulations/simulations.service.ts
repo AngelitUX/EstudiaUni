@@ -25,32 +25,52 @@ export class SimulationsService {
   async list(uid: string) {
     const db = this.firebaseService.firestore;
 
-    // Get user tier to filter premium-only
     const userDoc = await db.collection('users').doc(uid).get();
-    const tier = userDoc.data()?.subscription?.tier || 'free';
+    const tier = userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free';
 
     let query: FirebaseFirestore.Query = db.collection('simulations');
 
-    if (tier !== 'premium') {
-      query = query.where('isPremiumOnly', '==', false);
-    }
-
     const snap = await query.get();
-    return snap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      questionIds: undefined, // Don't expose question IDs in listing
-    }));
+    return snap.docs.map((doc) => {
+      const data = doc.data();
+      const idLower = (doc.id || '').toLowerCase();
+      const nameLower = (data.title || data.nombre || '').toLowerCase();
+      const isOfficialRegular2026 = (idLower.includes('2026') || nameLower.includes('2026')) && !idLower.includes('invierno') && !nameLower.includes('invierno');
+
+      return {
+        id: doc.id,
+        ...data,
+        isLockedForFree: tier === 'free' && !isOfficialRegular2026,
+        questionIds: undefined,
+      };
+    });
   }
 
   /**
    * Start a simulation attempt.
-   * Validates credits and checks for active attempts.
+   * Validates credits, 48h cooldown for free tier, and active attempt checks.
    */
   async start(uid: string, simulationId: string) {
     const db = this.firebaseService.firestore;
 
-    // 1. Check credits
+    const userDoc = await db.collection('users').doc(uid).get();
+    const userData = userDoc.data() || {};
+    const tier = userData?.subscription?.tier || userData?.plan || 'free';
+
+    // 1. Validate 48-hour cooldown for Free tier
+    if (tier === 'free') {
+      const cooldown = await this.subscriptionsService.checkSimulationCooldown(uid);
+      if (cooldown.inCooldown) {
+        throw new ForbiddenException({
+          code: 'COOLDOWN_ACTIVE',
+          secondsRemaining: cooldown.secondsRemaining,
+          message: `Debes esperar 48 horas entre ensayos en el Plan Básico. Tu próximo ensayo estará disponible en ${Math.ceil(cooldown.secondsRemaining / 3600)} horas.`,
+          upgradeUrl: '/pricing',
+        });
+      }
+    }
+
+    // 2. Check general simulation credits
     const creditCheck = await this.subscriptionsService.checkCredits(
       uid,
       'simulation',
@@ -58,13 +78,12 @@ export class SimulationsService {
     if (!creditCheck.allowed) {
       throw new ForbiddenException({
         code: 'DAILY_LIMIT_REACHED',
-        message:
-          'You have reached your daily simulation limit. Upgrade to premium for unlimited access.',
-        upgradeUrl: '/premium',
+        message: 'Límite de ensayo alcanzado. Conviértete en PRO para practicar sin límites.',
+        upgradeUrl: '/pricing',
       });
     }
 
-    // 2. Check for active attempts
+    // 3. Check for active attempts
     const activeSnap = await db
       .collection('attempts')
       .where('userId', '==', uid)
@@ -76,23 +95,34 @@ export class SimulationsService {
     if (!activeSnap.empty) {
       throw new ConflictException({
         code: 'ACTIVE_ATTEMPT_EXISTS',
-        message: 'You already have an active simulation. Finish or abandon it first.',
+        message: 'Ya tienes un ensayo activo en curso.',
         attemptId: activeSnap.docs[0].id,
       });
     }
 
-    // 3. Get simulation
+    // 4. Get simulation
     const simDoc = await db.collection('simulations').doc(simulationId).get();
-    if (!simDoc.exists) throw new NotFoundException('Simulation not found');
+    if (!simDoc.exists) throw new NotFoundException('Ensayo no encontrado');
 
     const simData = simDoc.data()!;
+    const idLower = simulationId.toLowerCase();
+    const isOfficialRegular2026 = idLower.includes('2026') && !idLower.includes('invierno');
 
-    // 4. Get questions (without answers)
+    // Block non-official 2026 simulations for Free tier
+    if (tier === 'free' && !isOfficialRegular2026) {
+      throw new ForbiddenException({
+        code: 'PREMIUM_ONLY_SIMULATION',
+        message: 'Este ensayo requiere una suscripción Plan PRO 👑.',
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    // 5. Get questions (without answers)
     const questions = await this.questionsService.getByIds(
       simData.questionIds,
     );
 
-    // 5. Create attempt
+    // 6. Create attempt
     const attemptRef = db.collection('attempts').doc();
     await attemptRef.set({
       userId: uid,
@@ -108,7 +138,7 @@ export class SimulationsService {
       aiAnalysisId: null,
     });
 
-    // 6. Consume credit
+    // 7. Consume credit
     await this.subscriptionsService.consumeCredit(uid, 'simulation');
 
     return {
@@ -132,18 +162,16 @@ export class SimulationsService {
     const attemptRef = db.collection('attempts').doc(attemptId);
     const attemptDoc = await attemptRef.get();
 
-    if (!attemptDoc.exists) throw new NotFoundException('Attempt not found');
+    if (!attemptDoc.exists) throw new NotFoundException('Intento no encontrado');
 
     const attemptData = attemptDoc.data()!;
-    if (attemptData.userId !== uid) throw new ForbiddenException('Not your attempt');
+    if (attemptData.userId !== uid) throw new ForbiddenException('No es tu intento');
     if (attemptData.status !== 'in_progress')
-      throw new ConflictException('Attempt is not in progress');
+      throw new ConflictException('El ensayo no está en progreso');
 
-    // Get correct answer
     const questionDoc = await db.collection('questions').doc(questionId).get();
     const isCorrect = questionDoc.data()?.correctOption === selectedOption;
 
-    // Update answers array
     const answers = attemptData.answers || [];
     const existingIdx = answers.findIndex(
       (a: any) => a.questionId === questionId,
@@ -153,7 +181,7 @@ export class SimulationsService {
       questionId,
       selectedOption,
       isCorrect,
-      timeSpentSeconds: 0, // Frontend can track this
+      timeSpentSeconds: 0,
     };
 
     if (existingIdx >= 0) {
@@ -168,28 +196,29 @@ export class SimulationsService {
   }
 
   /**
-   * Finish a simulation, calculate score.
+   * Finish a simulation, calculate score and apply 3-hour delay for Free tier.
    */
   async finish(uid: string, attemptId: string) {
     const db = this.firebaseService.firestore;
     const attemptRef = db.collection('attempts').doc(attemptId);
     const attemptDoc = await attemptRef.get();
 
-    if (!attemptDoc.exists) throw new NotFoundException('Attempt not found');
+    if (!attemptDoc.exists) throw new NotFoundException('Intento no encontrado');
 
     const attemptData = attemptDoc.data()!;
-    if (attemptData.userId !== uid) throw new ForbiddenException('Not your attempt');
+    if (attemptData.userId !== uid) throw new ForbiddenException('No es tu intento');
     if (attemptData.status !== 'in_progress')
-      throw new ConflictException('Attempt already finished');
+      throw new ConflictException('El ensayo ya está finalizado');
 
-    // Get simulation to know total questions
+    const userDoc = await db.collection('users').doc(uid).get();
+    const tier = userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free';
+
     const simDoc = await db
       .collection('simulations')
       .doc(attemptData.simulationId)
       .get();
     const totalQuestions = simDoc.data()?.totalQuestions || 0;
 
-    // Calculate score
     const answers = attemptData.answers || [];
     const correct = answers.filter((a: any) => a.isCorrect).length;
     const incorrect = answers.filter(
@@ -200,7 +229,6 @@ export class SimulationsService {
     const percentage =
       totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
 
-    // Estimate PAES score (simplified linear mapping: 100-1000)
     const estimatedPaesScore = Math.round(100 + (percentage / 100) * 900);
 
     const score = {
@@ -211,35 +239,87 @@ export class SimulationsService {
       estimatedPaesScore,
     };
 
+    const finishedAt = new Date();
+    // 3 hours delay for Free users (3 * 3600 * 1000 ms)
+    const resultsAvailableAt = tier === 'free'
+      ? new Date(finishedAt.getTime() + 3 * 3600 * 1000)
+      : finishedAt;
+
     await attemptRef.update({
       status: 'completed',
-      finishedAt: new Date(),
+      finishedAt,
+      resultsAvailableAt,
       score,
     });
 
-    return { score, attemptId };
+    // Track last simulation completion for 48h cooldown
+    if (tier === 'free') {
+      try {
+        await db.collection('users').doc(uid).update({
+          lastSimulationFinishedAt: finishedAt,
+        });
+      } catch (e) {}
+    }
+
+    const isLocked = tier === 'free' && resultsAvailableAt > new Date();
+
+    return {
+      attemptId,
+      score: isLocked ? null : score,
+      resultsAvailableAt,
+      resultsLocked: isLocked,
+      secondsUntilAvailable: isLocked ? Math.ceil((resultsAvailableAt.getTime() - Date.now()) / 1000) : 0,
+    };
   }
 
   /**
-   * Get attempt detail with answers.
+   * Get attempt detail with answers (enforces 3h delay for Free users).
    */
   async getAttempt(uid: string, attemptId: string) {
     const db = this.firebaseService.firestore;
     const attemptDoc = await db.collection('attempts').doc(attemptId).get();
 
-    if (!attemptDoc.exists) throw new NotFoundException('Attempt not found');
+    if (!attemptDoc.exists) throw new NotFoundException('Intento no encontrado');
 
     const data = attemptDoc.data()!;
-    if (data.userId !== uid) throw new ForbiddenException('Not your attempt');
+    if (data.userId !== uid) throw new ForbiddenException('No es tu intento');
 
-    // If completed, include correct answers and explanations
+    const userDoc = await db.collection('users').doc(uid).get();
+    const tier = userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free';
+
+    // Check if results are locked (3-hour delay for Free tier)
+    if (data.status === 'completed' && tier === 'free' && data.resultsAvailableAt) {
+      let resultsAvailableAt: Date;
+      if (typeof data.resultsAvailableAt.toDate === 'function') {
+        resultsAvailableAt = data.resultsAvailableAt.toDate();
+      } else {
+        resultsAvailableAt = new Date(data.resultsAvailableAt);
+      }
+
+      if (resultsAvailableAt > new Date()) {
+        const secondsRemaining = Math.ceil((resultsAvailableAt.getTime() - Date.now()) / 1000);
+        return {
+          id: attemptDoc.id,
+          status: 'completed',
+          resultsLocked: true,
+          resultsAvailableAt,
+          secondsRemaining,
+          simulationId: data.simulationId,
+          moduleId: data.moduleId,
+          startedAt: data.startedAt,
+          finishedAt: data.finishedAt,
+        };
+      }
+    }
+
     if (data.status === 'completed') {
-      const questionIds = data.answers.map((a: any) => a.questionId);
+      const questionIds = (data.answers || []).map((a: any) => a.questionId);
       const questions = await this.questionsService.getByIds(questionIds);
 
       return {
         id: attemptDoc.id,
         ...data,
+        resultsLocked: false,
         questionsDetail: questions,
       };
     }

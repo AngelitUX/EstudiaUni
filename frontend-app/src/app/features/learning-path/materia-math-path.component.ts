@@ -34,7 +34,9 @@ type PathItem = {
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -75,7 +77,9 @@ type PathItem = {
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
         <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <a routerLink="/dashboard" style="text-decoration:none; display: flex; align-items: center;">
+          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+        </a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -164,7 +168,7 @@ type PathItem = {
                   <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img src="assets/img/gif.gif" alt="Foco" class="splash-mascot chapter-image-custom" />
+                      <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" class="splash-mascot chapter-image-custom" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
@@ -1263,6 +1267,9 @@ type PathItem = {
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host {
       display: block;
       min-height: 100vh;
@@ -1293,7 +1300,7 @@ type PathItem = {
 
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
     .sidebar-logo { 
       font-family: var(--font-heading); 
       font-size: 2.2rem; 

@@ -228,6 +228,11 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
   {
+    path: 'admin/bugs',
+    loadComponent: () => import('./features/admin/admin-bugs.component').then(m => m.AdminBugsComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
     path: 'admin/suscripciones',
     loadComponent: () => import('./features/admin/admin-subscriptions.component').then(m => m.AdminSubscriptionsComponent),
     canActivate: [authGuard, adminGuard]

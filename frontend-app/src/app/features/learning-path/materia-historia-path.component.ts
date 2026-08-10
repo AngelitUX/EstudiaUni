@@ -9,7 +9,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
 
-type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean };
+type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean, isProTip?: boolean };
 
 type PathItem = {
   type: 'chapter' | 'node-row';
@@ -34,7 +34,9 @@ type PathItem = {
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
+          </a>
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
@@ -75,7 +77,9 @@ type PathItem = {
       <!-- MOBILE HEADER -->
       <div class="mobile-header">
         <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none;"><span class="text-gradient" [class.pro-logo]="isProPlan()">EstudiaUni</span></a>
+        <a routerLink="/dashboard" style="text-decoration:none; display: flex; align-items: center;">
+          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+        </a>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
@@ -155,7 +159,7 @@ type PathItem = {
                   <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img [src]="item.imageUrl || 'assets/img/gif.gif'" alt="Capítulo" class="splash-mascot chapter-image-custom" />
+                      <img [src]="item.imageUrl || 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif'" alt="Capítulo" class="splash-mascot chapter-image-custom" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
@@ -280,11 +284,16 @@ type PathItem = {
                             <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.55 18.55 20 18 20H6C5.45 20 5 19.55 5 19V18H19V19Z"/>
                           </svg>
                           <!-- PRACTICE SVG -->
-                          <svg *ngIf="!node.isCrown && isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
+                          <!-- PROTIP SVG -->
+                            <svg *ngIf="!node.isCrown && node.isProTip && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-pro-tip" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
+                            </svg>
+                            <!-- PRACTICE SVG -->
+                            <svg *ngIf="!node.isCrown && !node.isProTip && isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
                           </svg>
                           <!-- STAR SVG -->
-                          <svg *ngIf="!node.isCrown && !isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
+                          <svg *ngIf="!node.isCrown && !node.isProTip && !isPracticeNode(node) && (node.status === 'completed' || node.status === 'active')" class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                           </svg>
                           <!-- LOCK SVG -->
@@ -298,7 +307,8 @@ type PathItem = {
                         [class.text-active]="node.status === 'active'"
                         [class.historia-title]="hasTreeLayout()"
                         [class.title-crown]="node.isCrown"
-                        [class.title-practice]="!node.isCrown && isPracticeNode(node)"
+                        [class.title-practice]="!node.isCrown && !node.isProTip && isPracticeNode(node)"
+                        [class.title-pro-tip]="node.isProTip"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
                         {{ node.title }}
                       </div>
@@ -742,13 +752,16 @@ type PathItem = {
     </div>
   `,
   styles: [`
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .lp-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* SIDEBAR */
     .sidebar { width: 260px; background: rgba(13,15,23,0.95); border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 2.5rem 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center; }
+    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
     .sidebar-logo { 
       font-family: var(--font-heading); 
       font-size: 2.2rem; 
@@ -2650,7 +2663,8 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
             nodeIndex: nodeIndex++,
             tags: sec.tags,
             isBoss: this.materiaId() === 'mat2' ? false : sec.id === lastSectionId,
-            isCrown: (sec as any).isCrown || false
+            isCrown: (sec as any).isCrown || false,
+            isProTip: (sec as any).isProTip || false
           } as any;
         });
 

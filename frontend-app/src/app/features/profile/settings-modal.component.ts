@@ -5,12 +5,12 @@ import { RouterModule } from '@angular/router';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
-
+import { ReportBugModalComponent } from './report-bug-modal.component';
 
 @Component({
   selector: 'app-settings-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ReportBugModalComponent],
   template: `
     <div class="modal-overlay" (click)="closeModal()">
       <div class="modal-container glass" (click)="$event.stopPropagation()">
@@ -21,30 +21,32 @@ import { NotificationService } from '../../core/services/notification.service';
         <div class="modal-scroll">
           <!-- Ruta de Aprendizaje se movió a Perfil -->
           <div class="section-block">
-            <div class="section-header"><h3>Preferencias</h3><p>Configura tu ritmo ideal de estudio.</p></div>
-            <div class="grid">
+            <div class="section-header">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                <div>
+                  <h3>Notificaciones</h3>
+                  <p>Avisos y recordatorios de estudio en tu horario preferido.</p>
+                </div>
+                <label class="switch" style="margin: 0; flex-shrink: 0;">
+                  <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" (change)="onNotificationsToggle()"/>
+                  <span>Activas</span>
+                </label>
+              </div>
+            </div>
+            <div class="grid" [style.opacity]="settingsForm.notificationsEnabled ? '1' : '0.5'" [style.pointer-events]="settingsForm.notificationsEnabled ? 'auto' : 'none'">
               <label>Horario preferido
                 <select [(ngModel)]="settingsForm.preferredStudyTime">
                   <option value="manana">Mañana (7:00 - 11:00)</option>
                   <option value="tarde">Tarde (14:00 - 18:00)</option>
                   <option value="noche">Noche (20:00 - 23:00)</option>
-                  <option value="ninguno">No tengo horario específico</option>
+                  <option value="ninguno">Cualquier momento</option>
                 </select>
               </label>
-            </div>
-          </div>
-          <div class="section-block">
-            <div class="section-header"><h3>Notificaciones</h3><p>Avisos y recordatorios de estudio. Solo se envían dentro de tu horario preferido.</p></div>
-            <div class="grid">
-              <label class="switch">
-                <input [(ngModel)]="settingsForm.notificationsEnabled" type="checkbox" (change)="onNotificationsToggle()"/>
-                <span>Recordatorios activos</span>
-              </label>
               <label>Intensidad
-                <select [(ngModel)]="settingsForm.notificationIntensity" [disabled]="!settingsForm.notificationsEnabled">
-                  <option value="baja">Baja (cada hora y media)</option>
-                  <option value="normal">Normal (cada hora)</option>
-                  <option value="alta">Alta (cada 30 minutos)</option>
+                <select [(ngModel)]="settingsForm.notificationIntensity">
+                  <option value="baja">Baja (cada 1.5 hrs)</option>
+                  <option value="normal">Normal (cada 1 hr)</option>
+                  <option value="alta">Alta (cada 30 min)</option>
                 </select>
               </label>
             </div>
@@ -56,7 +58,7 @@ import { NotificationService } from '../../core/services/notification.service';
           </div>
           <div class="section-block">
             <div class="section-header"><h3>Accesibilidad</h3><p>Adapta la plataforma a tus necesidades visuales y cognitivas.</p></div>
-            <div class="grid">
+            <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
               <label class="switch">
                 <input [(ngModel)]="settingsForm.dyslexiaFont" type="checkbox" (change)="applyAccessibility()"/>
                 <span>Fuente para dislexia</span>
@@ -66,6 +68,13 @@ import { NotificationService } from '../../core/services/notification.service';
                   <option value="normal">Normal</option>
                   <option value="large">Grande</option>
                   <option value="xlarge">Extra grande</option>
+                </select>
+              </label>
+              <label>Espaciado de texto
+                <select [(ngModel)]="settingsForm.textSpacing" (change)="applyAccessibility()">
+                  <option value="normal">Normal</option>
+                  <option value="wide">Amplio</option>
+                  <option value="xwide">Muy amplio</option>
                 </select>
               </label>
             </div>
@@ -89,11 +98,14 @@ import { NotificationService } from '../../core/services/notification.service';
             </div>
           </div>
           <div class="action-bar">
+            <button class="btn-report" (click)="showReportBugModal = true">🐛 Reportar un problema</button>
             <button class="primary" (click)="saveSettings()" [disabled]="saving || loading">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>
         </div>
       </div>
     </div>
+    
+    <app-report-bug-modal *ngIf="showReportBugModal" (close)="showReportBugModal = false"></app-report-bug-modal>
   `,
   styles: [`
     .modal-overlay{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:fadeOverlay .25s ease}
@@ -120,7 +132,9 @@ import { NotificationService } from '../../core/services/notification.service';
     .primary{margin-top:.3rem;border:0;border-radius:9px;background:linear-gradient(135deg,#855cd6,#6b46b8);color:#fff;padding:.62rem .95rem;font-weight:600;cursor:pointer;transition:all .2s}
     .primary:hover{filter:brightness(1.1)}
     .primary[disabled]{opacity:.6;cursor:not-allowed}
-    .action-bar{display:flex;justify-content:flex-end}
+    .action-bar{display:flex;justify-content:space-between;align-items:center}
+    .btn-report{border:none;background:transparent;color:var(--text-secondary);font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:color 0.2s}
+    .btn-report:hover{color:var(--text-primary)}
     .notification-status{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text-secondary);padding:.5rem .75rem;background:var(--bg-secondary);border-radius:10px;border:2px solid var(--glass-border);font-weight:600}
     .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .status-dot.granted{background:#10b981}
@@ -130,7 +144,15 @@ import { NotificationService } from '../../core/services/notification.service';
     .support-actions{display:flex;align-items:center;justify-content:flex-start}
     .support-link{display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;border-radius:10px;border:2px solid var(--accent-primary);color:var(--accent-primary);padding:.55rem .9rem;font-weight:700;background:rgba(133,92,214,0.08);transition:all .2s}
     .support-link:hover{background:var(--accent-primary);color:#ffffff;transform:translateY(-1px)}
-    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    @media(max-width:720px){
+      .modal-overlay{padding:0.5rem;align-items:flex-start}
+      .modal-container{width:100%;margin-top:0.5rem;max-height:94vh}
+      .grid{grid-template-columns:1fr !important}
+      input,select{font-size:16px !important}
+      .action-bar{flex-direction:column;align-items:stretch;gap:0.75rem}
+      .btn-report{justify-content:center}
+      .primary{width:100%}
+    }
   `]
 })
 export class SettingsModalComponent implements OnInit {
@@ -145,6 +167,7 @@ export class SettingsModalComponent implements OnInit {
   saving = false;
   notifPermissionGranted = false;
   useLocalMocks = false;
+  showReportBugModal = false;
 
   settingsForm = {
     preferredStudyTime: 'tarde' as 'manana' | 'tarde' | 'noche' | 'ninguno',
@@ -152,7 +175,8 @@ export class SettingsModalComponent implements OnInit {
     theme: 'dark' as 'dark' | 'light' | 'auto',
     notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
     dyslexiaFont: false,
-    fontSize: 'normal' as 'normal' | 'large' | 'xlarge'
+    fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
+    textSpacing: 'normal' as 'normal' | 'wide' | 'xwide'
   };
 
 
@@ -168,6 +192,7 @@ export class SettingsModalComponent implements OnInit {
           this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
           this.settingsForm.dyslexiaFont = !!profile.dyslexiaFont;
           this.settingsForm.fontSize = profile.fontSize || 'normal';
+          this.settingsForm.textSpacing = profile.textSpacing || 'normal';
         }
         this.loading = false;
       },
@@ -208,9 +233,12 @@ export class SettingsModalComponent implements OnInit {
   applyAccessibility() {
     const classList = document.body.classList;
     if (this.settingsForm.dyslexiaFont) classList.add('dyslexia-font'); else classList.remove('dyslexia-font');
-    classList.remove('font-large', 'font-xlarge');
+    classList.remove('font-large', 'font-xlarge', 'spacing-wide', 'spacing-xwide');
     if (this.settingsForm.fontSize === 'large') classList.add('font-large');
     else if (this.settingsForm.fontSize === 'xlarge') classList.add('font-xlarge');
+    
+    if (this.settingsForm.textSpacing === 'wide') classList.add('spacing-wide');
+    else if (this.settingsForm.textSpacing === 'xwide') classList.add('spacing-xwide');
   }
 
   onNotificationsToggle(): void {
@@ -236,7 +264,8 @@ export class SettingsModalComponent implements OnInit {
         theme: this.settingsForm.theme,
         notificationIntensity: this.settingsForm.notificationIntensity,
         dyslexiaFont: this.settingsForm.dyslexiaFont,
-        fontSize: this.settingsForm.fontSize
+        fontSize: this.settingsForm.fontSize,
+        textSpacing: this.settingsForm.textSpacing
       });
       // Restart reminders with new config after saving
       if (this.settingsForm.notificationsEnabled) {

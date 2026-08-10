@@ -52,16 +52,16 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
           <h1>{{ sec.title }}</h1>
         </div>
 
-        <!-- VOICE CONTROLS (Collapsible) -->
-        <div class="voice-dropdown-container" *ngIf="!isMathModule()">
-          <button class="btn-voice-toggle" (click)="voiceMenuOpen = !voiceMenuOpen">
-            🎧 Audio descriptivo <span class="arrow" [class.open]="voiceMenuOpen">▼</span>
+        <!-- A11Y AUDIO PANEL (Collapsible) -->
+        <div class="a11y-mini-panel-container" *ngIf="!isMathModule()">
+          <button class="btn-a11y-toggle" (click)="shortcutsMenuOpen = !shortcutsMenuOpen" title="Atajos de teclado">
+            🎧 Atajos de Audio <span class="arrow" [class.open]="shortcutsMenuOpen">▼</span>
           </button>
-          <div class="voice-dropdown-menu" [class.open]="voiceMenuOpen">
-            <button class="btn-voice" (click)="readGuide()" title="Leer guía (Tecla 1)">🔊 1. Qué aprenderás</button>
-            <button class="btn-voice" *ngIf="sec.test?.contexto_base" (click)="readContext()" title="Leer texto (Tecla 2)">🔊 2. Texto práctica</button>
-            <button class="btn-voice" *ngIf="sec.datos_claves?.length" (click)="readTips()" title="Leer tips (Tecla 3)">🔊 3. Tips clave</button>
-            <button class="btn-voice btn-stop" (click)="stopReading()" title="Detener (Tecla 4)">⏹️ 4. Detener</button>
+          <div class="a11y-mini-panel" [class.open]="shortcutsMenuOpen">
+            <span class="a11y-shortcut"><b>[P]</b> Leer Descripción</span>
+            <span class="a11y-shortcut" *ngIf="sec.test?.contexto_base"><b>[O]</b> Leer Contexto</span>
+            <span class="a11y-shortcut" *ngIf="sec.datos_claves?.length"><b>[T]</b> Leer Tips</span>
+            <span class="a11y-shortcut"><b>[I]</b> Detener</span>
           </div>
         </div>
       </div>
@@ -305,18 +305,17 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
     .btn-next { background: #58cc02; box-shadow: 0 5px 0 #4caf00; }
     .btn-next:hover { box-shadow: 0 2px 0 #4caf00; }
 
-    /* VOICE CONTROLS */
-    .voice-dropdown-container { position: relative; z-index: 100; }
-    .btn-voice-toggle { display: flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-voice-toggle:hover { background: rgba(133,92,214,0.15); }
-    .btn-voice-toggle .arrow { font-size: 0.7rem; transition: transform 0.2s; }
-    .btn-voice-toggle .arrow.open { transform: rotate(180deg); }
-    .voice-dropdown-menu { display: flex; flex-direction: column; gap: 0.25rem; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; background: #fff; padding: 0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid rgba(133,92,214,0.1); }
-    .voice-dropdown-menu.open { max-height: 250px; opacity: 1; padding: 0.5rem; }
-    .btn-voice { background: transparent; border: none; text-align: left; color: var(--text-primary); border-radius: 6px; padding: 0.6rem 0.8rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .btn-voice:hover { background: rgba(133,92,214,0.08); color: var(--accent-primary); }
-    .btn-stop { color: #ef4444; border-top: 1px dashed rgba(239,68,68,0.2); margin-top: 0.25rem; border-radius: 0 0 6px 6px; }
-    .btn-stop:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
+    /* A11Y MINI PANEL */
+    .a11y-mini-panel-container { margin-top: 0.5rem; display: flex; flex-direction: column; align-items: flex-start; z-index: 100; }
+    .btn-a11y-toggle { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-a11y-toggle:hover { background: rgba(133,92,214,0.15); }
+    .btn-a11y-toggle .arrow { font-size: 0.6rem; transition: transform 0.2s; }
+    .btn-a11y-toggle .arrow.open { transform: rotate(180deg); }
+    
+    .a11y-mini-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.05); border-radius: 8px; padding: 0; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; border: 0px solid rgba(133,92,214,0.15); }
+    .a11y-mini-panel.open { max-height: 100px; opacity: 1; padding: 0.65rem 0.85rem; border-width: 1px; margin-top: 0.5rem; }
+    .a11y-shortcut { font-size: 0.75rem; color: var(--text-secondary); background: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05); }
+    .a11y-shortcut b { color: var(--text-primary); font-family: monospace; }
 
     /* PRO TIP UI */
     .pro-tip-card { background: linear-gradient(135deg, #fff, rgba(255, 150, 0, 0.05)); border: 2px solid rgba(255, 150, 0, 0.2); animation: fadeSlide 0.5s ease-out; text-align: center; padding: 2.5rem 2rem; }
@@ -362,7 +361,7 @@ export class SeccionFisicaDetailComponent {
   capituloId = signal('');
   seccionId = signal('');
   practiceCompleted = signal(false);
-  voiceMenuOpen = false;
+  shortcutsMenuOpen = false;
 
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
   isScienceOrMath = computed(() => {
@@ -395,6 +394,13 @@ export class SeccionFisicaDetailComponent {
       this.seccionId.set(params.get('seccionId') || '');
       this.practiceCompleted.set(false);
     });
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
   }
 
   goBack() {
@@ -497,15 +503,22 @@ export class SeccionFisicaDetailComponent {
     if (this.isMathModule()) return;
 
     const key = event.key.toLowerCase();
-    if (key === '1') this.readGuide();
-    if (key === '2') this.readContext();
-    if (key === '3') this.readTips();
-    if (key === '4' || key === 'escape' || key === 's') this.stopReading();
+    if (key === 'p') this.readGuide();
+    if (key === 'o') this.readContext();
+    if (key === 't') this.readTips();
+    if (key === 'i' || key === 'escape') this.stopReading();
+    
+    // Iniciar test con espacio
+    if (key === ' ' || key === 'spacebar') {
+      event.preventDefault();
+      this.goToTest();
+    }
   }
 
   private cleanHtml(html: string): string {
     if (!html) return '';
     let text = html.replace(/&quot;/g, '"');
+    text = text.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, ''); // Remove SVG
     text = text.replace(/<br\s*\/?>/gi, '. ');
     text = text.replace(/<[^>]*>?/gm, '');
     text = text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
@@ -515,8 +528,9 @@ export class SeccionFisicaDetailComponent {
 
   private getBestVoice(): SpeechSynthesisVoice | null {
     const voices = window.speechSynthesis.getVoices();
-    let voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
-    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo')));
+    let voice = voices.find(v => v.name.toLowerCase().includes('natural') && v.lang.startsWith('es'));
+    if (!voice) voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
+    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo') || v.name.includes('Sabina')));
     if (!voice) voice = voices.find(v => v.lang.startsWith('es-') || v.lang === 'es');
     return voice || null;
   }

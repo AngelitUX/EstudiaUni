@@ -56,11 +56,6 @@ export class SubscriptionsController {
     return this.webpayService.validateCoupon(dto.code, dto.planType);
   }
 
-  @Get('webpay/random-recipient')
-  async getRandomFreeUser() {
-    return this.webpayService.getRandomFreeUser();
-  }
-
   @Post('webpay/create')
   @HttpCode(HttpStatus.OK)
   async createWebpayTransaction(

@@ -2,6 +2,9 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { PoolPregunta, MateriaId } from '../../features/learning-path/models/paes.models';
 import { PaesContentService } from '../../features/learning-path/services/paes-content.service';
 import { DashboardService } from './dashboard.service';
+import { FirestoreService } from './firestore.service';
+
+export const FREE_MINI_ENSAYO_MAX_QUESTIONS = 16;
 
 export interface MiniEnsayoConfig {
   materiaId: MateriaId;
@@ -45,6 +48,11 @@ export interface MiniEnsayoResult {
 export class MiniEnsayoService {
   private paesContent = inject(PaesContentService);
   private dashboardSvc = inject(DashboardService);
+  private firestoreService = inject(FirestoreService);
+
+  private isProPlan(): boolean {
+    return this.firestoreService.profileSignal()?.plan === 'premium';
+  }
 
   private _activeSession = signal<MiniEnsayoSession | null>(null);
   readonly activeSession = this._activeSession.asReadonly();
@@ -74,16 +82,19 @@ export class MiniEnsayoService {
 
   generateSession(config: MiniEnsayoConfig): MiniEnsayoSession {
     const allPreguntas = this.paesContent.poolPreguntas();
-    
+
+    // Free users are capped at FREE_MINI_ENSAYO_MAX_QUESTIONS regardless of what the UI requested
+    const requestedCount = this.isProPlan() ? config.questionCount : Math.min(config.questionCount, FREE_MINI_ENSAYO_MAX_QUESTIONS);
+
     // Filter by materia and topics
-    let eligible = allPreguntas.filter(p => 
+    let eligible = allPreguntas.filter(p =>
       p.materiaId === config.materiaId && config.selectedTopics.includes(p.tema)
     );
-    
+
     // Shuffle and take N
     eligible = eligible.sort(() => Math.random() - 0.5);
-    const selected = eligible.slice(0, Math.min(config.questionCount, eligible.length));
-    
+    const selected = eligible.slice(0, Math.min(requestedCount, eligible.length));
+
     const session: MiniEnsayoSession = {
       id: crypto.randomUUID(),
       config: {
@@ -221,6 +232,32 @@ export class MiniEnsayoService {
     } catch (e) {
       return [];
     }
+  }
+
+  /** Most recently completed mini-ensayo, regardless of plan, or null if none yet. */
+  getLastCompletedResult(): MiniEnsayoResult | null {
+    const history = this.getSessionHistory();
+    return history.length > 0 ? history[history.length - 1] : null;
+  }
+
+  /** Free users only get 1 mini-ensayo per calendar day. Pro users are unlimited. */
+  canStartToday(): { allowed: boolean; nextAvailableAt?: Date } {
+    if (this.isProPlan()) return { allowed: true };
+
+    const history = this.getSessionHistory();
+    if (history.length === 0) return { allowed: true };
+
+    const todayStr = new Date().toDateString();
+    const lastResult = history[history.length - 1];
+    const lastDate = new Date(lastResult.timestamp);
+
+    if (lastDate.toDateString() !== todayStr) return { allowed: true };
+
+    const nextAvailableAt = new Date(lastDate);
+    nextAvailableAt.setDate(nextAvailableAt.getDate() + 1);
+    nextAvailableAt.setHours(0, 0, 0, 0);
+
+    return { allowed: false, nextAvailableAt };
   }
 
   private saveSessionToStorage(session: MiniEnsayoSession) {

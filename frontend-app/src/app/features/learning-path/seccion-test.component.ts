@@ -57,8 +57,8 @@ import { ToastService } from '../../core/services/toast.service';
         <div class="question-card" [class.boss-card]="isBossMode()" [class.split-layout]="isPhysics() && (q.preambulo_imagen_url || q.imageUrl || q.svgContent)" *ngIf="currentQuestion() as q">
           
           <div class="split-left">
-            <!-- VOICE CONTROLS (Collapsible) -->
-          <div class="voice-dropdown-container" *ngIf="!isMathModule()">
+          <!-- VOICE CONTROLS (Collapsible for non-biology/physics, Full panel for biology/physics) -->
+          <div class="voice-dropdown-container" *ngIf="!isMathModule() && !isBiology() && !isPhysics()">
             <button class="btn-voice-toggle" (click)="voiceMenuOpen = !voiceMenuOpen">
               🎧 Audio descriptivo <span class="arrow" [class.open]="voiceMenuOpen">▼</span>
             </button>
@@ -68,6 +68,20 @@ import { ToastService } from '../../core/services/toast.service';
               <button class="btn-voice" (click)="readOptions()" *ngIf="q.tipo_alternativas !== 'imagen'" title="Leer alternativas (Tecla 3)">🔊 3. Alternativas</button>
               <button class="btn-voice" (click)="readFeedback()" *ngIf="showFeedback()" title="Leer explicación (Tecla 5)">🔊 5. Explicación</button>
               <button class="btn-voice btn-stop" (click)="stopReading()" title="Detener lectura (Tecla 4)">⏹️ 4. Detener</button>
+            </div>
+          </div>
+
+          <!-- NEW A11Y AUDIO PANEL (Only Biology and Physics) -->
+          <div class="a11y-mini-panel-container" *ngIf="isBiology() || isPhysics()">
+            <button class="btn-a11y-toggle" (click)="shortcutsMenuOpen = !shortcutsMenuOpen" title="Atajos de teclado">
+              🎧 Atajos <span class="arrow" [class.open]="shortcutsMenuOpen">▼</span>
+            </button>
+            <div class="a11y-mini-panel" [class.open]="shortcutsMenuOpen">
+              <span class="a11y-shortcut"><b>[P]</b> Leer Pregunta</span>
+              <span class="a11y-shortcut"><b>[O]</b> Leer Opciones</span>
+              <span class="a11y-shortcut"><b>[I]</b> Detener</span>
+              <span class="a11y-shortcut"><b>[1-4]</b> Elegir A-D</span>
+              <span class="a11y-shortcut"><b>[Espacio]</b> Comprobar/Continuar</span>
             </div>
           </div>
 
@@ -84,6 +98,12 @@ import { ToastService } from '../../core/services/toast.service';
 
           <p class="q-text" [innerHTML]="parseMixed(q.enunciado)"></p>
 
+          <!-- Imagen o gráfico de apoyo (fuera de Física, que usa el panel lateral) -->
+          <div class="q-image-wrap" *ngIf="q.imageUrl && !isPhysics()">
+            <img [src]="q.imageUrl" alt="Imagen de apoyo" class="q-image" />
+          </div>
+          <div class="q-svg-wrap" *ngIf="q.svgContent && !isPhysics()" [innerHTML]="renderSvg(q.svgContent)"></div>
+
           <!-- Fórmula LaTeX (Matemáticas) -->
           <div class="q-formula" *ngIf="q.formula_latex"
             [innerHTML]="renderLatex(q.formula_latex)">
@@ -92,6 +112,9 @@ import { ToastService } from '../../core/services/toast.service';
           <div class="options-grid">
             <button *ngFor="let key of optionKeys"
               class="option-btn"
+              tabindex="0"
+              (keydown.enter)="!showFeedback() && selectAnswer(q.id, key)"
+              (keydown.space)="!showFeedback() && selectAnswer(q.id, key); $event.preventDefault()"
               [class.selected]="answers().get(q.id) === key && !showFeedback()"
               [class.correct]="showFeedback() && key === q.respuesta_correcta"
               [class.wrong]="showFeedback() && answers().get(q.id) === key && key !== q.respuesta_correcta"
@@ -378,6 +401,8 @@ import { ToastService } from '../../core/services/toast.service';
 
     .q-image-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); }
     .q-image { max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; }
+    .q-svg-wrap { margin: 0 0 1.5rem; text-align: center; background: #f8f9fa; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: center; }
+    .q-svg-wrap svg { max-width: 100%; height: auto; max-height: 320px; }
 
     /* PREAMBULO */
     .q-preambulo { display: flex; gap: 0.8rem; padding: 1.25rem; margin: 0 0 1.5rem; background: rgba(133,92,214,0.04); border-radius: 12px; border-left: 4px solid rgba(133,92,214,0.4); }
@@ -447,6 +472,25 @@ import { ToastService } from '../../core/services/toast.service';
     .btn-voice:hover { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(133,92,214,0.2); }
     .btn-stop { background: #fff; border-color: rgba(239,68,68,0.3); color: #ef4444; }
     .btn-stop:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+    /* A11Y MINI PANEL (Biology) */
+    .a11y-mini-panel-container { margin-bottom: 1rem; display: flex; flex-direction: column; align-items: flex-start; }
+    .btn-a11y-toggle { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.35rem 0.65rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-a11y-toggle:hover { background: rgba(133,92,214,0.15); }
+    .btn-a11y-toggle .arrow { font-size: 0.6rem; transition: transform 0.2s; }
+    .btn-a11y-toggle .arrow.open { transform: rotate(180deg); }
+    
+    .a11y-mini-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.05); border-radius: 8px; padding: 0; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; border: 0px solid rgba(133,92,214,0.15); }
+    .a11y-mini-panel.open { max-height: 100px; opacity: 1; padding: 0.65rem 0.85rem; border-width: 1px; margin-top: 0.5rem; }
+    .a11y-shortcut { font-size: 0.75rem; color: var(--text-secondary); background: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05); }
+    .a11y-shortcut b { color: var(--text-primary); font-family: monospace; }
+
+    /* FOCUS ACCESSIBILITY */
+    .option-btn:focus-visible, .btn-check:focus-visible, .btn-next:focus-visible, .btn-finish:focus-visible, .btn-secondary:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(133,92,214,0.4) !important;
+      border-color: var(--accent-primary) !important;
+    }
 
     /* MODAL EXIT */
     .modal-overlay { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); animation: fadeOverlay 0.2s ease; }
@@ -553,11 +597,17 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   voiceMenuOpen = false;
+  shortcutsMenuOpen = false;
   showExitConfirm = false;
   showGameOver = false;
   gameOverReason = signal('');
 
   materiaId = computed(() => this.seccion()?.materiaId || '');
+
+  isBiology = computed(() => {
+    const id = this.materiaId().toLowerCase();
+    return id.includes('biologia');
+  });
 
   isPhysics = computed(() => {
     const id = this.materiaId().toLowerCase();
@@ -656,8 +706,22 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  constructor() {
+    this.route.paramMap.subscribe(params => {
+      this.seccionId.set(params.get('seccionId') || '');
+      this.loadState();
+    });
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      // Forzar carga asíncrona de voces inmediatamente
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }
+
   ngOnInit() {
-    this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
     this.loadTest();
   }
 
@@ -743,7 +807,12 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     
     const key = event.key.toLowerCase();
     
-    if (!this.isMathModule()) {
+    // Audio controls for Biology and Physics
+    if (this.isBiology() || this.isPhysics()) {
+      if (key === 'p') this.readQuestion();
+      if (key === 'o') this.readOptions();
+      if (key === 'i') this.stopReading();
+    } else if (!this.isMathModule()) {
       if (key === '1') this.readContext();
       if (key === '2') this.readQuestion();
       if (key === '3') this.readOptions();
@@ -751,10 +820,12 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       if (key === '4' || key === 'escape' || key === 's') this.stopReading();
     }
 
-    // Siguiente pregunta con espacio
+    // Comprobar / Siguiente pregunta con espacio
     if (key === ' ' || key === 'spacebar') {
-      if (this.showFeedback()) {
-        event.preventDefault(); // Evitar scroll
+      event.preventDefault(); // Evitar scroll
+      if (!this.showFeedback() && this.hasCurrentAnswer()) {
+        this.checkAnswer();
+      } else if (this.showFeedback()) {
         if (!this.isLastQuestion()) {
           this.nextQuestion();
         } else {
@@ -763,11 +834,14 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       }
     }
 
-    // =========================================================================
-    // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO COMMENT OR REMOVE LATER)
-    // =========================================================================
-    // Seleccionar alternativa: Z -> A, X -> B, C -> C, V -> D
+    // Seleccionar alternativa: 1 -> A, 2 -> B, 3 -> C, 4 -> D (Sólo Biología o Física)
     if (!this.showFeedback()) {
+      if (key === '1' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('A');
+      if (key === '2' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('B');
+      if (key === '3' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('C');
+      if (key === '4' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('D');
+      
+      // Fallback para otros que usaban z, x, c, v
       if (key === 'z') this.selectAnswerForCurrent('A');
       if (key === 'x') this.selectAnswerForCurrent('B');
       if (key === 'c') this.selectAnswerForCurrent('C');
@@ -813,10 +887,11 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   private getBestVoice(): SpeechSynthesisVoice | null {
     const voices = window.speechSynthesis.getVoices();
-    // Prefer Google's neural Spanish voices (Android/Chrome)
-    let voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
+    // Prefer natural/neural Spanish voices
+    let voice = voices.find(v => v.name.toLowerCase().includes('natural') && v.lang.startsWith('es'));
+    if (!voice) voice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('es'));
     // Fallback to Microsoft voices (Windows)
-    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo')));
+    if (!voice) voice = voices.find(v => v.name.includes('Microsoft') && (v.name.includes('Helena') || v.name.includes('Laura') || v.name.includes('Pablo') || v.name.includes('Sabina')));
     // Fallback to any Spanish voice
     if (!voice) voice = voices.find(v => v.lang.startsWith('es-') || v.lang === 'es');
     return voice || null;
@@ -950,18 +1025,21 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   nextQuestion() {
     this.showFeedback.set(false);
+    this.shortcutsMenuOpen = false;
     this.currentIndex.update(v => v + 1);
     this.saveState();
   }
 
   prevQuestion() {
     if (this.currentIndex() > 0 && !this.showFeedback()) {
+      this.shortcutsMenuOpen = false;
       this.currentIndex.update(v => v - 1);
       this.saveState();
     }
   }
 
   goToQuestion(index: number) {
+    this.shortcutsMenuOpen = false;
     this.currentIndex.set(index);
     this.saveState();
   }

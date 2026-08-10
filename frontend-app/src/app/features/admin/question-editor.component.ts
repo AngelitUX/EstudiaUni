@@ -431,9 +431,27 @@ import { KatexService } from '../../core/services/katex.service';
     .pv-option.correct .pv-letter { background: rgba(88,204,2,0.15); color: #3d8c00; }
     .pv-opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
 
+    @media (max-width: 1024px) {
+      .editor-page { padding: 1.5rem; }
+    }
     @media (max-width: 900px) {
       .editor-grid { grid-template-columns: 1fr; }
       .preview-section { position: static; }
+    }
+    @media (max-width: 768px) {
+      .editor-page { padding: 1.25rem; }
+      .editor-header { flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
+      .editor-header h1 { font-size: 1.6rem; }
+      .form-section { padding: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .editor-page { padding: 1rem; }
+      .editor-header h1 { font-size: 1.35rem; }
+      .form-section { padding: 1.1rem; }
+      .form-actions { flex-direction: column-reverse; }
+      .btn-cancel, .btn-save { width: 100%; text-align: center; }
+      .radio-group { gap: 0.5rem; }
+      .radio-label { padding: 0.6rem 0.9rem; font-size: 0.85rem; }
     }
   `]
 })
@@ -468,7 +486,7 @@ export class QuestionEditorComponent implements OnInit {
     enunciado: string;
     formula_latex: string;
     tipo_alternativas: 'texto' | 'imagen';
-    alternativas: { A: string; B: string; C: string; D: string };
+    alternativas: { A: string; B: string; C?: string; D?: string };
     respuesta_correcta: 'A' | 'B' | 'C' | 'D';
     feedback_acierto: string;
     feedback_error: string;
@@ -501,7 +519,12 @@ export class QuestionEditorComponent implements OnInit {
           enunciado: pregunta.enunciado,
           formula_latex: pregunta.formula_latex || '',
           tipo_alternativas: pregunta.tipo_alternativas,
-          alternativas: { ...pregunta.alternativas },
+          alternativas: {
+            A: pregunta.alternativas?.A || '',
+            B: pregunta.alternativas?.B || '',
+            C: pregunta.alternativas?.C || '',
+            D: pregunta.alternativas?.D || '',
+          },
           respuesta_correcta: pregunta.respuesta_correcta,
           feedback_acierto: pregunta.feedback_acierto,
           feedback_error: pregunta.feedback_error,
@@ -515,10 +538,10 @@ export class QuestionEditorComponent implements OnInit {
       this.form.materiaId &&
       this.form.tema.trim() &&
       this.form.enunciado.trim() &&
-      this.form.alternativas.A.trim() &&
-      this.form.alternativas.B.trim() &&
-      this.form.alternativas.C.trim() &&
-      this.form.alternativas.D.trim() &&
+      this.form.alternativas.A?.trim() &&
+      this.form.alternativas.B?.trim() &&
+      (this.form.alternativas.C === undefined || this.form.alternativas.C.trim()) &&
+      (this.form.alternativas.D === undefined || this.form.alternativas.D.trim()) &&
       this.form.feedback_acierto.trim() &&
       this.form.feedback_error.trim()
     );
