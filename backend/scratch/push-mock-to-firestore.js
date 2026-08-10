@@ -44,8 +44,12 @@ async function run() {
   // 1. Subir Materias
   console.log('\n🌱 Subiendo materias a "lp_materias"...');
   for (const mat of materias) {
-    await db.collection('lp_materias').doc(mat.id).set(mat);
-    console.log(`   ✅ Materia subida: ${mat.title} (${mat.id})`);
+    if (mat.id === 'mat1' || mat.id === 'mat2') {
+      await db.collection('lp_materias').doc(mat.id).set(mat);
+      console.log(`   ✅ Materia subida: ${mat.title} (${mat.id})`);
+    } else {
+      console.log(`   ⚠️ Ignorando materia no matemática: ${mat.title} (${mat.id})`);
+    }
   }
 
   // 2. Subir Capítulos, Secciones y Tests
@@ -54,6 +58,10 @@ async function run() {
   const testsRef = db.collection('lp_tests');
 
   for (const cap of capitulos) {
+    if (cap.materiaId !== 'mat1' && cap.materiaId !== 'mat2') {
+      console.log(`   ⚠️ Ignorando capítulo de otra materia: ${cap.title} (${cap.materiaId})`);
+      continue;
+    }
     const { secciones, ...capituloData } = cap;
 
     // Subir Capítulo

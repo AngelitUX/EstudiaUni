@@ -41,6 +41,9 @@ importers:
       '@types/marked':
         specifier: ^5.0.2
         version: 5.0.2
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       driver.js:
         specifier: ^1.4.0
         version: 1.6.0
@@ -71,7 +74,7 @@ importers:
     devDependencies:
       '@angular-devkit/build-angular':
         specifier: ^18.2.21
-        version: 18.2.21(@angular/compiler-cli@18.2.14(@angular/compiler@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10)))(typescript@5.5.4))(@types/node@26.1.1)(chokidar@3.6.0)(karma@6.4.4)(typescript@5.5.4)
+        version: 18.2.21(@angular/compiler-cli@18.2.14(@angular/compiler@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10)))(typescript@5.5.4))(@types/node@26.1.1)(chokidar@3.6.0)(karma@6.4.4(debug@4.4.3))(typescript@5.5.4)
       '@angular/cli':
         specifier: ^18.2.21
         version: 18.2.21(chokidar@3.6.0)
@@ -89,7 +92,7 @@ importers:
         version: 5.2.0
       karma:
         specifier: ~6.4.0
-        version: 6.4.4
+        version: 6.4.4(debug@4.4.3)
       karma-chrome-launcher:
         specifier: ~3.2.0
         version: 3.2.0
@@ -98,10 +101,10 @@ importers:
         version: 2.2.1
       karma-jasmine:
         specifier: ~5.1.0
-        version: 5.1.0(karma@6.4.4)
+        version: 5.1.0(karma@6.4.4(debug@4.4.3))
       karma-jasmine-html-reporter:
         specifier: ~2.1.0
-        version: 2.1.0(jasmine-core@5.2.0)(karma-jasmine@5.1.0(karma@6.4.4))(karma@6.4.4)
+        version: 2.1.0(jasmine-core@5.2.0)(karma-jasmine@5.1.0(karma@6.4.4(debug@4.4.3)))(karma@6.4.4(debug@4.4.3))
       typescript:
         specifier: ~5.5.2
         version: 5.5.4
@@ -2575,6 +2578,10 @@ packages:
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+    engines: {node: '>=12'}
+
   driver.js@1.6.0:
     resolution: {integrity: sha512-gryo9QS7AZhz8J0bmdf42dwaTzcd1BgSJLnaSM7cPJbu8bTW8wIEuiGDy4MoCvB4Sr8wA9g5o2G9EFNVYZGeVQ==}
 
@@ -4828,7 +4835,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@angular-devkit/build-angular@18.2.21(@angular/compiler-cli@18.2.14(@angular/compiler@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10)))(typescript@5.5.4))(@types/node@26.1.1)(chokidar@3.6.0)(karma@6.4.4)(typescript@5.5.4)':
+  '@angular-devkit/build-angular@18.2.21(@angular/compiler-cli@18.2.14(@angular/compiler@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10)))(typescript@5.5.4))(@types/node@26.1.1)(chokidar@3.6.0)(karma@6.4.4(debug@4.4.3))(typescript@5.5.4)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@angular-devkit/architect': 0.1802.21(chokidar@3.6.0)
@@ -4894,7 +4901,7 @@ snapshots:
       webpack-subresource-integrity: 5.1.0(webpack@5.94.0(esbuild@0.23.0)(postcss@8.4.41))
     optionalDependencies:
       esbuild: 0.23.0
-      karma: 6.4.4
+      karma: 6.4.4(debug@4.4.3)
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@rspack/core'
@@ -7641,6 +7648,8 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
+  dotenv@17.4.2: {}
+
   driver.js@1.6.0: {}
 
   dunder-proto@1.0.1:
@@ -8457,22 +8466,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  karma-jasmine-html-reporter@2.1.0(jasmine-core@5.2.0)(karma-jasmine@5.1.0(karma@6.4.4))(karma@6.4.4):
+  karma-jasmine-html-reporter@2.1.0(jasmine-core@5.2.0)(karma-jasmine@5.1.0(karma@6.4.4(debug@4.4.3)))(karma@6.4.4(debug@4.4.3)):
     dependencies:
       jasmine-core: 5.2.0
-      karma: 6.4.4
-      karma-jasmine: 5.1.0(karma@6.4.4)
+      karma: 6.4.4(debug@4.4.3)
+      karma-jasmine: 5.1.0(karma@6.4.4(debug@4.4.3))
 
-  karma-jasmine@5.1.0(karma@6.4.4):
+  karma-jasmine@5.1.0(karma@6.4.4(debug@4.4.3)):
     dependencies:
       jasmine-core: 4.6.1
-      karma: 6.4.4
+      karma: 6.4.4(debug@4.4.3)
 
   karma-source-map-support@1.4.0:
     dependencies:
       source-map-support: 0.5.21
 
-  karma@6.4.4:
+  karma@6.4.4(debug@4.4.3):
     dependencies:
       '@colors/colors': 1.5.0
       body-parser: 1.20.6
