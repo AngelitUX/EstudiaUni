@@ -542,6 +542,111 @@ type PathItem = {
           </div>
 
           <!-- ================= M1 SIMULATORS CONTENT ================= -->
+    <ng-container *ngIf="isMathRoute()">
+      <!-- Tab trigger button -->
+      <button class="sim-tab-trigger" (click)="toggleSimPanel()" [class.panel-open]="simPanelOpen" [class.expanded]="simExpanded">
+        <span class="sim-tab-icon">📐</span>
+        <span class="sim-tab-label">Simulador M1/M2</span>
+        <span class="sim-tab-arrow">{{ simPanelOpen ? '▶' : '◀' }}</span>
+      </button>
+
+      <!-- Simulator Drawer -->
+      <div class="sim-drawer" [class.open]="simPanelOpen" [class.expanded]="simExpanded">
+        <div class="sim-drawer-inner">
+          <div class="sim-header">
+            <div class="sim-header-left">
+              <span class="sim-header-icon">📐</span>
+              <div>
+                <h3 class="sim-title">Simuladores de Matemáticas {{ isM1Route() ? 'M1' : 'M2' }}</h3>
+              </div>
+            </div>
+            <div class="sim-header-actions">
+              <button class="sim-expand-btn" (click)="toggleSimExpand()">
+                {{ simExpanded ? '↙ Reducir' : '↗ Ampliar' }}
+              </button>
+              <button class="sim-close-btn" (click)="toggleSimPanel()">✕</button>
+            </div>
+          </div>
+
+          <div style="font-size: 0.85rem; color: #4b5563; text-align: center; margin-bottom: 1rem; padding: 0.6rem; background: rgba(0,0,0,0.04); border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 500; border: 1px solid rgba(0,0,0,0.05);">
+            💡 <span>Si no visualizas bien la simulación, usa el botón <strong>↗ Ampliar</strong> de arriba.</span>
+          </div>
+          
+          <div class="sim-chapter-groups">
+            <!-- M1 Select -->
+            <select class="sim-chapter-select" *ngIf="isM1Route()" (change)="setSimChapter($event)">
+              <option value="0" [selected]="selectedSimChapterIndex === 0">Eje: Números</option>
+              <option value="1" [selected]="selectedSimChapterIndex === 1">Eje: Álgebra y Funciones</option>
+              <option value="2" [selected]="selectedSimChapterIndex === 2">Eje: Geometría</option>
+              <option value="3" [selected]="selectedSimChapterIndex === 3">Eje: Probabilidad y Estadística</option>
+            </select>
+
+            <!-- M2 Select -->
+            <select class="sim-chapter-select" *ngIf="isM2Route()" (change)="setSimChapter($event)">
+              <option value="0" [selected]="selectedSimChapterIndex === 0">Eje: Números (M2)</option>
+              <option value="1" [selected]="selectedSimChapterIndex === 1">Eje: Álgebra y Funciones (M2)</option>
+              <option value="2" [selected]="selectedSimChapterIndex === 2">Eje: Geometría (M2)</option>
+              <option value="3" [selected]="selectedSimChapterIndex === 3">Eje: Probabilidad y Estadística (M2)</option>
+            </select>
+            
+            <!-- M1 Tabs -->
+            <ng-container *ngIf="isM1Route()">
+              <!-- EJE 1: Números -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
+                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">📊 Porcentajes</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">🌳 Potencias y Crecimiento</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'rational-line'" (click)="setSimTab('rational-line')">📍 Recta Racional</button>
+              </div>
+              <!-- EJE 2: Álgebra -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
+                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">📈 F. Lineal y Afín</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">📉 F. Cuadrática</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">🧮 Graficador Libre</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'equation-balance'" (click)="setSimTab('equation-balance')">⚖️ Balanza de Ecuaciones</button>
+              </div>
+              <!-- EJE 3: Geometría -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
+                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">📐 T. de Pitágoras</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">🔄 Transf. Isométricas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'thales-theorem'" (click)="setSimTab('thales-theorem')">🌿 Teorema de Thales</button>
+              </div>
+              <!-- EJE 4: Estadística -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
+                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">🎲 Tirada de Dados</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'multigraph'" (click)="setSimTab('multigraph')">📊 Multigráfico</button>
+              </div>
+            </ng-container>
+
+            <!-- M2 Tabs -->
+            <ng-container *ngIf="isM2Route()">
+              <!-- EJE 1: Números (M2) -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">💰 Int. Compuesto y Continuo</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'log-exponential-m2'" (click)="setSimTab('log-exponential-m2')">🪵 Relación Log-Exponencial</button>
+              </div>
+              <!-- EJE 2: Álgebra (M2) -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
+                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">🔗 Sistemas 2x2</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'sinusoidal'" (click)="setSimTab('sinusoidal')">〜 Ondas Trigonométricas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'inverse-symmetry-m2'" (click)="setSimTab('inverse-symmetry-m2')">🪞 Simetría Inversa</button>
+              </div>
+              <!-- EJE 3: Geometría (M2) -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">🎯 Homotecia Dinámica</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">⭕ Ángulos y Cuerdas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'trig-circle-m2'" (click)="setSimTab('trig-circle-m2')">⭕ Círculo Unitario</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'sphere-volume-m2'" (click)="setSimTab('sphere-volume-m2')">🔮 Esfera: Área y Vol.</button>
+              </div>
+              <!-- EJE 4: Estadística (M2) -->
+              <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
+                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">🔔 Campana de Gauss</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'combinatorics-m2'" (click)="setSimTab('combinatorics-m2')">🔀 Combinatoria</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'binomial-distribution-m2'" (click)="setSimTab('binomial-distribution-m2')">📈 Dist. Binomial</button>
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- ================= M1 SIMULATORS CONTENT ================= -->
           <ng-container *ngIf="isM1Route()">
             <!-- ═══ 1.1 PERCENTAGE SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'percentage'">
@@ -1136,6 +1241,7 @@ type PathItem = {
 
 
 
+
     <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
       <div class="modal-container glass logout-confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -1714,11 +1820,18 @@ type PathItem = {
       margin-top: 0.35rem;
     }
     .sim-chapter-groups .sim-tabs {
-      margin-bottom: 0.1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+      background: rgba(0,0,0,0.04);
+      border-radius: 12px;
+      padding: 0.35rem;
     }
 
     .sim-tabs {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.4rem;
       margin-bottom: 1rem;
       background: rgba(0,0,0,0.04);
@@ -1726,11 +1839,11 @@ type PathItem = {
       padding: 0.35rem;
     }
     .sim-tab {
-      flex: 1;
+      flex: 1 1 auto;
       background: transparent;
       border: none;
       color: var(--text-secondary);
-      padding: 0.5rem 0.25rem;
+      padding: 0.5rem 0.65rem;
       border-radius: 8px;
       font-size: 0.72rem;
       font-weight: 700;
@@ -1770,9 +1883,10 @@ type PathItem = {
     .sim-controls { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1rem; }
     .sim-control-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 0.75rem;
+      gap: 0.5rem;
     }
     .sim-control-row label {
       font-size: 0.78rem;
@@ -2297,12 +2411,12 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     }
 
     const textX = startX + gridSz + (this.simExpanded ? 40 : 20);
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#00f0ff';
     ctx.font = this.simExpanded ? 'bold 24px sans-serif' : 'bold 16px sans-serif';
     ctx.fillText(`${this.simPercentage}% Representado`, textX, h / 2 - 20);
 
     ctx.font = this.simExpanded ? '18px monospace' : '13px monospace';
-    ctx.fillStyle = '#4b5563';
+    ctx.fillStyle = '#93c5fd';
     ctx.fillText(`Fracción: ${this.getPercentageFraction()}`, textX, h / 2 + 10);
     ctx.fillText(`Decimal: ${(this.simPercentage / 100).toFixed(2)}`, textX, h / 2 + 35);
   }
@@ -2368,7 +2482,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid and axis numbers
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -2402,7 +2516,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
 
     // Label axes
-    ctx.fillStyle = '#374151';
+    ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText('X', w - 10, originY - 10);
@@ -2458,7 +2572,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid and axis numbers
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -2492,7 +2606,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
 
     // Label axes
-    ctx.fillStyle = '#374151';
+    ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText('X', w - 10, originY - 10);
@@ -2583,7 +2697,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid and axis numbers
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -2617,7 +2731,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
 
     // Label axes
-    ctx.fillStyle = '#374151';
+    ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText('X', w - 10, originY - 10);
@@ -2693,7 +2807,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = '#f3f4f6';
-    ctx.strokeStyle = '#111827';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(cornerX, cornerY);
@@ -2702,7 +2816,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.closePath();
     ctx.fill(); ctx.stroke();
 
-    ctx.strokeStyle = '#111827';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 1;
     ctx.strokeRect(cornerX, cornerY - 8, 8, 8);
   }
@@ -2840,7 +2954,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
       ctx.fillStyle = '#8b5cf6';
       ctx.fillRect(x, y, barW - 8, Math.min(barH, chartH));
 
-      ctx.fillStyle = '#111827';
+      ctx.fillStyle = '#00f0ff';
       ctx.font = 'bold 11px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(`${i + minVal}`, x + barW / 2 - 4, startY + 15);
@@ -2876,7 +2990,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -2957,7 +3071,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid and axis numbers
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -3043,7 +3157,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Grid and radians labels
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -3129,7 +3243,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid and axis numbers
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -3171,7 +3285,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.beginPath();
     ctx.arc(originX + ox * scale, originY - oy * scale, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillStyle = '#374151';
+    ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 10px sans-serif';
     ctx.fillText(' O', originX + ox * scale + 5, originY - oy * scale);
 
@@ -3236,7 +3350,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const radius = this.simExpanded ? 110 : 55;
 
     // Draw main circle
-    ctx.strokeStyle = '#1f2937';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
@@ -3271,7 +3385,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
       ctx.stroke();
 
       // Mark center C
-      ctx.fillStyle = '#1f2937';
+      ctx.fillStyle = '#00f0ff';
       ctx.beginPath(); ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI); ctx.fill();
     } else {
       // Chords mode crossing at P
@@ -3429,7 +3543,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     // Draw grid
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '10px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -3453,12 +3567,12 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     }
 
     // Main line
-    ctx.strokeStyle = '#1f2937';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.moveTo(originX - 3.2 * scaleX, originY); ctx.lineTo(originX + 3.2 * scaleX, originY); ctx.stroke();
 
     // Arrows at ends
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#00f0ff';
     ctx.beginPath();
     ctx.moveTo(originX - 3.2 * scaleX, originY);
     ctx.lineTo(originX - 3.2 * scaleX + 8, originY - 5);
@@ -3487,7 +3601,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.beginPath(); ctx.arc(targetX, originY, 6, 0, 2 * Math.PI); ctx.fill();
 
     // Label of fractional value above the point
-    ctx.fillStyle = '#b91c1c';
+    ctx.fillStyle = '#ef4444';
     ctx.font = 'bold 12px sans-serif';
     ctx.fillText(`${num}/${den}`, targetX, originY - 45);
   }
@@ -3511,14 +3625,14 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const tilt = Math.max(-maxTilt, Math.min(maxTilt, diff * 0.05));
 
     // Stand base
-    ctx.strokeStyle = '#4b5563';
+    ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx, h - 20);
     ctx.stroke();
 
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#00f0ff';
     ctx.beginPath();
     ctx.moveTo(cx - 30, h - 20);
     ctx.lineTo(cx + 30, h - 20);
@@ -3532,7 +3646,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const rx = cx + armL * Math.cos(tilt);
     const ry = cy + armL * Math.sin(tilt);
 
-    ctx.strokeStyle = '#374151';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(rx, ry); ctx.stroke();
 
@@ -3554,7 +3668,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
 
       // Pan dish
       ctx.fillStyle = '#9ca3af';
-      ctx.strokeStyle = '#4b5563';
+      ctx.strokeStyle = '#64748b';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(px - 40, py + 55);
@@ -3615,7 +3729,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.stroke();
 
     // Labels for lines
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '9px monospace';
     ctx.fillText('L1', 15, y1 - 5);
     ctx.fillText('L2', 15, y2 - 5);
@@ -3633,7 +3747,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const bx2 = bx1 + (bx3 - bx1) * (this.simThalesL2 / 100);
 
     // Draw transversal lines
-    ctx.strokeStyle = '#4b5563';
+    ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(ax1 - (ax3 - ax1) * 0.2, y1 - (y3 - y1) * 0.2);
@@ -3660,7 +3774,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const drawDotAndText = (x: number, y: number, label: string) => {
       ctx.fillStyle = '#ef4444';
       ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill();
-      ctx.fillStyle = '#111827';
+      ctx.fillStyle = '#00f0ff';
       ctx.font = 'bold 10px sans-serif';
       ctx.fillText(label, x + 8, y + 3);
     };
@@ -3711,7 +3825,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
       ctx.fillRect(x, y, barW - 10, hBar);
 
       // Label at bottom
-      ctx.fillStyle = '#4b5563';
+      ctx.fillStyle = '#93c5fd';
       ctx.font = '9px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(label, x + (barW - 10) / 2, startY + 12);
@@ -3789,11 +3903,11 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.textAlign = 'center';
     ctx.fillText('Forma Exponencial', w * 0.04 + cardW / 2, padY + 22);
 
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 24px monospace';
     ctx.fillText(`${b}^${y} = ${x < 1 ? x.toFixed(2) : x}`, w * 0.04 + cardW / 2, padY + cardH / 2 + 5);
 
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '10px sans-serif';
     ctx.fillText(`Base: ${b} | Exp: ${y}`, w * 0.04 + cardW / 2, padY + cardH - 15);
 
@@ -3807,11 +3921,11 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.font = 'bold 13px sans-serif';
     ctx.fillText('Forma Logarítmica', w * 0.52 + cardW / 2, padY + 22);
 
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 21px monospace';
     ctx.fillText(`log_${b}(${x < 1 ? x.toFixed(2) : x}) = ${y}`, w * 0.52 + cardW / 2, padY + cardH / 2 + 5);
 
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '10px sans-serif';
     ctx.fillText(`Base: ${b} | Arg: ${x < 1 ? x.toFixed(2) : x}`, w * 0.52 + cardW / 2, padY + cardH - 15);
   }
@@ -3888,7 +4002,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.fillText(`y = ${b}^x`, cx + 2 * scale, cy - Math.pow(b, 2) * scale - 5);
     ctx.fillStyle = '#8b5cf6';
     ctx.fillText(`y = log_${b}(x)`, cx + 3.2 * scale, cy - (Math.log(3.2) / Math.log(b)) * scale - 12);
-    ctx.fillStyle = '#4b5563';
+    ctx.fillStyle = '#93c5fd';
     ctx.fillText('y = x', cx + 3.5 * scale, cy - 3.5 * scale - 5);
 
     // Draw symmetrical point pair (1, b) and (b, 1)
@@ -3937,7 +4051,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     const py = cy - R * Math.sin(rad);
 
     // Radio vector
-    ctx.strokeStyle = '#1f2937';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
 
@@ -4022,7 +4136,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.arc(radX, radY, 4, 0, 2 * Math.PI); ctx.fill();
 
     // Label 'r'
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 11px sans-serif';
     ctx.fillText('r', (cx + radX)/2, (cy + radY)/2 - 5);
   }
@@ -4056,11 +4170,11 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     }
 
     // Write details of combinations on canvas
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 14px monospace';
     ctx.fillText(`Elementos: {${elements.join(', ')}}`, w / 2, h * 0.6);
 
-    ctx.fillStyle = '#4b5563';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '11px sans-serif';
     if (this.simM2CombMode === 'permutation') {
       ctx.fillText(`Permutaciones de ${n} elementos (Se ordenan todos):`, w / 2, h * 0.75);
@@ -4138,7 +4252,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
     ctx.strokeStyle = '#2563eb';
     ctx.lineWidth = 1;
 
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
 
@@ -4152,7 +4266,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
       ctx.strokeStyle = '#2563eb';
       ctx.strokeRect(x, y, barW - 4, hBar);
 
-      ctx.fillStyle = '#374151';
+      ctx.fillStyle = '#e2e8f0';
       ctx.fillText(k.toString(), x + (barW - 4)/2, startY + 12);
     }
 
