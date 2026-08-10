@@ -166,8 +166,8 @@ export class DashboardService {
 
     // 3. If user has been doing lessons, recommend an ensayo
     if (activities.filter(a => a.type === 'leccion').length >= 3) {
-      const paesRecords = this._paesRecords();
-      if (paesRecords.length === 0) {
+      const best = this.bestPaesRecord();
+      if (!best) {
         recs.push({
           icon: '📝',
           title: 'Realiza tu primer Ensayo PAES',
@@ -181,7 +181,7 @@ export class DashboardService {
         recs.push({
           icon: '🏆',
           title: 'Supera tu puntaje récord',
-          description: `Tu mejor ensayo tuvo ${this.bestPaesRecord()?.correctAnswers}/${this.bestPaesRecord()?.totalQuestions} correctas. ¡Intenta superarte!`,
+          description: `Tu mejor ensayo tuvo ${best.correctAnswers}/${best.totalQuestions} correctas. ¡Intenta superarte!`,
           estimatedTime: '2h 20min',
           difficulty: 'Desafío',
           routerLink: '/ensayos',

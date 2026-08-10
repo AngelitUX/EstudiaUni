@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
+import { PaesContentService } from '../learning-path/services/paes-content.service';
 import { MateriaId } from '../learning-path/models/paes.models';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
@@ -34,24 +35,24 @@ interface MateriaOption {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-          <a class="nav-item" routerLink="/ruta"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item active" routerLink="/mini-ensayo"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item active" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
-            <span class="promo-crown">👑</span>
+            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -59,11 +60,11 @@ interface MateriaOption {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <span class="nav-icon">⚙️</span>
+            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <span class="nav-icon">🚪</span>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -83,7 +84,7 @@ interface MateriaOption {
         </a>
         <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
           <span class="profile-avatar-wrap">
-            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileMe" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px"/>
+            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileMe" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
             <ng-template #avatarMobileMe><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
           </span>
         </button>
@@ -95,19 +96,19 @@ interface MateriaOption {
             <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><span class="nav-icon">🏠</span><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><span class="nav-icon">🗺️</span><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><span class="nav-icon">📚</span><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item active" routerLink="/mini-ensayo" (click)="mobileOpen=false"><span class="nav-icon">🎯</span><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><span class="nav-icon">⚡</span><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item active" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             <div class="sidebar-section-title">HERRAMIENTAS</div>
-            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><span class="nav-icon">🎓</span><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><span class="nav-icon">🧮</span><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><span class="nav-icon">📂</span><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </nav>
           <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
-            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><span class="nav-icon">⚙️</span><span class="nav-text">Configuración</span></a>
-            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><span class="nav-icon">🚪</span><span class="nav-text">Cerrar Sesión</span></a>
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/><span class="nav-text">Configuración</span></a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/><span class="nav-text">Cerrar Sesión</span></a>
           </div>
         </div>
       </div>
@@ -132,7 +133,7 @@ interface MateriaOption {
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -156,7 +157,7 @@ interface MateriaOption {
                 class="materia-card" 
                 [class.active]="selectedMateria() === mat.id"
                 (click)="selectMateria(mat.id)">
-                <span class="mat-icon">{{ mat.icon }}</span>
+                <img [src]="mat.icon" [alt]="mat.label" class="mat-icon"/>
                 <span class="mat-label">{{ mat.label }}</span>
               </button>
             }
@@ -241,7 +242,7 @@ interface MateriaOption {
           <button class="btn-start"
                   [disabled]="!isValid() || (!isProPlan() && !adminService.isAdmin() && !dailyStatus().allowed)"
                   (click)="startMiniEnsayo()">
-            🚀 Comenzar Mini Ensayo
+            Comenzar Mini Ensayo
           </button>
         </div>
       </div>
@@ -261,7 +262,7 @@ interface MateriaOption {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <div class="confirm-icon">🚪</div>
+            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -291,7 +292,7 @@ interface MateriaOption {
     .materia-card { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.25rem; border-radius: 16px; border: 2px solid var(--glass-border); background: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.2s; }
     .materia-card:hover { border-color: rgba(133,92,214,0.4); transform: translateY(-2px); }
     .materia-card.active { border-color: var(--accent-primary); background: rgba(133,92,214,0.1); box-shadow: 0 4px 16px rgba(133,92,214,0.2); }
-    .mat-icon { font-size: 2rem; }
+    .mat-icon { width: 48px; height: 48px; object-fit: contain; }
     .mat-label { font-size: 0.9rem; font-weight: 600; text-align: center; }
     
     .btn-text-sm { background: none; border: none; color: var(--accent-primary); font-size: 0.85rem; font-weight: 600; cursor: pointer; }
@@ -341,6 +342,7 @@ interface MateriaOption {
     .modal-body { padding: 1.5rem; }
     .confirm-content { text-align: center; padding: 1rem 0; }
     .confirm-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-icon-img { width: 88px; height: 88px; object-fit: contain; }
     .confirm-content h3 { margin: 0 0 0.5rem; font-size: 1.3rem; }
     .confirm-content p { color: var(--text-secondary); margin: 0; }
     .modal-footer { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
@@ -467,6 +469,7 @@ export class MiniEnsayoSetupComponent implements OnInit {
   });
 
   private miniEnsayoSvc = inject(MiniEnsayoService);
+  private paesContent = inject(PaesContentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
@@ -475,14 +478,14 @@ export class MiniEnsayoSetupComponent implements OnInit {
   dailyStatus = signal<{ allowed: boolean; nextAvailableAt?: Date }>({ allowed: true });
 
   materias: MateriaOption[] = [
-    { id: 'competencia-lectora', label: 'Comp. Lectora', icon: '📖' },
-    { id: 'matematicas-m1', label: 'Matemáticas M1', icon: '🔢' },
-    { id: 'matematicas-m2', label: 'Matemáticas M2', icon: '📐' },
-    { id: 'ciencias-biologia', label: 'Biología', icon: '🧬' },
-    { id: 'ciencias-fisica', label: 'Física', icon: '⚛️' },
-    { id: 'ciencias-quimica', label: 'Química', icon: '🧪' },
-    { id: 'ciencias-tp', label: 'Ciencias TP', icon: '🛠️' },
-    { id: 'historia', label: 'Historia', icon: '🏛️' },
+    { id: 'competencia-lectora', label: 'Comp. Lectora', icon: 'assets/images/iconosParaElementos/P_Lenguaje.png' },
+    { id: 'matematicas-m1', label: 'Matemáticas M1', icon: 'assets/images/iconosParaElementos/P_m1.png' },
+    { id: 'matematicas-m2', label: 'Matemáticas M2', icon: 'assets/images/iconosParaElementos/P_m2.png' },
+    { id: 'ciencias-biologia', label: 'Biología', icon: 'assets/images/iconosParaElementos/P_Biologia.png' },
+    { id: 'ciencias-fisica', label: 'Física', icon: 'assets/images/iconosParaElementos/P_Fisica.png' },
+    { id: 'ciencias-quimica', label: 'Química', icon: 'assets/images/iconosParaElementos/P_Quimica.png' },
+    { id: 'ciencias-tp', label: 'Ciencias TP', icon: 'assets/images/iconosParaElementos/P_TecnicoProfesional.png' },
+    { id: 'historia', label: 'Historia', icon: 'assets/images/iconosParaElementos/P_Historia.png' },
   ];
 
   selectedMateria = signal<MateriaId | null>(null);
@@ -511,15 +514,19 @@ export class MiniEnsayoSetupComponent implements OnInit {
       this.questionCount.set(16);
     }
 
-    this.route.queryParams.subscribe(params => {
+    // El banco de preguntas se carga bajo demanda (no es parte de la carga inicial de la app)
+    this.paesContent.ensurePoolPreguntasLoaded();
+
+    this.route.queryParams.subscribe(async params => {
       if (params['mode'] === 'mejorador') {
         this.mode.set('mejorador');
-        
+
         const matId = params['materiaId'] as MateriaId;
         if (matId) {
           this.selectedMateria.set(matId);
+          await this.paesContent.ensurePoolPreguntasLoaded();
           this.availableTopics.set(this.miniEnsayoSvc.getAvailableTopics(matId));
-          
+
           if (params['topics']) {
             this.selectedTopics.set(params['topics'].split(','));
           } else {
@@ -547,8 +554,9 @@ export class MiniEnsayoSetupComponent implements OnInit {
     });
   }
 
-  selectMateria(id: MateriaId) {
+  async selectMateria(id: MateriaId) {
     this.selectedMateria.set(id);
+    await this.paesContent.ensurePoolPreguntasLoaded();
     this.availableTopics.set(this.miniEnsayoSvc.getAvailableTopics(id));
     // Check all by default if not pre-filled
     if (this.mode() !== 'mejorador') {
@@ -590,8 +598,9 @@ export class MiniEnsayoSetupComponent implements OnInit {
     this.router.navigate(['/mini-ensayo/review']);
   }
 
-  startMiniEnsayo() {
+  async startMiniEnsayo() {
     if (!this.isValid()) return;
+    await this.paesContent.ensurePoolPreguntasLoaded();
 
     if (!this.isProPlan() && !this.adminService.isAdmin()) {
       const status = this.miniEnsayoSvc.canStartToday();

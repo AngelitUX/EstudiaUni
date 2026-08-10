@@ -33,7 +33,7 @@ import { AdminService } from './services/admin.service';
             <span class="nav-text">Suscripciones y Pagos</span>
           </a>
           <a routerLink="/admin/recursos" class="nav-item">
-            <span class="nav-icon">📂</span>
+            <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
             <span class="nav-text">Recursos</span>
           </a>
           <a routerLink="/admin/bugs" class="nav-item active">
@@ -44,7 +44,7 @@ import { AdminService } from './services/admin.service';
 
         <div class="sidebar-footer" style="padding: 1.25rem 0.75rem;">
           <a class="nav-item logout-btn-sidebar" routerLink="/dashboard">
-            <span class="nav-icon">🏠</span>
+            <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
             <span class="nav-text">Dashboard</span>
           </a>
         </div>

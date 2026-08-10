@@ -15,6 +15,19 @@ const LOCAL_MATERIAS: Materia[] = [
 import { CAPITULOS } from '../data/seed-data';
 import { HISTORIA_CAPITULOS, HISTORIA_MATERIA } from '../data/seed-historia';
 
+// ─── Claves de caché local (localStorage) ───
+// IMPORTANTE: estas claves deben mantenerse ESTABLES entre despliegues.
+// Antes se les cambiaba el sufijo de versión (_v2, _v29, _v117...) cada vez que se
+// actualizaba contenido, lo que forzaba a TODOS los usuarios activos a invalidar su
+// caché y volver a consultar Firestore al mismo tiempo justo después de cada deploy.
+// Ahora la propagación de cambios de contenido se maneja solo con el TTL (30 min) y,
+// para ver cambios de inmediato en el propio panel de admin, con clearCache() /
+// clearPoolPreguntasCache() (ver más abajo). NO renombrar estas constantes.
+export const LEARNING_PATH_CACHE_KEY = 'learning_path_cache';
+export const LEARNING_PATH_CACHE_TIME_KEY = 'learning_path_cache_timestamp';
+export const POOL_PREGUNTAS_CACHE_KEY = 'pool_preguntas_cache';
+export const POOL_PREGUNTAS_CACHE_TIME_KEY = 'pool_preguntas_cache_timestamp';
+
 const LOCAL_POOL_PREGUNTAS: any[] = [
   // Competencia Lectora
   {
@@ -276,6 +289,8 @@ export class PaesContentService {
   private _poolPreguntas = signal<any[]>([]);
 
   private useMocksMode = false;
+  private poolPreguntasLoaded = false;
+  private poolPreguntasLoadingPromise: Promise<void> | null = null;
 
   // Signal para estado de carga
   loading = signal(true);
@@ -365,10 +380,17 @@ export class PaesContentService {
     }
   }
 
+  /** Invalida el caché de materias/capítulos/secciones (Ruta de Aprendizaje). */
   public clearCache(): void {
-    localStorage.removeItem('paes_content_cache_v2');
-    localStorage.removeItem('paes_content_cache_timestamp_v2');
+    localStorage.removeItem(LEARNING_PATH_CACHE_KEY);
+    localStorage.removeItem(LEARNING_PATH_CACHE_TIME_KEY);
+  }
 
+  /** Invalida el caché del banco de preguntas (Mini Ensayos / Mente Veloz). */
+  public clearPoolPreguntasCache(): void {
+    localStorage.removeItem(POOL_PREGUNTAS_CACHE_KEY);
+    localStorage.removeItem(POOL_PREGUNTAS_CACHE_TIME_KEY);
+    this.poolPreguntasLoaded = false;
   }
 
   private syncLocalChapters(capitulosList: Capitulo[]): Capitulo[] {
@@ -424,8 +446,8 @@ export class PaesContentService {
   }
 
   private async loadDataFromFirestore() {
-    const CACHE_KEY = 'learning_path_cache_v117';
-    const cacheTimeKey = 'paes_content_cache_timestamp_v117';
+    const CACHE_KEY = LEARNING_PATH_CACHE_KEY;
+    const cacheTimeKey = LEARNING_PATH_CACHE_TIME_KEY;
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
 
     try {
@@ -437,10 +459,9 @@ export class PaesContentService {
         const cachedTime = parseInt(cachedTimeRaw, 10);
         if (Date.now() - cachedTime < cacheTTL) {
           const cached = JSON.parse(cachedDataRaw);
-          if (cached.materias && cached.poolPreguntas && cached.capitulos) {
+          if (cached.materias && cached.capitulos) {
 
             this._materias.set(cached.materias);
-            this._poolPreguntas.set(cached.poolPreguntas);
             this._capitulos.set(this.syncLocalChapters(cached.capitulos));
             this.loading.set(false);
             return;
@@ -467,23 +488,13 @@ export class PaesContentService {
         ...doc.data()
       } as Materia));
 
-      // 2. Cargar el pool de preguntas completo
-      let poolSnap;
-      try {
-        poolSnap = await getDocs(collection(this.firestore, 'pool_preguntas'));
-      } catch (err) {
-        console.error('[PaesContentService] Error cargando pool_preguntas desde Firestore:', err);
-        throw err;
-      }
+      // NOTA: pool_preguntas (banco de Mini Ensayos / Mente Veloz) ya NO se carga aquí.
+      // Ningún test de la Ruta de Aprendizaje depende de esa colección (todos embeben sus
+      // propias preguntas), así que se carga bajo demanda vía ensurePoolPreguntasLoaded()
+      // solo cuando el usuario entra a Mini Ensayos o Mente Veloz.
       const poolMap = new Map<string, any>();
-      const poolArray: any[] = [];
-      poolSnap.docs.forEach(doc => {
-        const data = { id: doc.id, ...doc.data() };
-        poolMap.set(doc.id, data);
-        poolArray.push(data);
-      });
 
-      // 3. Cargar capítulos y sus secciones
+      // 2. Cargar capítulos y sus secciones
       let capitulosSnap;
       try {
         capitulosSnap = await getDocs(collection(this.firestore, 'lp_capitulos'));
@@ -633,7 +644,6 @@ export class PaesContentService {
         });
 
         const sortedMaterias = materias.sort((a, b) => a.order - b.order);
-        const finalPool = poolArray.length > 0 ? poolArray : LOCAL_POOL_PREGUNTAS;
         const sortedCapitulos = capitulos.sort((a, b) => a.order - b.order);
 
         this.applyHistoriaImageMapping(sortedCapitulos);
@@ -642,14 +652,12 @@ export class PaesContentService {
         const syncedCapitulos = this.syncLocalChapters(sortedCapitulos);
 
         this._materias.set(sortedMaterias);
-        this._poolPreguntas.set(finalPool);
         this._capitulos.set(syncedCapitulos);
 
         // Guardar en caché
         try {
           const cacheData = {
             materias: sortedMaterias,
-            poolPreguntas: finalPool,
             capitulos: syncedCapitulos
           };
           localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
@@ -668,6 +676,61 @@ export class PaesContentService {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /**
+   * Carga bajo demanda el banco de preguntas de Mini Ensayos / Mente Veloz (pool_preguntas).
+   * No se necesita para la Ruta de Aprendizaje (esos tests embeben sus propias preguntas),
+   * así que solo se pide a Firestore la primera vez que un usuario entra a esos módulos,
+   * y queda cacheada en memoria + localStorage (30 min) para el resto de la sesión.
+   */
+  async ensurePoolPreguntasLoaded(): Promise<void> {
+    if (this.poolPreguntasLoaded || this.useMocksMode) return;
+    if (this.poolPreguntasLoadingPromise) return this.poolPreguntasLoadingPromise;
+
+    this.poolPreguntasLoadingPromise = (async () => {
+      const POOL_CACHE_KEY = POOL_PREGUNTAS_CACHE_KEY;
+      const POOL_CACHE_TIME_KEY = POOL_PREGUNTAS_CACHE_TIME_KEY;
+      const cacheTTL = 30 * 60 * 1000; // 30 minutos
+
+      try {
+        const cachedRaw = localStorage.getItem(POOL_CACHE_KEY);
+        const cachedTimeRaw = localStorage.getItem(POOL_CACHE_TIME_KEY);
+        if (cachedRaw && cachedTimeRaw && Date.now() - parseInt(cachedTimeRaw, 10) < cacheTTL) {
+          const cached = JSON.parse(cachedRaw);
+          if (Array.isArray(cached) && cached.length > 0) {
+            this._poolPreguntas.set(cached);
+            this.poolPreguntasLoaded = true;
+            return;
+          }
+        }
+      } catch (cacheError) {
+        console.warn('[PaesContentService] Error leyendo caché de pool_preguntas:', cacheError);
+      }
+
+      try {
+        const poolSnap = await getDocs(collection(this.firestore, 'pool_preguntas'));
+        const poolArray = poolSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const finalPool = poolArray.length > 0 ? poolArray : LOCAL_POOL_PREGUNTAS;
+        this._poolPreguntas.set(finalPool);
+        this.poolPreguntasLoaded = true;
+
+        try {
+          localStorage.setItem(POOL_CACHE_KEY, JSON.stringify(finalPool));
+          localStorage.setItem(POOL_CACHE_TIME_KEY, Date.now().toString());
+        } catch (cacheError) {
+          console.warn('[PaesContentService] No se pudo guardar caché de pool_preguntas:', cacheError);
+        }
+      } catch (err) {
+        console.error('[PaesContentService] Error cargando pool_preguntas desde Firestore (usando fallback local):', err);
+        this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
+        this.poolPreguntasLoaded = true;
+      } finally {
+        this.poolPreguntasLoadingPromise = null;
+      }
+    })();
+
+    return this.poolPreguntasLoadingPromise;
   }
 
   private applyHistoriaImageMapping(capitulos: Capitulo[]) {
