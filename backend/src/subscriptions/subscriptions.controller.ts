@@ -8,9 +8,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
-import { WebpayService } from './webpay.service';
+import { FlowService } from './flow.service';
 import { CheckCreditsDto } from './dto/change-plan.dto';
-import { CreateWebpayTransactionDto, CommitWebpayTransactionDto, ValidateCouponDto } from './dto/webpay.dto';
+import { StartFlowRegistrationDto, ConfirmFlowSubscriptionDto, ValidateCouponDto } from './dto/flow.dto';
 import { SubmitTransferDto } from './dto/manual-payment.dto';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import {
@@ -23,7 +23,7 @@ import {
 export class SubscriptionsController {
   constructor(
     private readonly subscriptionsService: SubscriptionsService,
-    private readonly webpayService: WebpayService,
+    private readonly flowService: FlowService,
   ) {}
 
   @Get('status')
@@ -42,30 +42,40 @@ export class SubscriptionsController {
 
   // NOTE: there is intentionally no public "upgrade" endpoint here. Granting
   // premium must only ever happen after a verified payment (see
-  // WebpayService.commitTransaction) or an admin action (see
-  // SubscriptionsService.manualGrant/approveTransfer). A directly callable
-  // `POST /subscriptions/upgrade` used to exist and would grant Premium to
-  // ANY authenticated user with no payment check at all — it was removed.
+  // FlowService.confirmRegistrationAndSubscribe / handleRecurringWebhook) or
+  // an admin action (see SubscriptionsService.manualGrant/approveTransfer). A
+  // directly callable `POST /subscriptions/upgrade` used to exist and would
+  // grant Premium to ANY authenticated user with no payment check at all —
+  // it was removed.
 
   @Post('cancel')
   async cancel(@CurrentUser() user: CurrentUserData) {
-    return this.subscriptionsService.cancel(user.uid);
+    const result = await this.subscriptionsService.cancel(user.uid);
+    if (result.flowSubscriptionId) {
+      // Stop future Flow charges. Local access already keeps running until
+      // endDate regardless of whether this call succeeds, so a Flow-side
+      // failure here is logged (inside FlowService) but never surfaced as an
+      // error to the user — the cancellation they asked for did take effect.
+      await this.flowService.cancelFlowSubscription(result.flowSubscriptionId).catch(() => {});
+    }
+    return result;
   }
 
   @Post('validate-coupon')
   @HttpCode(HttpStatus.OK)
   async validateCoupon(@Body() dto: ValidateCouponDto) {
-    return this.webpayService.validateCoupon(dto.code, dto.planType);
+    return this.flowService.validateCoupon(dto.code, dto.planType);
   }
 
-  @Post('webpay/create')
+  @Post('flow/register-card')
   @HttpCode(HttpStatus.OK)
-  async createWebpayTransaction(
+  async startFlowRegistration(
     @CurrentUser() user: CurrentUserData,
-    @Body() dto: CreateWebpayTransactionDto,
+    @Body() dto: StartFlowRegistrationDto,
   ) {
-    return this.webpayService.createTransaction(
+    return this.flowService.startCardRegistration(
       user.uid,
+      user.email,
       dto.planType,
       dto.returnUrl,
       dto.targetUid,
@@ -73,13 +83,13 @@ export class SubscriptionsController {
     );
   }
 
-  @Post('webpay/commit')
+  @Post('flow/confirm')
   @HttpCode(HttpStatus.OK)
-  async commitWebpayTransaction(
+  async confirmFlowSubscription(
     @CurrentUser() user: CurrentUserData,
-    @Body() dto: CommitWebpayTransactionDto,
+    @Body() dto: ConfirmFlowSubscriptionDto,
   ) {
-    return this.webpayService.commitTransaction(user.uid, dto.token);
+    return this.flowService.confirmRegistrationAndSubscribe(user.uid, dto.token);
   }
 
   @Post('transfer/submit')

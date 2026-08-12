@@ -128,57 +128,59 @@ import { PaymentService } from '../../core/services/payment.service';
               Ensaya como en la prueba real. Nuestra IA detecta tus errores, te explica cada respuesta y crea un plan de estudio personalizado para mejorar tu puntaje.
             </p>
             
-            <div class="hero-actions">
-              <ng-container *ngIf="!isLoggedIn(); else heroLoggedIn">
-                <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/register')">
-                  🚀 Comenzar Gratis
-                </button>
-                <button class="btn btn-outline btn-large" (click)="goTo('/login')">
-                  Iniciar Sesión →
-                </button>
-              </ng-container>
-              <ng-template #heroLoggedIn>
-                <button class="btn btn-primary btn-large btn-glow" (click)="goTo('/dashboard')">
-                  ⚡ Ir a mi Dashboard
-                </button>
-              </ng-template>
+            <div class="hero-cta-group">
+              <!-- COMPACT SOCIAL PROOF ROW (only shown for logged-out visitors, above the CTA buttons) -->
+              <div class="hero-social-proof" *ngIf="!isLoggedIn()">
+                <div class="avatar-stack">
+                  <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img src="assets/img/seccion opiniones/2.png" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                </div>
+                <div class="proof-text">
+                  <div class="star-rating">⭐⭐⭐⭐⭐</div>
+                  <span>Únete a miles de estudiantes que ya están mejorando sus puntajes con IA</span>
+                </div>
+              </div>
+
+              <div class="hero-actions">
+                <ng-container *ngIf="!isLoggedIn(); else heroLoggedIn">
+                  <button class="btn btn-primary btn-large btn-glow hero-cta-btn" (click)="goTo('/register')">
+                    Comenzar Gratis
+                  </button>
+                  <button class="btn btn-outline btn-large hero-cta-btn" (click)="goTo('/login')">
+                    Iniciar Sesión →
+                  </button>
+                </ng-container>
+                <ng-template #heroLoggedIn>
+                  <button class="btn btn-primary btn-large btn-glow hero-cta-btn" (click)="goTo('/dashboard')">
+                    Ir a mi Dashboard
+                  </button>
+                </ng-template>
+              </div>
             </div>
 
             <!-- MODERN BENEFITS BAR (Replaces stats) -->
             <div class="hero-benefits-bar">
               <div class="benefit-chip">
-                <div class="chip-icon">🎯</div>
+                <div class="chip-icon"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Adaptativo"></div>
                 <div class="chip-info">
                   <strong>Adaptativo</strong>
                   <span>La IA crea tu plan de estudio</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon">⚡</div>
+                <div class="chip-icon"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="En tiempo real"></div>
                 <div class="chip-info">
                   <strong>En tiempo real</strong>
                   <span>Explicaciones al instante mientras ensayas</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon">🛡️</div>
+                <div class="chip-icon"><img src="assets/images/iconosParaElementos/P_Logro.png" alt="100% enfocado"></div>
                 <div class="chip-info">
                   <strong>100% enfocado</strong>
                   <span>Solo contenido oficial PAES</span>
                 </div>
-              </div>
-            </div>
-
-            <!-- COMPACT SOCIAL PROOF ROW -->
-            <div class="hero-social-proof">
-              <div class="avatar-stack">
-                <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-                <img src="assets/img/seccion opiniones/2.png" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-                <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-              </div>
-              <div class="proof-text">
-                <div class="star-rating">⭐⭐⭐⭐⭐</div>
-                <span>Únete a miles de estudiantes que ya están mejorando sus puntajes con IA</span>
               </div>
             </div>
           </div>
@@ -190,7 +192,7 @@ import { PaymentService } from '../../core/services/payment.service';
               <div class="sim-card-header">
                 <div class="sim-header-left">
                   <span class="sim-badge-live"><span class="live-dot"></span> ENSAYO PAES</span>
-                  <span class="sim-subject-pill">{{ currentSimExercise.subject }}</span>
+                  <span class="sim-subject-pill" [title]="currentSimExercise.subject">{{ currentSimExercise.subject }}</span>
                 </div>
                 <div class="sim-header-right">
                   <span class="sim-timer">⏱️ {{ currentSimExercise.timer }}</span>
@@ -345,11 +347,11 @@ import { PaymentService } from '../../core/services/payment.service';
 
         <div class="features-container">
           <h2 class="section-title">¿Por qué <span class="text-gradient">EstudiaUni</span>?</h2>
-          
+
           <div class="bento-grid">
             <!-- Large Card 1 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon">🗺️</div>
+              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Rutas de Aprendizaje"></div>
               <h3>Rutas de Aprendizaje</h3>
               <p>Sigue un plan de estudio estructurado y personalizado. Avanza paso a paso dominando cada tema hasta alcanzar tu puntaje ideal.</p>
               <div class="bento-visual">
@@ -374,7 +376,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
             <!-- Large Card 2 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon">📝</div>
+              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_Lenguaje.png" alt="Ensayos PAES"></div>
               <h3>Ensayos PAES (Reales y Asistidos)</h3>
               <p>Mídete con ensayos oficiales del DEMRE. Practica en modo real con tiempo límite o en modo asistido con apoyo y feedback al instante.</p>
               <div class="bento-visual">
@@ -399,28 +401,28 @@ import { PaymentService } from '../../core/services/payment.service';
             
             <!-- Small Card 1 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon">🎯</div>
+              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Práctica Adaptativa"></div>
               <h3>Práctica Adaptativa</h3>
               <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon">📈</div>
+              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_m2.png" alt="Visualiza tu Progreso"></div>
               <h3>Visualiza tu Progreso</h3>
               <p>Mide tu avance diario e identifica áreas de mejora al instante.</p>
             </div>
             
             <!-- Small Card 3 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon">🎓</div>
+              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Explora tu Futuro"></div>
               <h3>Explora tu Futuro</h3>
               <p>Descubre universidades y carreras según tu ubicación e intereses.</p>
             </div>
 
             <!-- Small Card 4 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon">⚡</div>
+              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Acceso Inmediato"></div>
               <h3>Acceso Inmediato</h3>
               <p>Comienza gratis hoy. Sin ingresar tarjeta de crédito.</p>
             </div>
@@ -504,21 +506,40 @@ import { PaymentService } from '../../core/services/payment.service';
             
             <div class="foco-benefits">
               <div class="foco-benefit-item delay-1" (mouseenter)="onBenefitHover(0)" (mouseleave)="onBenefitLeave()">
-                <div class="benefit-icon-wrapper"><span class="benefit-icon">💡</span></div>
+                <div class="benefit-icon-wrapper">
+                  <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6"/>
+                    <path d="M10 22h4"/>
+                    <path d="M12 2a7 7 0 0 0-4.546 12.324c.61.523 1.546 1.526 1.546 2.676h6c0-1.15.936-2.153 1.546-2.676A7 7 0 0 0 12 2Z"/>
+                  </svg>
+                </div>
                 <div class="benefit-text">
                   <strong>Resuelve Dudas Al Instante:</strong> Hazle consultas sobre Álgebra o Lenguaje y te explica paso a paso, 24/7.
                 </div>
               </div>
-              
+
               <div class="foco-benefit-item delay-2" (mouseenter)="onBenefitHover(1)" (mouseleave)="onBenefitLeave()">
-                <div class="benefit-icon-wrapper"><span class="benefit-icon">🎯</span></div>
+                <div class="benefit-icon-wrapper">
+                  <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <circle cx="12" cy="12" r="5"/>
+                    <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+                  </svg>
+                </div>
                 <div class="benefit-text">
                   <strong>Identifica Puntos Débiles:</strong> Analiza tus errores y te sugiere mini-quizzes personalizados para mejorar rápido.
                 </div>
               </div>
-              
+
               <div class="foco-benefit-item delay-3" (mouseenter)="onBenefitHover(2)" (mouseleave)="onBenefitLeave()">
-                <div class="benefit-icon-wrapper"><span class="benefit-icon">🚀</span></div>
+                <div class="benefit-icon-wrapper">
+                  <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+                  </svg>
+                </div>
                 <div class="benefit-text">
                   <strong>Estrategias PAES:</strong> Obtén consejos prácticos para cada sección de la prueba y optimiza tu tiempo.
                 </div>
@@ -1292,7 +1313,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <h2>¿Listo para mejorar tu puntaje?</h2>
           <p>Únete a miles de estudiantes preparándose con EstudiaUni</p>
           <button class="btn btn-primary btn-large btn-glow" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
-            {{ isLoggedIn() ? '⚡ Ir a mi Dashboard' : 'Crear Cuenta Gratis 🎓' }}
+            {{ isLoggedIn() ? '⚡ Ir a mi Dashboard' : 'Crear Cuenta Gratis' }}
           </button>
         </div>
       </section>
@@ -1365,51 +1386,87 @@ import { PaymentService } from '../../core/services/payment.service';
             <button class="close-btn" (click)="showLegalModal = false">✕</button>
           </div>
           <div class="legal-modal-body" *ngIf="legalModalType === 'terms'">
-            <h4>Te damos la bienvenida a EstudiaUni</h4>
-            <p>El uso y acceso a nuestro sitio web implica que estás de acuerdo con la totalidad de estas normas y directrices. Te sugerimos que las leas con atención antes de empezar a estudiar con nosotros. En caso de no estar de acuerdo con algún punto, te invitamos a no hacer uso de la plataforma.</p>
+            <p class="legal-updated">Última actualización: 12 de agosto de 2026</p>
+            <p>Estos Términos de Servicio ("Términos") regulan el acceso y uso de la plataforma EstudiaUni.cl (el "Servicio"), incluyendo su sitio web, aplicaciones y cualquier funcionalidad asociada. Al crear una cuenta o utilizar el Servicio, aceptas quedar vinculado por estos Términos y por nuestra Política de Privacidad. Si no estás de acuerdo con alguna disposición, te pedimos no utilizar la plataforma.</p>
 
-            <h4>I. ¿En qué consiste nuestra plataforma?</h4>
-            <p>EstudiaUni es un entorno virtual de aprendizaje cuyo propósito es acompañar a los postulantes chilenos en su camino hacia la rendición de la PAES. Al interior de la plataforma encontrarás ensayos dinámicos, material de apoyo, métricas de rendimiento y nuestro Tutor basado en IA operativo las 24 horas del día. Toda esta oferta está estructurada como un recurso de apoyo y refuerzo, alineado con los contenidos estipulados por el DEMRE.</p>
+            <h4>I. Descripción del Servicio</h4>
+            <p>EstudiaUni es una plataforma educativa en línea orientada a apoyar la preparación de estudiantes chilenos para la Prueba de Acceso a la Educación Superior (PAES). El Servicio incluye, entre otros elementos, rutas de aprendizaje, ensayos y mini-ensayos de práctica, herramientas de seguimiento de progreso, contenido de apoyo y un tutor de inteligencia artificial ("Foco"). El contenido se elabora tomando como referencia los temarios publicados por el DEMRE, pero EstudiaUni no está afiliada, patrocinada ni respaldada por el DEMRE, el Ministerio de Educación ni ninguna universidad.</p>
 
-            <h4>II. Enfoque y propósito de nuestros materiales</h4>
-            <p>Cualquier recurso presente en EstudiaUni —incluyendo ejercicios, correcciones y las guías del asistente inteligente— cumple una función formativa y de orientación. No podemos asegurar un rendimiento determinado en la prueba oficial u otras mediciones. Por ello, instamos a nuestra comunidad a utilizar nuestros recursos como un complemento al estudio formal y a revisar las comunicaciones oficiales emitidas por las autoridades pertinentes.</p>
+            <h4>II. Elegibilidad y cuentas de usuario</h4>
+            <p>Para usar funciones que requieren registro debes proporcionar información veraz, exacta y actualizada (nombre y correo electrónico, como mínimo). Tu cuenta es personal e intransferible; eres responsable de mantener la confidencialidad de tus credenciales y de toda actividad realizada desde tu cuenta. Si eres menor de 18 años, recomendamos que uses la plataforma con el conocimiento y, cuando corresponda, la supervisión de tu padre, madre o apoderado. Nos reservamos el derecho de solicitar verificación de identidad y de suspender cuentas con información falsa o uso indebido.</p>
 
-            <h4>III. Uso de nuestro asistente virtual (Foco)</h4>
-            <p>Nuestro Tutor IA (conocido como Foco) es un complemento digital ideado para acompañarte en tu aprendizaje. A través de tecnología avanzada, busca resolver dudas y hacer más digeribles los temas de estudio. No obstante, como cualquier herramienta artificial, sus sugerencias deben interpretarse como una guía y no como verdades absolutas, siendo ideal contrastar datos clave con fuentes académicas u oficiales.</p>
+            <h4>III. Naturaleza educativa del contenido y ausencia de garantía de resultados</h4>
+            <p>Todos los recursos de EstudiaUni —ensayos, correcciones, estadísticas, rutas de aprendizaje y las respuestas del Tutor IA— tienen una finalidad formativa y de apoyo al estudio. No garantizamos un puntaje, resultado específico en la PAES ni la admisión a ninguna institución de educación superior. El desempeño depende de múltiples factores ajenos a la plataforma. Recomendamos contrastar siempre la información con las comunicaciones oficiales del DEMRE y de las instituciones educativas correspondientes.</p>
 
-            <h4>IV. Planes, cobros y facturación</h4>
-            <p>EstudiaUni cuenta con diversas modalidades de suscripción que se detallan en el portal principal. Al optar por un plan, das tu consentimiento para que se efectúen los cargos respectivos. Los ciclos de cobro son automáticos hasta que decidas anular el servicio. Todas las transacciones se manejan mediante procesadores seguros, los cuales intentarán realizar cobros nuevamente si ocurre algún error. Eventuales modificaciones en nuestras tarifas no alterarán el ciclo que ya tienes en curso.</p>
+            <h4>IV. Tutor de Inteligencia Artificial ("Foco")</h4>
+            <p>Foco es un asistente basado en modelos de inteligencia artificial de proveedores externos, diseñado para resolver dudas, explicar contenidos y sugerir planes de repaso personalizados. Las respuestas se generan de forma automatizada y, como toda herramienta de IA, pueden contener imprecisiones o errores ocasionales ("alucinaciones"). Las respuestas de Foco no constituyen asesoría profesional de ningún tipo y deben verificarse frente a fuentes académicas u oficiales antes de tomarlas como definitivas.</p>
 
-            <h4>V. Cómo dar de baja tu plan</h4>
-            <p>Tienes la libertad de detener tu suscripción en cualquier instante desde el menú de configuración de tu perfil. Al hacerlo, seguirás disfrutando de los beneficios adquiridos hasta que termine el periodo de tiempo que ya abonaste. Cabe destacar que la cancelación no conlleva la devolución del dinero por los días o meses restantes de tu ciclo actual.</p>
+            <h4>V. Planes, precios y medios de pago</h4>
+            <p>EstudiaUni ofrece un plan gratuito y uno o más planes de pago ("Plan Pro" u otros equivalentes), cuyos precios, moneda (pesos chilenos) y beneficios se detallan en la sección de precios de la plataforma. Los pagos de las suscripciones son procesados por Flow, un proveedor de pagos externo; EstudiaUni no almacena los datos completos de tu tarjeta o medio de pago. Al contratar un plan pagado, autorizas el cobro periódico (mensual o anual, según elijas) hasta que canceles tu suscripción. Los cargos se renuevan automáticamente al finalizar cada ciclo, salvo cancelación previa. Podemos modificar los precios de los planes hacia adelante, notificándolo con antelación razonable; los cambios no afectan un ciclo de facturación ya iniciado.</p>
 
-            <h4>VI. Tu perfil y responsabilidad de acceso</h4>
-            <p>Es indispensable que la información que utilices al crear tu perfil sea real y exacta. Tu cuenta es estrictamente individual e intransferible, por lo que recae en ti la obligación de mantener tus datos de ingreso en privado. EstudiaUni se reserva la facultad de bloquear o inhabilitar perfiles si se detecta un uso fraudulento o compartido de los mismos.</p>
+            <h4>VI. Cancelación y reembolsos</h4>
+            <p>Puedes cancelar tu suscripción en cualquier momento desde la configuración de tu cuenta, mediante un procedimiento tan simple como el de contratación. Al cancelar, conservarás el acceso a los beneficios del plan pagado hasta el término del período ya facturado, sin renovaciones posteriores. Salvo que la ley aplicable disponga lo contrario (por ejemplo, derecho a retracto dentro del plazo legal para compras a distancia), los pagos ya realizados no son reembolsables de forma proporcional por el tiempo no utilizado.</p>
 
-            <h4>VII. Derechos de autor y uso del material</h4>
-            <p>Absolutamente todos los recursos que conforman EstudiaUni son propiedad nuestra o de nuestros aliados y están amparados por la legislación vigente de derechos de autor. Al ser usuario, recibes un permiso individual y limitado para estudiar con este material, quedando totalmente restringida cualquier forma de copia, distribución, o explotación con motivos comerciales.</p>
+            <h4>VII. Propiedad intelectual</h4>
+            <p>El software, diseño, marca, logotipos, textos, ejercicios, ilustraciones y demás contenidos de EstudiaUni son de propiedad de EstudiaUni o de terceros licenciantes, y se encuentran protegidos por la Ley N° 17.336 sobre Propiedad Intelectual y demás normativa aplicable. Se te concede una licencia personal, limitada, no exclusiva e intransferible para acceder y utilizar el contenido exclusivamente con fines de estudio personal. Queda prohibida su reproducción, distribución, ingeniería inversa, scraping automatizado o explotación comercial sin autorización previa y escrita.</p>
 
-            <h4>VIII. Reglas de uso y alcances de nuestra responsabilidad</h4>
-            <p>Al unirte a EstudiaUni, te obligas a darle un uso puramente académico al sitio y a evitar acciones que alteren su correcto funcionamiento. El servicio se entrega "en el estado en que se encuentra" y, si bien procuramos su excelencia, no prometemos que sea infalible o ininterrumpido. No asumiremos daños colaterales que deriven de tus decisiones de estudio, y mantenemos el derecho a actualizar este reglamento cuando sea oportuno.</p>
+            <h4>VIII. Conducta del usuario y usos prohibidos</h4>
+            <p>Al usar EstudiaUni te comprometes a: (a) utilizar la plataforma únicamente con fines académicos y lícitos; (b) no compartir tu cuenta con terceros ni usar cuentas de otras personas; (c) no intentar vulnerar la seguridad del Servicio, extraer masivamente su contenido o interferir con su funcionamiento; y (d) no utilizar el Tutor IA con fines abusivos, ilegales o contrarios a estos Términos. El incumplimiento de estas reglas puede dar lugar a la suspensión o cierre de tu cuenta.</p>
+
+            <h4>IX. Disponibilidad del servicio y limitación de responsabilidad</h4>
+            <p>Nos esforzamos por mantener EstudiaUni disponible de forma continua, pero el Servicio se entrega "tal como está" y "según disponibilidad", sin garantías de funcionamiento ininterrumpido o libre de errores. En la máxima medida permitida por la ley, EstudiaUni no será responsable por daños indirectos, lucro cesante o pérdida de datos derivados del uso o la imposibilidad de uso de la plataforma. Nada en esta cláusula limita los derechos irrenunciables que la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores reconoce a los usuarios en Chile.</p>
+
+            <h4>X. Suspensión y terminación</h4>
+            <p>Podemos suspender o cerrar tu cuenta si detectamos incumplimientos graves de estos Términos, uso fraudulento, o por requerimiento legal. Tú puedes cerrar tu cuenta en cualquier momento desde tu configuración o solicitándolo a contacto.estudiauni&#64;gmail.com. Las cláusulas que por su naturaleza deban sobrevivir a la terminación (propiedad intelectual, limitación de responsabilidad, ley aplicable) seguirán vigentes.</p>
+
+            <h4>XI. Modificaciones a estos Términos</h4>
+            <p>Podemos actualizar estos Términos para reflejar cambios legales, técnicos o del Servicio. Publicaremos la versión vigente en esta misma sección indicando la fecha de última actualización; los cambios sustanciales se comunicarán por correo electrónico o mediante aviso destacado en la plataforma. El uso continuado del Servicio después de una actualización implica tu aceptación de los nuevos Términos.</p>
+
+            <h4>XII. Ley aplicable y jurisdicción</h4>
+            <p>Estos Términos se rigen por las leyes de la República de Chile. Cualquier controversia se someterá a los tribunales ordinarios de justicia competentes, sin perjuicio de las normas de protección al consumidor que permiten a los usuarios recurrir a los tribunales de su propio domicilio.</p>
+
+            <h4>XIII. Contacto</h4>
+            <p>Ante cualquier consulta sobre estos Términos, escríbenos a contacto.estudiauni&#64;gmail.com o a través de nuestro <a routerLink="/soporte" (click)="showLegalModal = false">Centro de Soporte</a>.</p>
           </div>
           <div class="legal-modal-body" *ngIf="legalModalType === 'privacy'">
-            <h4>I. ¿Qué datos recolectamos?</h4>
-            <p>A lo largo de tu experiencia en EstudiaUni, guardamos detalles fundamentales como tu nombre e email al momento de inscribirte. Igualmente, registramos la actividad que tienes en la plataforma: resultados de simulacros, evolución de tu aprendizaje, charlas con nuestro asistente de IA y demás parámetros sobre tu desempeño general.</p>
+            <p class="legal-updated">Última actualización: 12 de agosto de 2026</p>
+            <p>En EstudiaUni tratamos tus datos personales conforme a la Ley N° 19.628 sobre Protección de la Vida Privada y demás normativa chilena aplicable en materia de protección de datos. Esta Política explica qué información recopilamos, para qué la usamos, con quién la compartimos y qué derechos tienes sobre ella.</p>
 
-            <h4>II. ¿Para qué usamos tu información?</h4>
-            <p>Todos estos datos tienen un fin claro: entregar un servicio educativo más eficiente. Esto nos permite adaptar el plan de estudios a tus necesidades, hacer que el Tutor responda de forma más precisa, gestionar tus pagos de suscripción y mantenerte informado sobre mejoras, anuncios de la plataforma o cambios relevantes en tu cuenta.</p>
+            <h4>I. Responsable del tratamiento</h4>
+            <p>EstudiaUni.cl es responsable del tratamiento de los datos personales recopilados a través de la plataforma. Para cualquier consulta o ejercicio de derechos relacionados con tus datos, puedes contactarnos en contacto.estudiauni&#64;gmail.com.</p>
 
-            <h4>III. ¿Cómo resguardamos tus datos?</h4>
-            <p>Aplicamos sistemas de seguridad tecnológica y de organización reconocidos a nivel global para impedir que agentes externos accedan, modifiquen o destruyan tu información. Tus claves de acceso se encriptan y los datos de pago jamás se alojan directamente con nosotros, ya que usamos servicios de cobro externos de alta seguridad.</p>
+            <h4>II. Datos que recopilamos</h4>
+            <p>Recopilamos: (a) datos de identificación y contacto (nombre, correo electrónico, contraseña cifrada); (b) datos académicos y de uso (respuestas en ensayos, avance en rutas de aprendizaje, estadísticas de rendimiento, historial de interacciones con el Tutor IA); (c) datos de suscripción y facturación a nivel de estado del plan (no almacenamos números completos de tarjetas, ya que el cobro lo procesa Flow); y (d) datos técnicos (dirección IP, tipo de dispositivo/navegador, cookies y registros de actividad) recopilados de forma automática.</p>
 
-            <h4>IV. Políticas respecto a terceros</h4>
-            <p>La confidencialidad es prioridad para EstudiaUni. En ningún caso comercializamos o cedemos tus registros personales a otras compañías para que hagan publicidad. Las únicas instancias en las que compartimos datos se limitan a necesidades técnicas operativas (como procesar tu pago) o en situaciones donde la ley o alguna autoridad competente nos lo exija expresamente.</p>
+            <h4>III. Finalidades del tratamiento</h4>
+            <p>Usamos tus datos para: crear y administrar tu cuenta; personalizar tu ruta de estudio y las respuestas del Tutor IA; procesar pagos y gestionar suscripciones; medir y mejorar el rendimiento de la plataforma; enviarte comunicaciones operativas (confirmaciones, avisos de cambios) y, solo si lo autorizas, comunicaciones promocionales; prevenir fraudes y cumplir obligaciones legales.</p>
 
-            <h4>V. Rastreo y uso de cookies</h4>
-            <p>Nuestra web se apoya en cookies y herramientas parecidas para mantenerte conectado sin pedirte la clave a cada rato, recordar tus elecciones visuales y analizar el comportamiento de la comunidad con el fin de mejorar el diseño del sitio. Tienes la potestad de bloquear las cookies desde tu navegador, aunque esto puede provocar que la plataforma no rinda al 100%.</p>
+            <h4>IV. Con quién compartimos tu información</h4>
+            <p>No vendemos tus datos personales. Los compartimos únicamente con proveedores que nos ayudan a operar el Servicio, bajo acuerdos de confidencialidad y tratamiento de datos: Flow (procesamiento de pagos), Google Firebase / Google Cloud (autenticación y alojamiento de datos), proveedores de modelos de inteligencia artificial utilizados por el Tutor IA (para procesar tus consultas y generar respuestas), y herramientas de analítica para entender el uso agregado de la plataforma. También podemos divulgar información cuando la ley, un tribunal o una autoridad competente lo exija.</p>
 
-            <h4>VI. Control y derechos sobre tu perfil</h4>
-            <p>Cuentas con total libertad para revisar, enmendar o exigir la eliminación definitiva de tu huella de datos en nuestra plataforma. Podrás realizar buena parte de estos ajustes directamente en tu panel de configuración. Para gestiones más complejas sobre tu privacidad, siempre tendrás a disposición nuestro equipo de atención al estudiante.</p>
+            <h4>V. Transferencia internacional de datos</h4>
+            <p>Algunos de nuestros proveedores (por ejemplo, de infraestructura en la nube o de modelos de inteligencia artificial) pueden procesar datos fuera de Chile. En esos casos, exigimos contractualmente a dichos proveedores mantener estándares de protección de datos equivalentes a los exigidos por la normativa chilena.</p>
+
+            <h4>VI. Plazo de conservación</h4>
+            <p>Conservamos tus datos personales mientras mantengas una cuenta activa en EstudiaUni y, posteriormente, durante el plazo necesario para cumplir obligaciones legales, contables o tributarias, o para resolver eventuales controversias. Si solicitas la eliminación de tu cuenta, procederemos conforme a lo indicado en la sección VIII.</p>
+
+            <h4>VII. Medidas de seguridad</h4>
+            <p>Aplicamos medidas técnicas y organizativas razonables (cifrado de contraseñas, control de accesos, proveedores de infraestructura certificados) para proteger tus datos frente a accesos no autorizados, pérdida o alteración. Ningún sistema es completamente infalible; si detectamos un incidente de seguridad que afecte tus datos, te lo comunicaremos conforme a la normativa vigente.</p>
+
+            <h4>VIII. Cookies y tecnologías similares</h4>
+            <p>Usamos cookies propias y de terceros para mantener tu sesión iniciada, recordar tus preferencias y analizar el uso de la plataforma con fines de mejora continua. Puedes bloquear o eliminar las cookies desde la configuración de tu navegador; ten en cuenta que esto podría afectar el funcionamiento normal del sitio.</p>
+
+            <h4>IX. Tus derechos (ARCO)</h4>
+            <p>Puedes ejercer tus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) sobre tus datos personales, así como solicitar la portabilidad de tu información cuando sea técnicamente posible. La mayoría de estos ajustes puedes realizarlos directamente desde tu panel de configuración; para solicitudes adicionales, escríbenos a contacto.estudiauni&#64;gmail.com indicando tu nombre y correo de registro. Responderemos dentro de los plazos que establece la ley.</p>
+
+            <h4>X. Menores de edad</h4>
+            <p>EstudiaUni está pensada principalmente para estudiantes en proceso de rendir la PAES, quienes pueden ser menores de 18 años. Si tienes menos de 14 años, no debes registrarte sin la autorización y supervisión de tu padre, madre o apoderado. Los padres o apoderados que consideren que un menor a su cargo nos ha proporcionado datos sin su consentimiento pueden contactarnos para solicitar su eliminación.</p>
+
+            <h4>XI. Cambios a esta Política</h4>
+            <p>Podemos actualizar esta Política de Privacidad para reflejar cambios legales o en nuestras prácticas de tratamiento de datos. Publicaremos la versión vigente en esta misma sección junto con su fecha de actualización, y te notificaremos los cambios relevantes por correo electrónico o mediante aviso en la plataforma.</p>
+
+            <h4>XII. Contacto</h4>
+            <p>Si tienes preguntas sobre esta Política o quieres ejercer tus derechos, contáctanos en contacto.estudiauni&#64;gmail.com o a través de nuestro <a routerLink="/soporte" (click)="showLegalModal = false">Centro de Soporte</a>.</p>
           </div>
         </div>
       </div>
@@ -1519,7 +1576,7 @@ import { PaymentService } from '../../core/services/payment.service';
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
-      max-width: 1000px;
+      max-width: 1180px;
       z-index: 1000;
       padding: 0.6rem 1.5rem;
       transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1), background-color 0.4s ease, border-color 0.4s ease, padding 0.4s ease, top 0.4s ease, box-shadow 0.4s ease;
@@ -1900,11 +1957,11 @@ import { PaymentService } from '../../core/services/payment.service';
     
     .hero-grid {
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 3rem;
-      align-items: center;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 2.5rem;
+      align-items: end;
       width: 100%;
-      max-width: 1240px;
+      max-width: 1320px;
       padding: 0 2rem;
       position: relative;
       z-index: 10;
@@ -2066,11 +2123,15 @@ import { PaymentService } from '../../core/services/payment.service';
 
     .hero-actions {
       display: flex;
+      justify-content: center;
       gap: 1rem;
-      margin-bottom: 2rem;
     }
 
-    /* ===== MODERN BENEFITS BAR ===== */
+    .hero-cta-btn {
+      border-radius: 10px !important;
+    }
+
+    /* ===== MODERN BENEFITS BAR (no bottom margin, aligns card end) ===== */
     .hero-benefits-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -2079,10 +2140,9 @@ import { PaymentService } from '../../core/services/payment.service';
       background: rgba(255, 255, 255, 0.75);
       border: 1px solid rgba(133, 92, 214, 0.16);
       border-radius: 16px;
-      padding: 0.85rem 1rem;
+      padding: 1.1rem 1rem;
       backdrop-filter: blur(12px);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-      margin-bottom: 1.5rem;
     }
     .benefit-chip {
       display: flex;
@@ -2092,6 +2152,14 @@ import { PaymentService } from '../../core/services/payment.service';
     .chip-icon {
       font-size: 1.25rem;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chip-icon img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
     }
     .chip-info {
       display: flex;
@@ -2109,12 +2177,20 @@ import { PaymentService } from '../../core/services/payment.service';
       line-height: 1.2;
     }
 
-    /* ===== SOCIAL PROOF ROW ===== */
+    /* ===== SOCIAL PROOF ROW (centered above the hero CTA buttons) ===== */
+    .hero-cta-group {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.1rem;
+    }
     .hero-social-proof {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 0.85rem;
       padding: 0.2rem 0;
+      margin-bottom: 1rem;
     }
     .avatar-stack {
       display: flex;
@@ -2148,11 +2224,23 @@ import { PaymentService } from '../../core/services/payment.service';
     }
 
     /* ===== SIMULATION CARD ENHANCEMENTS ===== */
+    .hero-sim-card {
+      min-height: 840px;
+      box-sizing: border-box;
+    }
     .sim-card-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       margin-bottom: 0.65rem;
+    }
+    .sim-header-left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+      flex: 1;
+      min-width: 0;
     }
     .sim-badge-live {
       display: inline-flex;
@@ -2166,8 +2254,11 @@ import { PaymentService } from '../../core/services/payment.service';
       padding: 0.2rem 0.6rem;
       border-radius: 999px;
       letter-spacing: 0.04em;
+      white-space: nowrap;
     }
     .sim-subject-pill {
+      display: inline-block;
+      max-width: 100%;
       background: rgba(133, 92, 214, 0.08);
       border: 1px solid rgba(133, 92, 214, 0.2);
       color: #855cd6;
@@ -2175,6 +2266,9 @@ import { PaymentService } from '../../core/services/payment.service';
       font-weight: 700;
       padding: 0.2rem 0.65rem;
       border-radius: 999px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .sim-header-right {
       display: flex;
@@ -2183,6 +2277,9 @@ import { PaymentService } from '../../core/services/payment.service';
       font-size: 0.78rem;
       color: #6b7280;
       font-weight: 600;
+      flex-shrink: 0;
+      white-space: nowrap;
+      padding-top: 0.15rem;
     }
 
     .sim-progress-bar-wrap {
@@ -2989,6 +3086,12 @@ import { PaymentService } from '../../core/services/payment.service';
       display: inline-block;
       transition: transform 0.4s;
     }
+    .bento-icon img {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+      display: block;
+    }
     .bento-card:hover .bento-icon {
       transform: scale(1.1) rotate(5deg);
       animation: bounce-icon 0.6s ease;
@@ -3684,7 +3787,7 @@ import { PaymentService } from '../../core/services/payment.service';
       background: rgba(255, 255, 255, 0.8);
       border: 2px solid rgba(133, 92, 214, 0.3);
       box-shadow: 0 20px 45px rgba(133, 92, 214, 0.06);
-      transition: border-color 1.2s ease, box-shadow 1.2s ease;
+      transition: border-color 1.2s ease, box-shadow 1.2s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
     }
     .pricing-card.premium-card::before {
       background: linear-gradient(135deg, #855cd6 0%, #f472b6 50%, #3b82f6 100%);
@@ -4084,6 +4187,12 @@ import { PaymentService } from '../../core/services/payment.service';
       padding: 0 1.5rem;
       position: relative;
       z-index: 5;
+    }
+    /* While actively scrolling, stop evaluating :hover on this stacked list — with 7+
+       items in a single column, each one triggers a hover transition as it passes
+       under a stationary cursor, which is what caused the scroll jank here. */
+    .home-container.is-scrolling .faq-container {
+      pointer-events: none;
     }
     .faq-item {
       overflow: hidden;
@@ -5283,6 +5392,11 @@ import { PaymentService } from '../../core/services/payment.service';
       font-size: 1.5rem;
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     }
+    .benefit-icon-wrapper .benefit-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
     .foco-benefit-item:hover .benefit-icon-wrapper {
       background: var(--accent-primary);
       color: #ffffff;
@@ -5498,6 +5612,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .legal-modal-header .close-btn:hover { background: rgba(239,68,68,0.25); color: #fca5a5 !important; }
     .legal-modal-body h4 { color: var(--text-primary, #111827); margin-top: 1.5rem; margin-bottom: 0.5rem; }
     .legal-modal-body p { color: var(--text-secondary, #4b5563); line-height: 1.6; font-size: 0.95rem; }
+    .legal-modal-body p.legal-updated { font-size: 0.8rem; font-weight: 700; color: #855cd6; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 1rem; }
   `]
 })
 export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
@@ -5788,7 +5903,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   // Hero Live Interactive SaaS Simulation Dataset & State Machine
   heroSimExercises = [
     {
-      subject: '✏️ Matemáticas',
+      subject: 'Matemáticas',
       questionNum: 'Pregunta 12/65',
       timer: '01:24:37',
       progress: '28%',
@@ -5808,7 +5923,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       weaknesses: ['Geometría', 'Probabilidad']
     },
     {
-      subject: '📖 Competencia Lectora',
+      subject: 'Competencia Lectora',
       questionNum: 'Pregunta 28/65',
       timer: '01:10:45',
       progress: '43%',
@@ -5828,7 +5943,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       weaknesses: ['Síntesis', 'Evaluación']
     },
     {
-      subject: '🧪 Ciencias - Química',
+      subject: 'Ciencias - Química',
       questionNum: 'Pregunta 09/80',
       timer: '01:45:00',
       progress: '11%',
@@ -5911,25 +6026,35 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           this.heroSimStep = 3;
           const fullText = this.currentSimExercise.explanation;
           let charIdx = 0;
-          this.heroSimTypingTimer = setInterval(() => {
-            if (this.destroyed) { clearInterval(this.heroSimTypingTimer); return; }
-            if (charIdx < fullText.length) {
-              this.heroSimTypedText += fullText.charAt(charIdx);
-              charIdx++;
-            } else {
-              clearInterval(this.heroSimTypingTimer);
-              // Step 4 (t = +1s): Show Concept Pill
-              this.trackedTimeout(() => {
-                this.heroSimStep = 4;
+          // Runs outside Angular's zone so the ~30fps character tick doesn't force a
+          // full-tree change detection pass on every frame (was the main cause of hero
+          // animation jank while scrolling). CD is re-entered only every few characters.
+          this.zone.runOutsideAngular(() => {
+            this.heroSimTypingTimer = setInterval(() => {
+              if (this.destroyed) { clearInterval(this.heroSimTypingTimer); return; }
+              if (charIdx < fullText.length) {
+                this.heroSimTypedText += fullText.charAt(charIdx);
+                charIdx++;
+                if (charIdx % 3 === 0 || charIdx === fullText.length) {
+                  this.zone.run(() => {});
+                }
+              } else {
+                clearInterval(this.heroSimTypingTimer);
+                this.zone.run(() => {
+                  // Step 4 (t = +1s): Show Concept Pill
+                  this.trackedTimeout(() => {
+                    this.heroSimStep = 4;
 
-                // Step 5 (t = +3.2s): Transition to next exercise
-                this.trackedTimeout(() => {
-                  this.heroSimIndex = (this.heroSimIndex + 1) % this.heroSimExercises.length;
-                  this.runHeroSimCycle();
-                }, 3200);
-              }, 900);
-            }
-          }, 32);
+                    // Step 5 (t = +3.2s): Transition to next exercise
+                    this.trackedTimeout(() => {
+                      this.heroSimIndex = (this.heroSimIndex + 1) % this.heroSimExercises.length;
+                      this.runHeroSimCycle();
+                    }, 3200);
+                  }, 900);
+                });
+              }
+            }, 32);
+          });
         }, 1500);
       }, 1600);
     }, 2200);
@@ -6069,10 +6194,23 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       const gridOverlay = document.querySelector('.hero-grid-overlay') as HTMLElement;
       const blobPurple = document.querySelector('.hero-blob-purple') as HTMLElement;
       const blobBlue = document.querySelector('.hero-blob-blue') as HTMLElement;
+      const homeContainer = document.querySelector('.home-container') as HTMLElement;
 
       let ticking = false;
+      let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
       const onParallaxScroll = () => {
         const currentScrollY = window.scrollY;
+
+        // Mark the page as "actively scrolling" so hover-heavy stacked lists (e.g. FAQ)
+        // don't repeatedly trigger :hover transitions as items pass under a stationary
+        // cursor while scrolling — that was the main source of jank there.
+        // (Toggled on .home-container, not document.body, since Angular's view
+        // encapsulation only scopes styles to elements rendered by this component.)
+        if (homeContainer) homeContainer.classList.add('is-scrolling');
+        if (scrollEndTimer) clearTimeout(scrollEndTimer);
+        scrollEndTimer = setTimeout(() => {
+          if (homeContainer) homeContainer.classList.remove('is-scrolling');
+        }, 150);
 
         if (!ticking) {
           window.requestAnimationFrame(() => {

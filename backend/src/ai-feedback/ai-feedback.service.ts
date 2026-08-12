@@ -16,9 +16,11 @@ import {
 import {
   ASSIST_SYSTEM_PROMPT,
   buildAssistUserPrompt,
+  CAREER_CHAT_SYSTEM_PROMPT,
 } from './prompts/assist.prompt';
 import OpenAI from 'openai';
 import { ChatRequestDto } from './dto/chat-message.dto';
+import { CareerChatRequestDto } from './dto/career-chat.dto';
 import { RecommendationsRequestDto } from './dto/recommendations.dto';
 
 const RECOMMENDATIONS_SYSTEM_PROMPT = `Eres Foco, el tutor IA de EstudiaUni.cl, una plataforma de preparación para la PAES (admisión universitaria en Chile).
@@ -319,6 +321,43 @@ IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles
     } catch (error) {
       this.logger.error(`Chat failed: ${error.message}`);
       throw new InternalServerErrorException('AI chat failed');
+    }
+  }
+
+  /**
+   * Freeform vocational-guidance chat (career-finder assistant). Unlike
+   * chatWithContext, there's no single exam question/options to anchor
+   * on — it's an open conversation about careers, so it just replays the
+   * client's message history against the vocational system prompt.
+   */
+  async careerChat(input: CareerChatRequestDto): Promise<{ reply: string }> {
+    if (!this.openai) {
+      return {
+        reply: '⚠️ El orientador vocacional IA no está disponible en este momento. Intenta de nuevo más tarde.',
+      };
+    }
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: CAREER_CHAT_SYSTEM_PROMPT },
+      ...input.history.map((msg) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      })),
+    ];
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages,
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      const reply = response.choices[0]?.message?.content || 'No pude generar una respuesta. Intenta de nuevo.';
+      return { reply };
+    } catch (error) {
+      this.logger.error(`Career chat failed: ${error.message}`);
+      throw new InternalServerErrorException('AI career chat failed');
     }
   }
 

@@ -257,19 +257,25 @@ export class SubscriptionsService {
   }
 
   /**
-   * Upgrade user to premium (Monthly or Yearly).
+   * Activate (or extend) a user's Premium subscription. Used for the first
+   * charge of a Flow subscription, a manual bank-transfer approval, or any
+   * other verified-payment path.
    */
-  async upgrade(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
+  async activateSubscription(
+    uid: string,
+    planType: 'monthly' | 'yearly' = 'monthly',
+    providerInfo: { provider: 'flow' | 'manual' | 'transfer'; flowCustomerId?: string; flowSubscriptionId?: string } = { provider: 'manual' },
+  ) {
     const userRef = this.firebaseService.firestore.collection('users').doc(uid);
 
     // IMPORTANT: this used to catch its own errors, log a warning, and return
     // { success: true } regardless of whether the Firestore write actually
     // happened. That meant a paying user could get "Pago aprobado y cuenta
     // actualizada a premium" while their account silently stayed Free. Any
-    // failure here MUST propagate to the caller (WebpayService.commitTransaction)
+    // failure here MUST propagate to the caller (FlowService.confirmRegistrationAndSubscribe)
     // so it can report the real outcome instead of a false success.
 
-    // Transaction: prevents two near-simultaneous grants (e.g. a Webpay commit racing
+    // Transaction: prevents two near-simultaneous grants (e.g. a Flow confirm racing
     // an admin manual approval for the same user) from reading the same stale
     // existingEndDate and one of them clobbering the other's extension.
     await this.firebaseService.firestore.runTransaction(async (t) => {
@@ -313,6 +319,10 @@ export class SubscriptionsService {
         subscription: {
           tier: 'premium',
           status: 'active',
+          provider: providerInfo.provider,
+          flowCustomerId: providerInfo.flowCustomerId || null,
+          flowSubscriptionId: providerInfo.flowSubscriptionId || null,
+          cancelAtPeriodEnd: false,
           startDate,
           endDate,
         },
@@ -322,6 +332,60 @@ export class SubscriptionsService {
     });
 
     return { success: true, message: `Upgraded to premium (${planType})` };
+  }
+
+  /**
+   * Extend the current period by one billing cycle after a successful Flow
+   * renewal charge (called from the recurring webhook). Never called for the
+   * first charge of a subscription — that's activateSubscription()'s job.
+   */
+  async extendSubscriptionPeriod(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
+    const userRef = this.firebaseService.firestore.collection('users').doc(uid);
+
+    await this.firebaseService.firestore.runTransaction(async (t) => {
+      const userDoc = await t.get(userRef);
+      if (!userDoc.exists) return;
+
+      const userData = userDoc.data()!;
+      const sub = userData.subscription || {};
+
+      // The user already asked to cancel — a renewal charge racing the
+      // cancellation must not resurrect access for another period.
+      if (sub.cancelAtPeriodEnd) return;
+
+      const now = new Date();
+      const currentEndDate = sub.endDate
+        ? (typeof sub.endDate.toDate === 'function' ? sub.endDate.toDate() : new Date(sub.endDate))
+        : null;
+
+      // Flow's webhook fires for every charge, including the very first one
+      // that activateSubscription() already granted access for synchronously
+      // right after subscribing. If the stored endDate is still comfortably
+      // in the future, this webhook call is that same first-charge
+      // confirmation arriving a few seconds later — skip it so one charge
+      // doesn't grant two periods.
+      const RENEWAL_DUE_WINDOW_MS = 2 * 24 * 3600 * 1000;
+      if (currentEndDate && currentEndDate.getTime() - now.getTime() > RENEWAL_DUE_WINDOW_MS) {
+        return;
+      }
+
+      const newEndDate = currentEndDate && currentEndDate > now ? new Date(currentEndDate) : new Date(now);
+      if (planType === 'yearly') {
+        newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+      } else {
+        newEndDate.setMonth(newEndDate.getMonth() + 1);
+      }
+
+      t.set(userRef, {
+        subscription: {
+          tier: 'premium',
+          status: 'active',
+          endDate: newEndDate,
+        },
+        plan: 'premium',
+        updatedAt: new Date(),
+      }, { merge: true });
+    });
   }
 
   /**
@@ -435,6 +499,8 @@ export class SubscriptionsService {
           subscription: {
             tier: 'premium',
             status: 'active',
+            provider: 'manual',
+            cancelAtPeriodEnd: false,
             startDate,
             endDate,
             grantedBy: adminUid,
@@ -515,25 +581,23 @@ export class SubscriptionsService {
     const transactions: any[] = [];
 
     try {
-      const txSnapshot = await this.firebaseService.firestore
-        .collection('transactions')
+      const invSnapshot = await this.firebaseService.firestore
+        .collection('flow_invoices')
         .orderBy('createdAt', 'desc')
         .limit(100)
         .get();
 
-      txSnapshot.forEach(doc => {
+      invSnapshot.forEach(doc => {
         const d = doc.data();
         transactions.push({
           id: doc.id,
-          type: 'webpay',
-          buyOrder: d.buyOrder || '---',
-          payerUid: d.payerUid || d.uid,
-          recipientUid: d.recipientUid || d.uid,
+          type: 'flow',
+          subscriptionId: d.subscriptionId || '---',
+          payerUid: d.uid,
+          recipientUid: d.uid,
           amount: d.amount,
           planType: d.planType || 'monthly',
           status: d.status,
-          paymentType: d.paymentType,
-          authorizationCode: d.authorizationCode,
           createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt,
         });
       });
@@ -608,7 +672,7 @@ export class SubscriptionsService {
     if (action === 'approve') {
       transfer.status = 'approved';
       const recipientUid = transfer.recipientUid || transfer.payerUid;
-      await this.upgrade(recipientUid, transfer.planType || 'monthly');
+      await this.activateSubscription(recipientUid, transfer.planType || 'monthly', { provider: 'transfer' });
 
       try {
         await this.firebaseService.firestore
@@ -652,22 +716,44 @@ export class SubscriptionsService {
   }
 
   /**
-   * Cancel premium subscription (reverts to free).
+   * Cancel premium subscription. Access is kept until the already-paid
+   * `endDate` — we only stop future renewals (mirrors standard SaaS
+   * cancel-at-period-end UX). The actual downgrade to Free happens lazily,
+   * the same way it already does for expiry: checkCredits()/normalizeProfile()
+   * flip tier/status once `endDate` is in the past — no extra write needed here.
    */
   async cancel(uid: string) {
-    try {
-      await this.firebaseService.firestore
-        .collection('users')
-        .doc(uid)
-        .update({
-          'subscription.tier': 'free',
-          'subscription.status': 'cancelled',
-          plan: 'free',
-          updatedAt: new Date(),
-        });
-    } catch (e) {}
+    const userRef = this.firebaseService.firestore.collection('users').doc(uid);
+    let flowSubscriptionId: string | null = null;
+    let endDateJs: Date | null = null;
 
-    return { success: true, message: 'Subscription cancelled' };
+    try {
+      const userDoc = await userRef.get();
+      if (userDoc.exists) {
+        const sub = userDoc.data()?.subscription;
+        flowSubscriptionId = sub?.flowSubscriptionId || null;
+        const endDateVal = sub?.endDate;
+        if (endDateVal) {
+          endDateJs = typeof endDateVal.toDate === 'function' ? endDateVal.toDate() : new Date(endDateVal);
+        }
+      }
+
+      await userRef.update({
+        'subscription.cancelAtPeriodEnd': true,
+        updatedAt: new Date(),
+      });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] cancel error: ${e.message}`);
+    }
+
+    return {
+      success: true,
+      message: endDateJs
+        ? `Tu suscripción fue cancelada. Mantendrás acceso Premium hasta el ${endDateJs.toLocaleDateString('es-CL')}.`
+        : 'Tu suscripción fue cancelada.',
+      endDate: endDateJs,
+      flowSubscriptionId,
+    };
   }
 
   private async getResetCredits(uid: string, userData: any) {

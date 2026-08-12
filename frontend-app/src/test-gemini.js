@@ -3,7 +3,8 @@ const { GoogleAIFileManager } = require('@google/generative-ai/server');
 const fs = require('fs');
 const path = require('path');
 
-const apiKey = 'AIzaSyCy4dAomJ1iol8iqtz0usySE_UhY-LM1lA';
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) throw new Error('Set GEMINI_API_KEY before running this script.');
 const genAI = new GoogleGenerativeAI(apiKey);
 const fileManager = new GoogleAIFileManager(apiKey);
 

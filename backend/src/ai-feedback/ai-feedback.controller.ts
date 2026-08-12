@@ -17,6 +17,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { AssistQuestionDto } from './dto/assist-question.dto';
 import { ChatRequestDto } from './dto/chat-message.dto';
+import { CareerChatRequestDto } from './dto/career-chat.dto';
 import { RecommendationsRequestDto } from './dto/recommendations.dto';
 
 @Controller('ai')
@@ -83,6 +84,36 @@ export class AiFeedbackController {
     }
 
     const result = await this.aiFeedbackService.chatWithContext(body);
+    await this.subscriptionsService.consumeFocoToken(user.uid);
+    return { ...result, remainingTokens: tokenCheck.remaining - 1, limitTokens: tokenCheck.limit };
+  }
+
+  @Post('career-chat')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  async careerChat(
+    @CurrentUser() user: CurrentUserData,
+    @Body() body: CareerChatRequestDto,
+  ) {
+    const status = await this.subscriptionsService.getStatus(user.uid);
+    if (status.tier !== 'premium') {
+      throw new ForbiddenException({
+        code: 'PREMIUM_ONLY_FEATURE',
+        message: 'El orientador vocacional IA es exclusivo del Plan PRO.',
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    const tokenCheck = await this.subscriptionsService.checkFocoTokens(user.uid);
+    if (!tokenCheck.allowed) {
+      throw new ForbiddenException({
+        code: 'FOCO_TOKENS_EXHAUSTED',
+        limit: tokenCheck.limit,
+        message: `Has alcanzado tus ${tokenCheck.limit} fichas diarias de Foco. Se recargarán mañana a la misma hora.`,
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    const result = await this.aiFeedbackService.careerChat(body);
     await this.subscriptionsService.consumeFocoToken(user.uid);
     return { ...result, remainingTokens: tokenCheck.remaining - 1, limitTokens: tokenCheck.limit };
   }

@@ -6,7 +6,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 
 type ModalStep = 'plans' | 'recipient';
 type RecipientMode = 'self' | 'gift';
-type PaymentMethodOption = 'webpay' | 'transfer';
+type PaymentMethodOption = 'flow' | 'transfer';
 type EmailStatus = 'idle' | 'checking' | 'found' | 'not_found';
 type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
@@ -90,7 +90,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </div>
           </div>
 
-          <p class="secure-checkout-text">🔒 Pago 100% seguro a través de Webpay Plus y Transferencia Bancaria</p>
+          <p class="secure-checkout-text">🔒 Suscripción 100% segura a través de Flow y Transferencia Bancaria</p>
         </ng-container>
 
         <!-- ─────────────── STEP 2: Recipient, Method & Plan ─────────────── -->
@@ -170,8 +170,8 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             <div class="method-selector-section" style="margin-top: 1.5rem;">
               <label class="section-label-sm">Método de Pago:</label>
               <div class="method-tabs">
-                <button class="method-tab" [class.active]="paymentMethod() === 'webpay'" (click)="setPaymentMethod('webpay')">
-                  💳 Webpay Plus <span class="sub-tag">(Tarjetas)</span>
+                <button class="method-tab" [class.active]="paymentMethod() === 'flow'" (click)="setPaymentMethod('flow')">
+                  💳 Flow <span class="sub-tag">(Tarjetas, suscripción)</span>
                 </button>
                 <button class="method-tab" [class.active]="paymentMethod() === 'transfer'" (click)="setPaymentMethod('transfer')">
                   🏛️ Transferencia <span class="sub-tag">(Manual)</span>
@@ -179,8 +179,8 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               </div>
             </div>
 
-            <!-- ── WEBPAY FLOW ── -->
-            <div *ngIf="paymentMethod() === 'webpay'">
+            <!-- ── FLOW SUBSCRIPTION FLOW ── -->
+            <div *ngIf="paymentMethod() === 'flow'">
               <!-- Coupon Toggle -->
               <div class="coupon-toggle-row" style="margin-top: 1.25rem;">
                 <label class="checkbox-container">
@@ -224,13 +224,13 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               <button class="btn-checkout big" style="margin-top: 1.5rem;" (click)="proceedCheckout()" [disabled]="loadingCheckout() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
                 <span *ngIf="!loadingCheckout()">
                   {{ couponResult()?.valid
-                    ? 'Pagar $' + formatPrice(couponResult()!.finalAmount!) + ' con Webpay 🔒'
-                    : 'Continuar a Webpay Plus 🔒'
+                    ? 'Suscribirme por $' + formatPrice(couponResult()!.finalAmount!) + ' con Flow 🔒'
+                    : 'Suscribirme con Flow 🔒'
                   }}
                 </span>
-                <span *ngIf="loadingCheckout()" class="loading-dots">Iniciando Webpay</span>
+                <span *ngIf="loadingCheckout()" class="loading-dots">Conectando con Flow</span>
               </button>
-              <p class="secure-checkout-text">🔒 Transacción encriptada a través de Transbank</p>
+              <p class="secure-checkout-text">🔒 Suscripción con renovación automática ({{ billingCycle() === 'monthly' ? 'mensual' : 'anual' }}) — cancela cuando quieras</p>
             </div>
 
             <!-- ── MANUAL TRANSFER FLOW ── -->
@@ -477,7 +477,7 @@ export class PricingModalComponent implements OnInit {
 
   currentStep = signal<ModalStep>('plans');
   recipientMode = signal<RecipientMode>('self');
-  paymentMethod = signal<PaymentMethodOption>('webpay');
+  paymentMethod = signal<PaymentMethodOption>('flow');
   billingCycle = signal<'monthly' | 'yearly'>('monthly');
   loadingCheckout = signal<boolean>(false);
   cameFromHome = signal<boolean>(false);
@@ -626,18 +626,15 @@ export class PricingModalComponent implements OnInit {
     const targetUid = this.recipientMode() === 'gift' ? this.giftTargetUid : undefined;
     const couponCode = this.couponStatus() === 'valid' ? this.couponCode.trim().toUpperCase() : undefined;
 
-    this.paymentService.createWebpayTransaction(plan, returnUrl, targetUid, couponCode).subscribe({
+    this.paymentService.startFlowRegistration(plan, returnUrl, targetUid, couponCode).subscribe({
       next: (res) => {
-        const form = document.createElement('form');
-        form.method = 'POST'; form.action = res.url;
-        const input = document.createElement('input');
-        input.type = 'hidden'; input.name = 'token_ws'; input.value = res.token;
-        form.appendChild(input); document.body.appendChild(form); form.submit();
+        // Flow's documented redirect pattern: a plain GET to url?token=..., no form/POST needed.
+        window.location.href = `${res.url}?token=${res.token}`;
       },
       error: (err) => {
         this.loadingCheckout.set(false);
         const errMsg = err.error?.message || err.message || 'Error de conexión';
-        alert('Hubo un problema al iniciar el pago: ' + errMsg);
+        alert('Hubo un problema al iniciar la suscripción: ' + errMsg);
       }
     });
   }

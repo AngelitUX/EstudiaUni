@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PaymentService, WebpayCommitResponse } from '../../core/services/payment.service';
+import { PaymentService, FlowSubscriptionResult } from '../../core/services/payment.service';
 import { FirestoreService } from '../../core/services/firestore.service';
 
 @Component({
@@ -25,8 +25,8 @@ import { FirestoreService } from '../../core/services/firestore.service';
             </div>
             <div class="spinner-glow"></div>
           </div>
-          <h2 class="title text-gradient">Verificando Transacción</h2>
-          <p class="subtitle">Estamos validando tu pago con Webpay Plus. Por favor no cierres ni recargues esta página.</p>
+          <h2 class="title text-gradient">Activando tu Suscripción</h2>
+          <p class="subtitle">Estamos confirmando tu suscripción con Flow. Por favor no cierres ni recargues esta página.</p>
           
           <div class="loading-bar">
             <div class="loading-progress"></div>
@@ -43,25 +43,21 @@ import { FirestoreService } from '../../core/services/firestore.service';
           </div>
           
           <h2 class="title text-gradient success-title">¡Bienvenido a Premium! 🚀</h2>
-          <p class="subtitle">Tu suscripción ha sido activada con éxito. Ya tienes acceso ilimitado a todas las herramientas PAES.</p>
+          <p class="subtitle">Tu suscripción {{ result()?.planType === 'yearly' ? 'anual' : 'mensual' }} ha sido activada con éxito. Se renovará automáticamente — ya tienes acceso ilimitado a todas las herramientas PAES.</p>
 
           <!-- Receipt Details -->
           <div class="receipt-box">
             <div class="receipt-row">
-              <span class="receipt-label">Orden de Compra</span>
-              <span class="receipt-value font-mono">{{ result()?.buyOrder || '---' }}</span>
+              <span class="receipt-label">N° de Suscripción</span>
+              <span class="receipt-value font-mono">{{ result()?.subscriptionId || '---' }}</span>
+            </div>
+            <div class="receipt-row" *ngIf="result()?.cardLast4">
+              <span class="receipt-label">Tarjeta</span>
+              <span class="receipt-value">{{ result()?.cardType }} •••• {{ result()?.cardLast4 }}</span>
             </div>
             <div class="receipt-row">
-              <span class="receipt-label">Código Autorización</span>
-              <span class="receipt-value font-mono">{{ result()?.authorizationCode || '---' }}</span>
-            </div>
-            <div class="receipt-row" *ngIf="result()?.cardDetail?.card_number">
-              <span class="receipt-label">Tarjeta</span>
-              <span class="receipt-value">•••• •••• •••• {{ result()?.cardDetail?.card_number }}</span>
-            </div>
-            <div class="receipt-row" *ngIf="result()?.amount">
-              <span class="receipt-label">Monto Pagado</span>
-              <span class="receipt-value text-bold font-lg">{{ result()?.amount | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+              <span class="receipt-label">Plan</span>
+              <span class="receipt-value text-bold">{{ result()?.planType === 'yearly' ? 'Pro Anual' : 'Pro Mensual' }} (renovación automática)</span>
             </div>
             <div class="receipt-divider"></div>
             <div class="receipt-row">
@@ -478,50 +474,42 @@ export class PaymentResultComponent implements OnInit {
   private firestoreService = inject(FirestoreService);
 
   state = signal<'loading' | 'success' | 'error'>('loading');
-  errorMessage = signal<string>('Ocurrió un error inesperado al procesar tu pago.');
-  result = signal<WebpayCommitResponse | null>(null);
+  errorMessage = signal<string>('Ocurrió un error inesperado al procesar tu suscripción.');
+  result = signal<FlowSubscriptionResult | null>(null);
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      const token = params['token_ws'];
-      
-      // Webpay cancellation parameters
-      const tbkToken = params['tbk_token'];
-      const tbkOrdenCompra = params['tbk_orden_compra'];
-      
+      const token = params['token'];
+
       if (token) {
-        // We have a token, let's commit the transaction with backend
+        // Card was registered with Flow — confirm and subscribe with our backend.
         this.verifyPayment(token);
-      } else if (tbkToken || tbkOrdenCompra) {
-        // Payment was cancelled/aborted by the user on Webpay
-        this.state.set('error');
-        this.errorMessage.set('La transacción fue cancelada por el usuario en el portal de Webpay Plus. No se ha realizado ningún cobro.');
       } else {
-        // No token, invalid access
+        // No token: either the user cancelled on Flow's site or landed here directly.
         this.state.set('error');
-        this.errorMessage.set('No se encontró ningún token de pago válido. Si acabas de realizar una compra, por favor contáctanos.');
+        this.errorMessage.set('No se encontró ningún token de pago válido. Si cancelaste el registro de tu tarjeta en Flow, no se realizó ningún cobro.');
       }
     });
   }
 
   private verifyPayment(token: string) {
-    this.paymentService.commitWebpayTransaction(token).subscribe({
+    this.paymentService.confirmFlowSubscription(token).subscribe({
       next: (res) => {
         if (res.success) {
           this.result.set(res);
           this.state.set('success');
-          
+
           // Force refresh the user profile signal so Angular state immediately becomes Premium
           this.firestoreService.getUserProfile(true).subscribe();
         } else {
           this.state.set('error');
-          this.errorMessage.set(res.message || 'El pago fue rechazado por el banco o la pasarela de Webpay.');
+          this.errorMessage.set(res.message || 'La suscripción fue rechazada por el banco o por Flow.');
         }
       },
       error: (err) => {
-        console.error('[PaymentResult] Error committing Webpay transaction:', err);
+        console.error('[PaymentResult] Error confirming Flow subscription:', err);
         this.state.set('error');
-        this.errorMessage.set(err.error?.message || 'Error de conexión al verificar el pago con Webpay. Si el dinero fue descontado de tu cuenta, por favor comunícate con soporte.');
+        this.errorMessage.set(err.error?.message || 'Error de conexión al confirmar tu suscripción con Flow. Si el dinero fue descontado de tu cuenta, por favor comunícate con soporte.');
       }
     });
   }

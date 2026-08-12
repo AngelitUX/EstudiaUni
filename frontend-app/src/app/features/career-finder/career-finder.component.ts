@@ -7,7 +7,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
-import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.service';
+import { AiAssistService, ChatMessage, FocoTokensExhaustedError } from '../../core/services/ai-assist.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
 
@@ -1370,46 +1370,40 @@ export class CareerFinderComponent implements OnInit {
     this.scrollChatToBottom();
     this.aiLoading = true;
 
-    // Build context
+    // Recent context sent to the backend, which builds the vocational system
+    // prompt server-side (see AiFeedbackService.careerChat) — no API key or
+    // prompt logic lives in the browser for this path.
     const recentMessages = this.aiMessages().slice(-6).map(m => ({
       role: m.role,
       content: m.content
     }));
 
-    // Generate a context summarizing current state
-    const prompt = `Eres Foco, la mascota oficial y orientador vocacional de EstudiaUni.cl. Eres un pulpo súper inteligente, entusiasta y amigable de 8 tentáculos. Tu rol es guiar a los estudiantes en sus dudas vocacionales con calidez, cercanía y mucha motivación.
-
-PERSONALIDAD Y TONO DE FOCO:
-- ¡Eres un pulpo! Usa metáforas marinas u oceanográficas de forma sutil, dinámica y divertida en tus explicaciones (ej. "mar de dudas", "corrientes de ideas", "navegar por tu futuro", "desenredar con mis tentáculos"), pero NUNCA las uses en saludos repetitivos.
-- Sé sumamente empático, motivador y usa un español chileno sutil y cercano, perfecto para estudiantes de enseñanza media (ej. "¡Dale!", "¡Súper!", "¡Excelente!", "¡Vamos con todo!").
-- En lugar de respuestas genéricas de IA, tu personalidad es vibrante, alegre y llena de emojis marinos y de luz (🐙, 💡, 🌊, 🧠, ✨).
-
-REGLAS DE RESOLUCIÓN PEDAGÓGICA (ESTRICTAS):
-- SIN INTRODUCCIONES REPETITIVAS (CRÍTICO): NUNCA incluyas saludos repetitivos, presentaciones o introducciones largas en tus respuestas (ej. evita decir "¡Hola!", "¡Vamos a sumergirnos!", "¡Hola crack!", "mis tentáculos están listos para...", etc.). Ve DIRECTAMENTE al grano, a la pista o a la pregunta en tu primer párrafo, sin rodeos tediosos para que la interacción fluya de forma ágil y rápida.
-- INTERACCIÓN PASO A PASO (CRÍTICO): NUNCA respondas a tus propias preguntas ni simules diálogos interactivos de ida y vuelta contigo mismo en una sola respuesta. Haz una única pregunta de reflexión o entrega una única pista inicial a la vez, deteniendo tu respuesta para esperar a que el estudiante interactúe y responda antes de avanzar al siguiente paso de la resolución.
-- Sé conciso y directo: responde de forma breve (idealmente entre 2 y 4 párrafos cortos) para no abrumar al estudiante, pero asegúrate de terminar SIEMPRE tus oraciones e ideas de forma completa y redonda.
-- FINALIZACIÓN OBLIGATORIA: Bajo ninguna circunstancia dejes una respuesta incompleta, una oración a medias o una explicación truncada. Cada mensaje tuyo debe tener un cierre perfecto y coherente.
-- Si te preguntan por detalles específicos de carreras en Chile (puntajes de corte, ponderaciones, duración, empleabilidad, gratuidad) da la mejor estimación/guía si no tienes el dato exacto, pero advierte con cariño que el estudiante debe corroborar la información en los canales oficiales de DEMRE y del Ministerio de Educación.
-
-Responde esta consulta del usuario: "${text}"`;
-
     try {
-      const reply = await this.aiService.askQuestion(prompt, recentMessages);
-      
+      const response = await this.aiService.careerChatViaBackend(recentMessages);
+
       const assistantMsg: ChatMessage = {
         role: 'assistant',
-        content: reply || 'Lo siento, tuve un problema procesando tu mensaje.',
+        content: response.reply || 'Lo siento, tuve un problema procesando tu mensaje.',
         timestamp: new Date()
       };
-      
+
       this.aiMessages.update(msgs => [...msgs, assistantMsg]);
     } catch (error) {
-      console.error('Error in chat:', error);
-      this.aiMessages.update(msgs => [...msgs, { 
-        role: 'assistant', 
-        content: 'Hubo un error de conexión con mi servidor. Por favor intenta de nuevo.', 
-        timestamp: new Date() 
-      }]);
+      if (error instanceof FocoTokensExhaustedError) {
+        this.aiMessages.update(msgs => [...msgs, {
+          role: 'assistant',
+          content: `⚠️ Has alcanzado tus ${error.limit} fichas diarias de Foco IA. Se recargarán mañana a la misma hora.`,
+          timestamp: new Date()
+        }]);
+        this.paymentService.openPricingModal();
+      } else {
+        console.error('Error in chat:', error);
+        this.aiMessages.update(msgs => [...msgs, {
+          role: 'assistant',
+          content: 'Hubo un error de conexión con mi servidor. Por favor intenta de nuevo.',
+          timestamp: new Date()
+        }]);
+      }
     } finally {
       this.aiLoading = false;
       this.scrollChatToBottom();
