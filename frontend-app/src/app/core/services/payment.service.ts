@@ -3,26 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface WebpayInitResponse {
+export interface FlowRegistrationResponse {
   token: string;
   url: string;
-  amount: number;
-  buyOrder: string;
 }
 
-export interface WebpayCommitResponse {
+export interface FlowSubscriptionResult {
   success: boolean;
   message: string;
   isGift?: boolean;
-  amount?: number;
-  buyOrder?: string;
-  authorizationCode?: string;
-  paymentType?: string;
-  cardDetail?: {
-    card_number: string;
-  };
+  planType?: 'monthly' | 'yearly';
+  subscriptionId?: string;
+  cardType?: string | null;
+  cardLast4?: string | null;
 }
-
 
 export interface CouponValidationResponse {
   valid: boolean;
@@ -46,8 +40,8 @@ export interface ManualTransferData {
 
 export interface TransactionRecord {
   id: string;
-  type: 'webpay' | 'transfer';
-  buyOrder?: string;
+  type: 'flow' | 'transfer';
+  subscriptionId?: string;
   transferNumber?: string;
   bankName?: string;
   payerEmail?: string;
@@ -55,9 +49,7 @@ export interface TransactionRecord {
   recipientUid?: string;
   amount: number;
   planType: 'monthly' | 'yearly';
-  status: 'pending' | 'completed' | 'failed' | 'rejected' | 'pending_approval' | 'approved';
-  paymentType?: string;
-  authorizationCode?: string;
+  status: 'pending' | 'paid' | 'failed' | 'rejected' | 'pending_approval' | 'approved';
   receiptUrl?: string;
   createdAt: string | Date;
 }
@@ -65,7 +57,7 @@ export interface TransactionRecord {
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private http = inject(HttpClient);
-  
+
   showPricingModal = signal<boolean>(false);
   skipPlanStep = signal<boolean>(false);
   selectedPlanType = signal<'monthly' | 'yearly'>('monthly');
@@ -92,29 +84,32 @@ export class PaymentService {
   }
 
   /**
-   * Initiate a Webpay transaction.
+   * Start card registration with Flow for a new subscription. Redirects the
+   * browser to the returned Flow URL; the user comes back to `returnUrl` with
+   * a `token` query param once the card is registered.
    */
-  createWebpayTransaction(
+  startFlowRegistration(
     planType: 'monthly' | 'yearly',
     returnUrl: string,
     targetUid?: string,
     couponCode?: string,
-  ): Observable<WebpayInitResponse> {
+  ): Observable<FlowRegistrationResponse> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    const url = `${baseUrl}/api/subscriptions/webpay/create`;
+    const url = `${baseUrl}/api/subscriptions/flow/register-card`;
     const body: any = { planType, returnUrl };
     if (targetUid) body.targetUid = targetUid;
     if (couponCode) body.couponCode = couponCode;
-    return this.http.post<WebpayInitResponse>(url, body);
+    return this.http.post<FlowRegistrationResponse>(url, body);
   }
 
   /**
-   * Commit/Confirm a Webpay transaction
+   * Confirm the card registration and subscribe the customer to the plan.
+   * Called from the return page once Flow redirects back with a token.
    */
-  commitWebpayTransaction(token: string): Observable<WebpayCommitResponse> {
+  confirmFlowSubscription(token: string): Observable<FlowSubscriptionResult> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    const url = `${baseUrl}/api/subscriptions/webpay/commit`;
-    return this.http.post<WebpayCommitResponse>(url, { token });
+    const url = `${baseUrl}/api/subscriptions/flow/confirm`;
+    return this.http.post<FlowSubscriptionResult>(url, { token });
   }
 
   /**

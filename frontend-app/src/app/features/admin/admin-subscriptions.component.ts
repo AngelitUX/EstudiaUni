@@ -72,8 +72,8 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
           <button class="atab" [class.active]="filterTab() === 'pending_approval'" (click)="filterTab.set('pending_approval')">
             🏛️ Transferencias por Aprobar ({{ countPendingTransfers() }})
           </button>
-          <button class="atab" [class.active]="filterTab() === 'webpay'" (click)="filterTab.set('webpay')">
-            💳 Transbank Webpay
+          <button class="atab" [class.active]="filterTab() === 'flow'" (click)="filterTab.set('flow')">
+            💳 Flow
           </button>
         </div>
 
@@ -101,12 +101,12 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
               <tr *ngFor="let tx of filteredTransactions()">
                 <td class="date-cell">{{ formatDate(tx.createdAt) }}</td>
                 <td>
-                  <span class="badge-type" [class.webpay]="tx.type === 'webpay'" [class.transfer]="tx.type === 'transfer'">
-                    {{ tx.type === 'webpay' ? '💳 Webpay' : '🏛️ Transferencia' }}
+                  <span class="badge-type" [class.flow]="tx.type === 'flow'" [class.transfer]="tx.type === 'transfer'">
+                    {{ tx.type === 'flow' ? '💳 Flow' : '🏛️ Transferencia' }}
                   </span>
                 </td>
                 <td class="font-mono">
-                  {{ tx.buyOrder || tx.transferNumber || tx.id }}
+                  {{ tx.subscriptionId || tx.transferNumber || tx.id }}
                   <span *ngIf="tx.bankName" class="bank-tag">({{ tx.bankName }})</span>
                 </td>
                 <td class="amount-cell">$ {{ formatPrice(tx.amount) }}</td>
@@ -229,14 +229,14 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
     .bank-tag { font-size: 0.78rem; color: var(--text-muted); font-weight: normal; }
 
     .badge-type { padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.78rem; }
-    .badge-type.webpay { background: rgba(59,130,246,0.1); color: #2563eb; }
+    .badge-type.flow { background: rgba(59,130,246,0.1); color: #2563eb; }
     .badge-type.transfer { background: rgba(245,158,11,0.1); color: #d97706; }
 
     .plan-tag { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: var(--bg-secondary); color: var(--text-secondary); }
     .plan-tag.yearly { background: rgba(212,175,55,0.15); color: #b87e00; }
 
     .status-chip { padding: 0.3rem 0.75rem; border-radius: 99px; font-size: 0.78rem; font-weight: 800; display: inline-block; }
-    .status-chip.completed, .status-chip.approved { background: rgba(16,185,129,0.12); color: #059669; }
+    .status-chip.paid, .status-chip.completed, .status-chip.approved { background: rgba(16,185,129,0.12); color: #059669; }
     .status-chip.pending_approval { background: rgba(245,158,11,0.15); color: #b45309; }
     .status-chip.failed, .status-chip.rejected { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
@@ -290,7 +290,7 @@ export class AdminSubscriptionsComponent implements OnInit {
   loading = signal<boolean>(false);
   submitting = signal<boolean>(false);
   transactions = signal<TransactionRecord[]>([]);
-  filterTab = signal<'all' | 'pending_approval' | 'webpay'>('all');
+  filterTab = signal<'all' | 'pending_approval' | 'flow'>('all');
   actionMsg = signal<string>('');
 
   // Modal grant
@@ -326,8 +326,8 @@ export class AdminSubscriptionsComponent implements OnInit {
     if (tab === 'pending_approval') {
       return this.transactions().filter(t => t.status === 'pending_approval');
     }
-    if (tab === 'webpay') {
-      return this.transactions().filter(t => t.type === 'webpay');
+    if (tab === 'flow') {
+      return this.transactions().filter(t => t.type === 'flow');
     }
     return this.transactions();
   }
@@ -344,7 +344,7 @@ export class AdminSubscriptionsComponent implements OnInit {
 
   formatStatus(status: string): string {
     switch (status) {
-      case 'completed': return 'Aprobado (Webpay)';
+      case 'paid': return 'Cobrado (Flow)';
       case 'approved': return 'Aprobado (Transferencia)';
       case 'pending_approval': return 'Pendiente de Revisión';
       case 'rejected': return 'Rechazado';

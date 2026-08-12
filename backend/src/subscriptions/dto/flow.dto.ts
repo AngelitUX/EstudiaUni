@@ -1,6 +1,6 @@
 import { IsString, IsIn, IsUrl, IsOptional } from 'class-validator';
 
-export class CreateWebpayTransactionDto {
+export class StartFlowRegistrationDto {
   @IsString()
   @IsIn(['monthly', 'yearly'])
   planType: 'monthly' | 'yearly';
@@ -15,10 +15,10 @@ export class CreateWebpayTransactionDto {
 
   @IsOptional()
   @IsString()
-  couponCode?: string; // Optional discount code
+  couponCode?: string; // Optional discount code, applied to the first charge only
 }
 
-export class CommitWebpayTransactionDto {
+export class ConfirmFlowSubscriptionDto {
   @IsString()
   token: string;
 }
