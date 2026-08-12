@@ -48,4 +48,20 @@ export class FirebaseService implements OnModuleInit {
   get storage(): admin.storage.Storage {
     return this.app.storage();
   }
+
+  /**
+   * Mirrors AdminGuard's check: a user is admin if they have a doc in
+   * /admins with active !== false. Used to grant admins Pro-tier treatment
+   * (limits, cooldowns, results lock) outside of admin-only endpoints.
+   */
+  async isAdmin(uid: string): Promise<boolean> {
+    try {
+      const doc = await this.firestore.collection('admins').doc(uid).get();
+      if (!doc.exists) return false;
+      const data = doc.data();
+      return !(data && data.active === false);
+    } catch {
+      return false;
+    }
+  }
 }

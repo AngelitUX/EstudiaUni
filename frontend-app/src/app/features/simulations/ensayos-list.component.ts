@@ -2062,7 +2062,7 @@ export class EnsayosListComponent implements OnInit {
     try {
       // Crear el intento en Firestore antes de navegar
       const intentoId = await this.firestoreService.startIntento(ensayoId, mode, fullName);
-      
+
       this.router.navigate(['/ensayo', ensayoId, 'run'], {
         queryParams: {
           mode,
@@ -2072,9 +2072,32 @@ export class EnsayosListComponent implements OnInit {
           name: fullName
         }
       });
-    } catch (error) {
-      console.error('Error al iniciar ensayo:', error);
-      // Fallback a navegación sin intento si falla Firestore
+    } catch (firstError) {
+      console.error('Error al iniciar ensayo, reintentando:', firstError);
+
+      // One retry: most failures here are a transient network/Firestore blip,
+      // not a real block (create rules already allow this exact write).
+      try {
+        const intentoId = await this.firestoreService.startIntento(ensayoId, mode, fullName);
+        this.router.navigate(['/ensayo', ensayoId, 'run'], {
+          queryParams: {
+            mode,
+            intento: intentoId,
+            duration: this.pruebaSeleccionada.tiempo,
+            questions: this.pruebaSeleccionada.preguntas,
+            name: fullName
+          }
+        });
+        return;
+      } catch (error) {
+        console.error('Error al iniciar ensayo tras reintento:', error);
+      }
+
+      // Last resort: let the user practice anyway, but be upfront that this
+      // attempt won't be saved — without an intento doc, "Finalizar" has
+      // nothing to write to and the review screen would otherwise show a
+      // confusing blank "0/0" result with no explanation.
+      this.toast.error('No se pudo guardar este ensayo (problema de conexión). Puedes practicar igual, pero tus resultados no quedarán registrados ni podrás revisarlos después.', 8000);
       this.router.navigate(['/ensayo', ensayoId, 'run'], {
         queryParams: {
           mode,

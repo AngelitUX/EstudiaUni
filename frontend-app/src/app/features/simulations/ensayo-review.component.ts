@@ -6,20 +6,22 @@ import { PaymentService } from '../../core/services/payment.service';
 import { Auth } from '@angular/fire/auth';
 import { from, map, forkJoin, of, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AdminService } from '../admin/services/admin.service';
 
 interface ReviewQuestion {
   id: number;
   stem: string;
   options: { id: string; text: string }[];
   userAnswer: string | null;
-  correctAnswer: string;
+  correctAnswer: string | null;
   isCorrect: boolean;
   explanation: {
     whyWrong?: string;
     correctSolution: string;
     tip: string;
   };
-  imageUrl?: string;
+  imageUrl?: string | null;
+  readingText?: string[] | null;
   tema?: string;
 }
 
@@ -69,7 +71,21 @@ interface ReviewQuestion {
         </div>
       </div>
 
-      <ng-container *ngIf="!loading && !resultsLocked">
+      <!-- NOT FOUND: no attempt data exists to review (e.g. it was never saved) -->
+      <div class="results-locked-container animate-fade-in" *ngIf="!loading && !resultsLocked && notFound" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="locked-card glass-card" style="background: #ffffff; padding: 3rem 2.5rem; border-radius: 28px; max-width: 600px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 2px solid rgba(148,163,184,0.3);">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+          <h2 style="font-size: 1.85rem; font-weight: 900; color: #0f172a; margin: 0 0 0.5rem;">No encontramos este ensayo</h2>
+          <p style="color: #475569; font-size: 1rem; line-height: 1.6; margin-bottom: 2rem;">
+            No pudimos cargar los resultados de este intento. Puede que no se haya guardado correctamente (por ejemplo, por un problema de conexión al iniciarlo). Si acabas de terminar un ensayo y esto te aparece, intenta rendirlo de nuevo.
+          </p>
+          <button routerLink="/ensayos" style="background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 800; font-size: 1.05rem; cursor: pointer; box-shadow: 0 8px 20px rgba(124,58,237,0.3); width: 100%;">
+            ← Volver a Ensayos PAES
+          </button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!loading && !resultsLocked && !notFound">
         <!-- HEADER -->
         <header class="review-header">
           <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
@@ -171,6 +187,13 @@ interface ReviewQuestion {
               <span class="question-number">Pregunta {{ question.id }}</span>
             </div>
 
+            <div class="reading-text-container" *ngIf="question.readingText as readingText">
+              <div class="reading-text-label">📖 Texto de lectura</div>
+              <div class="reading-images">
+                <img *ngFor="let imgUrl of readingText" [src]="imgUrl" alt="Texto de lectura" class="reading-image">
+              </div>
+            </div>
+
             <div class="question-stem">
               <div *ngIf="question.imageUrl" class="question-image-container">
                 <img [src]="question.imageUrl" alt="Pregunta" class="question-image">
@@ -179,17 +202,17 @@ interface ReviewQuestion {
             </div>
 
             <div class="options-list">
-              <div 
+              <div
                 *ngFor="let opt of question.options"
                 class="option-review"
                 [class.user-selected]="question.userAnswer === opt.id"
-                [class.correct-answer]="question.isCorrect && question.correctAnswer === opt.id"
+                [class.correct-answer]="question.userAnswer && question.correctAnswer === opt.id"
                 [class.wrong-answer]="question.userAnswer === opt.id && question.correctAnswer !== opt.id">
-                
+
                 <span class="option-id">{{ opt.id }}</span>
                 <span class="option-text">{{ opt.text }}</span>
-                
-                <span class="option-indicator" *ngIf="question.isCorrect && question.correctAnswer === opt.id">✓ Correcta</span>
+
+                <span class="option-indicator" *ngIf="question.userAnswer && question.correctAnswer === opt.id">✓ Correcta</span>
                 <span class="option-indicator wrong" *ngIf="question.userAnswer === opt.id && question.correctAnswer !== opt.id">✗ Tu respuesta</span>
               </div>
             </div>
@@ -265,6 +288,9 @@ interface ReviewQuestion {
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
     /* ===== HEADER ===== */
+    /* Not sticky on purpose: this header is tall (title row + full score
+       breakdown), so pinning it ate a large chunk of the viewport for the
+       whole scroll through the question list. It only needs to be seen once. */
     .review-header {
       display: flex;
       justify-content: space-between;
@@ -273,9 +299,6 @@ interface ReviewQuestion {
       background: #ffffff;
       border-bottom: 2px solid #e2e8f0;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
     .header-left { display: flex; align-items: center; gap: 1.5rem; }
     .btn-back {
@@ -401,6 +424,10 @@ interface ReviewQuestion {
       padding: 2rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
+    .review-question-card.correct { border-left: 4px solid #10b981; }
+    .review-question-card.incorrect { border-left: 4px solid #ef4444; }
+    .review-question-card.omitted { border-left: 4px solid #94a3b8; }
+
     .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
     .question-badge {
       padding: 0.35rem 0.75rem;
@@ -414,6 +441,20 @@ interface ReviewQuestion {
     .question-badge.omitted { background: #f1f5f9; color: #475569; }
     
     .question-stem { font-size: 1.1rem; color: #1e293b; margin-bottom: 1.5rem; line-height: 1.6; }
+
+    /* ===== READING TEXT (Competencia Lectora) ===== */
+    .reading-text-container {
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .reading-text-label { font-weight: 700; color: #475569; font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.02em; }
+    .reading-images { display: flex; flex-direction: column; gap: 0.75rem; }
+    .reading-image { max-width: 100%; height: auto; border-radius: 6px; }
     
     /* ===== OPTIONS ===== */
     .options-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
@@ -547,6 +588,7 @@ interface ReviewQuestion {
       .review-body { padding: 1.25rem; }
       .review-question-card { padding: 1.25rem; }
       .info-tooltip { right: auto; left: 0; width: 200px; max-width: calc(100vw - 2rem); }
+      .reading-text-container { max-height: 42vh; padding: 1rem; }
     }
     @media (max-width: 480px) {
       .info-tooltip { display: none; }
@@ -565,6 +607,7 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
   public firestoreService = inject(FirestoreService);
   public paymentService = inject(PaymentService);
   private auth = inject(Auth);
+  private adminService = inject(AdminService);
 
   examId = '';
   examTitle = 'Cargando...';
@@ -572,6 +615,7 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
   totalQuestions = 0;
   activeFilter = 'all';
   loading = true;
+  notFound = false;
   mostrarModalMejorador = false;
   resultsLocked = false;
   resultsAvailableAt: Date | null = null;
@@ -581,7 +625,7 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
   questions: ReviewQuestion[] = [];
 
   get isProPlan(): boolean {
-    return this.firestoreService.profileSignal()?.plan === 'premium';
+    return this.firestoreService.profileSignal()?.plan === 'premium' || this.adminService.isAdmin() === true;
   }
 
   get correctCount(): number {
@@ -624,21 +668,13 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
     let intentoId = this.route.snapshot.queryParamMap.get('intento');
 
     const user = this.auth.currentUser;
-    const profile = this.firestoreService.profileSignal();
-    const lastFinished = profile?.lastSimulationFinishedAt;
 
-    // Proactively check if non-Pro user completed a test within 3 hours
-    if (!this.isProPlan && lastFinished) {
-      let finishedDate: Date = typeof lastFinished.toDate === 'function' ? lastFinished.toDate() : new Date(lastFinished);
-      const availDate = new Date(finishedDate.getTime() + 3 * 3600 * 1000);
-      if (availDate > new Date()) {
-        this.resultsLocked = true;
-        this.resultsAvailableAt = availDate;
-        this.startResultsCountdown(availDate);
-        this.loading = false;
-        return;
-      }
-    }
+    // Note: the 3-hour results lock for Free tier is enforced per-attempt inside
+    // loadIntentoData() below (using that attempt's own resultsAvailableAt/finishedAt).
+    // It must NOT be checked here against the user's global lastSimulationFinishedAt,
+    // since that timestamp reflects whichever simulation the user finished most
+    // recently — not necessarily the one being reviewed — which would incorrectly
+    // lock old, already-unlocked attempts opened from "Actividad Reciente".
 
     // If intentoId is missing, auto-fetch latest completed attempt for user
     if (!intentoId && user) {
@@ -652,6 +688,11 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
     if (intentoId) {
       this.loadIntentoData(intentoId);
     } else {
+      // No intento in the URL and none found for this user either — most
+      // commonly because the exam session started without a Firestore
+      // record (e.g. a transient failure when creating it). There is
+      // nothing to review; say so instead of rendering a blank "0/0" screen.
+      this.notFound = true;
       this.loading = false;
     }
   }
@@ -785,12 +826,15 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
               { id: 'A', text: pOpts.A || pOpts.a || 'Opción A' },
               { id: 'B', text: pOpts.B || pOpts.b || 'Opción B' },
               { id: 'C', text: pOpts.C || pOpts.c || 'Opción C' },
-              { id: 'D', text: pOpts.D || pOpts.d || 'Opción D' }
+              { id: 'D', text: pOpts.D || pOpts.d || 'Opción D' },
+              ...((pOpts.E || pOpts.e) ? [{ id: 'E', text: pOpts.E || pOpts.e }] : [])
             ];
 
             const userSelected = userAnsObj?.selectedAnswer || null;
-            const correctKey = p.correctAnswer || p.correct || 'A';
+            const correctKey = p.correctAnswer || p.correct || null;
             const isCorrect = userSelected ? (userSelected === correctKey) : false;
+
+            const normalizeUrl = (url: string) => (url.startsWith('http') || url.startsWith('/')) ? url : '/' + url;
 
             return {
               id: p.order || 1,
@@ -803,7 +847,8 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
                 correctSolution: p.explicacion || p.explanation?.correctSolution || 'Revisa la pauta oficial DEMRE.',
                 tip: 'Analiza cada alternativa descartando las distractoras.'
               },
-              imageUrl: p.imageUrl || null,
+              imageUrl: p.imageUrl ? normalizeUrl(p.imageUrl) : null,
+              readingText: Array.isArray(p.readingText) ? p.readingText.map(normalizeUrl) : null,
               tema: topic
             };
           });
@@ -820,13 +865,14 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
               { id: 'D', text: 'Opción D' }
             ],
             userAnswer: a.selectedAnswer || null,
-            correctAnswer: a.correctAnswer || (a.isCorrect ? a.selectedAnswer : 'A'),
+            correctAnswer: a.correctAnswer || (a.isCorrect ? a.selectedAnswer : null),
             isCorrect: !!a.isCorrect,
             explanation: {
               correctSolution: a.explanation?.correctSolution || 'Pauta y solución explicada de la pregunta.',
               tip: 'Revisa tus respuestas para identificar tus fortalezas y debilidades.'
             },
-            imageUrl: a.imageUrl || null,
+            imageUrl: a.imageUrl ? (String(a.imageUrl).startsWith('http') || String(a.imageUrl).startsWith('/') ? a.imageUrl : '/' + a.imageUrl) : null,
+            readingText: Array.isArray(a.readingText) ? a.readingText.map((t: string) => t.startsWith('http') || t.startsWith('/') ? t : '/' + t) : null,
             tema: a.tema || 'General'
           }));
         }
@@ -841,9 +887,17 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
             : 0;
         }
 
+        // Neither the intento doc nor any questions could be loaded — there
+        // is genuinely nothing to show (e.g. the attempt itself was never
+        // saved to Firestore). Surface that clearly instead of a blank "0/0".
+        if (!intento && this.totalQuestions === 0) {
+          this.notFound = true;
+        }
+
         this.loading = false;
       },
       error: () => {
+        this.notFound = true;
         this.loading = false;
       }
     });

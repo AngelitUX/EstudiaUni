@@ -26,7 +26,8 @@ export class SimulationsService {
     const db = this.firebaseService.firestore;
 
     const userDoc = await db.collection('users').doc(uid).get();
-    const tier = userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free';
+    const isAdminUser = await this.firebaseService.isAdmin(uid);
+    const tier = isAdminUser ? 'premium' : (userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free');
 
     let query: FirebaseFirestore.Query = db.collection('simulations');
 
@@ -55,7 +56,8 @@ export class SimulationsService {
 
     const userDoc = await db.collection('users').doc(uid).get();
     const userData = userDoc.data() || {};
-    const tier = userData?.subscription?.tier || userData?.plan || 'free';
+    const isAdminUser = await this.firebaseService.isAdmin(uid);
+    const tier = isAdminUser ? 'premium' : (userData?.subscription?.tier || userData?.plan || 'free');
 
     // 1. Validate 48-hour cooldown for Free tier
     if (tier === 'free') {
@@ -211,7 +213,8 @@ export class SimulationsService {
       throw new ConflictException('El ensayo ya está finalizado');
 
     const userDoc = await db.collection('users').doc(uid).get();
-    const tier = userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free';
+    const isAdminUser = await this.firebaseService.isAdmin(uid);
+    const tier = isAdminUser ? 'premium' : (userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free');
 
     const simDoc = await db
       .collection('simulations')
@@ -285,7 +288,8 @@ export class SimulationsService {
     if (data.userId !== uid) throw new ForbiddenException('No es tu intento');
 
     const userDoc = await db.collection('users').doc(uid).get();
-    const tier = userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free';
+    const isAdminUser = await this.firebaseService.isAdmin(uid);
+    const tier = isAdminUser ? 'premium' : (userDoc.data()?.subscription?.tier || userDoc.data()?.plan || 'free');
 
     // Check if results are locked (3-hour delay for Free tier)
     if (data.status === 'completed' && tier === 'free' && data.resultsAvailableAt) {

@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Pregunta } from '../../core/services/firestore.service';
-import { AiAssistService, ChatMessage } from '../../core/services/ai-assist.service';
+import { AiAssistService, ChatMessage, FocoTokensExhaustedError } from '../../core/services/ai-assist.service';
 import { ToastService } from '../../core/services/toast.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { AdminService } from '../admin/services/admin.service';
 
 interface Question {
   id: string;
@@ -293,7 +294,7 @@ interface AiMessage {
         </main>
 
         <!-- AI CHAT PANEL (Right Column) -->
-        <aside class="ai-panel glass-card" *ngIf="isAssisted && !isAiCollapsed">
+        <aside class="ai-panel glass-card" [class.mobile-expanded]="isAiExpandedMobile" *ngIf="isAssisted && !isAiCollapsed">
           <div class="ai-header">
             <div class="ai-header-left">
               <div class="ai-avatar">
@@ -305,6 +306,13 @@ interface AiMessage {
               </div>
             </div>
             <button class="btn-icon-sm" (click)="clearChat()" title="Limpiar chat">🗑️</button>
+            <button
+              class="btn-icon-sm mobile-expand-btn"
+              (click)="toggleAiExpandMobile()"
+              [title]="isAiExpandedMobile ? 'Achicar chat' : 'Agrandar chat'"
+              [attr.aria-label]="isAiExpandedMobile ? 'Achicar chat' : 'Agrandar chat'">
+              {{ isAiExpandedMobile ? '⤡' : '⤢' }}
+            </button>
             <button class="btn-icon-sm panel-close-btn-ai" (click)="toggleAi()" title="Cerrar tutor" aria-label="Cerrar tutor">✕</button>
           </div>
 
@@ -553,19 +561,26 @@ interface AiMessage {
       transition: grid-template-columns 0.3s ease;
     }
     .exam-body.assisted-layout {
-      grid-template-columns: 280px 1fr 320px;
+      grid-template-columns: 280px 1fr 380px;
     }
     .exam-body.nav-collapsed {
       grid-template-columns: 0px 1fr;
     }
     .exam-body.nav-collapsed.assisted-layout {
-      grid-template-columns: 0px 1fr 320px;
+      grid-template-columns: 0px 1fr 380px;
     }
     .exam-body.ai-collapsed {
       grid-template-columns: 280px 1fr 0px;
     }
     .exam-body.nav-collapsed.ai-collapsed {
       grid-template-columns: 0px 1fr 0px;
+    }
+
+    /* On large desktop monitors, give the chat column extra room instead of
+       leaving it fixed at the same width used on a small laptop screen. */
+    @media (min-width: 1440px) {
+      .exam-body.assisted-layout { grid-template-columns: 280px 1fr 440px; }
+      .exam-body.nav-collapsed.assisted-layout { grid-template-columns: 0px 1fr 440px; }
     }
 
     /* ===== TOGGLE BUTTONS ===== */
@@ -804,8 +819,16 @@ interface AiMessage {
       border-radius: 16px;
       background: #ffffff;
       border: 2px solid var(--glass-border);
-      height: fit-content;
-      max-height: 600px;
+      /* Fill the same height as the question/nav columns instead of capping at
+         a fixed 600px, which looked cramped on larger desktop monitors. */
+      height: 100%;
+      max-height: 100%;
+      /* Without this, a flex/grid item won't shrink below its content's
+         natural height (min-height defaults to "auto", not 0) — that was
+         silently defeating .ai-messages' own overflow-y:auto below: instead
+         of scrolling internally, the chat just grew past its container and
+         got clipped by overflow:hidden here, with no scrollbar anywhere. */
+      min-height: 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -856,6 +879,7 @@ interface AiMessage {
     .btn-icon-sm:hover { background: #e2e8f0; color: #1e293b; }
     .ai-messages {
       flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -1267,6 +1291,7 @@ interface AiMessage {
       flex-shrink: 0;
     }
     .panel-close-btn-ai { display: none; }
+    .mobile-expand-btn { display: none; }
     .mobile-fab {
       display: none;
       position: fixed;
@@ -1306,10 +1331,10 @@ interface AiMessage {
       .header-center { display: none; }
       .exam-title { display: none; }
 
-      /* Question nav & AI panel become full-screen slide-over drawers instead of
-         being stacked inline (avoids forcing the student to scroll past a big
-         question grid or chat panel before reaching the actual question). */
-      .question-nav, .ai-panel {
+      /* Question nav becomes a full-screen slide-over drawer instead of being
+         stacked inline (avoids forcing the student to scroll past a big
+         question grid before reaching the actual question). */
+      .question-nav {
         position: fixed !important;
         inset: 0 !important;
         top: 0 !important;
@@ -1323,8 +1348,41 @@ interface AiMessage {
         z-index: 2000 !important;
         margin: 0 !important;
       }
+
+      /* AI panel becomes a bottom-sheet covering ~half the screen instead of a
+         full-screen overlay, so the question stays visible above it while the
+         chat is open. */
+      .ai-panel {
+        position: fixed !important;
+        top: auto !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        inset: auto 0 0 0 !important;
+        width: 100% !important;
+        height: 50vh !important;
+        max-height: 50vh !important;
+        border-radius: 20px 20px 0 0 !important;
+        z-index: 2000 !important;
+        margin: 0 !important;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+      }
+
+      /* Manual "enlarge" toggle for when the 50vh sheet isn't tall enough to
+         read a longer answer comfortably — grows it close to full-screen. */
+      .ai-panel.mobile-expanded {
+        height: 88vh !important;
+        max-height: 88vh !important;
+      }
+
       .panel-close-btn, .panel-close-btn-ai { display: flex; }
+      .mobile-expand-btn { display: flex; }
       .mobile-fab { display: flex; }
+
+      /* The header "Consultar a Foco" toggle is redundant with the mobile FAB
+         (bottom-right octopus button) once the AI panel has its own dedicated
+         trigger on mobile — keep a single, unambiguous way to open the chat. */
+      .btn-ai-float { display: none !important; }
 
       .question-area { height: auto; overflow: visible; }
       .question-content-container { height: auto; overflow: visible; padding: 0; }
@@ -1451,9 +1509,10 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   private toast = inject(ToastService);
   private dashboardService = inject(DashboardService);
   public paymentService = inject(PaymentService);
+  private adminService = inject(AdminService);
 
   get isProPlan(): boolean {
-    return this.firestoreService.profileSignal()?.plan === 'premium';
+    return this.firestoreService.profileSignal()?.plan === 'premium' || this.adminService.isAdmin() === true;
   }
 
   get focoLimit(): number {
@@ -1505,6 +1564,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   // UI State
   isNavCollapsed = false;
   isAiCollapsed = false;
+  isAiExpandedMobile = false;
   isImageLoading = true;
   focusedPanel: 'both' | 'reading' | 'question' = 'both';
 
@@ -1570,6 +1630,22 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   ngOnDestroy() {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    // Always release the body scroll lock on the way out — leaving it stuck
+    // would make the entire rest of the app unscrollable (e.g. if the user
+    // navigates to "review" while the mobile chat/nav overlay was open).
+    if (typeof document !== 'undefined') document.body.style.overflow = '';
+  }
+
+  // On mobile, the question-nav and AI chat panels are fixed-position overlays
+  // meant to scroll only internally. Without this, the page behind them can
+  // still be scrolled (e.g. via touch drag), which visually drags the "fixed"
+  // panel along with it and makes the user scroll the whole tab to read a
+  // long chat instead of just the message list scrolling on its own.
+  private updateMobileOverlayScrollLock() {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    const isMobile = window.innerWidth <= 900;
+    const overlayOpen = isMobile && (!this.isNavCollapsed || (this.isAssisted && !this.isAiCollapsed));
+    document.body.style.overflow = overlayOpen ? 'hidden' : '';
   }
 
   loadQuestions(customName: string | null = null) {
@@ -1669,7 +1745,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       ],
       correctAnswer: pregunta.correctAnswer,
       imageUrl: pregunta.imageUrl ? (pregunta.imageUrl.startsWith('http') || pregunta.imageUrl.startsWith('/') ? pregunta.imageUrl : '/' + pregunta.imageUrl) : null,
-      readingText: (pregunta as any).readingText ? (pregunta as any).readingText.map((t: string) => t.startsWith('/') ? t : '/' + t) : null
+      readingText: (pregunta as any).readingText ? (pregunta as any).readingText.map((t: string) => t.startsWith('http') || t.startsWith('/') ? t : '/' + t) : null
     };
   }
 
@@ -1694,13 +1770,33 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
 
   toggleNav() {
     this.isNavCollapsed = !this.isNavCollapsed;
+    this.updateMobileOverlayScrollLock();
   }
 
   toggleAi() {
     this.isAiCollapsed = !this.isAiCollapsed;
+
+    // On mobile, the AI panel opens as a bottom sheet over the top half of the
+    // screen. In the Lenguaje module that top half already has to fit the
+    // reading text AND the question, so free up space by auto-focusing the
+    // question when the chat opens (user can still switch back manually).
+    if (!this.isAiCollapsed && this.isLanguageModule && typeof window !== 'undefined' && window.innerWidth <= 900) {
+      this.focusedPanel = 'question';
+    }
+
+    // Don't leave the chat pre-expanded the next time it's opened.
+    if (this.isAiCollapsed) {
+      this.isAiExpandedMobile = false;
+    }
+
+    this.updateMobileOverlayScrollLock();
   }
 
-
+  // Mobile-only: the chat opens as a ~50vh bottom sheet, which can feel cramped
+  // when reading a longer answer from Foco. Lets the student temporarily grow it.
+  toggleAiExpandMobile() {
+    this.isAiExpandedMobile = !this.isAiExpandedMobile;
+  }
 
   selectOption(optionId: string) {
     if (this.currentQuestion) {
@@ -1957,7 +2053,20 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     this.shouldScrollChat = true;
   }
 
-  /** Core method: calls Gemini directly (no backend needed) */
+  /**
+   * Core method: routed through the backend (POST /api/ai/chat).
+   *
+   * This used to call Gemini directly from the browser with an API key
+   * embedded in the frontend bundle, and "consumed" a Foco token by just
+   * mutating the local profile signal in memory — nothing was ever written
+   * to Firestore. That meant the daily limit wasn't actually enforced (the
+   * key was usable by anyone who opened devtools, with no auth or quota
+   * check at all), and the on-screen token count would drift back up any
+   * time the profile got re-fetched from the database, since the "usage"
+   * had never really been persisted. The backend endpoint checks and
+   * consumes the real per-user counter in Firestore before/after calling
+   * the model, so this is now the single source of truth.
+   */
   private async callAiChat() {
     if (!this.currentQuestion) { this.aiLoading = false; return; }
 
@@ -1975,34 +2084,46 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
     const historyForApi = this.aiMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
     try {
-      const response = await this.aiAssistService.chatDirect({
+      const response = await this.aiAssistService.chatViaBackend({
         question: this.currentQuestion.stem,
         options: this.currentQuestion.options,
         userAnswer: this.answers[this.currentQuestion.id] || null,
         subject: this.examId,
-        examTitle: this.examTitle,
         imageUrl: this.currentQuestion.imageUrl,
         history: historyForApi,
       });
 
-      // Update local profile signal with used token count
+      // Sync the local profile signal with the real, backend-confirmed usage
+      // instead of guessing/incrementing locally.
       const profile = this.firestoreService.profileSignal();
       if (profile) {
-        const currentUsed = profile.dailyCredits?.focoTokensUsedToday || 0;
         profile.dailyCredits = {
           ...(profile.dailyCredits || {}),
-          focoTokensUsedToday: currentUsed + 1
+          focoTokensUsedToday: Math.max(0, response.limitTokens - response.remainingTokens)
         };
       }
 
       this.aiMessages.push({ role: 'assistant', content: response.reply, timestamp: new Date() });
-    } catch {
-      this.toast.error('No se pudo conectar con el tutor IA.');
-      this.aiMessages.push({
-        role: 'assistant',
-        content: 'Lo siento, no pude conectarme en este momento. Intenta de nuevo.',
-        timestamp: new Date()
-      });
+    } catch (err) {
+      if (err instanceof FocoTokensExhaustedError) {
+        this.aiMessages.push({
+          role: 'assistant',
+          content: `⚠️ Has alcanzado tus ${err.limit} fichas/tokens diarias de Foco IA. Se recargarán mañana a la misma hora. ¡Pásate a PRO para tener 500 fichas diarias! 👑`,
+          timestamp: new Date()
+        });
+        const profile = this.firestoreService.profileSignal();
+        if (profile) {
+          profile.dailyCredits = { ...(profile.dailyCredits || {}), focoTokensUsedToday: err.limit };
+        }
+        this.paymentService.openPricingModal();
+      } else {
+        this.toast.error('No se pudo conectar con el tutor IA.');
+        this.aiMessages.push({
+          role: 'assistant',
+          content: 'Lo siento, no pude conectarme en este momento. Intenta de nuevo.',
+          timestamp: new Date()
+        });
+      }
     } finally {
       this.aiLoading = false;
       this.shouldScrollChat = true;

@@ -60,7 +60,7 @@ export class SubscriptionsService {
     }
 
     const subscription = userData.subscription || { tier: userData.plan || 'free', status: 'active' };
-    const isPremium = subscription.tier === 'premium' || userData.plan === 'premium';
+    const isPremium = subscription.tier === 'premium' || userData.plan === 'premium' || (await this.firebaseService.isAdmin(uid));
     const dailyCredits = await this.getResetCredits(uid, userData);
     const focoLimit = isPremium ? PRO_TIER_LIMITS.focoTokens : FREE_TIER_LIMITS.focoTokens;
     const focoUsed = dailyCredits.focoTokensUsedToday || 0;
@@ -97,7 +97,7 @@ export class SubscriptionsService {
       if (userDoc.exists) userData = userDoc.data();
     } catch (e) {}
 
-    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium';
+    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium' || (await this.firebaseService.isAdmin(uid));
     const limit = isPremium ? PRO_TIER_LIMITS.focoTokens : FREE_TIER_LIMITS.focoTokens;
     const dailyCredits = await this.getResetCredits(uid, userData || {});
     const used = dailyCredits.focoTokensUsedToday || 0;
@@ -135,7 +135,7 @@ export class SubscriptionsService {
       if (userDoc.exists) userData = userDoc.data();
     } catch (e) {}
 
-    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium';
+    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium' || (await this.firebaseService.isAdmin(uid));
     if (isPremium) {
       return { inCooldown: false, secondsRemaining: 0 };
     }
@@ -194,7 +194,7 @@ export class SubscriptionsService {
       const endDate = typeof userData.subscription.endDate.toDate === 'function'
         ? userData.subscription.endDate.toDate()
         : new Date(userData.subscription.endDate);
-        
+
       if (endDate < new Date()) {
         isPremium = false;
         try {
@@ -210,6 +210,9 @@ export class SubscriptionsService {
         } catch (e) {}
       }
     }
+
+    // Admins get Pro-tier treatment everywhere, regardless of their subscription state.
+    isPremium = isPremium || (await this.firebaseService.isAdmin(uid));
 
     if (isPremium) {
       return { allowed: true };
@@ -259,11 +262,17 @@ export class SubscriptionsService {
   async upgrade(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
     const userRef = this.firebaseService.firestore.collection('users').doc(uid);
 
-    try {
-      // Transaction: prevents two near-simultaneous grants (e.g. a Webpay commit racing
-      // an admin manual approval for the same user) from reading the same stale
-      // existingEndDate and one of them clobbering the other's extension.
-      await this.firebaseService.firestore.runTransaction(async (t) => {
+    // IMPORTANT: this used to catch its own errors, log a warning, and return
+    // { success: true } regardless of whether the Firestore write actually
+    // happened. That meant a paying user could get "Pago aprobado y cuenta
+    // actualizada a premium" while their account silently stayed Free. Any
+    // failure here MUST propagate to the caller (WebpayService.commitTransaction)
+    // so it can report the real outcome instead of a false success.
+
+    // Transaction: prevents two near-simultaneous grants (e.g. a Webpay commit racing
+    // an admin manual approval for the same user) from reading the same stale
+    // existingEndDate and one of them clobbering the other's extension.
+    await this.firebaseService.firestore.runTransaction(async (t) => {
         const userDoc = await t.get(userRef);
 
         let startDate = new Date();
@@ -300,20 +309,17 @@ export class SubscriptionsService {
           }
         }
 
-        t.set(userRef, {
-          subscription: {
-            tier: 'premium',
-            status: 'active',
-            startDate,
-            endDate,
-          },
-          plan: 'premium',
-          updatedAt: new Date(),
-        }, { merge: true });
-      });
-    } catch (dbError) {
-      this.logger.warn(`[SubscriptionsService] Firestore upgrade error: ${dbError.message}`);
-    }
+      t.set(userRef, {
+        subscription: {
+          tier: 'premium',
+          status: 'active',
+          startDate,
+          endDate,
+        },
+        plan: 'premium',
+        updatedAt: new Date(),
+      }, { merge: true });
+    });
 
     return { success: true, message: `Upgraded to premium (${planType})` };
   }

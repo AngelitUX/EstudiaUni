@@ -284,7 +284,11 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
     .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     .pricing-modal-overlay {
-      position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center;
+      /* Rendered at the app root and opened from inside other feature modals
+         (e.g. the "listo para iniciar" / cooldown modals, which reach up to
+         z-index 100000), so it must always win the stacking order regardless
+         of what else is open underneath it. */
+      position: fixed; inset: 0; z-index: 999999; display: flex; align-items: center;
       justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(16px);
       padding: 1rem; overflow-y: auto;
     }

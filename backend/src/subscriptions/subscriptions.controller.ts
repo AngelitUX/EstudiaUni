@@ -40,10 +40,12 @@ export class SubscriptionsController {
     return this.subscriptionsService.checkCredits(user.uid, dto.action);
   }
 
-  @Post('upgrade')
-  async upgrade(@CurrentUser() user: CurrentUserData) {
-    return this.subscriptionsService.upgrade(user.uid);
-  }
+  // NOTE: there is intentionally no public "upgrade" endpoint here. Granting
+  // premium must only ever happen after a verified payment (see
+  // WebpayService.commitTransaction) or an admin action (see
+  // SubscriptionsService.manualGrant/approveTransfer). A directly callable
+  // `POST /subscriptions/upgrade` used to exist and would grant Premium to
+  // ANY authenticated user with no payment check at all — it was removed.
 
   @Post('cancel')
   async cancel(@CurrentUser() user: CurrentUserData) {

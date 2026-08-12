@@ -235,17 +235,23 @@ export class WebpayService {
         updatedAt: new Date(),
       };
 
-      // Store in memory as primary fallback
+      // Store in memory as a fast-path cache, but Firestore below is the
+      // durable record: create() and commit() can land on different backend
+      // instances/processes (redeploy, restart, horizontal scaling), and the
+      // in-memory Map does not survive any of that. If persisting to Firestore
+      // fails here, the user would be sent to Transbank for a transaction that
+      // commitTransaction() might never be able to find again — so this must
+      // fail loudly instead of silently proceeding.
       this.inMemoryTransactions.set(data.token, txRecord);
 
-      // Attempt to save in Firestore (non-blocking if credentials are missing)
       try {
         await this.firebaseService.firestore
           .collection('transactions')
           .doc(data.token)
           .set(txRecord);
       } catch (dbError) {
-        this.logger.warn(`[Webpay] Firestore save ignored (running in dev mode without service account credentials): ${dbError.message}`);
+        this.logger.error(`[Webpay] Could not persist transaction ${data.token} to Firestore: ${dbError.message}`);
+        throw new BadRequestException('No se pudo iniciar el pago. Intenta nuevamente en unos segundos.');
       }
 
       if (appliedCoupon) {
@@ -348,7 +354,26 @@ export class WebpayService {
         try {
           await this.subscriptionsService.upgrade(recipientUid, txData.planType);
         } catch (subError) {
-          this.logger.warn(`[Webpay] Could not upgrade user subscription in Firestore: ${subError.message}`);
+          // The payment WAS captured by Transbank at this point — money changed
+          // hands — but the Firestore write that grants Premium failed. We must
+          // never tell the user "cuenta actualizada a premium" here: that would
+          // be a lie, and with no error surfaced nobody would know to fix it.
+          // Flag the transaction so an admin can find it and grant manually via
+          // SubscriptionsService.manualGrant (the same tool used for bank transfers).
+          this.logger.error(
+            `[Webpay] PAID but upgrade FAILED for uid=${recipientUid}, token=${token}, buyOrder=${txData.buyOrder}: ${subError.message}`,
+          );
+          try {
+            await txRef.update({ status: 'upgrade_failed', upgradeError: subError.message, updatedAt: new Date() });
+          } catch (dbError) {
+            this.logger.warn(`[Webpay] Could not flag transaction as upgrade_failed: ${dbError.message}`);
+          }
+          return {
+            success: false,
+            message: 'Tu pago fue aprobado, pero hubo un problema activando tu Plan Pro. Nuestro equipo ya fue notificado — si en unos minutos tu cuenta no se actualiza, por favor contacta a soporte con tu comprobante.',
+            amount: txData.amount,
+            buyOrder: txData.buyOrder,
+          };
         }
 
         return {

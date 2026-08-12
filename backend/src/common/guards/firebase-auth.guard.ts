@@ -34,25 +34,12 @@ export class FirebaseAuthGuard implements CanActivate {
     } catch (error) {
       this.logger.warn(`Token verification failed: ${error.message}`);
 
-      // Fallback para entorno de desarrollo/pruebas locales si la verificación de firma falla
-      try {
-        const parts = token.split('.');
-        if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-          const uid = payload.user_id || payload.sub || payload.uid;
-          if (uid) {
-            this.logger.log(`Using decoded JWT payload for user: ${uid}`);
-            request.user = {
-              uid,
-              email: payload.email || 'user@estudiauni.cl',
-              emailVerified: payload.email_verified ?? true,
-            };
-            return true;
-          }
-        }
-      } catch (fallbackErr) {
-        // Ignorar fallo de parseo fallback y continuar con las excepciones estándar
-      }
+      // SECURITY: there used to be a fallback here that decoded the JWT payload
+      // without verifying its signature whenever verifyIdToken() failed. Since a
+      // JWT payload can be freely forged (no signature needed to read/write the
+      // base64 segment), that fallback let anyone impersonate any uid — including
+      // hitting payment/admin endpoints as another user. Never resurrect it; if
+      // verification fails, the request is unauthenticated, full stop.
 
       if (error.code === 'auth/id-token-expired') {
         throw new UnauthorizedException('Token expired. Please login again.');

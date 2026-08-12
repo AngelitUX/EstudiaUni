@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { environment } from '../../../environments/environment';
 
@@ -20,6 +22,18 @@ export interface ChatRequest {
 
 export interface ChatResponse {
   reply: string;
+}
+
+export interface BackendChatResponse {
+  reply: string;
+  remainingTokens: number;
+  limitTokens: number;
+}
+
+export class FocoTokensExhaustedError extends Error {
+  constructor(public limit: number) {
+    super('FOCO_TOKENS_EXHAUSTED');
+  }
 }
 
 // Legacy support
@@ -58,6 +72,7 @@ FORMATO MATEMÁTICO Y DE ECUACIONES (MUY IMPORTANTE):
 
 @Injectable({ providedIn: 'root' })
 export class AiAssistService {
+  private http = inject(HttpClient);
   private genAI: GoogleGenerativeAI | null = null;
 
   constructor() {
@@ -66,6 +81,40 @@ export class AiAssistService {
       this.genAI = new GoogleGenerativeAI(apiKey);
     } else {
       console.warn('[AiAssistService] Gemini API key no configurada.');
+    }
+  }
+
+  /**
+   * Multi-turn chat routed through the backend (POST /api/ai/chat).
+   *
+   * This is the only path that should be used from user-facing screens: the
+   * backend enforces the real Foco daily token limit (checkFocoTokens /
+   * consumeFocoToken against Firestore) before/after calling the AI model,
+   * and it's the model call itself that stays server-side — no API key is
+   * ever exposed to the browser this way.
+   *
+   * Throws FocoTokensExhaustedError when the user is out of tokens for today.
+   */
+  async chatViaBackend(payload: ChatRequest): Promise<BackendChatResponse> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    const body: any = {
+      question: payload.question,
+      options: payload.options,
+      history: payload.history,
+    };
+    if (payload.userAnswer) body.userAnswer = payload.userAnswer;
+    if (payload.subject) body.subject = payload.subject;
+    if (payload.imageUrl) body.imageUrl = payload.imageUrl;
+
+    try {
+      return await firstValueFrom(
+        this.http.post<BackendChatResponse>(`${baseUrl}/api/ai/chat`, body),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.error?.code === 'FOCO_TOKENS_EXHAUSTED') {
+        throw new FocoTokensExhaustedError(err.error.limit);
+      }
+      throw err;
     }
   }
 
