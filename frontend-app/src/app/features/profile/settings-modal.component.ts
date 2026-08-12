@@ -248,7 +248,7 @@ export class SettingsModalComponent implements OnInit {
     }
 
     this.notifPermissionGranted = await this.notificationService.requestPermission();
-    
+
     if (this.notifPermissionGranted) {
       this.toast.success('Notificaciones permitidas');
     } else {
@@ -262,7 +262,7 @@ export class SettingsModalComponent implements OnInit {
     classList.remove('font-large', 'font-xlarge', 'spacing-wide', 'spacing-xwide');
     if (this.settingsForm.fontSize === 'large') classList.add('font-large');
     else if (this.settingsForm.fontSize === 'xlarge') classList.add('font-xlarge');
-    
+
     if (this.settingsForm.textSpacing === 'wide') classList.add('spacing-wide');
     else if (this.settingsForm.textSpacing === 'xwide') classList.add('spacing-xwide');
   }
