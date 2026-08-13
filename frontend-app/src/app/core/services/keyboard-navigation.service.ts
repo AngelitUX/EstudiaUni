@@ -38,6 +38,7 @@ export class KeyboardNavigationService {
     const keyE = localStorage.getItem('KEY_SHORTCUT_E') || 'b';
     const keyNext = localStorage.getItem('KEY_SHORTCUT_NEXT') || 'enter';
     const keyPrev = localStorage.getItem('KEY_SHORTCUT_PREV') || 'arrowleft';
+    const keyExit = localStorage.getItem('KEY_SHORTCUT_EXIT') || 'escape';
 
     // 1. Answer Options Selection (A, B, C, D, E)
     // Supports custom configuration AND classic selectors (1-5, z-b) simultaneously
@@ -72,6 +73,9 @@ export class KeyboardNavigationService {
     else if (key === keyPrev || key === 'arrowleft') {
       event.preventDefault();
       this.clickPrevButton();
+    } else if (key === keyExit || key === 'escape') {
+      event.preventDefault();
+      this.clickExitButton();
     } else if (key === 'arrowup') {
       event.preventDefault();
       this.scrollSmoothly(-120);
@@ -204,6 +208,29 @@ export class KeyboardNavigationService {
             btn.click();
             return;
           }
+        }
+      }
+    }
+  }
+
+  private clickExitButton() {
+    const exitSelectors = [
+      '.btn-close',
+      '.panel-close-btn',
+      '.logout-close-btn',
+      '.btn-cancel',
+      '.btn-secondary-modal',
+      '.panel-close-btn-ai',
+      '.close-modal'
+    ];
+
+    for (const selector of exitSelectors) {
+      const exitButtons = document.querySelectorAll(selector);
+      for (let i = 0; i < exitButtons.length; i++) {
+        const btn = exitButtons[i] as HTMLElement;
+        if (btn.offsetParent !== null) {
+          btn.click();
+          return;
         }
       }
     }

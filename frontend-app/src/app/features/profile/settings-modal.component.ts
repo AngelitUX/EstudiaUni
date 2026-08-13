@@ -113,6 +113,13 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
                 <span class="key-label">Anterior</span>
                 <input type="text" [value]="formatKeyName(settingsForm.keyPrev)" (keydown)="captureKey($event, 'keyPrev')" readonly class="key-input"/>
               </div>
+              <div class="key-card">
+                <span class="key-label">Cerrar / Salir</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyExit)" (keydown)="captureKey($event, 'keyExit')" readonly class="key-input"/>
+              </div>
+            </div>
+            <div class="keyboard-info-banner">
+              <span>💡 <strong>Nota:</strong> Los atajos clásicos (<kbd>1</kbd> al <kbd>5</kbd> para responder, y <kbd>↵ Enter</kbd>, <kbd>␣ Espacio</kbd>, <kbd>←</kbd> / <kbd>→</kbd> para navegar) se mantendrán siempre activos como alternativa en segundo plano, incluso si cambias tus atajos.</span>
             </div>
             <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
               <button type="button" class="btn-reset-keys" (click)="resetDefaultKeys()">
@@ -254,6 +261,29 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
       color: #ef4444;
       background: rgba(239, 68, 68, 0.05);
     }
+    .keyboard-info-banner {
+      background: rgba(133, 92, 214, 0.05);
+      border: 1.5px solid rgba(133, 92, 214, 0.15);
+      padding: 0.75rem 0.95rem;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 0.8rem;
+    }
+    .keyboard-info-banner kbd {
+      background: #ffffff;
+      border: 1px solid var(--glass-border);
+      border-bottom: 2.5px solid var(--glass-border);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.72rem;
+      color: var(--text-primary);
+      box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    }
     @media(max-width:720px){
       .modal-overlay{padding:0.5rem;align-items:flex-start}
       .modal-container{width:100%;margin-top:0.5rem;max-height:94vh}
@@ -294,7 +324,8 @@ export class SettingsModalComponent implements OnInit {
     keyAnsD: 'v',
     keyAnsE: 'b',
     keyNext: 'enter',
-    keyPrev: 'arrowleft'
+    keyPrev: 'arrowleft',
+    keyExit: 'escape'
   };
   initialSettingsForm = '';
 
@@ -323,6 +354,7 @@ export class SettingsModalComponent implements OnInit {
           this.settingsForm.keyAnsE = p.keyAnsE || 'b';
           this.settingsForm.keyNext = p.keyNext || 'enter';
           this.settingsForm.keyPrev = p.keyPrev || 'arrowleft';
+          this.settingsForm.keyExit = p.keyExit || 'escape';
           
           // Seed localStorage instantly
           localStorage.setItem('KEY_SHORTCUT_A', this.settingsForm.keyAnsA);
@@ -332,6 +364,7 @@ export class SettingsModalComponent implements OnInit {
           localStorage.setItem('KEY_SHORTCUT_E', this.settingsForm.keyAnsE);
           localStorage.setItem('KEY_SHORTCUT_NEXT', this.settingsForm.keyNext);
           localStorage.setItem('KEY_SHORTCUT_PREV', this.settingsForm.keyPrev);
+          localStorage.setItem('KEY_SHORTCUT_EXIT', this.settingsForm.keyExit);
         }
         this.initialSettingsForm = JSON.stringify(this.settingsForm);
         this.loading = false;
@@ -340,10 +373,10 @@ export class SettingsModalComponent implements OnInit {
     });
   }
 
-  captureKey(event: KeyboardEvent, field: 'keyAnsA' | 'keyAnsB' | 'keyAnsC' | 'keyAnsD' | 'keyAnsE' | 'keyNext' | 'keyPrev') {
+  captureKey(event: KeyboardEvent, field: 'keyAnsA' | 'keyAnsB' | 'keyAnsC' | 'keyAnsD' | 'keyAnsE' | 'keyNext' | 'keyPrev' | 'keyExit') {
     event.preventDefault();
     const key = event.key.toLowerCase();
-    if (key === 'escape') return;
+    if (key === 'escape' && field !== 'keyExit') return; // permitimos escape para cancelar, a menos que configuremos escape mismo
     this.settingsForm[field] = key;
   }
 
@@ -367,6 +400,7 @@ export class SettingsModalComponent implements OnInit {
     this.settingsForm.keyAnsE = 'b';
     this.settingsForm.keyNext = 'enter';
     this.settingsForm.keyPrev = 'arrowleft';
+    this.settingsForm.keyExit = 'escape';
     this.toast.info('Atajos restablecidos. Recuerda guardar los cambios 🔄');
   }
 
@@ -450,7 +484,8 @@ export class SettingsModalComponent implements OnInit {
         keyAnsD: this.settingsForm.keyAnsD,
         keyAnsE: this.settingsForm.keyAnsE,
         keyNext: this.settingsForm.keyNext,
-        keyPrev: this.settingsForm.keyPrev
+        keyPrev: this.settingsForm.keyPrev,
+        keyExit: this.settingsForm.keyExit
       });
       // Save locally for instant access
       localStorage.setItem('KEY_SHORTCUT_A', this.settingsForm.keyAnsA);
@@ -460,6 +495,7 @@ export class SettingsModalComponent implements OnInit {
       localStorage.setItem('KEY_SHORTCUT_E', this.settingsForm.keyAnsE);
       localStorage.setItem('KEY_SHORTCUT_NEXT', this.settingsForm.keyNext);
       localStorage.setItem('KEY_SHORTCUT_PREV', this.settingsForm.keyPrev);
+      localStorage.setItem('KEY_SHORTCUT_EXIT', this.settingsForm.keyExit);
       // Restart reminders with new config after saving
       if (this.settingsForm.notificationsEnabled) {
         this.notificationService.startReminders({
