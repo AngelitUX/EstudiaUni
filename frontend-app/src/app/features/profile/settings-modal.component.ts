@@ -80,6 +80,54 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
             </div>
           </div>
           <div class="section-block">
+            <div class="section-header">
+              <h3>Atajos de Teclado (Navegabilidad)</h3>
+              <p>Haz clic en cada casilla y presiona la tecla que deseas asignar para responder y navegar por las lecciones.</p>
+            </div>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.85rem;">
+              <div class="key-card">
+                <span class="key-label">Opción A</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyAnsA)" (keydown)="captureKey($event, 'keyAnsA')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Opción B</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyAnsB)" (keydown)="captureKey($event, 'keyAnsB')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Opción C</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyAnsC)" (keydown)="captureKey($event, 'keyAnsC')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Opción D</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyAnsD)" (keydown)="captureKey($event, 'keyAnsD')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Opción E</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyAnsE)" (keydown)="captureKey($event, 'keyAnsE')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Siguiente</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyNext)" (keydown)="captureKey($event, 'keyNext')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Anterior</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyPrev)" (keydown)="captureKey($event, 'keyPrev')" readonly class="key-input"/>
+              </div>
+              <div class="key-card">
+                <span class="key-label">Cerrar / Salir</span>
+                <input type="text" [value]="formatKeyName(settingsForm.keyExit)" (keydown)="captureKey($event, 'keyExit')" readonly class="key-input"/>
+              </div>
+            </div>
+            <div class="keyboard-info-banner">
+              <span>💡 <strong>Nota:</strong> Los atajos clásicos (<kbd>1</kbd> al <kbd>5</kbd> para responder, y <kbd>↵ Enter</kbd>, <kbd>␣ Espacio</kbd>, <kbd>←</kbd> / <kbd>→</kbd> para navegar) se mantendrán siempre activos como alternativa en segundo plano, incluso si cambias tus atajos.</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+              <button type="button" class="btn-reset-keys" (click)="resetDefaultKeys()">
+                Restablecer Valores Predeterminados
+              </button>
+            </div>
+          </div>
+          <div class="section-block">
             <div class="section-header"><h3>Soporte</h3><p>¿Necesitas ayuda? Escríbenos desde el centro de soporte.</p></div>
             <div class="support-actions">
               <a routerLink="/soporte" class="support-link" (click)="closeModal()">🎧 Ir a Soporte</a>
@@ -156,6 +204,86 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
     .support-actions{display:flex;align-items:center;justify-content:flex-start}
     .support-link{display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;border-radius:10px;border:2px solid var(--accent-primary);color:var(--accent-primary);padding:.55rem .9rem;font-weight:700;background:rgba(133,92,214,0.08);transition:all .2s}
     .support-link:hover{background:var(--accent-primary);color:#ffffff;transform:translateY(-1px)}
+    .key-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--glass-border);
+      padding: 0.6rem;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+    .key-card:hover {
+      border-color: rgba(133, 92, 214, 0.3);
+      background: rgba(133, 92, 214, 0.02);
+    }
+    .key-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+    .key-input {
+      width: 100%;
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.85rem !important;
+      background: #ffffff !important;
+      border: 1.5px solid var(--glass-border) !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+      cursor: pointer;
+      padding: 0.45rem !important;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .key-input:focus {
+      border-color: var(--accent-primary) !important;
+      background: rgba(133, 92, 214, 0.04) !important;
+      box-shadow: 0 0 0 2px rgba(133, 92, 214, 0.15) !important;
+      outline: none;
+    }
+    .btn-reset-keys {
+      background: transparent;
+      border: 1.5px solid var(--glass-border);
+      color: var(--text-secondary);
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset-keys:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .keyboard-info-banner {
+      background: rgba(133, 92, 214, 0.05);
+      border: 1.5px solid rgba(133, 92, 214, 0.15);
+      padding: 0.75rem 0.95rem;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 0.8rem;
+    }
+    .keyboard-info-banner kbd {
+      background: #ffffff;
+      border: 1px solid var(--glass-border);
+      border-bottom: 2.5px solid var(--glass-border);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.72rem;
+      color: var(--text-primary);
+      box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    }
     @media(max-width:720px){
       .modal-overlay{padding:0.5rem;align-items:flex-start}
       .modal-container{width:100%;margin-top:0.5rem;max-height:94vh}
@@ -189,7 +317,15 @@ export class SettingsModalComponent implements OnInit {
     notificationIntensity: 'normal' as 'baja' | 'normal' | 'alta',
     dyslexiaFont: false,
     fontSize: 'normal' as 'normal' | 'large' | 'xlarge',
-    textSpacing: 'normal' as 'normal' | 'wide' | 'xwide'
+    textSpacing: 'normal' as 'normal' | 'wide' | 'xwide',
+    keyAnsA: 'z',
+    keyAnsB: 'x',
+    keyAnsC: 'c',
+    keyAnsD: 'v',
+    keyAnsE: 'b',
+    keyNext: 'enter',
+    keyPrev: 'arrowleft',
+    keyExit: 'escape'
   };
   initialSettingsForm = '';
 
@@ -203,19 +339,69 @@ export class SettingsModalComponent implements OnInit {
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
-          this.settingsForm.preferredStudyTime = profile.preferredStudyTime || 'tarde';
-          this.settingsForm.notificationsEnabled = profile.notificationsEnabled ?? true;
-          this.settingsForm.theme = profile.theme || 'dark';
-          this.settingsForm.notificationIntensity = profile.notificationIntensity || 'normal';
-          this.settingsForm.dyslexiaFont = !!profile.dyslexiaFont;
-          this.settingsForm.fontSize = profile.fontSize || 'normal';
-          this.settingsForm.textSpacing = profile.textSpacing || 'normal';
+          const p = profile as any;
+          this.settingsForm.preferredStudyTime = p.preferredStudyTime || 'tarde';
+          this.settingsForm.notificationsEnabled = p.notificationsEnabled ?? true;
+          this.settingsForm.theme = p.theme || 'dark';
+          this.settingsForm.notificationIntensity = p.notificationIntensity || 'normal';
+          this.settingsForm.dyslexiaFont = !!p.dyslexiaFont;
+          this.settingsForm.fontSize = p.fontSize || 'normal';
+          this.settingsForm.textSpacing = p.textSpacing || 'normal';
+          this.settingsForm.keyAnsA = p.keyAnsA || 'z';
+          this.settingsForm.keyAnsB = p.keyAnsB || 'x';
+          this.settingsForm.keyAnsC = p.keyAnsC || 'c';
+          this.settingsForm.keyAnsD = p.keyAnsD || 'v';
+          this.settingsForm.keyAnsE = p.keyAnsE || 'b';
+          this.settingsForm.keyNext = p.keyNext || 'enter';
+          this.settingsForm.keyPrev = p.keyPrev || 'arrowleft';
+          this.settingsForm.keyExit = p.keyExit || 'escape';
+          
+          // Seed localStorage instantly
+          localStorage.setItem('KEY_SHORTCUT_A', this.settingsForm.keyAnsA);
+          localStorage.setItem('KEY_SHORTCUT_B', this.settingsForm.keyAnsB);
+          localStorage.setItem('KEY_SHORTCUT_C', this.settingsForm.keyAnsC);
+          localStorage.setItem('KEY_SHORTCUT_D', this.settingsForm.keyAnsD);
+          localStorage.setItem('KEY_SHORTCUT_E', this.settingsForm.keyAnsE);
+          localStorage.setItem('KEY_SHORTCUT_NEXT', this.settingsForm.keyNext);
+          localStorage.setItem('KEY_SHORTCUT_PREV', this.settingsForm.keyPrev);
+          localStorage.setItem('KEY_SHORTCUT_EXIT', this.settingsForm.keyExit);
         }
         this.initialSettingsForm = JSON.stringify(this.settingsForm);
         this.loading = false;
       },
       error: () => { this.loading = false; this.toast.error('No se pudo cargar la información.'); }
     });
+  }
+
+  captureKey(event: KeyboardEvent, field: 'keyAnsA' | 'keyAnsB' | 'keyAnsC' | 'keyAnsD' | 'keyAnsE' | 'keyNext' | 'keyPrev' | 'keyExit') {
+    event.preventDefault();
+    const key = event.key.toLowerCase();
+    if (key === 'escape' && field !== 'keyExit') return; // permitimos escape para cancelar, a menos que configuremos escape mismo
+    this.settingsForm[field] = key;
+  }
+
+  formatKeyName(key: string): string {
+    if (!key) return '';
+    const lower = key.toLowerCase();
+    if (lower === 'arrowleft') return '← Flecha Izq';
+    if (lower === 'arrowright') return '→ Flecha Der';
+    if (lower === 'arrowup') return '↑ Flecha Arriba';
+    if (lower === 'arrowdown') return '↓ Flecha Abajo';
+    if (lower === ' ') return '␣ Espacio';
+    if (lower === 'enter') return '↵ Enter';
+    return key.toUpperCase();
+  }
+
+  resetDefaultKeys() {
+    this.settingsForm.keyAnsA = 'z';
+    this.settingsForm.keyAnsB = 'x';
+    this.settingsForm.keyAnsC = 'c';
+    this.settingsForm.keyAnsD = 'v';
+    this.settingsForm.keyAnsE = 'b';
+    this.settingsForm.keyNext = 'enter';
+    this.settingsForm.keyPrev = 'arrowleft';
+    this.settingsForm.keyExit = 'escape';
+    this.toast.info('Atajos restablecidos. Recuerda guardar los cambios 🔄');
   }
 
   toggleLocalMocks(): void {
@@ -248,7 +434,7 @@ export class SettingsModalComponent implements OnInit {
     }
 
     this.notifPermissionGranted = await this.notificationService.requestPermission();
-    
+
     if (this.notifPermissionGranted) {
       this.toast.success('Notificaciones permitidas');
     } else {
@@ -262,7 +448,7 @@ export class SettingsModalComponent implements OnInit {
     classList.remove('font-large', 'font-xlarge', 'spacing-wide', 'spacing-xwide');
     if (this.settingsForm.fontSize === 'large') classList.add('font-large');
     else if (this.settingsForm.fontSize === 'xlarge') classList.add('font-xlarge');
-    
+
     if (this.settingsForm.textSpacing === 'wide') classList.add('spacing-wide');
     else if (this.settingsForm.textSpacing === 'xwide') classList.add('spacing-xwide');
   }
@@ -291,8 +477,25 @@ export class SettingsModalComponent implements OnInit {
         notificationIntensity: this.settingsForm.notificationIntensity,
         dyslexiaFont: this.settingsForm.dyslexiaFont,
         fontSize: this.settingsForm.fontSize,
-        textSpacing: this.settingsForm.textSpacing
+        textSpacing: this.settingsForm.textSpacing,
+        keyAnsA: this.settingsForm.keyAnsA,
+        keyAnsB: this.settingsForm.keyAnsB,
+        keyAnsC: this.settingsForm.keyAnsC,
+        keyAnsD: this.settingsForm.keyAnsD,
+        keyAnsE: this.settingsForm.keyAnsE,
+        keyNext: this.settingsForm.keyNext,
+        keyPrev: this.settingsForm.keyPrev,
+        keyExit: this.settingsForm.keyExit
       });
+      // Save locally for instant access
+      localStorage.setItem('KEY_SHORTCUT_A', this.settingsForm.keyAnsA);
+      localStorage.setItem('KEY_SHORTCUT_B', this.settingsForm.keyAnsB);
+      localStorage.setItem('KEY_SHORTCUT_C', this.settingsForm.keyAnsC);
+      localStorage.setItem('KEY_SHORTCUT_D', this.settingsForm.keyAnsD);
+      localStorage.setItem('KEY_SHORTCUT_E', this.settingsForm.keyAnsE);
+      localStorage.setItem('KEY_SHORTCUT_NEXT', this.settingsForm.keyNext);
+      localStorage.setItem('KEY_SHORTCUT_PREV', this.settingsForm.keyPrev);
+      localStorage.setItem('KEY_SHORTCUT_EXIT', this.settingsForm.keyExit);
       // Restart reminders with new config after saving
       if (this.settingsForm.notificationsEnabled) {
         this.notificationService.startReminders({

@@ -577,7 +577,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
   test = computed(() => this.paes.getTestBySeccionId(this.seccionId()));
   shuffledPreguntas = signal<any[]>([]);
-  
+
   answers = signal(new Map<number, 'A' | 'B' | 'C' | 'D'>());
   timer = signal(0);
   private intervalId: any;
@@ -645,7 +645,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   });
 
   maxLives = computed(() => this.isFinalBoss() ? 5 : 3);
-  livesArray = computed(() => Array.from({length: this.maxLives()}, (_, i) => i + 1));
+  livesArray = computed(() => Array.from({ length: this.maxLives() }, (_, i) => i + 1));
 
   currentQuestion = computed(() => {
     const qList = this.shuffledPreguntas();
@@ -728,9 +728,9 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   loadTest() {
     this.showFeedback.set(false);
     this.contextCollapsed = this.materiaId().includes('fisica');
-    
+
     const savedOrder = this.loadState();
-    
+
     // Inicializar y mezclar preguntas
     const t = this.test();
     if (t && t.preguntas) {
@@ -745,7 +745,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
         const easy = arr.slice(0, chunkSize);
         const medium = arr.slice(chunkSize, chunkSize * 2);
         const hard = arr.slice(chunkSize * 2);
-        
+
         const shuffle = (array: any[]) => {
           for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -775,7 +775,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
     this.intervalId = setInterval(() => {
       if (this.showGameOver) return;
-      
+
       if (this.isBossMode()) {
         this.timer.update(v => Math.max(0, v - 1));
         if (this.timer() === 0) {
@@ -784,7 +784,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       } else {
         this.timer.update(v => v + 1);
       }
-      
+
       // Guardar el estado cada 5 segundos para que el timer persista bien
       if (this.timer() % 5 === 0) {
         this.saveState();
@@ -804,9 +804,9 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   handleKeyboardEvent(event: KeyboardEvent) {
     // Solo si no estamos escribiendo en un input (por si acaso)
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
-    
+
     const key = event.key.toLowerCase();
-    
+
     // Audio controls for Biology and Physics
     if (this.isBiology() || this.isPhysics()) {
       if (key === 'p') this.readQuestion();
@@ -819,48 +819,6 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       if (key === '5') this.readFeedback();
       if (key === '4' || key === 'escape' || key === 's') this.stopReading();
     }
-
-    // Comprobar / Siguiente pregunta con espacio
-    if (key === ' ' || key === 'spacebar') {
-      event.preventDefault(); // Evitar scroll
-      if (!this.showFeedback() && this.hasCurrentAnswer()) {
-        this.checkAnswer();
-      } else if (this.showFeedback()) {
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
-        }
-      }
-    }
-
-    // Seleccionar alternativa: 1 -> A, 2 -> B, 3 -> C, 4 -> D (Sólo Biología o Física)
-    if (!this.showFeedback()) {
-      if (key === '1' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('A');
-      if (key === '2' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('B');
-      if (key === '3' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('C');
-      if (key === '4' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('D');
-      
-      // Fallback para otros que usaban z, x, c, v
-      if (key === 'z') this.selectAnswerForCurrent('A');
-      if (key === 'x') this.selectAnswerForCurrent('B');
-      if (key === 'c') this.selectAnswerForCurrent('C');
-      if (key === 'v') this.selectAnswerForCurrent('D');
-    }
-
-    // Comprobar con Enter o Flecha Derecha, o avanzar a la siguiente
-    if (key === 'arrowright' || key === 'enter') {
-      if (!this.showFeedback() && this.hasCurrentAnswer()) {
-        this.checkAnswer();
-      } else if (this.showFeedback()) {
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
-        }
-      }
-    }
-    // =========================================================================
   }
 
   private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
@@ -903,16 +861,16 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       return;
     }
     window.speechSynthesis.cancel();
-    
+
     // Si el texto es muy largo, algunos navegadores fallan. Lo ideal sería partirlo, 
     // pero para las alternativas/enunciados esto funciona bien.
     const utterance = new SpeechSynthesisUtterance(text);
-    
+
     // Mejoras para que suene más natural
     utterance.lang = 'es-ES'; // Default fallback
     utterance.rate = 0.95; // Un poco más lento para mejor dicción
     utterance.pitch = 1.05; // Tono ligeramente más alto suele ser más claro
-    
+
     const voice = this.getBestVoice();
     if (voice) {
       utterance.voice = voice;
@@ -943,7 +901,7 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   readOptions() {
     const q = this.currentQuestion();
     if (!q || q.tipo_alternativas === 'imagen') return;
-    
+
     let text = '';
     for (const key of this.optionKeys) {
       if (q.alternativas[key]) {
@@ -957,11 +915,11 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
     if (!this.showFeedback()) return;
     const q = this.currentQuestion();
     if (!q) return;
-    
+
     const isCorrect = this.isCurrentCorrect();
     const intro = isCorrect ? '¡Correcto! ' : 'Incorrecto. ';
     const text = this.cleanHtml(isCorrect ? q.feedback_acierto : q.feedback_error);
-    
+
     this.speak(intro + text);
   }
 
