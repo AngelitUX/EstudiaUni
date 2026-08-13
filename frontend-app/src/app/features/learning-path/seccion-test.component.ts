@@ -819,48 +819,6 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
       if (key === '5') this.readFeedback();
       if (key === '4' || key === 'escape' || key === 's') this.stopReading();
     }
-
-    // Comprobar / Siguiente pregunta con espacio
-    if (key === ' ' || key === 'spacebar') {
-      event.preventDefault(); // Evitar scroll
-      if (!this.showFeedback() && this.hasCurrentAnswer()) {
-        this.checkAnswer();
-      } else if (this.showFeedback()) {
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
-        }
-      }
-    }
-
-    // Seleccionar alternativa: 1 -> A, 2 -> B, 3 -> C, 4 -> D (Sólo Biología o Física)
-    if (!this.showFeedback()) {
-      if (key === '1' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('A');
-      if (key === '2' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('B');
-      if (key === '3' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('C');
-      if (key === '4' && (this.isBiology() || this.isPhysics())) this.selectAnswerForCurrent('D');
-
-      // Fallback para otros que usaban z, x, c, v
-      if (key === 'z') this.selectAnswerForCurrent('A');
-      if (key === 'x') this.selectAnswerForCurrent('B');
-      if (key === 'c') this.selectAnswerForCurrent('C');
-      if (key === 'v') this.selectAnswerForCurrent('D');
-    }
-
-    // Comprobar con Enter o Flecha Derecha, o avanzar a la siguiente
-    if (key === 'arrowright' || key === 'enter') {
-      if (!this.showFeedback() && this.hasCurrentAnswer()) {
-        this.checkAnswer();
-      } else if (this.showFeedback()) {
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
-        }
-      }
-    }
-    // =========================================================================
   }
 
   private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {

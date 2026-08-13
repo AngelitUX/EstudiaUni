@@ -779,50 +779,6 @@ export class SeccionTestMathComponent implements OnInit, OnDestroy {
       if (key === '5') this.readFeedback();
       if (key === '4' || key === 'escape' || key === 's') this.stopReading();
     }
-
-    // Siguiente pregunta con espacio
-    if (key === ' ' || key === 'spacebar') {
-      if (this.showFeedback()) {
-        event.preventDefault(); // Evitar scroll
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
-        }
-      }
-    }
-
-    // =========================================================================
-    // 🚧 ONLY FOR TESTING - KEYBOARD CONTROLS (EASY TO COMMENT OR REMOVE LATER)
-    // =========================================================================
-    // Seleccionar alternativa: Z -> A, X -> B, C -> C, V -> D
-    if (!this.showFeedback()) {
-      if (key === 'z') this.selectAnswerForCurrent('A');
-      if (key === 'x') this.selectAnswerForCurrent('B');
-      if (key === 'c') this.selectAnswerForCurrent('C');
-      if (key === 'v') this.selectAnswerForCurrent('D');
-    }
-
-    // Comprobar con Enter o Flecha Derecha, o avanzar a la siguiente
-    if (key === 'arrowright' || key === 'enter') {
-      if (!this.showFeedback() && this.hasCurrentAnswer()) {
-        this.checkAnswer();
-      } else if (this.showFeedback()) {
-        if (!this.isLastQuestion()) {
-          this.nextQuestion();
-        } else {
-          this.submitTest();
-        }
-      }
-    }
-    // =========================================================================
-  }
-
-  private selectAnswerForCurrent(option: 'A' | 'B' | 'C' | 'D') {
-    const q = this.currentQuestion();
-    if (q) {
-      this.selectAnswer(q.id, option);
-    }
   }
 
   private cleanHtml(html: string): string {
