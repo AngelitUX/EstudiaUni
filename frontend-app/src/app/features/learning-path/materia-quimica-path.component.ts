@@ -129,7 +129,7 @@ type PathItem = {
             <button class="btn-upgrade-pro" style="background: linear-gradient(135deg, #e11d48, #be123c); font-size: 0.8rem; border-radius: 99px; margin-right: 0.5rem;" (click)="toggleUnlockAllSteps()">
               {{ isUnlockedAll() ? '🔒 Bloquear Ruta' : '🔓 Desbloquear todo' }}
             </button> -->
-            <button class="btn-infinite-mastery-top" (click)="showInfiniteMastery = true">
+            <button *ngIf="isEntirePathCompleted()" class="btn-infinite-mastery-top" (click)="showInfiniteMastery = true">
               🌟 Modo Infinito
             </button>
             <button *ngIf="adminService.isAdmin()" class="btn-upgrade-pro" style="background: linear-gradient(135deg, #10b981, #059669); margin-right: 0.5rem;" (click)="forceRefresh()">
@@ -333,8 +333,8 @@ type PathItem = {
               </div>
             </ng-container>
 
-            <!-- NODO FINAL DE MAESTRÍA INFINITA -->
-            <div class="infinite-mastery-node-card" (click)="showInfiniteMastery = true">
+            <!-- NODO FINAL DE MAESTRÍA INFINITA (Solo cuando la ruta esté completada) -->
+            <div *ngIf="isEntirePathCompleted()" class="infinite-mastery-node-card" (click)="showInfiniteMastery = true">
               <div class="infinite-portal-badge">
                 <span class="portal-icon">🌟</span>
                 <div class="portal-text">
@@ -2890,6 +2890,17 @@ export class MateriaQuimicaPathComponent implements AfterViewInit, OnDestroy {
 
   isGuideCompleted(capId: string): boolean {
     return !!this.paes.getSeccionProgress('guide_' + capId)?.completed;
+  }
+
+  isEntirePathCompleted(): boolean {
+    if (this.isUnlockedAll()) return true;
+    const caps = this.capitulos();
+    if (!caps || caps.length === 0) return false;
+    return caps.every(cap => {
+      const guideDone = this.isGuideCompleted(cap.id);
+      const secsDone = (cap.secciones || []).every(sec => !!this.paes.getSeccionProgress(sec.id)?.completed);
+      return guideDone && secsDone;
+    });
   }
 
   confirmLogout() {

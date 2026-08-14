@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SafeHtml } from '@angular/platform-browser';
@@ -26,8 +26,11 @@ interface PolygonVertex {
           <div class="header-left">
             <span class="materia-icon">{{ config.icon }}</span>
             <div>
-              <h2 class="modal-title">Modo Infinito · {{ config.title }}</h2>
-              <span class="modal-subtitle">Práctica infinita y dominio por ejes temáticos</span>
+              <div class="title-row">
+                <h2 class="modal-title">Modo Infinito · {{ config.title }}</h2>
+                <span class="daily-badge">📅 Ciclo Diario</span>
+              </div>
+              <span class="modal-subtitle">Práctica ilimitada, maestría por ejes temáticos y desafío al Núcleo Jefe</span>
             </div>
           </div>
           <button class="btn-close" (click)="closeModal()" aria-label="Cerrar">&times;</button>
@@ -36,41 +39,43 @@ interface PolygonVertex {
         <!-- ═══ VISTA 1: POLÍGONO DE MAESTRÍA ═══ -->
         <div class="polygon-view" *ngIf="viewState === 'polygon'">
           
-          <!-- TOP STATS BAR -->
+          <!-- TOP STATS & RESET TIMER BAR -->
           <div class="stats-ribbon">
             <div class="stat-pill">
               <span class="stat-icon">🏆</span>
-              <span>Nivel de Maestría <strong>{{ progress.level }}</strong></span>
+              <span>Nivel de Maestría <strong>Lv. {{ progress.level }}</strong></span>
             </div>
             <div class="stat-pill">
               <span class="stat-icon">✨</span>
-              <span><strong>{{ progress.xp }}</strong> XP Total</span>
+              <span><strong>{{ progress.xp }}</strong> XP</span>
             </div>
             <div class="stat-pill">
               <span class="stat-icon">🎯</span>
-              <span><strong>{{ progress.completedAxes.length }}/{{ config.axes.length }}</strong> Ejes Completados</span>
+              <span><strong>{{ progress.completedAxes.length }}/{{ config.axes.length }}</strong> Ejes Hoy</span>
+            </div>
+            <div class="stat-pill reset-timer-pill" title="Tiempo restante para el reseteo del ciclo diario">
+              <span class="stat-icon">⏳</span>
+              <span>Refresco en: <strong>{{ timeUntilReset }}</strong></span>
             </div>
           </div>
 
           <!-- DYNAMIC SVG POLYGON CONTAINER -->
           <div class="polygon-container">
-            <svg class="polygon-svg" viewBox="0 0 500 440">
+            <svg class="polygon-svg" viewBox="0 0 540 460">
               <defs>
                 <!-- Central Core Glow Gradient -->
                 <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" [attr.stop-color]="config.themeColor" stop-opacity="0.8"/>
-                  <stop offset="60%" [attr.stop-color]="config.themeColor" stop-opacity="0.25"/>
+                  <stop offset="0%" [attr.stop-color]="isBossUnlocked ? '#f59e0b' : config.themeColor" [attr.stop-opacity]="isBossUnlocked ? '0.9' : '0.4'"/>
+                  <stop offset="60%" [attr.stop-color]="isBossUnlocked ? '#fbbf24' : config.themeColor" stop-opacity="0.2"/>
                   <stop offset="100%" [attr.stop-color]="config.themeColor" stop-opacity="0"/>
                 </radialGradient>
-                <!-- Linear Gradient for Spokes -->
-                <linearGradient id="spokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
-                  <stop offset="100%" [attr.stop-color]="config.themeColor" stop-opacity="0.8"/>
+                <!-- Boss Flame Gradient -->
+                <linearGradient id="bossFireGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f59e0b"/>
+                  <stop offset="50%" stop-color="#ef4444"/>
+                  <stop offset="100%" stop-color="#8b5cf6"/>
                 </linearGradient>
               </defs>
-
-              <!-- Central Core Glow Area -->
-              <circle cx="250" cy="220" r="85" fill="url(#coreGlow)" class="pulsing-core"/>
 
               <!-- Outer Polygon Connecting Lines -->
               <polygon [attr.points]="polygonPointsString"
@@ -79,16 +84,14 @@ interface PolygonVertex {
 
               <!-- Inner Spoke Lines from Center to Vertices -->
               <line *ngFor="let v of vertices"
-                    x1="250" y1="220"
+                    x1="270" y1="230"
                     [attr.x2]="v.x" [attr.y2]="v.y"
                     class="polygon-spoke"
-                    [attr.stroke]="v.completed ? '#f59e0b' : 'rgba(255,255,255,0.2)'"/>
+                    [class.spoke-active]="v.completed"
+                    [attr.stroke]="v.completed ? '#f59e0b' : 'rgba(255,255,255,0.18)'"/>
 
-              <!-- Central Orb -->
-              <circle cx="250" cy="220" r="48" class="center-orb-bg"/>
-              <circle cx="250" cy="220" r="48" class="center-orb-border" [attr.stroke]="config.themeColor"/>
-              <text x="250" y="214" class="center-level-text">Lv. {{ progress.level }}</text>
-              <text x="250" y="233" class="center-sub-text">MAESTRÍA</text>
+              <!-- Background Core Glow Area -->
+              <circle cx="270" cy="230" r="90" fill="url(#coreGlow)" [class.pulsing-core]="isBossUnlocked"/>
             </svg>
 
             <!-- INTERACTIVE VERTEX NODES (HTML OVERLAY) -->
@@ -104,25 +107,51 @@ interface PolygonVertex {
               </div>
               <div class="vertex-label-card">
                 <span class="vertex-title">{{ v.axis.shortName }}</span>
-                <span class="vertex-status">{{ v.completed ? 'Dominado' : 'Practicar →' }}</span>
+                <span class="vertex-status">{{ v.completed ? 'Dominado Hoy' : 'Practicar →' }}</span>
               </div>
             </div>
+
+            <!-- CENTRAL BOSS NODE / NÚCLEO MAESTRO INTERACTIVO -->
+            <div class="boss-node-wrapper"
+                 [class.boss-unlocked]="isBossUnlocked && !progress.bossDefeatedToday"
+                 [class.boss-defeated]="progress.bossDefeatedToday"
+                 [class.boss-locked]="!isBossUnlocked"
+                 (click)="handleBossNodeClick()">
+              <div class="boss-bubble">
+                <span class="boss-icon" *ngIf="progress.bossDefeatedToday">👑</span>
+                <span class="boss-icon" *ngIf="isBossUnlocked && !progress.bossDefeatedToday">🔥</span>
+                <span class="boss-icon" *ngIf="!isBossUnlocked">🔒</span>
+                <div class="boss-level-tag">Lv. {{ progress.level }}</div>
+              </div>
+              <div class="boss-label-card">
+                <span class="boss-title">Núcleo Maestro</span>
+                <span class="boss-status" *ngIf="progress.bossDefeatedToday">¡Conquistado Hoy!</span>
+                <span class="boss-status highlight" *ngIf="isBossUnlocked && !progress.bossDefeatedToday">¡Desafiar Jefe! ⚡</span>
+                <span class="boss-status" *ngIf="!isBossUnlocked">Completa los {{ config.axes.length }} ejes</span>
+              </div>
+            </div>
+
           </div>
 
           <!-- BOTTOM INSTRUCTIONS / HELPER -->
           <div class="polygon-footer">
-            <p>💡 Haz clic en cualquier eje temático para iniciar un mini-desafío de <strong>5 preguntas</strong>. Completa todos los ejes para subir tu nivel de maestría infinita.</p>
+            <p *ngIf="!isBossUnlocked">💡 Completa los <strong>{{ config.axes.length }} ejes temáticos</strong> del día para desbloquear la batalla final del <strong>Núcleo Maestro (Jefe Multi-Eje)</strong>.</p>
+            <p *ngIf="isBossUnlocked && !progress.bossDefeatedToday" class="boss-alert-text">🔥 <strong>¡Todos los ejes conquistados!</strong> Haz clic en el Núcleo Central para enfrentarte al Jefe y subir tu Nivel de Maestría.</p>
+            <p *ngIf="progress.bossDefeatedToday" class="boss-victory-text">✨ <strong>¡Gran trabajo!</strong> Has derrotado al Núcleo Maestro de hoy. El ciclo se renovará a la medianoche.</p>
           </div>
         </div>
 
-        <!-- ═══ VISTA 2: RUNNER DE PREGUNTAS DEL EJE ═══ -->
+        <!-- ═══ VISTA 2: RUNNER DE PREGUNTAS DEL EJE / JEFE ═══ -->
         <div class="quiz-view" *ngIf="viewState === 'quiz' && activeQuizQuestions.length > 0">
           
           <!-- QUIZ HEADER -->
           <div class="quiz-top-bar">
             <div class="quiz-axis-info">
-              <span class="axis-pill" [style.background]="selectedAxis?.color + '22'" [style.color]="selectedAxis?.color">
+              <span class="axis-pill" *ngIf="!isBossQuiz" [style.background]="selectedAxis?.color + '22'" [style.color]="selectedAxis?.color">
                 {{ selectedAxis?.icon }} {{ selectedAxis?.name }}
+              </span>
+              <span class="axis-pill boss-pill" *ngIf="isBossQuiz">
+                👑 Núcleo Maestro Multi-Eje (Batalla de Jefe)
               </span>
               <span class="question-counter">Pregunta {{ currentQuestionIndex + 1 }} de {{ activeQuizQuestions.length }}</span>
             </div>
@@ -131,7 +160,9 @@ interface PolygonVertex {
 
           <!-- PROGRESS BAR -->
           <div class="quiz-progress-track">
-            <div class="quiz-progress-fill" [style.width.%]="((currentQuestionIndex + 1) / activeQuizQuestions.length) * 100" [style.background]="selectedAxis?.color || config.themeColor"></div>
+            <div class="quiz-progress-fill" 
+                 [style.width.%]="((currentQuestionIndex + 1) / activeQuizQuestions.length) * 100" 
+                 [style.background]="isBossQuiz ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : (selectedAxis?.color || config.themeColor)"></div>
           </div>
 
           <!-- QUESTION CONTENT -->
@@ -149,88 +180,109 @@ interface PolygonVertex {
 
             <div class="formula-box" *ngIf="currentQuestion.formula_latex" [innerHTML]="renderLatex(currentQuestion.formula_latex)"></div>
 
-            <!-- ALTERNATIVES LIST -->
+            <!-- ALTERNATIVAS -->
             <div class="options-grid">
               <button *ngFor="let key of optionKeys"
                       class="option-btn"
                       [class.selected]="selectedAnswer === key"
-                      [class.correct]="hasAnswered && currentQuestion.respuesta_correcta === key"
-                      [class.wrong]="hasAnswered && selectedAnswer === key && currentQuestion.respuesta_correcta !== key"
+                      [class.correct]="hasAnswered && key === currentQuestion.respuesta_correcta"
+                      [class.incorrect]="hasAnswered && selectedAnswer === key && key !== currentQuestion.respuesta_correcta"
                       [disabled]="hasAnswered"
                       (click)="selectOption(key)">
-                <span class="opt-letter">{{ key }}</span>
-                <span class="opt-text">{{ currentQuestion.alternativas[key] }}</span>
+                <span class="option-key">{{ key }}</span>
+                <span class="option-text">{{ getOptionText(currentQuestion, key) }}</span>
+                <span class="option-check-icon" *ngIf="hasAnswered && key === currentQuestion.respuesta_correcta">✓</span>
+                <span class="option-check-icon" *ngIf="hasAnswered && selectedAnswer === key && key !== currentQuestion.respuesta_correcta">✗</span>
               </button>
             </div>
 
-            <!-- FEEDBACK PANEL AFTER ANSWERING -->
-            <div class="feedback-panel" *ngIf="hasAnswered" [class.feedback-correct]="selectedAnswer === currentQuestion.respuesta_correcta" [class.feedback-wrong]="selectedAnswer !== currentQuestion.respuesta_correcta">
-              <div class="feedback-header">
-                <span class="feedback-icon">{{ selectedAnswer === currentQuestion.respuesta_correcta ? '🎉 ¡Correcto!' : '❌ Incorrecto' }}</span>
+            <!-- EXPLICACIÓN / FEEDBACK -->
+            <div class="feedback-card" *ngIf="hasAnswered">
+              <div class="feedback-status" [class.is-correct]="selectedAnswer === currentQuestion.respuesta_correcta">
+                {{ selectedAnswer === currentQuestion.respuesta_correcta ? '¡Respuesta Correcta! 🌟' : 'Respuesta Incorrecta' }}
               </div>
-              <p class="feedback-text">
-                {{ selectedAnswer === currentQuestion.respuesta_correcta ? currentQuestion.feedback_acierto : currentQuestion.feedback_error }}
-              </p>
+              <p class="feedback-explanation">{{ getExplanation(currentQuestion) }}</p>
             </div>
+
           </div>
 
-          <!-- QUIZ BOTTOM ACTION BAR -->
-          <div class="quiz-bottom-bar">
-            <button *ngIf="!hasAnswered" class="btn-check primary" [disabled]="!selectedAnswer" (click)="checkAnswer()">
+          <!-- QUIZ ACTIONS FOOTER -->
+          <div class="quiz-footer">
+            <button class="btn-check" 
+                    *ngIf="!hasAnswered" 
+                    [disabled]="!selectedAnswer"
+                    (click)="checkAnswer()">
               Comprobar Respuesta
             </button>
-            <button *ngIf="hasAnswered && currentQuestionIndex < activeQuizQuestions.length - 1" class="btn-next primary" (click)="nextQuestion()">
+
+            <button class="btn-next" 
+                    *ngIf="hasAnswered && currentQuestionIndex < activeQuizQuestions.length - 1"
+                    (click)="nextQuestion()">
               Siguiente Pregunta →
             </button>
-            <button *ngIf="hasAnswered && currentQuestionIndex === activeQuizQuestions.length - 1" class="btn-finish success" (click)="finishQuiz()">
-              Finalizar Desafío 🏁
+
+            <button class="btn-finish" 
+                    *ngIf="hasAnswered && currentQuestionIndex === activeQuizQuestions.length - 1"
+                    (click)="finishQuiz()">
+              {{ isBossQuiz ? '👑 Finalizar Batalla del Jefe' : 'Finalizar Desafío' }}
             </button>
           </div>
+
         </div>
 
-        <!-- ═══ VISTA 3: RESUMEN / CELEBRACIÓN ═══ -->
+        <!-- ═══ VISTA 3: RESUMEN DE RESULTADOS ═══ -->
         <div class="summary-view" *ngIf="viewState === 'summary'">
-          
-          <div class="celebration-badge" *ngIf="lastQuizResult?.leveledUp">
-            <span class="badge-icon">🌟</span>
-            <h3>¡NUEVO NIVEL DE MAESTRÍA!</h3>
-            <p class="level-up-desc">Has dominado todos los ejes temáticos y ascendido a <strong>Nivel {{ lastQuizResult?.newLevel }}</strong></p>
-          </div>
-
-          <div class="summary-card" *ngIf="!lastQuizResult?.leveledUp">
-            <div class="summary-icon">🎯</div>
-            <h3>¡Eje {{ selectedAxis?.name }} Completado!</h3>
-            <p>Has respondido <strong>{{ quizCorrectCount }} de {{ activeQuizQuestions.length }}</strong> preguntas correctamente.</p>
-          </div>
-
-          <div class="summary-stats">
-            <div class="stat-box">
-              <span class="stat-num">+{{ lastQuizResult?.xpEarned }}</span>
-              <span class="stat-label">XP Ganada</span>
+          <div class="summary-card glass-card">
+            
+            <div class="summary-badge-wrap" [class.boss-victory-badge]="isBossQuiz">
+              <span class="summary-emoji" *ngIf="!isBossQuiz">{{ quizCorrectCount >= (activeQuizQuestions.length * 0.6) ? '🎉' : '💪' }}</span>
+              <span class="summary-emoji" *ngIf="isBossQuiz">👑</span>
             </div>
-            <div class="stat-box">
-              <span class="stat-num">{{ progress.completedAxes.length }}/{{ config.axes.length }}</span>
-              <span class="stat-label">Ejes del Ciclo</span>
-            </div>
-          </div>
 
-          <button class="btn-continue-polygon" (click)="returnToPolygon()">
-            Continuar en el Polígono ⚡
-          </button>
+            <h3 class="summary-title" *ngIf="!isBossQuiz">
+              {{ quizCorrectCount >= (activeQuizQuestions.length * 0.6) ? '¡Eje Temático Dominado!' : '¡Buen Intento!' }}
+            </h3>
+            <h3 class="summary-title boss-title-victory" *ngIf="isBossQuiz">
+              ¡NÚCLEO MAESTRO DERROTADO!
+            </h3>
+
+            <p class="summary-subtitle" *ngIf="!isBossQuiz">Has completado el entrenamiento de <strong>{{ selectedAxis?.name }}</strong>.</p>
+            <p class="summary-subtitle" *ngIf="isBossQuiz">Has conquistado el reto multidisciplinario diario de <strong>{{ config.title }}</strong>.</p>
+
+            <div class="summary-stats-grid">
+              <div class="summary-stat-box">
+                <span class="stat-num">{{ quizCorrectCount }} / {{ activeQuizQuestions.length }}</span>
+                <span class="stat-label">Aciertos</span>
+              </div>
+              <div class="summary-stat-box">
+                <span class="stat-num">+{{ lastQuizResult?.xpEarned || 0 }}</span>
+                <span class="stat-label">XP Ganada</span>
+              </div>
+              <div class="summary-stat-box" *ngIf="lastQuizResult?.leveledUp">
+                <span class="stat-num text-gradient">Lv. {{ lastQuizResult?.newLevel }}</span>
+                <span class="stat-label">¡Nuevo Nivel!</span>
+              </div>
+            </div>
+
+            <button class="btn-continue-polygon" (click)="returnToPolygon()">
+              Volver al Polígono de Maestría →
+            </button>
+          </div>
         </div>
 
       </div>
     </div>
   `,
   styles: [`
-    :host { display: block; }
-    
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.75);
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(10px);
-      z-index: 9999;
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -239,59 +291,84 @@ interface PolygonVertex {
     }
 
     .modal-card {
-      background: #ffffff;
       width: 100%;
-      max-width: 760px;
-      max-height: 92vh;
+      max-width: 860px;
+      max-height: 94vh;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 24px;
-      border: 1.5px solid rgba(133, 92, 214, 0.2);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(133, 92, 214, 0.2);
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      position: relative;
+      color: #f8fafc;
+      font-family: inherit;
     }
 
+    /* HEADER */
     .modal-header {
+      padding: 1.25rem 1.75rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.2rem 1.6rem;
-      border-bottom: 1.5px solid rgba(0,0,0,0.06);
-      background: #fafafa;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(30, 41, 59, 0.5);
     }
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 1rem;
     }
 
     .materia-icon {
-      font-size: 1.8rem;
+      font-size: 2.2rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 0.4rem 0.6rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .modal-title {
-      margin: 0;
-      font-size: 1.2rem;
+      font-size: 1.35rem;
       font-weight: 800;
-      color: #0f172a;
+      margin: 0;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    .daily-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      color: #38bdf8;
     }
 
     .modal-subtitle {
-      font-size: 0.85rem;
-      color: #64748b;
-      font-weight: 600;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      display: block;
+      margin-top: 0.2rem;
     }
 
     .btn-close {
-      width: 38px;
-      height: 38px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      border: 1.5px solid rgba(0,0,0,0.1);
-      background: #ffffff;
-      font-size: 1.2rem;
-      color: #64748b;
+      font-size: 1.4rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -300,102 +377,101 @@ interface PolygonVertex {
     }
 
     .btn-close:hover {
-      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
       color: #ef4444;
-      transform: rotate(90deg) scale(1.05);
+      border-color: rgba(239, 68, 68, 0.4);
     }
 
-    /* ═══ VISTA POLÍGONO ═══ */
-    .polygon-view {
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-y: auto;
-    }
-
+    /* STATS RIBBON */
     .stats-ribbon {
       display: flex;
       gap: 0.75rem;
+      padding: 0.85rem 1.75rem;
+      background: rgba(15, 23, 42, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 1rem;
     }
 
     .stat-pill {
-      background: rgba(133, 92, 214, 0.08);
-      border: 1.5px solid rgba(133, 92, 214, 0.2);
-      border-radius: 99px;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.85rem;
-      color: #334155;
-      font-weight: 600;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
+      color: #cbd5e1;
+    }
+
+    .stat-pill strong {
+      color: #ffffff;
+    }
+
+    .reset-timer-pill {
+      margin-left: auto;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .reset-timer-pill strong {
+      color: #fef3c7;
+      font-family: monospace;
+      font-size: 0.88rem;
+    }
+
+    /* POLYGON VIEW */
+    .polygon-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
     }
 
     .polygon-container {
       position: relative;
-      width: 500px;
-      height: 440px;
-      max-width: 100%;
+      width: 540px;
+      height: 460px;
       margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      user-select: none;
     }
 
     .polygon-svg {
       width: 100%;
       height: 100%;
+      overflow: visible;
     }
 
     .polygon-outer-ring {
-      fill: rgba(133, 92, 214, 0.03);
-      stroke-width: 3.5;
-      stroke-linejoin: round;
-      filter: drop-shadow(0 0 8px rgba(133, 92, 214, 0.3));
+      fill: rgba(30, 41, 59, 0.25);
+      stroke-width: 3px;
+      stroke-dasharray: 6 6;
+      filter: drop-shadow(0 0 10px rgba(133, 92, 214, 0.3));
     }
 
     .polygon-spoke {
-      stroke-width: 2;
+      stroke-width: 2.5px;
       stroke-dasharray: 4 4;
-      animation: dashMove 20s linear infinite;
+      transition: all 0.3s;
     }
 
-    @keyframes dashMove {
-      to { stroke-dashoffset: -100; }
+    .polygon-spoke.spoke-active {
+      stroke-width: 3.5px;
+      stroke-dasharray: none;
+      filter: drop-shadow(0 0 8px #f59e0b);
     }
 
-    .center-orb-bg {
-      fill: #ffffff;
-      filter: drop-shadow(0 8px 20px rgba(133, 92, 214, 0.25));
+    .pulsing-core {
+      animation: pulseCoreGlow 3s infinite alternate ease-in-out;
     }
 
-    .center-orb-border {
-      fill: none;
-      stroke-width: 4;
+    @keyframes pulseCoreGlow {
+      0% { transform: scale(0.9); transform-origin: 270px 230px; opacity: 0.5; }
+      100% { transform: scale(1.15); transform-origin: 270px 230px; opacity: 1; }
     }
 
-    .center-level-text {
-      text-anchor: middle;
-      font-size: 1.15rem;
-      font-weight: 900;
-      fill: #0f172a;
-      font-family: inherit;
-    }
-
-    .center-sub-text {
-      text-anchor: middle;
-      font-size: 0.58rem;
-      font-weight: 800;
-      fill: #64748b;
-      letter-spacing: 0.1em;
-      font-family: inherit;
-    }
-
-    /* VERTEX OVERLAYS */
+    /* VERTEX NODES (HTML OVERLAY) */
     .vertex-node-wrapper {
       position: absolute;
       transform: translate(-50%, -50%);
@@ -404,365 +480,573 @@ interface PolygonVertex {
       align-items: center;
       cursor: pointer;
       z-index: 10;
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.2s;
     }
 
     .vertex-node-wrapper:hover {
-      transform: translate(-50%, -50%) scale(1.15);
+      transform: translate(-50%, -50%) scale(1.1);
     }
 
     .vertex-bubble {
-      width: 54px;
-      height: 54px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      background: #ffffff;
-      border: 3px solid var(--axis-color, #8b5cf6);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12), 0 0 12px var(--axis-color, #8b5cf6);
+      background: radial-gradient(circle at 30% 30%, #334155, #0f172a);
+      border: 3px solid var(--axis-color, #855cd6);
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 16px var(--axis-color, rgba(133, 92, 214, 0.4));
       position: relative;
-      transition: all 0.25s ease;
+      transition: all 0.2s;
     }
 
     .vertex-icon {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
     }
 
     .completed-badge {
       position: absolute;
       top: -4px;
       right: -4px;
-      background: #f59e0b;
+      background: #10b981;
       color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 900;
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      font-size: 0.75rem;
-      font-weight: 900;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.5);
+      border: 2px solid #0f172a;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
     .vertex-node-wrapper.completed .vertex-bubble {
-      border-color: #f59e0b;
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
-      background: #fffbeb;
+      border-color: #10b981;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
     }
 
     .vertex-label-card {
-      margin-top: 0.35rem;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(4px);
-      padding: 0.2rem 0.55rem;
-      border-radius: 8px;
+      margin-top: 0.4rem;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.25rem 0.6rem;
       text-align: center;
-      display: flex;
-      flex-direction: column;
+      white-space: nowrap;
       pointer-events: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 
     .vertex-title {
-      font-size: 0.72rem;
+      display: block;
+      font-size: 0.75rem;
       font-weight: 800;
-      color: #ffffff;
-      white-space: nowrap;
+      color: #f8fafc;
     }
 
     .vertex-status {
-      font-size: 0.6rem;
-      color: #94a3b8;
+      display: block;
+      font-size: 0.65rem;
       font-weight: 600;
+      color: #94a3b8;
     }
 
-    .polygon-footer {
-      margin-top: 1rem;
-      background: rgba(133, 92, 214, 0.05);
-      border: 1.5px solid rgba(133, 92, 214, 0.15);
+    .vertex-node-wrapper.completed .vertex-status {
+      color: #34d399;
+    }
+
+    /* CENTRAL BOSS NODE */
+    .boss-node-wrapper {
+      position: absolute;
+      top: 230px;
+      left: 270px;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 12;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .boss-bubble {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .boss-node-wrapper.boss-locked .boss-bubble {
+      background: #1e293b;
+      border: 3px solid #475569;
+      opacity: 0.8;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+
+    .boss-node-wrapper.boss-unlocked {
+      animation: bossPulseFloat 2s infinite ease-in-out;
+    }
+
+    .boss-node-wrapper.boss-unlocked:hover {
+      transform: translate(-50%, -50%) scale(1.12);
+    }
+
+    .boss-node-wrapper.boss-unlocked .boss-bubble {
+      background: radial-gradient(circle at 35% 35%, #f59e0b, #dc2626);
+      border: 4px solid #fef08a;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.8), 0 0 50px rgba(239, 68, 68, 0.5);
+    }
+
+    .boss-node-wrapper.boss-defeated .boss-bubble {
+      background: radial-gradient(circle at 35% 35%, #8b5cf6, #4f46e5);
+      border: 3px solid #c084fc;
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+    }
+
+    .boss-icon {
+      font-size: 2.2rem;
+    }
+
+    .boss-level-tag {
+      position: absolute;
+      bottom: -6px;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 99px;
+      padding: 0.1rem 0.45rem;
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: #f8fafc;
+    }
+
+    .boss-label-card {
+      margin-top: 0.5rem;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 12px;
-      padding: 0.75rem 1rem;
+      padding: 0.35rem 0.75rem;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .boss-title {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .boss-status {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+
+    .boss-status.highlight {
+      color: #f59e0b;
+      animation: textGlow 1.5s infinite alternate;
+    }
+
+    .boss-node-wrapper.boss-defeated .boss-status {
+      color: #c084fc;
+    }
+
+    @keyframes bossPulseFloat {
+      0% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 8px #f59e0b); }
+      50% { transform: translate(-50%, -50%) scale(1.08); filter: drop-shadow(0 0 18px #ef4444); }
+      100% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 8px #f59e0b); }
+    }
+
+    @keyframes textGlow {
+      from { opacity: 0.8; }
+      to { opacity: 1; filter: drop-shadow(0 0 6px #f59e0b); }
+    }
+
+    /* FOOTER */
+    .polygon-footer {
+      max-width: 650px;
       text-align: center;
       font-size: 0.85rem;
-      color: #475569;
-      max-width: 480px;
+      color: #94a3b8;
+      background: rgba(30, 41, 59, 0.4);
+      padding: 0.75rem 1.5rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: 0.5rem;
     }
 
     .polygon-footer p {
       margin: 0;
     }
 
-    /* ═══ VISTA QUIZ ═══ */
+    .boss-alert-text {
+      color: #fbbf24 !important;
+    }
+
+    .boss-victory-text {
+      color: #c084fc !important;
+    }
+
+    /* QUIZ RUNNER VIEW */
     .quiz-view {
-      padding: 1.5rem;
+      padding: 1.5rem 2rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      overflow-y: auto;
+      gap: 1.25rem;
     }
 
     .quiz-top-bar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+    }
+
+    .quiz-axis-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
     .axis-pill {
-      font-size: 0.85rem;
-      font-weight: 800;
-      padding: 0.35rem 0.75rem;
+      padding: 0.4rem 1rem;
       border-radius: 99px;
-      margin-right: 0.75rem;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .boss-pill {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2)) !important;
+      border-color: #f59e0b !important;
+      color: #fbbf24 !important;
     }
 
     .question-counter {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      color: #64748b;
+      color: #94a3b8;
     }
 
     .btn-cancel-quiz {
       background: transparent;
-      border: 1px solid rgba(0,0,0,0.12);
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      color: #64748b;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      padding: 0.4rem 0.85rem;
+      border-radius: 10px;
       font-size: 0.8rem;
-      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .btn-cancel-quiz:hover {
-      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
       color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
     }
 
     .quiz-progress-track {
       width: 100%;
       height: 6px;
-      background: #e2e8f0;
+      background: rgba(255, 255, 255, 0.08);
       border-radius: 99px;
       overflow: hidden;
     }
 
     .quiz-progress-fill {
       height: 100%;
+      border-radius: 99px;
       transition: width 0.3s ease;
     }
 
+    .quiz-content {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
     .preamble-box {
-      background: #f8fafc;
-      border-left: 4px solid var(--accent-primary, #855cd6);
-      padding: 0.85rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border-left: 3px solid #855cd6;
+      padding: 0.85rem 1.25rem;
       border-radius: 8px;
-      font-size: 0.92rem;
-      color: #334155;
-      line-height: 1.45;
-      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .question-image-box {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+
+    .q-image {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .question-enunciado {
       font-size: 1.05rem;
       font-weight: 700;
-      color: #0f172a;
-      line-height: 1.4;
-      margin: 0.5rem 0;
+      color: #ffffff;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .formula-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
     }
 
     .options-grid {
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
-      margin-top: 1rem;
+      gap: 0.75rem;
     }
 
     .option-btn {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.8rem 1rem;
-      background: #ffffff;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      cursor: pointer;
+      gap: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 0.85rem 1.25rem;
+      color: #f8fafc;
+      font-size: 0.95rem;
       text-align: left;
-      font-family: inherit;
+      cursor: pointer;
       transition: all 0.2s;
     }
 
-    .option-btn:hover:not([disabled]) {
+    .option-btn:hover:not(:disabled) {
+      background: rgba(133, 92, 214, 0.15);
       border-color: #855cd6;
-      background: rgba(133, 92, 214, 0.04);
       transform: translateX(4px);
     }
 
     .option-btn.selected {
-      border-color: #855cd6;
-      background: rgba(133, 92, 214, 0.08);
-      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.15);
+      background: rgba(133, 92, 214, 0.25);
+      border-color: #a78bfa;
     }
 
     .option-btn.correct {
+      background: rgba(16, 185, 129, 0.2) !important;
       border-color: #10b981 !important;
-      background: #ecfdf5 !important;
+      color: #6ee7b7;
     }
 
-    .option-btn.wrong {
+    .option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.2) !important;
       border-color: #ef4444 !important;
-      background: #fef2f2 !important;
+      color: #fca5a5;
     }
 
-    .opt-letter {
+    .option-key {
+      font-weight: 900;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
       width: 28px;
       height: 28px;
-      border-radius: 6px;
-      background: #f1f5f9;
-      color: #475569;
-      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
       flex-shrink: 0;
     }
 
-    .opt-text {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .feedback-panel {
-      padding: 0.9rem 1.1rem;
-      border-radius: 12px;
-      margin-top: 0.85rem;
-      animation: fadeIn 0.2s ease-out;
-    }
-
-    .feedback-correct {
-      background: #ecfdf5;
-      border: 1.5px solid #a7f3d0;
-      color: #065f46;
-    }
-
-    .feedback-wrong {
-      background: #fef2f2;
-      border: 1.5px solid #fecaca;
-      color: #991b1b;
-    }
-
-    .feedback-header {
-      font-weight: 800;
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .feedback-text {
-      margin: 0;
-      font-size: 0.88rem;
+    .option-text {
+      flex: 1;
       line-height: 1.4;
-      font-weight: 500;
     }
 
-    .quiz-bottom-bar {
+    .option-check-icon {
+      font-weight: 900;
+      font-size: 1.1rem;
+    }
+
+    .feedback-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .feedback-status {
+      font-weight: 900;
+      font-size: 0.95rem;
+      color: #ef4444;
+      margin-bottom: 0.35rem;
+    }
+
+    .feedback-status.is-correct {
+      color: #10b981;
+    }
+
+    .feedback-explanation {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .quiz-footer {
       display: flex;
       justify-content: flex-end;
-      margin-top: 1rem;
     }
 
-    .quiz-bottom-bar button {
-      padding: 0.75rem 1.5rem;
+    .btn-check, .btn-next, .btn-finish {
+      padding: 0.75rem 1.75rem;
       border-radius: 12px;
       font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
+      font-size: 0.92rem;
       border: none;
+      cursor: pointer;
       transition: all 0.2s;
     }
 
-    .quiz-bottom-bar button.primary {
+    .btn-check {
       background: #855cd6;
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(133, 92, 214, 0.35);
+      box-shadow: 0 4px 14px rgba(133, 92, 214, 0.4);
     }
 
-    .quiz-bottom-bar button.success {
-      background: #10b981;
+    .btn-check:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-next {
+      background: #3b82f6;
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
     }
 
-    .quiz-bottom-bar button:hover:not([disabled]) {
-      transform: translateY(-2px);
-      filter: brightness(1.08);
+    .btn-finish {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
     }
 
-    /* ═══ VISTA RESUMEN ═══ */
+    /* SUMMARY VIEW */
     .summary-view {
       padding: 2.5rem 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .summary-card {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
     }
 
-    .celebration-badge {
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border: 2px solid #f59e0b;
-      padding: 1.5rem;
-      border-radius: 20px;
-      margin-bottom: 1.5rem;
-      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .celebration-badge .badge-icon {
-      font-size: 2.5rem;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    .celebration-badge h3 {
-      margin: 0;
-      color: #92400e;
-      font-size: 1.3rem;
-      font-weight: 900;
-    }
-
-    .summary-icon {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .summary-stats {
+    .summary-badge-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(133, 92, 214, 0.15);
+      border: 2px solid #855cd6;
       display: flex;
-      gap: 1.5rem;
-      margin: 1.5rem 0;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
     }
 
-    .stat-box {
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
+    .boss-victory-badge {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.3), rgba(239, 68, 68, 0.3)) !important;
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.5);
+    }
+
+    .summary-emoji {
+      font-size: 2.5rem;
+    }
+
+    .summary-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .boss-title-victory {
+      background: linear-gradient(135deg, #fbbf24, #f87171, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .summary-subtitle {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .summary-stats-grid {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      margin-bottom: 1.75rem;
+    }
+
+    .summary-stat-box {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
-      padding: 1rem 1.5rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     .stat-num {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 900;
       color: #855cd6;
     }
 
+    .text-gradient {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
     .stat-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: #64748b;
+      margin-top: 0.2rem;
     }
 
     .btn-continue-polygon {
@@ -771,7 +1055,7 @@ interface PolygonVertex {
       padding: 0.85rem 2rem;
       border-radius: 14px;
       border: none;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 800;
       cursor: pointer;
       box-shadow: 0 6px 18px rgba(133, 92, 214, 0.35);
@@ -789,7 +1073,7 @@ interface PolygonVertex {
     }
   `]
 })
-export class InfiniteMasteryModalComponent implements OnInit {
+export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   @Input() materiaId: string = 'mat1';
   @Output() close = new EventEmitter<void>();
 
@@ -801,10 +1085,15 @@ export class InfiniteMasteryModalComponent implements OnInit {
   vertices: PolygonVertex[] = [];
   polygonPointsString: string = '';
 
+  timeUntilReset: string = '00:00:00';
+  private timerInterval: any = null;
+
   readonly optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
   viewState: 'polygon' | 'quiz' | 'summary' = 'polygon';
   selectedAxis: MasteryAxis | null = null;
+  isBossQuiz: boolean = false;
+
   activeQuizQuestions: PoolPregunta[] = [];
   currentQuestionIndex: number = 0;
   selectedAnswer: 'A' | 'B' | 'C' | 'D' | null = null;
@@ -817,8 +1106,20 @@ export class InfiniteMasteryModalComponent implements OnInit {
     return this.activeQuizQuestions[this.currentQuestionIndex] || null;
   }
 
+  get isBossUnlocked(): boolean {
+    if (!this.config || !this.progress) return false;
+    return this.config.axes.every(a => this.progress.completedAxes.includes(a.id));
+  }
+
   ngOnInit(): void {
     this.loadMasteryData();
+    this.startCountdownTimer();
+  }
+
+  ngOnDestroy(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
   }
 
   loadMasteryData(): void {
@@ -827,19 +1128,39 @@ export class InfiniteMasteryModalComponent implements OnInit {
     this.computePolygon();
   }
 
+  private startCountdownTimer(): void {
+    this.updateResetTimer();
+    this.timerInterval = setInterval(() => {
+      this.updateResetTimer();
+    }, 1000);
+  }
+
+  private updateResetTimer(): void {
+    const totalSecs = this.masteryService.getSecondsUntilMidnight();
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    this.timeUntilReset = `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+
+    // Si el contador llega a cero, refrescar datos
+    if (totalSecs === 0) {
+      this.loadMasteryData();
+    }
+  }
+
   /**
-   * Calcula dinámicamente las coordenadas de los vértices para cualquier polígono de N lados
+   * Calcula dinámicamente las coordenadas de los vértices para cualquier polígono de N lados (3, 4, 5...)
    */
   computePolygon(): void {
     const axes = this.config.axes;
     const n = axes.length;
-    const cx = 250;
-    const cy = 220;
-    const radius = 135;
+    const cx = 270;
+    const cy = 230;
+    const radius = 145;
 
     const points: string[] = [];
     this.vertices = axes.map((axis, i) => {
-      // Ángulo regular: compensamos con -pi/2 para que el primer vértice apunte hacia arriba
+      // Ángulo regular: compensamos con -pi/2 para que el primer vértice apunte hacia arriba (12 en punto)
       const angle = (2 * Math.PI * i) / n - Math.PI / 2;
       const x = cx + radius * Math.cos(angle);
       const y = cy + radius * Math.sin(angle);
@@ -858,12 +1179,29 @@ export class InfiniteMasteryModalComponent implements OnInit {
 
   startAxisQuiz(axis: MasteryAxis): void {
     this.selectedAxis = axis;
+    this.isBossQuiz = false;
     this.activeQuizQuestions = this.masteryService.generateAxisQuiz(this.materiaId, axis.id, 5);
     
-    if (this.activeQuizQuestions.length === 0) {
-      // Fallback: si no hay preguntas generadas, simular preguntas rápidas
-      return;
-    }
+    if (this.activeQuizQuestions.length === 0) return;
+
+    this.currentQuestionIndex = 0;
+    this.selectedAnswer = null;
+    this.hasAnswered = false;
+    this.quizCorrectCount = 0;
+    this.viewState = 'quiz';
+  }
+
+  handleBossNodeClick(): void {
+    if (!this.isBossUnlocked) return;
+    this.startBossQuiz();
+  }
+
+  startBossQuiz(): void {
+    this.selectedAxis = null;
+    this.isBossQuiz = true;
+    this.activeQuizQuestions = this.masteryService.generateBossQuiz(this.materiaId, 8);
+
+    if (this.activeQuizQuestions.length === 0) return;
 
     this.currentQuestionIndex = 0;
     this.selectedAnswer = null;
@@ -875,6 +1213,7 @@ export class InfiniteMasteryModalComponent implements OnInit {
   cancelQuiz(): void {
     this.viewState = 'polygon';
     this.selectedAxis = null;
+    this.isBossQuiz = false;
     this.computePolygon();
   }
 
@@ -900,27 +1239,50 @@ export class InfiniteMasteryModalComponent implements OnInit {
   }
 
   finishQuiz(): void {
-    if (!this.selectedAxis) return;
-    const result = this.masteryService.recordAxisCompletion(
-      this.materiaId,
-      this.selectedAxis.id,
-      this.quizCorrectCount,
-      this.activeQuizQuestions.length
-    );
-
-    this.lastQuizResult = result;
-    this.progress = result.progress;
-    this.viewState = 'summary';
+    if (this.isBossQuiz) {
+      const result = this.masteryService.recordBossCompletion(
+        this.materiaId,
+        this.quizCorrectCount,
+        this.activeQuizQuestions.length
+      );
+      this.lastQuizResult = result;
+      this.progress = result.progress;
+      this.viewState = 'summary';
+    } else if (this.selectedAxis) {
+      const result = this.masteryService.recordAxisCompletion(
+        this.materiaId,
+        this.selectedAxis.id,
+        this.quizCorrectCount,
+        this.activeQuizQuestions.length
+      );
+      this.lastQuizResult = result;
+      this.progress = result.progress;
+      this.viewState = 'summary';
+    }
   }
 
   returnToPolygon(): void {
     this.viewState = 'polygon';
     this.selectedAxis = null;
+    this.isBossQuiz = false;
     this.computePolygon();
   }
 
   renderLatex(latex: string): SafeHtml {
     return this.katexService.render(latex);
+  }
+
+  getOptionText(q: PoolPregunta | null, key: 'A' | 'B' | 'C' | 'D'): string {
+    if (!q || !q.alternativas) return '';
+    return q.alternativas[key] || '';
+  }
+
+  getExplanation(q: PoolPregunta | null): string {
+    if (!q) return '';
+    if (this.selectedAnswer === q.respuesta_correcta) {
+      return q.feedback_acierto || '¡Excelente razonamiento!';
+    }
+    return q.feedback_error || 'Revisa los conceptos clave para reforzar este tema.';
   }
 
   closeModal(): void {

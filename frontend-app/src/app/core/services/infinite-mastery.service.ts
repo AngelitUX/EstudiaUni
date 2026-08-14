@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PoolPregunta, MateriaId } from '../../features/learning-path/models/paes.models';
 import { PaesContentService } from '../../features/learning-path/services/paes-content.service';
 import { DashboardService } from './dashboard.service';
@@ -27,7 +27,9 @@ export interface MasteryProgress {
   materiaId: string;
   level: number;
   xp: number;
-  completedAxes: string[]; // Axis IDs completed in current level cycle
+  completedAxes: string[]; // Axis IDs completed in current daily cycle
+  bossDefeatedToday: boolean; // whether the boss node was defeated today
+  lastActiveDate: string; // YYYY-MM-DD for daily reset
   totalQuestionsSolved: number;
   totalCorrect: number;
   history: {
@@ -47,7 +49,7 @@ export class InfiniteMasteryService {
 
   private readonly STORAGE_PREFIX = 'INFINITE_MASTERY_PROGRESS_';
 
-  // Configuración de Ejes por Materia
+  // Configuración de Ejes por Materia (Adaptativo para Polígonos de 3, 4 y 5 vértices)
   private readonly SUBJECT_CONFIGS: Record<string, MasterySubjectConfig> = {
     'mat1': {
       materiaId: 'mat1',
@@ -95,9 +97,10 @@ export class InfiniteMasteryService {
       themeColor: '#c2410c',
       axes: [
         { id: 'hist-chile', name: 'Historia de Chile', shortName: 'Chile', icon: '🇨🇱', color: '#ef4444', topics: ['Historia de Chile', 'Siglo XIX', 'Siglo XX', 'Dictadura y Democracia'], description: 'Procesos políticos, sociales y culturales republicanos.' },
-        { id: 'ciudadania', name: 'Formación Ciudadana', shortName: 'Ciudadanía', icon: '🏛️', color: '#3b82f6', topics: ['Formación Ciudadana', 'Constitución', 'Derechos Humanos', 'Democracia'], description: 'Institucionalidad democrática, ciudadanía y DDHH.' },
         { id: 'mundo', name: 'Mundo y América', shortName: 'Mundo', icon: '🌍', color: '#8b5cf6', topics: ['Guerra Fría', 'Imperialismo', 'Totalitarismos', 'Globalización'], description: 'Guerras mundiales, Guerra Fría y transformaciones globales.' },
-        { id: 'economia', name: 'Economía y Sociedad', shortName: 'Economía', icon: '📈', color: '#f59e0b', topics: ['Economía', 'Mercado', 'Inflación', 'Problema Económico'], description: 'Agentes económicos, mercado, dinero y sustentabilidad.' }
+        { id: 'ciudadania', name: 'Formación Ciudadana', shortName: 'Ciudadanía', icon: '🏛️', color: '#3b82f6', topics: ['Formación Ciudadana', 'Constitución', 'Derechos Humanos', 'Democracia'], description: 'Institucionalidad democrática, ciudadanía y DDHH.' },
+        { id: 'economia', name: 'Economía y Sociedad', shortName: 'Economía', icon: '📈', color: '#f59e0b', topics: ['Economía', 'Mercado', 'Inflación', 'Problema Económico'], description: 'Agentes económicos, mercado, dinero y sustentabilidad.' },
+        { id: 'geografia', name: 'Territorio y Medio Ambiente', shortName: 'Geografía', icon: '🗺️', color: '#10b981', topics: ['Geografía', 'Territorio', 'Medio Ambiente', 'Sustentabilidad', 'Demografía', 'Recursos Naturales'], description: 'Territorio chileno y americano, desarrollo sustentable y dinámicas de población.' }
       ]
     },
     'fisica': {
@@ -162,28 +165,70 @@ export class InfiniteMasteryService {
   }
 
   /**
-   * Carga el progreso actual de maestría infinita del usuario
+   * Obtiene la fecha actual en formato local YYYY-MM-DD
    */
-  getProgress(materiaId: string): MasteryProgress {
-    const norm = this.normalizeMateriaId(materiaId);
-    const key = `${this.STORAGE_PREFIX}${norm}`;
-    const raw = localStorage.getItem(key);
-    if (raw) {
-      try {
-        return JSON.parse(raw);
-      } catch {
-        // fallback
-      }
-    }
+  getTodayDateString(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Calcula los segundos restantes hasta el próximo reseteo diario (00:00:00)
+   */
+  getSecondsUntilMidnight(): number {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    return Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+  }
+
+  private getDefaultProgress(materiaId: string): MasteryProgress {
     return {
-      materiaId: norm,
+      materiaId,
       level: 1,
       xp: 0,
       completedAxes: [],
+      bossDefeatedToday: false,
+      lastActiveDate: this.getTodayDateString(),
       totalQuestionsSolved: 0,
       totalCorrect: 0,
       history: []
     };
+  }
+
+  /**
+   * Carga el progreso actual de maestría infinita del usuario con control de reset diario
+   */
+  getProgress(materiaId: string): MasteryProgress {
+    const norm = this.normalizeMateriaId(materiaId);
+    const key = `${this.STORAGE_PREFIX}${norm}`;
+    const today = this.getTodayDateString();
+    const raw = localStorage.getItem(key);
+    let progress: MasteryProgress;
+
+    if (raw) {
+      try {
+        progress = JSON.parse(raw);
+        if (!progress.lastActiveDate) progress.lastActiveDate = today;
+        if (progress.bossDefeatedToday === undefined) progress.bossDefeatedToday = false;
+      } catch {
+        progress = this.getDefaultProgress(norm);
+      }
+    } else {
+      progress = this.getDefaultProgress(norm);
+    }
+
+    // Comprobación de Reseteo Diario
+    if (progress.lastActiveDate !== today) {
+      progress.lastActiveDate = today;
+      progress.completedAxes = []; // Reiniciar nodos completados para el nuevo día
+      progress.bossDefeatedToday = false; // Habilitar el reto del jefe para el nuevo día
+      this.saveProgress(progress);
+    }
+
+    return progress;
   }
 
   /**
@@ -225,7 +270,47 @@ export class InfiniteMasteryService {
   }
 
   /**
-   * Registra la finalización de un eje temático y evalúa si sube de nivel
+   * Genera un quiz especial para el NODO JEFE combinando preguntas de TODOS los ejes
+   */
+  generateBossQuiz(materiaId: string, count: number = 8): PoolPregunta[] {
+    const cfg = this.getSubjectConfig(materiaId);
+    const allPool = this.paesContent.poolPreguntas();
+    const normalizedPoolMateria = cfg.poolMateriaId;
+
+    const bossQuestions: PoolPregunta[] = [];
+    const questionsPerAxis = Math.max(1, Math.floor(count / cfg.axes.length));
+
+    for (const axis of cfg.axes) {
+      const axisPool = allPool.filter(q => {
+        const matchMateria = q.materiaId === normalizedPoolMateria || q.materiaId === cfg.materiaId;
+        const matchTopic = axis.topics.some(t =>
+          (q.tema || '').toLowerCase().includes(t.toLowerCase()) ||
+          (q.enunciado || '').toLowerCase().includes(t.toLowerCase())
+        );
+        return matchMateria && matchTopic;
+      });
+
+      const shuffled = [...axisPool].sort(() => Math.random() - 0.5);
+      const chosen = shuffled.slice(0, questionsPerAxis);
+      bossQuestions.push(...chosen);
+    }
+
+    // Rellenar preguntas faltantes si algún eje tenía pocas preguntas
+    if (bossQuestions.length < count) {
+      const remainingPool = allPool.filter(q => 
+        (q.materiaId === normalizedPoolMateria || q.materiaId === cfg.materiaId) &&
+        !bossQuestions.some(b => b.id === q.id)
+      ).sort(() => Math.random() - 0.5);
+      
+      const needed = count - bossQuestions.length;
+      bossQuestions.push(...remainingPool.slice(0, needed));
+    }
+
+    return bossQuestions.sort(() => Math.random() - 0.5);
+  }
+
+  /**
+   * Registra la finalización de un eje temático y evalúa si se completaron todos los vértices del día
    */
   recordAxisCompletion(
     materiaId: string,
@@ -242,7 +327,7 @@ export class InfiniteMasteryService {
     progress.totalQuestionsSolved += totalCount;
     progress.totalCorrect += correctCount;
 
-    // Agregar eje a la lista de completados del nivel actual
+    // Agregar eje a la lista de completados del día actual
     if (!progress.completedAxes.includes(axisId)) {
       progress.completedAxes.push(axisId);
     }
@@ -260,12 +345,8 @@ export class InfiniteMasteryService {
 
     // Verificar si se completaron TODOS los ejes del polígono
     const allAxesCompleted = cfg.axes.every(a => progress.completedAxes.includes(a.id));
-    if (allAxesCompleted) {
-      progress.level += 1;
-      newLevel = progress.level;
-      leveledUp = true;
-      progress.completedAxes = []; // Reiniciar el ciclo para el nuevo nivel de maestría
-      this.toast.success(`🎉 ¡Felicidades! Has completado el Polígono y alcanzado el Nivel de Maestría ${newLevel}`);
+    if (allAxesCompleted && !progress.bossDefeatedToday) {
+      this.toast.success(`⚡ ¡Todos los ejes del polígono dominados! El Núcleo Maestro (Jefe) ha sido desbloqueado.`);
     }
 
     this.saveProgress(progress);
@@ -286,5 +367,52 @@ export class InfiniteMasteryService {
     }
 
     return { progress, leveledUp, newLevel, xpEarned };
+  }
+
+  /**
+   * Registra la victoria épica sobre el NODO JEFE (Núcleo Maestro)
+   */
+  recordBossCompletion(
+    materiaId: string,
+    correctCount: number,
+    totalCount: number
+  ): { progress: MasteryProgress; leveledUp: boolean; newLevel: number; xpEarned: number } {
+    const progress = this.getProgress(materiaId);
+    const cfg = this.getSubjectConfig(materiaId);
+
+    const xpEarned = correctCount * 50 + 250; // 50 XP por acierto + 250 XP bono jefe
+    progress.xp += xpEarned;
+    progress.totalQuestionsSolved += totalCount;
+    progress.totalCorrect += correctCount;
+    progress.bossDefeatedToday = true;
+    progress.level += 1; // Derrotar al Jefe siempre sube de nivel de maestría
+    const newLevel = progress.level;
+
+    progress.history.unshift({
+      axisId: 'boss-core',
+      axisName: '👑 Núcleo de Maestría Total (Jefe)',
+      correct: correctCount,
+      total: totalCount,
+      timestamp: new Date().toISOString()
+    });
+
+    this.saveProgress(progress);
+    this.toast.success(`👑 ¡HAS DERROTADO AL NÚCLEO MAESTRO! Nivel de Maestría aumentado a Lv. ${newLevel} (+${xpEarned} XP)`);
+
+    try {
+      this.dashboardSvc.logLessonCompleted({
+        seccionId: `infinite-boss-${progress.materiaId}`,
+        title: `👑 JEFE MODO INFINITO (${cfg.title})`,
+        subject: cfg.title,
+        subjectIcon: cfg.icon,
+        score: Math.round((correctCount / (totalCount || 1)) * 100),
+        totalCorrect: correctCount,
+        totalQuestions: totalCount
+      });
+    } catch {
+      // ignore dashboard log error
+    }
+
+    return { progress, leveledUp: true, newLevel, xpEarned };
   }
 }
