@@ -3693,9 +3693,9 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
 
     // Balance Arm
     const lx = cx - armL * Math.cos(tilt);
-    const ly = cy - armL * Math.sin(tilt);
+    const ly = cy + armL * Math.sin(tilt);
     const rx = cx + armL * Math.cos(tilt);
-    const ry = cy + armL * Math.sin(tilt);
+    const ry = cy - armL * Math.sin(tilt);
 
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = 5;
