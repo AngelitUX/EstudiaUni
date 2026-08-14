@@ -8,6 +8,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.component';
 
 type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean };
 
@@ -28,7 +29,7 @@ type PathItem = {
 @Component({
   selector: 'app-materia-math-path',
   standalone: true,
-  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent, InfiniteMasteryModalComponent],
   template: `
     <div class="lp-layout" [ngClass]="materiaId() === 'mat1' ? 'materia-mat1' : 'materia-mat2'">
       <!-- SIDEBAR -->
@@ -128,6 +129,9 @@ type PathItem = {
             <button class="btn-upgrade-pro" style="background: linear-gradient(135deg, #e11d48, #be123c); font-size: 0.8rem; border-radius: 99px; margin-right: 0.5rem;" (click)="toggleUnlockAllSteps()">
               {{ isUnlockedAll() ? '🔒 Bloquear Ruta' : '🔓 Desbloquear todo' }}
             </button> -->
+            <button class="btn-infinite-mastery-top" (click)="showInfiniteMastery = true">
+              🌟 Modo Infinito
+            </button>
             <button *ngIf="adminService.isAdmin()" class="btn-upgrade-pro" style="background: linear-gradient(135deg, #10b981, #059669); margin-right: 0.5rem;" (click)="forceRefresh()">
               🔄 Actualizar Datos
             </button>
@@ -354,6 +358,18 @@ type PathItem = {
                 </div>
               </div>
             </ng-container>
+
+            <!-- NODO FINAL DE MAESTRÍA INFINITA -->
+            <div class="infinite-mastery-node-card" (click)="showInfiniteMastery = true">
+              <div class="infinite-portal-badge">
+                <span class="portal-icon">🌟</span>
+                <div class="portal-text">
+                  <h4>Modo Infinito · Polígono de Maestría</h4>
+                  <p>Practica ilimitadamente con preguntas dinámicas de todos los ejes</p>
+                </div>
+                <button class="btn-enter-portal">Entrar al Polígono →</button>
+              </div>
+            </div>
           </div>
         </div>
         </div>
@@ -361,6 +377,7 @@ type PathItem = {
     </div>
     <app-profile-modal *ngIf="showProfileModal" (close)="showProfileModal = false"></app-profile-modal>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
+    <app-infinite-mastery-modal *ngIf="showInfiniteMastery" [materiaId]="materiaId()" (close)="showInfiniteMastery = false"></app-infinite-mastery-modal>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <!-- PHYSICS SIMULATOR PANEL (only for ciencias-fisica) -->
@@ -2118,6 +2135,90 @@ type PathItem = {
     @media (max-width: 640px) {
       .math-decor-item { display: none; }
     }
+    .btn-infinite-mastery-top {
+      background: linear-gradient(135deg, #855cd6, #6366f1);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 99px;
+      padding: 0.45rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-infinite-mastery-top:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+      filter: brightness(1.1);
+    }
+    .infinite-mastery-node-card {
+      margin: 3.5rem auto 5rem;
+      max-width: 520px;
+      width: 90%;
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border: 2px solid rgba(133, 92, 214, 0.5);
+      border-radius: 24px;
+      padding: 1.5rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(49, 46, 129, 0.4), 0 0 20px rgba(133, 92, 214, 0.3);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .infinite-mastery-node-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: #f59e0b;
+      box-shadow: 0 16px 40px rgba(49, 46, 129, 0.6), 0 0 30px rgba(245, 158, 11, 0.4);
+    }
+    .infinite-portal-badge {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      position: relative;
+      z-index: 2;
+    }
+    .portal-icon {
+      font-size: 2.6rem;
+      animation: floatPortal 3s ease-in-out infinite;
+    }
+    @keyframes floatPortal {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(8deg); }
+    }
+    .portal-text h4 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .portal-text p {
+      margin: 0.25rem 0 0;
+      font-size: 0.85rem;
+      color: #c7d2fe;
+      font-weight: 500;
+    }
+    .btn-enter-portal {
+      background: #f59e0b;
+      color: #1e1b4b;
+      border: none;
+      border-radius: 12px;
+      padding: 0.6rem 1.1rem;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-left: auto;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-enter-portal:hover {
+      background: #fbbf24;
+      transform: scale(1.05);
+    }
   `]
 })
 export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
@@ -2133,6 +2234,7 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
   showSettingsModal = false;
   showProfileModal = false;
   showLogoutConfirm = false;
+  showInfiniteMastery = false;
 
   // ─── Math Simulator State ───
   Math = Math;
