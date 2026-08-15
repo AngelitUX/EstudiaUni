@@ -9,11 +9,12 @@ import {
   updateDoc, 
   addDoc,
   deleteDoc,
-  query, 
-  where, 
-  orderBy, 
+  query,
+  where,
+  orderBy,
   limit,
-  Timestamp
+  Timestamp,
+  runTransaction
 } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
 import { from, map, Observable, of, catchError, switchMap, shareReplay } from 'rxjs';
@@ -460,14 +461,29 @@ export class FirestoreService {
   }
 
   async saveAnswer(intentoId: string, preguntaId: string, selectedAnswer: string, isCorrect: boolean): Promise<void> {
+    // Runs as a transaction on purpose: selectOption() in the exam runner
+    // fires this without awaiting it, so answering two questions in quick
+    // succession can easily have both calls' getDoc() read the same
+    // pre-update snapshot. With a plain get+update, whichever write lands
+    // last would silently overwrite the other's answer, losing it from the
+    // "answers" array entirely. A transaction re-reads on conflict instead
+    // of blindly overwriting, so no answer gets dropped.
     const ref = doc(this.firestore, 'intentos', intentoId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return;
-    const answers = snap.data()['answers'] || [];
-    const idx = answers.findIndex((a: { preguntaId: string }) => a.preguntaId === preguntaId);
-    if (idx >= 0) answers[idx] = { preguntaId, selectedAnswer, isCorrect };
-    else answers.push({ preguntaId, selectedAnswer, isCorrect });
-    await updateDoc(ref, { answers });
+    try {
+      await runTransaction(this.firestore, async (transaction) => {
+        const snap = await transaction.get(ref);
+        if (!snap.exists()) return;
+        const answers = [...(snap.data()['answers'] || [])];
+        const idx = answers.findIndex((a: { preguntaId: string }) => a.preguntaId === preguntaId);
+        if (idx >= 0) answers[idx] = { preguntaId, selectedAnswer, isCorrect };
+        else answers.push({ preguntaId, selectedAnswer, isCorrect });
+        transaction.update(ref, { answers });
+      });
+    } catch {
+      // Silenced to match prior behavior — finishIntento() rebuilds the full
+      // answers array from local component state at submit time regardless,
+      // so a transient failure here isn't fatal to the final result.
+    }
   }
 
   async finishIntento(

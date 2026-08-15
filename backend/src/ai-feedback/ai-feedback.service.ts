@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { FirebaseService } from '../firebase/firebase.service';
 import { QuestionsService } from '../questions/questions.service';
 import {
@@ -18,10 +19,53 @@ import {
   buildAssistUserPrompt,
   CAREER_CHAT_SYSTEM_PROMPT,
 } from './prompts/assist.prompt';
-import OpenAI from 'openai';
 import { ChatRequestDto } from './dto/chat-message.dto';
 import { CareerChatRequestDto } from './dto/career-chat.dto';
+import { ReviewChatRequestDto } from './dto/review-chat.dto';
 import { RecommendationsRequestDto } from './dto/recommendations.dto';
+
+const GEMINI_MODEL = 'gemini-2.5-flash';
+
+const SAFETY_SETTINGS = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+];
+
+// Many exam questions come from scanned official PAES tests: their `text`/
+// `options` fields are placeholder strings like "Pregunta 5 (Ver imagen)" —
+// the real content only exists in the attached image(s). Without this note,
+// the model tends to answer generically off the placeholder text instead of
+// actually reading the image, which is exactly the "doesn't seem to read the
+// question" symptom this is fixing.
+const VISION_NOTE = `INSTRUCCIÓN VISION: Se te adjuntaron una o más imágenes junto con este mensaje — son la captura oficial de la pregunta (y, si corresponde, del texto de lectura que la acompaña). Léelas con atención: ahí está el enunciado real, las alternativas completas y cualquier gráfico, tabla o dato numérico. Si el texto de "Pregunta" u "Opciones" de arriba es genérico o dice algo como "(Ver imagen)", IGNÓRALO por completo y basa tu respuesta únicamente en lo que ves en las imágenes.`;
+
+// Used only for POST-exam review (the "Preguntarle a Foco" button on a wrong
+// answer in ensayo-review). Unlike ASSIST_SYSTEM_PROMPT/chatWithContext —
+// which explicitly forbids revealing the correct answer because the student
+// is still mid-exam — here the attempt is already submitted and graded, so
+// withholding the answer would just be unhelpful. This prompt is intentionally
+// a separate, self-contained system instruction (not ASSIST_SYSTEM_PROMPT +
+// an appended override) so the model never sees the contradictory "never
+// reveal it" rule in the first place.
+const REVIEW_CHAT_SYSTEM_PROMPT = `Eres Foco, la mascota oficial y tutor de EstudiaUni.cl. Eres un pulpo súper inteligente, entusiasta y amigable de 8 tentáculos (cada uno experto en una de las 8 materias de la PAES de Chile).
+
+CONTEXTO: El estudiante YA TERMINÓ Y ENTREGÓ su ensayo — no está rindiendo la prueba ahora, está revisando sus resultados para aprender de un error. Por eso, a diferencia de cuando asistes durante un ensayo en curso, AQUÍ SÍ debes ser completamente transparente: dile abiertamente cuál era la alternativa correcta, explica el proceso completo paso a paso para llegar a ella, y luego analiza específicamente la alternativa que el estudiante marcó — explícale con calidez y sin juzgar qué error de razonamiento, cálculo o interpretación probablemente lo llevó a esa opción, para que no lo repita.
+
+PERSONALIDAD Y TONO DE FOCO:
+- ¡Eres un pulpo! Usa metáforas marinas u oceanográficas de forma sutil, dinámica y divertida (ej. "desenredar con mis tentáculos", "chocamos esos ocho"), pero NUNCA las uses en saludos repetitivos.
+- Sé sumamente empático, motivador y usa un español chileno sutil y cercano, perfecto para estudiantes de enseñanza media.
+- Tu personalidad es vibrante, alegre y con emojis marinos y de luz (🐙, 💡, 🌊, 🧠, ✨), sin abusar de ellos.
+
+REGLAS (ESTRICTAS):
+- SIN INTRODUCCIONES REPETITIVAS: ve directo al análisis, sin saludos largos ni rodeos.
+- Estructura clara: (1) cuál era la alternativa correcta y por qué, con el proceso paso a paso; (2) por qué la alternativa que el estudiante marcó es tentadora pero incorrecta — el error específico que la explica.
+- Sé conciso pero completo: 3-5 párrafos cortos está bien aquí (es más denso que una pista en pleno ensayo), pero SIEMPRE termina tus ideas completas, nunca a medias.
+- Si el estudiante hace una pregunta de seguimiento, respóndela directamente y con el mismo nivel de transparencia.
+- TRATAMIENTO DE DECIMALES: al explicar ejercicios con decimales largos, abrevia (ej. "4,56...") en vez de escribir la secuencia completa.
+
+FORMATO MATEMÁTICO: usa LaTeX ('$$...$$' o '$...$') o Unicode legible (x², x_n) para fórmulas y ecuaciones; traduce cualquier notación de código a notación matemática tradicional.`;
 
 const RECOMMENDATIONS_SYSTEM_PROMPT = `Eres Foco, el tutor IA de EstudiaUni.cl, una plataforma de preparación para la PAES (admisión universitaria en Chile).
 Tu tarea es dar una recomendación de estudio breve, cálida y accionable, basada en la actividad reciente del estudiante.
@@ -50,19 +94,71 @@ function buildRecommendationsUserPrompt(activities: RecommendationsRequestDto['a
 @Injectable()
 export class AiFeedbackService {
   private readonly logger = new Logger(AiFeedbackService.name);
-  private openai: OpenAI;
+  private genAI: GoogleGenerativeAI | null = null;
 
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly questionsService: QuestionsService,
     private readonly configService: ConfigService,
   ) {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
-      this.openai = new OpenAI({ apiKey });
+      this.genAI = new GoogleGenerativeAI(apiKey);
     } else {
-      this.logger.warn('OpenAI API key not configured. AI features disabled.');
+      this.logger.warn('Gemini API key not configured. AI features disabled.');
     }
+  }
+
+  private getModel(systemInstruction: string, opts?: { json?: boolean; maxOutputTokens?: number; disableThinking?: boolean }) {
+    return this.genAI!.getGenerativeModel({
+      model: GEMINI_MODEL,
+      systemInstruction,
+      safetySettings: SAFETY_SETTINGS,
+      generationConfig: {
+        maxOutputTokens: opts?.maxOutputTokens ?? 3000,
+        temperature: 0.7,
+        // gemini-2.5-flash spends part of maxOutputTokens on an internal
+        // "thinking" pass before the visible reply — with a low token cap
+        // (chat replies used to cap at 500, copied over from the old OpenAI
+        // config) that ate almost the entire budget, so replies got cut off
+        // mid-sentence a few words in. Disabling it for chat keeps the full
+        // budget for the actual visible answer.
+        ...(opts?.disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+        ...(opts?.json ? { responseMimeType: 'application/json' } : {}),
+      },
+    });
+  }
+
+  /** Fetches an image URL and returns it as inline base64 data for Gemini vision input. */
+  private async urlToInlineData(url: string): Promise<{ mimeType: string; data: string } | null> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      const arrayBuffer = await response.arrayBuffer();
+      return {
+        mimeType: response.headers.get('content-type') || 'image/png',
+        data: Buffer.from(arrayBuffer).toString('base64'),
+      };
+    } catch (error) {
+      this.logger.warn(`Could not fetch image for vision input: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Maps our {role, content}[] history to Gemini's {role: 'user'|'model', parts}[]
+   * shape, dropping the last turn (the caller sends that as the actual message)
+   * and any leading assistant turns — Gemini chat history must start with 'user'.
+   */
+  private toGeminiHistory(history: Array<{ role: string; content: string }>) {
+    const mapped = history.slice(0, -1).map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+    while (mapped.length > 0 && mapped[0].role === 'model') {
+      mapped.shift();
+    }
+    return mapped;
   }
 
   /**
@@ -104,10 +200,10 @@ export class AiFeedbackService {
 
     // Try AI analysis with retries
     let aiResult: any = null;
-    if (this.openai) {
+    if (this.genAI) {
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          aiResult = await this.callOpenAI(
+          aiResult = await this.callGeminiJson(
             ANALYSIS_SYSTEM_PROMPT,
             buildAnalysisUserPrompt({
               correctCount: score.correct,
@@ -196,12 +292,12 @@ export class AiFeedbackService {
 
     if (!topicData) throw new NotFoundException('Topic not found');
 
-    if (!this.openai) {
+    if (!this.genAI) {
       return { markdown: topicData.content?.keyConceptsMarkdown || topicData.content?.summary || '' };
     }
 
     try {
-      const result = await this.callOpenAIText(
+      const result = await this.callGeminiText(
         SYNTHESIS_SYSTEM_PROMPT,
         buildSynthesisPrompt(
           topicData.title,
@@ -227,7 +323,7 @@ export class AiFeedbackService {
     subject?: string;
     imageUrl?: string;
   }) {
-    if (!this.openai) {
+    if (!this.genAI) {
       return {
         reply:
           'La asistencia IA no está disponible en este momento. Intenta razonar la pregunta paso a paso y descarta opciones.',
@@ -235,26 +331,18 @@ export class AiFeedbackService {
     }
 
     try {
-      const userContent: any[] = [{ type: 'text', text: buildAssistUserPrompt(input) }];
-      
-      if (input.imageUrl && input.imageUrl.startsWith('http')) {
-        userContent.push({
-          type: 'image_url',
-          image_url: { url: input.imageUrl },
-        });
+      const hasImage = !!input.imageUrl && input.imageUrl.startsWith('http');
+      const promptText = buildAssistUserPrompt(input) + (hasImage ? `\n\n${VISION_NOTE}` : '');
+      const parts: any[] = [{ text: promptText }];
+
+      if (hasImage) {
+        const inline = await this.urlToInlineData(input.imageUrl!);
+        if (inline) parts.push({ inlineData: inline });
       }
 
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: ASSIST_SYSTEM_PROMPT },
-          { role: 'user', content: userContent as any },
-        ],
-        max_tokens: 3000,
-        temperature: 0.7,
-      });
-
-      return { reply: response.choices[0]?.message?.content || '' };
+      const model = this.getModel(ASSIST_SYSTEM_PROMPT, { maxOutputTokens: 3000, disableThinking: true });
+      const result = await model.generateContent(parts);
+      return { reply: result.response.text() || '' };
     } catch (error) {
       this.logger.error(`Assist failed: ${error.message}`);
       throw new InternalServerErrorException('AI assist failed');
@@ -266,7 +354,7 @@ export class AiFeedbackService {
    * Accepts full conversation history and returns AI reply.
    */
   async chatWithContext(input: ChatRequestDto): Promise<{ reply: string }> {
-    if (!this.openai) {
+    if (!this.genAI) {
       return {
         reply:
           '⚠️ La asistencia IA no está disponible en este momento. Intenta razonar la pregunta paso a paso y descarta las opciones que claramente son incorrectas.',
@@ -277,6 +365,8 @@ export class AiFeedbackService {
       .map((opt) => `${opt.id}. ${opt.text}`)
       .join('\n');
 
+    const hasImages = (!!input.imageUrl && input.imageUrl.startsWith('http')) || !!input.readingImages?.length;
+
     const systemPrompt = `${ASSIST_SYSTEM_PROMPT}
 
 Contexto de la pregunta actual:
@@ -286,41 +376,96 @@ Opciones:
 ${optionsText}
 Respuesta actual del estudiante: ${input.userAnswer || 'Sin responder'}
 
-IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles la alternativa correcta.`;
-
-    // Build messages array from history
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
-    ];
-
-    if (input.imageUrl && input.imageUrl.startsWith('http')) {
-      messages.push({
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Esta es la imagen asociada a la pregunta (úsala para guiar tu explicación si es necesario):' },
-          { type: 'image_url', image_url: { url: input.imageUrl } }
-        ]
-      } as any);
-    }
-
-    messages.push(...input.history.map((msg) => ({
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content,
-    })));
+IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles la alternativa correcta.${hasImages ? `\n\n${VISION_NOTE}` : ''}`;
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      });
+      const model = this.getModel(systemPrompt, { maxOutputTokens: 1024, disableThinking: true });
+      const chat = model.startChat({ history: this.toGeminiHistory(input.history) });
 
-      const reply = response.choices[0]?.message?.content || 'No pude generar una respuesta. Intenta de nuevo.';
+      const lastMsg = input.history[input.history.length - 1];
+      const userText = lastMsg?.role === 'user' ? lastMsg.content : 'Necesito una pista.';
+      const parts: any[] = [{ text: userText }];
+
+      if (input.imageUrl && input.imageUrl.startsWith('http')) {
+        const inline = await this.urlToInlineData(input.imageUrl);
+        if (inline) parts.push({ inlineData: inline });
+      }
+
+      // Reading-comprehension questions (Lenguaje) need the passage itself,
+      // not just the question's own image, to answer meaningfully.
+      if (input.readingImages?.length) {
+        for (const url of input.readingImages) {
+          if (!url.startsWith('http')) continue;
+          const inline = await this.urlToInlineData(url);
+          if (inline) parts.push({ inlineData: inline });
+        }
+      }
+
+      const result = await chat.sendMessage(parts);
+      const reply = result.response.text() || 'No pude generar una respuesta. Intenta de nuevo.';
       return { reply };
     } catch (error) {
       this.logger.error(`Chat failed: ${error.message}`);
       throw new InternalServerErrorException('AI chat failed');
+    }
+  }
+
+  /**
+   * Post-exam review chat (PRO only, "Preguntarle a Foco" on a wrong answer).
+   * Unlike chatWithContext, this is allowed — and expected — to state the
+   * correct answer and explain the student's specific mistake, since the
+   * attempt is already submitted and graded.
+   */
+  async reviewChat(input: ReviewChatRequestDto): Promise<{ reply: string }> {
+    if (!this.genAI) {
+      return {
+        reply: '⚠️ La asistencia IA no está disponible en este momento.',
+      };
+    }
+
+    const optionsText = input.options
+      .map((opt) => `${opt.id}. ${opt.text}`)
+      .join('\n');
+
+    const hasImages = (!!input.imageUrl && input.imageUrl.startsWith('http')) || !!input.readingImages?.length;
+
+    const systemPrompt = `${REVIEW_CHAT_SYSTEM_PROMPT}
+
+Contexto de la pregunta ya corregida:
+Materia: ${input.subject || 'PAES'}
+Pregunta: ${input.question}
+Opciones:
+${optionsText}
+Alternativa correcta: ${input.correctAnswer}
+Alternativa marcada por el estudiante: ${input.userAnswer || 'No respondió (omitida)'}${hasImages ? `\n\n${VISION_NOTE}` : ''}`;
+
+    try {
+      const model = this.getModel(systemPrompt, { maxOutputTokens: 1536, disableThinking: true });
+      const chat = model.startChat({ history: this.toGeminiHistory(input.history) });
+
+      const lastMsg = input.history[input.history.length - 1];
+      const userText = lastMsg?.role === 'user' ? lastMsg.content : '¿Cuál era el proceso para resolver esta pregunta y en qué pude haberme equivocado?';
+      const parts: any[] = [{ text: userText }];
+
+      if (input.imageUrl && input.imageUrl.startsWith('http')) {
+        const inline = await this.urlToInlineData(input.imageUrl);
+        if (inline) parts.push({ inlineData: inline });
+      }
+
+      if (input.readingImages?.length) {
+        for (const url of input.readingImages) {
+          if (!url.startsWith('http')) continue;
+          const inline = await this.urlToInlineData(url);
+          if (inline) parts.push({ inlineData: inline });
+        }
+      }
+
+      const result = await chat.sendMessage(parts);
+      const reply = result.response.text() || 'No pude generar una respuesta. Intenta de nuevo.';
+      return { reply };
+    } catch (error) {
+      this.logger.error(`Review chat failed: ${error.message}`);
+      throw new InternalServerErrorException('AI review chat failed');
     }
   }
 
@@ -331,29 +476,21 @@ IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles
    * client's message history against the vocational system prompt.
    */
   async careerChat(input: CareerChatRequestDto): Promise<{ reply: string }> {
-    if (!this.openai) {
+    if (!this.genAI) {
       return {
         reply: '⚠️ El orientador vocacional IA no está disponible en este momento. Intenta de nuevo más tarde.',
       };
     }
 
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: CAREER_CHAT_SYSTEM_PROMPT },
-      ...input.history.map((msg) => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-      })),
-    ];
-
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      });
+      const model = this.getModel(CAREER_CHAT_SYSTEM_PROMPT, { maxOutputTokens: 1024, disableThinking: true });
+      const chat = model.startChat({ history: this.toGeminiHistory(input.history) });
 
-      const reply = response.choices[0]?.message?.content || 'No pude generar una respuesta. Intenta de nuevo.';
+      const lastMsg = input.history[input.history.length - 1];
+      const userText = lastMsg?.role === 'user' ? lastMsg.content : 'Hola';
+
+      const result = await chat.sendMessage(userText);
+      const reply = result.response.text() || 'No pude generar una respuesta. Intenta de nuevo.';
       return { reply };
     } catch (error) {
       this.logger.error(`Career chat failed: ${error.message}`);
@@ -366,14 +503,14 @@ IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles
    * PRO-only, button-triggered feature — consumes 1 Foco token per call (enforced by controller).
    */
   async generateRecommendations(input: RecommendationsRequestDto): Promise<{ recommendation: string }> {
-    if (!this.openai) {
+    if (!this.genAI) {
       return {
         recommendation: 'La IA no está disponible en este momento. Revisa tu historial de actividad y prioriza los temas donde tuviste más errores recientes.',
       };
     }
 
     try {
-      const recommendation = await this.callOpenAIText(
+      const recommendation = await this.callGeminiText(
         RECOMMENDATIONS_SYSTEM_PROMPT,
         buildRecommendationsUserPrompt(input.activities),
       );
@@ -402,41 +539,24 @@ IMPORTANTE: Mantén el hilo de la conversación con el estudiante. Nunca reveles
   }
 
   /**
-   * Call OpenAI API expecting JSON response.
+   * Call Gemini expecting a JSON response.
    */
-  private async callOpenAI(systemPrompt: string, userPrompt: string) {
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 4000,
-      temperature: 0.7,
-    });
-
-    const content = response.choices[0]?.message?.content;
+  private async callGeminiJson(systemPrompt: string, userPrompt: string) {
+    const model = this.getModel(systemPrompt, { json: true, maxOutputTokens: 4000 });
+    const result = await model.generateContent(userPrompt);
+    const content = result.response.text();
     if (!content) throw new Error('Empty AI response');
 
     return JSON.parse(content);
   }
 
   /**
-   * Call OpenAI API expecting text response.
+   * Call Gemini expecting a plain text response.
    */
-  private async callOpenAIText(systemPrompt: string, userPrompt: string) {
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 3000,
-      temperature: 0.7,
-    });
-
-    return response.choices[0]?.message?.content || '';
+  private async callGeminiText(systemPrompt: string, userPrompt: string) {
+    const model = this.getModel(systemPrompt, { maxOutputTokens: 3000 });
+    const result = await model.generateContent(userPrompt);
+    return result.response.text() || '';
   }
 
   /**
