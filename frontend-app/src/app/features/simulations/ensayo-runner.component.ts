@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Pregunta } from '../../core/services/firestore.service';
 import { AiAssistService, ChatMessage, FocoTokensExhaustedError } from '../../core/services/ai-assist.service';
+import { formatFocoMessage } from '../../core/utils/foco-message-format';
 import { ToastService } from '../../core/services/toast.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { AdminService } from '../admin/services/admin.service';
+import { FocoTokensBadgeComponent } from '../../shared/components/foco-tokens-badge.component';
 
 interface Question {
   id: string;
@@ -43,7 +45,7 @@ interface AiMessage {
 @Component({
   selector: 'app-ensayo-runner',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, FocoTokensBadgeComponent],
   template: `
     <div class="exam-container">
       <!-- HEADER MINIMALISTA -->
@@ -61,9 +63,7 @@ interface AiMessage {
           <span class="mode-badge" [class.assisted]="isAssisted">
             {{ isAssisted ? 'Asistido' : 'Real' }}
           </span>
-          <span class="foco-tokens-badge" *ngIf="isAssisted" (click)="focoRemaining <= 0 ? paymentService.openPricingModal() : null" style="background: rgba(124,58,237,0.1); color: #7c3aed; font-weight: 800; font-size: 0.8rem; padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid rgba(124,58,237,0.3); display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
-            💡 Foco: {{ focoRemaining }}/{{ focoLimit }} hoy
-          </span>
+          <app-foco-tokens-badge *ngIf="isAssisted"></app-foco-tokens-badge>
           <div class="timer" [class.warning]="timeWarning" [class.critical]="timeCritical">
             <span class="timer-icon">⏱️</span>
             <span class="timer-value">{{ formattedTime }}</span>
@@ -819,15 +819,17 @@ interface AiMessage {
       border-radius: 16px;
       background: #ffffff;
       border: 2px solid var(--glass-border);
-      /* Fill the same height as the question/nav columns instead of capping at
-         a fixed 600px, which looked cramped on larger desktop monitors. */
-      height: 100%;
-      max-height: 100%;
-      /* Without this, a flex/grid item won't shrink below its content's
-         natural height (min-height defaults to "auto", not 0) — that was
-         silently defeating .ai-messages' own overflow-y:auto below: instead
-         of scrolling internally, the chat just grew past its container and
-         got clipped by overflow:hidden here, with no scrollbar anywhere. */
+      /* Sized to its content instead of stretching to fill the full column
+         height: on a tall/large monitor that made the panel grow so tall the
+         input box ended up below the fold, forcing a page scroll just to
+         type. Capped a bit above the old 600px so it's not cramped either. */
+      height: fit-content;
+      max-height: 640px;
+      /* Without this, a flex item won't shrink below its content's natural
+         height (min-height defaults to "auto", not 0) — that was silently
+         defeating .ai-messages' own overflow-y:auto below: instead of
+         scrolling internally, the chat just grew past max-height and got
+         clipped by overflow:hidden here, with no scrollbar anywhere. */
       min-height: 0;
       display: flex;
       flex-direction: column;
@@ -2090,17 +2092,24 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         userAnswer: this.answers[this.currentQuestion.id] || null,
         subject: this.examId,
         imageUrl: this.currentQuestion.imageUrl,
+        readingImages: this.currentQuestion.readingText,
         history: historyForApi,
       });
 
       // Sync the local profile signal with the real, backend-confirmed usage
-      // instead of guessing/incrementing locally.
+      // instead of guessing/incrementing locally. Must go through .set() with
+      // a new object — mutating profile.dailyCredits in place doesn't notify
+      // Angular signals, so anything computed() from profileSignal() (like
+      // the Foco tokens badge) would silently keep showing stale numbers.
       const profile = this.firestoreService.profileSignal();
       if (profile) {
-        profile.dailyCredits = {
-          ...(profile.dailyCredits || {}),
-          focoTokensUsedToday: Math.max(0, response.limitTokens - response.remainingTokens)
-        };
+        this.firestoreService.profileSignal.set({
+          ...profile,
+          dailyCredits: {
+            ...(profile.dailyCredits || {}),
+            focoTokensUsedToday: Math.max(0, response.limitTokens - response.remainingTokens)
+          }
+        });
       }
 
       this.aiMessages.push({ role: 'assistant', content: response.reply, timestamp: new Date() });
@@ -2113,7 +2122,10 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
         });
         const profile = this.firestoreService.profileSignal();
         if (profile) {
-          profile.dailyCredits = { ...(profile.dailyCredits || {}), focoTokensUsedToday: err.limit };
+          this.firestoreService.profileSignal.set({
+            ...profile,
+            dailyCredits: { ...(profile.dailyCredits || {}), focoTokensUsedToday: err.limit }
+          });
         }
         this.paymentService.openPricingModal();
       } else {
@@ -2150,113 +2162,7 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   }
 
   formatAiMessage(text: string): string {
-    if (!text) return '';
-    
-    let formatted = text;
-    
-    // 1. Reemplazar bloques de ecuaciones grandes $$ ... $$ o \[ ... \]
-    formatted = formatted.replace(/\$\$([\s\S]*?)\$\$/g, (match, p1) => {
-      return `<div class="math-block">${p1.trim()}</div>`;
-    });
-    formatted = formatted.replace(/\\\[([\s\S]*?)\\\]/g, (match, p1) => {
-      return `<div class="math-block">${p1.trim()}</div>`;
-    });
-    
-    // 2. Reemplazar ecuaciones inline $ ... $ o \( ... \)
-    formatted = formatted.replace(/\$([\s\S]*?)\$/g, (match, p1) => {
-      return `<span class="math-inline">${p1.trim()}</span>`;
-    });
-    formatted = formatted.replace(/\\\(([\s\S]*?)\\\)/g, (match, p1) => {
-      return `<span class="math-inline">${p1.trim()}</span>`;
-    });
-    
-    // 3. Procesar comandos matemáticos dentro de todo el texto (especialmente dentro de los tags matemáticos)
-    
-    // Texto dentro de formulas: \text{...} -> ...
-    formatted = formatted.replace(/\\text\{([^{}]+)\}/g, '<span style="font-family: inherit;">$1</span>');
-    formatted = formatted.replace(/\\mathrm\{([^{}]+)\}/g, '<span style="font-family: inherit;">$1</span>');
-    formatted = formatted.replace(/\\mathbf\{([^{}]+)\}/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/\\textbf\{([^{}]+)\}/g, '<strong>$1</strong>');
-
-    // Fracciones: \frac{a}{b} -> vertical fraction en HTML
-    while (formatted.includes('\\frac{') || formatted.includes('\\dfrac{')) {
-      const nextFormatted = formatted.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, (match, num, den) => {
-        return `<span class="math-fraction"><span class="fraction-num">${num}</span><span class="fraction-den">${den}</span></span>`;
-      });
-      if (nextFormatted === formatted) break;
-      formatted = nextFormatted;
-    }
-    
-    // Raíces: \sqrt{x} -> √x con línea superior styled
-    formatted = formatted.replace(/\\sqrt\{([^{}]+)\}/g, '√<span style="border-top: 1.5px solid; padding-top: 1px;">$1</span>');
-    
-    // Vectores: \vec{u} o \vec u -> <span class="math-vector">u</span> (con flecha CSS real, 100% segura para fuentes)
-    formatted = formatted.replace(/\\vec\{([a-zA-Z0-9+-]+)\}/g, '<span class="math-vector">$1</span>');
-    formatted = formatted.replace(/\\vec\s*([a-zA-Z])/g, '<span class="math-vector">$1</span>');
-    
-    // Estimadores/Sombreros: \hat{p} o \hat p -> <span class="math-hat">p</span> (con sombrero CSS real, 100% seguro para fuentes)
-    formatted = formatted.replace(/\\hat\{([a-zA-Z0-9+-]+)\}/g, '<span class="math-hat">$1</span>');
-    formatted = formatted.replace(/\\hat\s*([a-zA-Z])/g, '<span class="math-hat">$1</span>');
-    
-    // Medias/Barras: \bar{x} o \overline{AB} -> AB con línea superior HTML real (100% compatible y segura)
-    formatted = formatted.replace(/\\overline\{([a-zA-Z0-9+-]+)\}/g, '<span style="text-decoration: overline;">$1</span>');
-    formatted = formatted.replace(/\\bar\{([a-zA-Z0-9+-]+)\}/g, '<span style="text-decoration: overline;">$1</span>');
-    formatted = formatted.replace(/\\bar\s*([a-zA-Z])/g, '<span style="text-decoration: overline;">$1</span>');
-    
-    // Exponentes: x^2 o y^(a+1) -> superíndices HTML
-    formatted = formatted.replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>');
-    formatted = formatted.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
-    formatted = formatted.replace(/\^([a-zA-Z0-9+-]+)/g, '<sup>$1</sup>');
-    
-    // Subíndices: x_1 o x_(i+1) -> subíndices HTML
-    formatted = formatted.replace(/_\{([^}]+)\}/g, '<sub>$1</sub>');
-    formatted = formatted.replace(/_\(([^)]+)\)/g, '<sub>$1</sub>');
-    formatted = formatted.replace(/_([a-zA-Z0-9+-]+)/g, '<sub>$1</sub>');
-    
-    // Símbolos matemáticos de LaTeX a Unicode limpio
-    const mathSymbols: { [key: string]: string } = {
-      '\\\\pm': '±',
-      '\\\\approx': '≈',
-      '\\\\infty': '∞',
-      '\\\\times': '×',
-      '\\\\div': '÷',
-      '\\\\neq': '≠',
-      '\\\\ne': '≠',
-      '\\\\leq': '≤',
-      '\\\\le': '≤',
-      '\\\\geq': '≥',
-      '\\\\ge': '≥',
-      '\\\\cdot': '•',
-      '\\\\partial': '∂',
-      '\\\\alpha': 'α',
-      '\\\\beta': 'β',
-      '\\\\gamma': 'γ',
-      '\\\\delta': 'δ',
-      '\\\\pi': 'π',
-      '\\\\theta': 'θ',
-      '\\\\sigma': 'σ',
-      '\\\\lambda': 'λ',
-      '\\\\Delta': 'Δ',
-      '\\\\rightarrow': '→',
-      '\\\\to': '→'
-    };
-    
-    for (const [key, value] of Object.entries(mathSymbols)) {
-      formatted = formatted.replace(new RegExp(key, 'g'), value);
-    }
-    
-    // Convertir Markdown simple a HTML para el texto normal
-    formatted = formatted
-      // Negritas: **texto** -> <strong>texto</strong>
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Itálicas: *palabra* -> <em>palabra</em> (solo para palabras individuales, evitando multiplicar expresiones matemáticas como 3 * x * y)
-      .replace(/\*([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)\*/g, '<em>$1</em>')
-      // Listas: * elemento -> • elemento
-      .replace(/^\* (.*$)/gim, '• $1')
-      // Saltos de línea: \n -> <br>
-      .replace(/\n/g, '<br>');
-      
-    return formatted;
+    return formatFocoMessage(text);
   }
 
   startNewAttempt() {

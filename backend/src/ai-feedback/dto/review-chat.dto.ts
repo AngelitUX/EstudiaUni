@@ -1,7 +1,7 @@
 import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class ChatMessageItemDto {
+class ReviewChatMessageItemDto {
   @IsString()
   role: 'user' | 'assistant';
 
@@ -9,7 +9,7 @@ class ChatMessageItemDto {
   content: string;
 }
 
-class AssistOptionDto {
+class ReviewOptionDto {
   @IsString()
   id: string;
 
@@ -17,18 +17,21 @@ class AssistOptionDto {
   text: string;
 }
 
-export class ChatRequestDto {
+export class ReviewChatRequestDto {
   @IsString()
   question: string;
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AssistOptionDto)
-  options: AssistOptionDto[];
+  @Type(() => ReviewOptionDto)
+  options: ReviewOptionDto[];
 
   @IsOptional()
   @IsString()
   userAnswer?: string | null;
+
+  @IsString()
+  correctAnswer: string;
 
   @IsOptional()
   @IsString()
@@ -45,6 +48,6 @@ export class ChatRequestDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ChatMessageItemDto)
-  history: ChatMessageItemDto[];
+  @Type(() => ReviewChatMessageItemDto)
+  history: ReviewChatMessageItemDto[];
 }

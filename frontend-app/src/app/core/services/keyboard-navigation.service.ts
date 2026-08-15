@@ -36,7 +36,11 @@ export class KeyboardNavigationService {
     const keyC = localStorage.getItem('KEY_SHORTCUT_C') || 'c';
     const keyD = localStorage.getItem('KEY_SHORTCUT_D') || 'v';
     const keyE = localStorage.getItem('KEY_SHORTCUT_E') || 'b';
-    const keyNext = localStorage.getItem('KEY_SHORTCUT_NEXT') || 'enter';
+    // No 'enter' default: it's the key most likely to be pressed by accident
+    // (e.g. right after answering, or just resting on the keyboard) and was
+    // silently skipping to the next question. Still honors an explicit user
+    // override from settings, just doesn't default to it.
+    const keyNext = localStorage.getItem('KEY_SHORTCUT_NEXT') || 'arrowright';
     const keyPrev = localStorage.getItem('KEY_SHORTCUT_PREV') || 'arrowleft';
     const keyExit = localStorage.getItem('KEY_SHORTCUT_EXIT') || 'escape';
 
@@ -59,10 +63,11 @@ export class KeyboardNavigationService {
       this.clickOptionByLetter('E');
     }
 
-    // 2. Next / Submit / Confirm navigation (supports custom key, enter, spacebar, or arrowright)
-    else if (key === keyNext || key === 'arrowright' || key === 'enter' || key === ' ' || key === 'spacebar') {
-      // Avoid preventing default on Enter/Space when focusing on clickable elements natively
-      if ((key === 'enter' || key === ' ' || key === 'spacebar') && activeEl instanceof HTMLButtonElement) {
+    // 2. Next / Submit / Confirm navigation (supports custom key, spacebar, or arrowright —
+    // deliberately NOT 'enter' by default, see keyNext above)
+    else if (key === keyNext || key === 'arrowright' || key === ' ' || key === 'spacebar') {
+      // Avoid preventing default on Space when focusing on clickable elements natively
+      if ((key === ' ' || key === 'spacebar') && activeEl instanceof HTMLButtonElement) {
         return;
       }
       event.preventDefault();

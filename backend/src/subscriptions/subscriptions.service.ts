@@ -85,9 +85,13 @@ export class SubscriptionsService {
   }
 
   /**
-   * Check Foco AI tutor tokens for user.
+   * Check Foco AI tutor tokens for user. `required` lets a caller ask "can
+   * this user afford an N-token action" (e.g. the review-explanation chat,
+   * which costs more than a quick in-exam hint) instead of just "any tokens
+   * left at all" — otherwise a user with 1 token left could still trigger a
+   * 3-token action and go negative.
    */
-  async checkFocoTokens(uid: string): Promise<{ allowed: boolean; remaining: number; limit: number; used: number }> {
+  async checkFocoTokens(uid: string, required = 1): Promise<{ allowed: boolean; remaining: number; limit: number; used: number }> {
     let userData: any = null;
     try {
       const userDoc = await this.firebaseService.firestore
@@ -104,7 +108,7 @@ export class SubscriptionsService {
     const remaining = Math.max(0, limit - used);
 
     return {
-      allowed: remaining > 0,
+      allowed: remaining >= required,
       remaining,
       limit,
       used,
@@ -112,17 +116,27 @@ export class SubscriptionsService {
   }
 
   /**
-   * Consume 1 Foco AI tutor token.
+   * Consume `amount` Foco AI tutor tokens (defaults to 1). Heavier actions —
+   * like the post-exam review explanation, which generates a much longer
+   * response than a quick in-exam hint — pass a higher amount to reflect
+   * their real cost against the daily allowance.
    */
-  async consumeFocoToken(uid: string) {
+  async consumeFocoToken(uid: string, amount = 1) {
     try {
       await this.firebaseService.firestore
         .collection('users')
         .doc(uid)
         .update({
-          'dailyCredits.focoTokensUsedToday': admin.firestore.FieldValue.increment(1),
+          'dailyCredits.focoTokensUsedToday': admin.firestore.FieldValue.increment(amount),
         });
-    } catch (e) {}
+    } catch (e) {
+      // The AI reply was already generated and shown to the user by this
+      // point (real cost incurred), so we don't fail the request over a
+      // quota-tracking write failing — but silently swallowing it here means
+      // that usage under-counts with zero visibility. Log it so an
+      // under-enforced quota is at least detectable instead of invisible.
+      this.logger.error(`[SubscriptionsService] consumeFocoToken FAILED for uid=${uid} (amount=${amount}): ${e.message}`);
+    }
   }
 
   /**

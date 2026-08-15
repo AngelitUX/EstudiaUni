@@ -16,6 +16,7 @@ export interface ChatRequest {
   subject?: string;
   examTitle?: string;
   imageUrl?: string | null;
+  readingImages?: string[] | null;
   history: ChatMessage[];
 }
 
@@ -26,9 +27,20 @@ export interface BackendChatResponse {
 }
 
 export class FocoTokensExhaustedError extends Error {
-  constructor(public limit: number) {
-    super('FOCO_TOKENS_EXHAUSTED');
+  constructor(public limit: number, serverMessage?: string) {
+    super(serverMessage || 'FOCO_TOKENS_EXHAUSTED');
   }
+}
+
+export interface ReviewChatRequest {
+  question: string;
+  options: Array<{ id: string; text: string }>;
+  userAnswer?: string | null;
+  correctAnswer: string;
+  subject?: string;
+  imageUrl?: string | null;
+  readingImages?: string[] | null;
+  history: ChatMessage[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -56,6 +68,7 @@ export class AiAssistService {
     if (payload.userAnswer) body.userAnswer = payload.userAnswer;
     if (payload.subject) body.subject = payload.subject;
     if (payload.imageUrl) body.imageUrl = payload.imageUrl;
+    if (payload.readingImages?.length) body.readingImages = payload.readingImages;
 
     try {
       return await firstValueFrom(
@@ -63,7 +76,7 @@ export class AiAssistService {
       );
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.error?.code === 'FOCO_TOKENS_EXHAUSTED') {
-        throw new FocoTokensExhaustedError(err.error.limit);
+        throw new FocoTokensExhaustedError(err.error.limit, err.error.message);
       }
       throw err;
     }
@@ -84,7 +97,40 @@ export class AiAssistService {
       );
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.error?.code === 'FOCO_TOKENS_EXHAUSTED') {
-        throw new FocoTokensExhaustedError(err.error.limit);
+        throw new FocoTokensExhaustedError(err.error.limit, err.error.message);
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Post-exam "why did I get this wrong" chat routed through the backend
+   * (POST /api/ai/review-chat). Pro-only and token-gated server-side — unlike
+   * chatViaBackend, the model is explicitly allowed to state the correct
+   * answer here since the attempt is already submitted and graded.
+   *
+   * Throws FocoTokensExhaustedError when out of tokens for today.
+   */
+  async reviewChatViaBackend(payload: ReviewChatRequest): Promise<BackendChatResponse> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    const body: any = {
+      question: payload.question,
+      options: payload.options,
+      correctAnswer: payload.correctAnswer,
+      history: payload.history,
+    };
+    if (payload.userAnswer) body.userAnswer = payload.userAnswer;
+    if (payload.subject) body.subject = payload.subject;
+    if (payload.imageUrl) body.imageUrl = payload.imageUrl;
+    if (payload.readingImages?.length) body.readingImages = payload.readingImages;
+
+    try {
+      return await firstValueFrom(
+        this.http.post<BackendChatResponse>(`${baseUrl}/api/ai/review-chat`, body),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.error?.code === 'FOCO_TOKENS_EXHAUSTED') {
+        throw new FocoTokensExhaustedError(err.error.limit, err.error.message);
       }
       throw err;
     }
