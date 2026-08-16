@@ -5,10 +5,10 @@ import { Auth } from '@angular/fire/auth';
 import { DashboardService } from '../../../core/services/dashboard.service';
 
 const LOCAL_MATERIAS: Materia[] = [
-  { id: 'comp-lectora', title: 'Competencia Lectora', slug: 'competencia-lectora', icon: '📖', order: 1, isActive: true, imageUrl: 'assets/images/subjects/comp-lectora.png' },
-  { id: 'mat1', title: 'Competencia Matemática 1 (M1)', slug: 'matematica-1', icon: '📐', order: 2, isActive: true, imageUrl: 'assets/images/subjects/matematica1.png' },
-  { id: 'mat2', title: 'Competencia Matemática 2 (M2)', slug: 'matematica-2', icon: '✏️', order: 3, isActive: true, imageUrl: 'assets/images/subjects/matematica2.png' },
-  { id: 'historia', title: 'Historia y Cs. Sociales', slug: 'historia', icon: '🏛️', order: 4, isActive: true, imageUrl: 'assets/images/subjects/historia.png' },
+  { id: 'comp-lectora', title: 'Competencia Lectora', slug: 'competencia-lectora', icon: '📖', order: 1, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/comp-lectora.avif' },
+  { id: 'mat1', title: 'Competencia Matemática 1 (M1)', slug: 'matematica-1', icon: '📐', order: 2, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica1.avif' },
+  { id: 'mat2', title: 'Competencia Matemática 2 (M2)', slug: 'matematica-2', icon: '✏️', order: 3, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica2.avif' },
+  { id: 'historia', title: 'Historia y Cs. Sociales', slug: 'historia', icon: '🏛️', order: 4, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/historia.avif' },
   { id: 'ciencias', title: 'Ciencias', slug: 'ciencias', icon: '🧬', order: 5, isActive: true }
 ];
 
@@ -636,10 +636,10 @@ export class PaesContentService {
         // Asignar imágenes a las materias si no vienen de Firestore
         materias.forEach(m => {
           if (!m.imageUrl) {
-            if (m.id === 'comp-lectora' || m.slug === 'competencia-lectora') m.imageUrl = 'assets/images/subjects/comp-lectora.png';
-            else if (m.id === 'mat1' || m.slug === 'matematica-1') m.imageUrl = 'assets/images/subjects/matematica1.png';
-            else if (m.id === 'mat2' || m.slug === 'matematica-2') m.imageUrl = 'assets/images/subjects/matematica2.png';
-            else if (m.id === 'historia' || m.slug === 'historia') m.imageUrl = 'assets/images/subjects/historia.png';
+            if (m.id === 'comp-lectora' || m.slug === 'competencia-lectora') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/comp-lectora.avif';
+            else if (m.id === 'mat1' || m.slug === 'matematica-1') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica1.avif';
+            else if (m.id === 'mat2' || m.slug === 'matematica-2') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica2.avif';
+            else if (m.id === 'historia' || m.slug === 'historia') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/historia.avif';
           }
         });
 

@@ -39,24 +39,24 @@ type PathItem = {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -64,11 +64,11 @@ type PathItem = {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -84,29 +84,29 @@ type PathItem = {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -186,7 +186,7 @@ type PathItem = {
                   <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" class="splash-mascot chapter-image-custom" />
+                      <img src="assets/images/Nuevos VideosEIlustraciones/GifsFocoWEBP/focoMatematica.webp" alt="Foco" class="splash-mascot chapter-image-custom" width="290" height="290" loading="lazy" decoding="async" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
@@ -367,8 +367,8 @@ type PathItem = {
     <ng-container *ngIf="isMathRoute()">
       <!-- Tab trigger button -->
       <button class="sim-tab-trigger" (click)="toggleSimPanel()" [class.panel-open]="simPanelOpen" [class.expanded]="simExpanded">
-        <span class="sim-tab-icon">📐</span>
-        <span class="sim-tab-label">Simulador M1/M2</span>
+        <span class="sim-tab-icon"></span>
+        <span class="sim-tab-label">Simuladores Interactivos</span>
         <span class="sim-tab-arrow">{{ simPanelOpen ? '▶' : '◀' }}</span>
       </button>
 
@@ -415,23 +415,23 @@ type PathItem = {
             <ng-container *ngIf="isM1Route()">
               <!-- EJE 1: Números -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">📊 Porcentajes</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">🌳 Potencias y Crecimiento</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">Porcentajes</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">Potencias y Crecimiento</button>
               </div>
               <!-- EJE 2: Álgebra -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">📈 F. Lineal y Afín</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">📉 F. Cuadrática</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">🧮 Graficador Libre</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">F. Lineal y Afín</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">F. Cuadrática</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">Graficador Libre</button>
               </div>
               <!-- EJE 3: Geometría -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">📐 T. de Pitágoras</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">🔄 Transf. Isométricas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">T. de Pitágoras</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">Transf. Isométricas</button>
               </div>
               <!-- EJE 4: Estadística -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">🎲 Tirada de Dados</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">Tirada de Dados</button>
               </div>
             </ng-container>
 
@@ -439,21 +439,21 @@ type PathItem = {
             <ng-container *ngIf="isM2Route()">
               <!-- EJE 1: Números (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">💰 Int. Compuesto y Continuo</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">Int. Compuesto y Continuo</button>
               </div>
               <!-- EJE 2: Álgebra (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">🔗 Sistemas 2x2</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">Sistemas 2x2</button>
                 <button class="sim-tab" [class.active]="activeSimTab === 'sinusoidal'" (click)="setSimTab('sinusoidal')">〜 Ondas Trigonométricas</button>
               </div>
               <!-- EJE 3: Geometría (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">🎯 Homotecia Dinámica</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">⭕ Ángulos y Cuerdas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">Homotecia Dinámica</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">Ángulos y Cuerdas</button>
               </div>
               <!-- EJE 4: Estadística (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">🔔 Campana de Gauss</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">Campana de Gauss</button>
               </div>
             </ng-container>
           </div>
@@ -462,8 +462,8 @@ type PathItem = {
     <ng-container *ngIf="isMathRoute()">
       <!-- Tab trigger button -->
       <button class="sim-tab-trigger" (click)="toggleSimPanel()" [class.panel-open]="simPanelOpen" [class.expanded]="simExpanded">
-        <span class="sim-tab-icon">📐</span>
-        <span class="sim-tab-label">Simulador M1/M2</span>
+        <span class="sim-tab-icon"></span>
+        <span class="sim-tab-label">Simuladores Interactivos</span>
         <span class="sim-tab-arrow">{{ simPanelOpen ? '▶' : '◀' }}</span>
       </button>
 
@@ -510,27 +510,27 @@ type PathItem = {
             <ng-container *ngIf="isM1Route()">
               <!-- EJE 1: Números -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">📊 Porcentajes</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">🌳 Potencias y Crecimiento</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'rational-line'" (click)="setSimTab('rational-line')">📍 Recta Racional</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">Porcentajes</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">Potencias y Crecimiento</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'rational-line'" (click)="setSimTab('rational-line')">Recta Racional</button>
               </div>
               <!-- EJE 2: Álgebra -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">📈 F. Lineal y Afín</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">📉 F. Cuadrática</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">🧮 Graficador Libre</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'equation-balance'" (click)="setSimTab('equation-balance')">⚖️ Balanza de Ecuaciones</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">F. Lineal y Afín</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">F. Cuadrática</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">Graficador Libre</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'equation-balance'" (click)="setSimTab('equation-balance')">️ Balanza de Ecuaciones</button>
               </div>
               <!-- EJE 3: Geometría -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">📐 T. de Pitágoras</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">🔄 Transf. Isométricas</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'thales-theorem'" (click)="setSimTab('thales-theorem')">🌿 Teorema de Thales</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">T. de Pitágoras</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">Transf. Isométricas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'thales-theorem'" (click)="setSimTab('thales-theorem')">Teorema de Thales</button>
               </div>
               <!-- EJE 4: Estadística -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">🎲 Tirada de Dados</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'multigraph'" (click)="setSimTab('multigraph')">📊 Multigráfico</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">Tirada de Dados</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'multigraph'" (click)="setSimTab('multigraph')">Multigráfico</button>
               </div>
             </ng-container>
 
@@ -538,27 +538,27 @@ type PathItem = {
             <ng-container *ngIf="isM2Route()">
               <!-- EJE 1: Números (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">💰 Int. Compuesto y Continuo</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'log-exponential-m2'" (click)="setSimTab('log-exponential-m2')">🪵 Relación Log-Exponencial</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">Int. Compuesto y Continuo</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'log-exponential-m2'" (click)="setSimTab('log-exponential-m2')">Relación Log-Exponencial</button>
               </div>
               <!-- EJE 2: Álgebra (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">🔗 Sistemas 2x2</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">Sistemas 2x2</button>
                 <button class="sim-tab" [class.active]="activeSimTab === 'sinusoidal'" (click)="setSimTab('sinusoidal')">〜 Ondas Trigonométricas</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'inverse-symmetry-m2'" (click)="setSimTab('inverse-symmetry-m2')">🪞 Simetría Inversa</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'inverse-symmetry-m2'" (click)="setSimTab('inverse-symmetry-m2')">Simetría Inversa</button>
               </div>
               <!-- EJE 3: Geometría (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">🎯 Homotecia Dinámica</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">⭕ Ángulos y Cuerdas</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'trig-circle-m2'" (click)="setSimTab('trig-circle-m2')">⭕ Círculo Unitario</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'sphere-volume-m2'" (click)="setSimTab('sphere-volume-m2')">🔮 Esfera: Área y Vol.</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">Homotecia Dinámica</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">Ángulos y Cuerdas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'trig-circle-m2'" (click)="setSimTab('trig-circle-m2')">Círculo Unitario</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'sphere-volume-m2'" (click)="setSimTab('sphere-volume-m2')">Esfera: Área y Vol.</button>
               </div>
               <!-- EJE 4: Estadística (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">🔔 Campana de Gauss</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'combinatorics-m2'" (click)="setSimTab('combinatorics-m2')">🔀 Combinatoria</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'binomial-distribution-m2'" (click)="setSimTab('binomial-distribution-m2')">📈 Dist. Binomial</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">Campana de Gauss</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'combinatorics-m2'" (click)="setSimTab('combinatorics-m2')">Combinatoria</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'binomial-distribution-m2'" (click)="setSimTab('binomial-distribution-m2')">Dist. Binomial</button>
               </div>
             </ng-container>
           </div>
@@ -567,8 +567,8 @@ type PathItem = {
     <ng-container *ngIf="isMathRoute()">
       <!-- Tab trigger button -->
       <button class="sim-tab-trigger" (click)="toggleSimPanel()" [class.panel-open]="simPanelOpen" [class.expanded]="simExpanded">
-        <span class="sim-tab-icon">📐</span>
-        <span class="sim-tab-label">Simulador M1/M2</span>
+        <span class="sim-tab-icon"></span>
+        <span class="sim-tab-label">Simuladores Interactivos</span>
         <span class="sim-tab-arrow">{{ simPanelOpen ? '▶' : '◀' }}</span>
       </button>
 
@@ -615,27 +615,27 @@ type PathItem = {
             <ng-container *ngIf="isM1Route()">
               <!-- EJE 1: Números -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">📊 Porcentajes</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">🌳 Potencias y Crecimiento</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'rational-line'" (click)="setSimTab('rational-line')">📍 Recta Racional</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'percentage'" (click)="setSimTab('percentage')">Porcentajes</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential'" (click)="setSimTab('exponential')">Potencias y Crecimiento</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'rational-line'" (click)="setSimTab('rational-line')">Recta Racional</button>
               </div>
               <!-- EJE 2: Álgebra -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">📈 F. Lineal y Afín</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">📉 F. Cuadrática</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">🧮 Graficador Libre</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'equation-balance'" (click)="setSimTab('equation-balance')">⚖️ Balanza de Ecuaciones</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'linear'" (click)="setSimTab('linear')">F. Lineal y Afín</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'quadratic'" (click)="setSimTab('quadratic')">F. Cuadrática</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'free-graph'" (click)="setSimTab('free-graph')">Graficador Libre</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'equation-balance'" (click)="setSimTab('equation-balance')">️ Balanza de Ecuaciones</button>
               </div>
               <!-- EJE 3: Geometría -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">📐 T. de Pitágoras</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">🔄 Transf. Isométricas</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'thales-theorem'" (click)="setSimTab('thales-theorem')">🌿 Teorema de Thales</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'pythagoras'" (click)="setSimTab('pythagoras')">T. de Pitágoras</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic'" (click)="setSimTab('homothetic')">Transf. Isométricas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'thales-theorem'" (click)="setSimTab('thales-theorem')">Teorema de Thales</button>
               </div>
               <!-- EJE 4: Estadística -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">🎲 Tirada de Dados</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'multigraph'" (click)="setSimTab('multigraph')">📊 Multigráfico</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'dice-simulation'" (click)="setSimTab('dice-simulation')">Tirada de Dados</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'multigraph'" (click)="setSimTab('multigraph')">Multigráfico</button>
               </div>
             </ng-container>
 
@@ -643,27 +643,27 @@ type PathItem = {
             <ng-container *ngIf="isM2Route()">
               <!-- EJE 1: Números (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">💰 Int. Compuesto y Continuo</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'log-exponential-m2'" (click)="setSimTab('log-exponential-m2')">🪵 Relación Log-Exponencial</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'exponential-m2'" (click)="setSimTab('exponential-m2')">Int. Compuesto y Continuo</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'log-exponential-m2'" (click)="setSimTab('log-exponential-m2')">Relación Log-Exponencial</button>
               </div>
               <!-- EJE 2: Álgebra (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">🔗 Sistemas 2x2</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'system2x2'" (click)="setSimTab('system2x2')">Sistemas 2x2</button>
                 <button class="sim-tab" [class.active]="activeSimTab === 'sinusoidal'" (click)="setSimTab('sinusoidal')">〜 Ondas Trigonométricas</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'inverse-symmetry-m2'" (click)="setSimTab('inverse-symmetry-m2')">🪞 Simetría Inversa</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'inverse-symmetry-m2'" (click)="setSimTab('inverse-symmetry-m2')">Simetría Inversa</button>
               </div>
               <!-- EJE 3: Geometría (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">🎯 Homotecia Dinámica</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">⭕ Ángulos y Cuerdas</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'trig-circle-m2'" (click)="setSimTab('trig-circle-m2')">⭕ Círculo Unitario</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'sphere-volume-m2'" (click)="setSimTab('sphere-volume-m2')">🔮 Esfera: Área y Vol.</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'homothetic-m2'" (click)="setSimTab('homothetic-m2')">Homotecia Dinámica</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'circle-theorems'" (click)="setSimTab('circle-theorems')">Ángulos y Cuerdas</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'trig-circle-m2'" (click)="setSimTab('trig-circle-m2')">Círculo Unitario</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'sphere-volume-m2'" (click)="setSimTab('sphere-volume-m2')">Esfera: Área y Vol.</button>
               </div>
               <!-- EJE 4: Estadística (M2) -->
               <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">🔔 Campana de Gauss</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'combinatorics-m2'" (click)="setSimTab('combinatorics-m2')">🔀 Combinatoria</button>
-                <button class="sim-tab" [class.active]="activeSimTab === 'binomial-distribution-m2'" (click)="setSimTab('binomial-distribution-m2')">📈 Dist. Binomial</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'normal-distribution'" (click)="setSimTab('normal-distribution')">Campana de Gauss</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'combinatorics-m2'" (click)="setSimTab('combinatorics-m2')">Combinatoria</button>
+                <button class="sim-tab" [class.active]="activeSimTab === 'binomial-distribution-m2'" (click)="setSimTab('binomial-distribution-m2')">Dist. Binomial</button>
               </div>
             </ng-container>
           </div>
@@ -672,7 +672,7 @@ type PathItem = {
           <ng-container *ngIf="isM1Route()">
             <!-- ═══ 1.1 PERCENTAGE SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'percentage'">
-              <div class="sim-info-badge">📊 Representación visual de porcentajes, fracciones y decimales</div>
+              <div class="sim-info-badge">Representación visual de porcentajes, fracciones y decimales</div>
               <canvas #percentageCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -697,7 +697,7 @@ type PathItem = {
 
             <!-- ═══ 1.2 EXPONENTIAL/POTENCIAS SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'exponential'">
-              <div class="sim-info-badge">🌳 Crecimiento y ramificación por potencias (ej. Duplicación)</div>
+              <div class="sim-info-badge">Crecimiento y ramificación por potencias (ej. Duplicación)</div>
               <canvas #exponentialCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -719,7 +719,7 @@ type PathItem = {
 
             <!-- ═══ 1.3 RATIONAL LINE SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'rational-line'">
-              <div class="sim-info-badge">📍 Ubicación de números racionales (fracciones y decimales) en la recta numérica</div>
+              <div class="sim-info-badge">Ubicación de números racionales (fracciones y decimales) en la recta numérica</div>
               <canvas #rationalCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -739,7 +739,7 @@ type PathItem = {
 
             <!-- ═══ 2.1 LINEAR FUNCTION SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'linear'">
-              <div class="sim-info-badge">📈 Función lineal y afín — pendiente m e intercepto n</div>
+              <div class="sim-info-badge">Función lineal y afín — pendiente m e intercepto n</div>
               <canvas #linearCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -760,7 +760,7 @@ type PathItem = {
 
             <!-- ═══ 2.2 QUADRATIC FUNCTION SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'quadratic'">
-              <div class="sim-info-badge">📉 Función cuadrática — concavidad, vértice e intersecciones</div>
+              <div class="sim-info-badge">Función cuadrática — concavidad, vértice e intersecciones</div>
               <canvas #quadraticCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -786,7 +786,7 @@ type PathItem = {
 
             <!-- ═══ 2.3 FREE GRAPH SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'free-graph'">
-              <div class="sim-info-badge">🧮 Graficador Libre — escribe cualquier fórmula en función de x (ej. sin(x) + cos(2*x))</div>
+              <div class="sim-info-badge">Graficador Libre — escribe cualquier fórmula en función de x (ej. sin(x) + cos(2*x))</div>
               <canvas #freeCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -811,7 +811,7 @@ type PathItem = {
 
             <!-- ═══ 2.4 EQUATION BALANCE SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'equation-balance'">
-              <div class="sim-info-badge">⚖️ Balanza de Ecuaciones — encuentra el valor de x que equilibra la ecuación ax + b = c</div>
+              <div class="sim-info-badge">️ Balanza de Ecuaciones — encuentra el valor de x que equilibra la ecuación ax + b = c</div>
               <canvas #balanceCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -846,7 +846,7 @@ type PathItem = {
 
             <!-- ═══ 3.1 PYTHAGORAS SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'pythagoras'">
-              <div class="sim-info-badge">📐 Teorema de Pitágoras — suma de áreas de los catetos y la hipotenusa</div>
+              <div class="sim-info-badge">Teorema de Pitágoras — suma de áreas de los catetos y la hipotenusa</div>
               <canvas #pythagorasCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -868,7 +868,7 @@ type PathItem = {
 
             <!-- ═══ 3.2 ISOMETRIC TRANSFORMATIONS SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'homothetic'">
-              <div class="sim-info-badge">🔄 Transformaciones isométricas — traslación, rotación y reflexión</div>
+              <div class="sim-info-badge">Transformaciones isométricas — traslación, rotación y reflexión</div>
               <canvas #homotheticCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -897,7 +897,7 @@ type PathItem = {
 
             <!-- ═══ 3.3 THALES THEOREM SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'thales-theorem'">
-              <div class="sim-info-badge">🌿 Teorema de Thales — proporcionalidad de segmentos formados por paralelas y secantes</div>
+              <div class="sim-info-badge">Teorema de Thales — proporcionalidad de segmentos formados por paralelas y secantes</div>
               <canvas #thalesCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -918,7 +918,7 @@ type PathItem = {
 
             <!-- ═══ 4.1 DICE SIMULATION ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'dice-simulation'">
-              <div class="sim-info-badge">🎲 Frecuencias relativas y Ley de los Grandes Números</div>
+              <div class="sim-info-badge">Frecuencias relativas y Ley de los Grandes Números</div>
               <canvas #diceCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -937,7 +937,7 @@ type PathItem = {
                   </div>
                 </div>
                 <div class="sim-control-row">
-                  <button class="sim-btn" style="flex:1;background:#ef4444" (click)="clearDiceData()">🗑️ Limpiar Historial</button>
+                  <button class="sim-btn" style="flex:1;background:#ef4444" (click)="clearDiceData()">️ Limpiar Historial</button>
                 </div>
               </div>
               <div class="sim-stats">
@@ -950,7 +950,7 @@ type PathItem = {
 
             <!-- ═══ 4.2 MULTIGRAPH SIMULATOR ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'multigraph'">
-              <div class="sim-info-badge">📊 Generador Multigráfico — compara la misma información en barras y sectores</div>
+              <div class="sim-info-badge">Generador Multigráfico — compara la misma información en barras y sectores</div>
               <canvas #multigraphCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -978,7 +978,7 @@ type PathItem = {
           <ng-container *ngIf="isM2Route()">
             <!-- ═══ 1.1 EXPONENTIAL M2 (Compound Interest) ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'exponential-m2'">
-              <div class="sim-info-badge">💰 Crecimiento financiero — interés compuesto capitalizable y continuo</div>
+              <div class="sim-info-badge">Crecimiento financiero — interés compuesto capitalizable y continuo</div>
               <canvas #exponentialM2Canvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1009,7 +1009,7 @@ type PathItem = {
 
             <!-- ═══ 1.2 LOG-EXPONENTIAL M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'log-exponential-m2'">
-              <div class="sim-info-badge">🪵 Relación inversa exponencial-logarítmica — b^y = x  y  log_b(x) = y</div>
+              <div class="sim-info-badge">Relación inversa exponencial-logarítmica — b^y = x  y  log_b(x) = y</div>
               <canvas #logExpCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1025,7 +1025,7 @@ type PathItem = {
 
             <!-- ═══ 2.1 SYSTEM 2X2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'system2x2'">
-              <div class="sim-info-badge">🔗 Sistemas 2x2 — análisis geométrico de intersecciones</div>
+              <div class="sim-info-badge">Sistemas 2x2 — análisis geométrico de intersecciones</div>
               <canvas #system2x2Canvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1074,14 +1074,14 @@ type PathItem = {
                 </div>
                 <div class="sim-control-row">
                   <label>Animación:</label>
-                  <button class="sim-btn" (click)="toggleSineAnimation()">{{ simSineAnimating ? '⏸ Pausar' : '▶ Animar Flujo' }}</button>
+                  <button class="sim-btn" (click)="toggleSineAnimation()">{{ simSineAnimating ? ' Pausar' : ' Animar Flujo' }}</button>
                 </div>
               </div>
             </div>
 
             <!-- ═══ 2.3 INVERSE-SYMMETRY M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'inverse-symmetry-m2'">
-              <div class="sim-info-badge">🪞 Simetría axial de funciones inversas respecto a la diagonal y = x</div>
+              <div class="sim-info-badge">Simetría axial de funciones inversas respecto a la diagonal y = x</div>
               <canvas #invSymmetryCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1093,7 +1093,7 @@ type PathItem = {
 
             <!-- ═══ 3.1 HOMOTHETIC M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'homothetic-m2'">
-              <div class="sim-info-badge">🎯 Homotecia Dinámica — transformaciones de escala en el plano</div>
+              <div class="sim-info-badge">Homotecia Dinámica — transformaciones de escala en el plano</div>
               <canvas #homotheticM2Canvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1116,7 +1116,7 @@ type PathItem = {
 
             <!-- ═══ 3.2 CIRCLE THEOREMS ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'circle-theorems'">
-              <div class="sim-info-badge">⭕ Circunferencia M2 — ángulos inscritos/centrales y teorema de cuerdas</div>
+              <div class="sim-info-badge">Circunferencia M2 — ángulos inscritos/centrales y teorema de cuerdas</div>
               <canvas #circleCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1145,7 +1145,7 @@ type PathItem = {
 
             <!-- ═══ 3.3 TRIG-CIRCLE M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'trig-circle-m2'">
-              <div class="sim-info-badge">⭕ Razones trigonométricas en el Círculo Unitario (R = 1)</div>
+              <div class="sim-info-badge">Razones trigonométricas en el Círculo Unitario (R = 1)</div>
               <canvas #trigCircleCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1162,7 +1162,7 @@ type PathItem = {
 
             <!-- ═══ 3.4 SPHERE VOLUME M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'sphere-volume-m2'">
-              <div class="sim-info-badge">🔮 Superficie y volumen de la esfera en función de su radio</div>
+              <div class="sim-info-badge">Superficie y volumen de la esfera en función de su radio</div>
               <canvas #sphereCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1178,7 +1178,7 @@ type PathItem = {
 
             <!-- ═══ 4.1 NORMAL DISTRIBUTION ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'normal-distribution'">
-              <div class="sim-info-badge">🔔 Campana de Gauss M2 — probabilidad bajo la curva y estandarización Z</div>
+              <div class="sim-info-badge">Campana de Gauss M2 — probabilidad bajo la curva y estandarización Z</div>
               <canvas #normalCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1202,7 +1202,7 @@ type PathItem = {
 
             <!-- ═══ 4.2 COMBINATORICS M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'combinatorics-m2'">
-              <div class="sim-info-badge">🔀 Permutaciones, Combinaciones y Variaciones (selección de r elementos entre n)</div>
+              <div class="sim-info-badge">Permutaciones, Combinaciones y Variaciones (selección de r elementos entre n)</div>
               <canvas #combinatoricsCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1232,7 +1232,7 @@ type PathItem = {
 
             <!-- ═══ 4.3 BINOMIAL-DISTRIBUTION M2 ═══ -->
             <div class="sim-content" *ngIf="activeSimTab === 'binomial-distribution-m2'">
-              <div class="sim-info-badge">📈 Distribución de Probabilidad Binomial (ensayos repetidos)</div>
+              <div class="sim-info-badge">Distribución de Probabilidad Binomial (ensayos repetidos)</div>
               <canvas #binomialCanvas class="sim-canvas"></canvas>
               <div class="sim-controls">
                 <div class="sim-control-row">
@@ -1272,7 +1272,7 @@ type PathItem = {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -1488,8 +1488,8 @@ type PathItem = {
     .splash-bg-pattern { position: absolute; inset: 0; opacity: 0.04; background-image: radial-gradient(circle at 20% 50%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 80% 20%, var(--accent-primary) 1px, transparent 1px), radial-gradient(circle at 60% 80%, var(--accent-primary) 1px, transparent 1px); background-size: 40px 40px, 60px 60px, 50px 50px; pointer-events: none; }
     .splash-inner { position: relative; padding: 2rem 2rem 1.5rem; }
     .splash-hero { display: flex; align-items: center; gap: 1.5rem; }
-    .splash-mascot-area { flex-shrink: 0; }
-    .splash-mascot { width: 180px; height: 180px; object-fit: contain; animation: mascotFloat 3.5s ease-in-out infinite; }
+    .splash-mascot-area { flex-shrink: 0; width: 180px; height: 180px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .splash-mascot { width: 235px; height: 235px; position: absolute; object-fit: contain; animation: mascotFloat 3.5s ease-in-out infinite; }
     @keyframes mascotFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
     .splash-info { flex: 1; min-width: 0; }
     .splash-badge { display: inline-block; background: var(--accent-primary); color: #fff; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
@@ -1702,7 +1702,7 @@ type PathItem = {
     /* ============================================
        PHYSICS SIMULATOR PANEL
     ============================================ */
-    .sim-tab-trigger {
+        .sim-tab-trigger {
       position: fixed;
       right: 0;
       top: 50%;
@@ -1710,37 +1710,37 @@ type PathItem = {
       background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
       color: white;
       border: none;
-      border-radius: 14px 0 0 14px;
-      padding: 1rem 0.6rem;
+      border-radius: 16px 0 0 16px;
+      padding: 1.2rem 0.7rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.4rem;
       cursor: pointer;
       z-index: 500;
-      box-shadow: -4px 0 20px rgba(124,58,237,0.35);
+      
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      min-width: 52px;
+      min-width: 54px;
     }
     .sim-tab-trigger:hover {
       background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
-      box-shadow: -6px 0 24px rgba(124,58,237,0.5);
-      padding-right: 0.85rem;
+      
+      padding-right: 1.1rem;
     }
     .sim-tab-trigger.panel-open {
       right: 400px;
-      border-radius: 14px 0 0 14px;
+      border-radius: 16px 0 0 16px;
       background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     }
     .sim-tab-trigger.panel-open.expanded {
       right: 800px;
     }
-    .sim-tab-icon { font-size: 1.4rem; }
+    .sim-tab-icon { font-size: 1.8rem; }
     .sim-tab-label {
-      font-size: 0.65rem;
+      font-size: 0.70rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       writing-mode: vertical-rl;
       text-orientation: mixed;
     }
@@ -1757,7 +1757,7 @@ type PathItem = {
       z-index: 499;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       overflow-y: auto;
-      box-shadow: -12px 0 40px rgba(0,0,0,0.1);
+      
     }
     .sim-drawer.expanded {
       width: 800px;

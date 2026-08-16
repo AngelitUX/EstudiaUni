@@ -870,16 +870,16 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
 
   avatarOptions = [
-    'assets/images/avatars/avatar_1.png',
-    'assets/images/avatars/avatar_2.png',
-    'assets/images/avatars/avatar_3.png',
-    'assets/images/avatars/avatar_4.png',
-    'assets/images/avatars/avatar_5.png',
-    'assets/images/avatars/avatar_6.png',
-    'assets/images/avatars/avatar_7.png',
-    'assets/images/avatars/avatar_8.png',
-    'assets/images/avatars/avatar_9.png',
-    'assets/images/avatars/avatar_10.png'
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_1.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_2.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_3.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_4.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_5.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_6.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_7.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_8.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_9.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_10.svg'
   ];
 
   selectAvatar(avatar: string): void {

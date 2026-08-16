@@ -25,7 +25,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
             </div>
             <div class="spinner-glow"></div>
           </div>
-          <h2 class="title text-gradient">Activando tu Suscripción</h2>
+          <h1 class="title text-gradient">Activando tu Suscripción</h1>
           <p class="subtitle">Estamos confirmando tu suscripción con Flow. Por favor no cierres ni recargues esta página.</p>
           
           <div class="loading-bar">
@@ -42,7 +42,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
             <div class="success-glow"></div>
           </div>
           
-          <h2 class="title text-gradient success-title">¡Bienvenido a Premium! 🚀</h2>
+          <h1 class="title text-gradient success-title">¡Bienvenido a Premium! 🚀</h1>
           <p class="subtitle">Tu suscripción {{ result()?.planType === 'yearly' ? 'anual' : 'mensual' }} ha sido activada con éxito. Se renovará automáticamente — ya tienes acceso ilimitado a todas las herramientas PAES.</p>
 
           <!-- Receipt Details -->
@@ -81,7 +81,7 @@ import { FirestoreService } from '../../core/services/firestore.service';
             <div class="error-glow"></div>
           </div>
 
-          <h2 class="title text-gradient error-title">Pago No Procesado</h2>
+          <h1 class="title text-gradient error-title">Pago No Procesado</h1>
           <p class="subtitle">{{ errorMessage() }}</p>
 
           <div class="action-row">

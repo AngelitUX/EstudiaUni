@@ -14,7 +14,7 @@ import { ModulesService } from '../services/modules.service';
           ← Volver
         </button>
       </div>
-      <h2>Mi Ruta de Aprendizaje</h2>
+      <h1>Mi Ruta de Aprendizaje</h1>
       <p class="subtitle text-secondary">Avanza paso a paso en tu preparación PAES.</p>
 
       <div *ngIf="loading" class="loading-state">Cargando módulos...</div>
@@ -76,7 +76,7 @@ import { ModulesService } from '../services/modules.service';
       min-height: 100vh;
       color: #ffffff;
     }
-    .modules-container h2 { 
+    .modules-container h1 { 
       font-family: var(--font-heading); 
       font-size: 2rem; 
       font-weight: 700; 
@@ -242,7 +242,7 @@ import { ModulesService } from '../services/modules.service';
       .modules-container {
         padding: 1.25rem;
       }
-      .modules-container h2 {
+      .modules-container h1 {
         font-size: 1.6rem;
       }
       .topics-grid {
@@ -259,7 +259,7 @@ import { ModulesService } from '../services/modules.service';
       .modules-container {
         padding: 1rem;
       }
-      .modules-container h2 {
+      .modules-container h1 {
         font-size: 1.4rem;
       }
       .subtitle {

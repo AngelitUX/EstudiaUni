@@ -48,6 +48,7 @@ interface AiMessage {
   imports: [CommonModule, RouterModule, FormsModule, FocoTokensBadgeComponent],
   template: `
     <div class="exam-container">
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ examTitle }}</h1>
       <!-- HEADER MINIMALISTA -->
       <header class="exam-header">
         <div class="header-left">
