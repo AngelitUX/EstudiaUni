@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
@@ -129,9 +129,7 @@ type PathItem = {
             <button class="btn-upgrade-pro" style="background: linear-gradient(135deg, #e11d48, #be123c); font-size: 0.8rem; border-radius: 99px; margin-right: 0.5rem;" (click)="toggleUnlockAllSteps()">
               {{ isUnlockedAll() ? '🔒 Bloquear Ruta' : '🔓 Desbloquear todo' }}
             </button> -->
-            <button *ngIf="isEntirePathCompleted()" class="btn-infinite-mastery-top" (click)="showInfiniteMastery = true">
-              🌟 Modo Infinito
-            </button>
+
             <button *ngIf="adminService.isAdmin()" class="btn-upgrade-pro" style="background: linear-gradient(135deg, #10b981, #059669); margin-right: 0.5rem;" (click)="forceRefresh()">
               🔄 Actualizar Datos
             </button>
@@ -152,8 +150,25 @@ type PathItem = {
         </header>
 
         <div class="dashboard-body" style="position: relative; overflow: hidden; min-height: 100vh;">
+          <!-- SUB-NAV SEGMENTED SWITCHER (Solo cuando la ruta esté completada) -->
+          <div *ngIf="isEntirePathCompleted()" class="path-view-segmented-wrap">
+            <div class="path-segmented-control">
+              <button class="seg-btn" [class.active]="activePathTab === 'path'" (click)="activePathTab = 'path'">
+                <span>🗺️</span> Ruta Principal
+              </button>
+              <button class="seg-btn" [class.active]="activePathTab === 'infinite'" (click)="activePathTab = 'infinite'">
+                <span>⚡</span> Modo Infinito (Polígono de Maestría)
+              </button>
+            </div>
+          </div>
+
+          <!-- EMBEDDED INFINITE MASTERY VIEW -->
+          <div *ngIf="isEntirePathCompleted() && activePathTab === 'infinite'" class="embedded-mastery-wrapper">
+            <app-infinite-mastery-modal [materiaId]="'biologia'" [isEmbedded]="true" (backToPath)="activePathTab = 'path'"></app-infinite-mastery-modal>
+          </div>
+
           <!-- BIOLOGY BACKGROUND DECORATIONS -->
-          <div class="physics-bg-decorations">
+          <div class="physics-bg-decorations" *ngIf="!isEntirePathCompleted() || activePathTab === 'path'">
             <span class="bg-deco-orbit"></span>
             <span class="bg-deco-orbit-alt"></span>
             <span class="bg-deco" style="top: 4%; left: 4%; font-size: 2.4rem; transform: rotate(-12deg);">🧬</span>
@@ -163,14 +178,13 @@ type PathItem = {
             <span class="bg-deco" style="top: 54%; left: 4%; font-size: 2.2rem; transform: rotate(-10deg);">Mitosis</span>
             <span class="bg-deco" style="top: 65%; right: 3%; font-size: 2rem; transform: rotate(12deg);">ADN</span>
             <span class="bg-deco" style="top: 76%; left: 5%; font-size: 2.1rem; transform: rotate(6deg);">O₂</span>
-            <span class="bg-deco" style="top: 88%; right: 5%; font-size: 2.5rem; transform: rotate(-14deg);">🌱</span>
-            <span class="bg-deco" style="top: 6%; right: 22%; font-size: 1.9rem; transform: rotate(-6deg);">CO₂</span>
-            <span class="bg-deco" style="top: 94%; left: 20%; font-size: 1.9rem; transform: rotate(9deg);">Genoma</span>
-            <span class="bg-deco" style="top: 22%; left: 16%; font-size: 1.8rem; transform: rotate(14deg);">Enzima</span>
-            <span class="bg-deco" style="top: 92%; right: 25%; font-size: 1.8rem; transform: rotate(7deg);">Núcleo</span>
+            <span class="bg-deco" style="top: 88%; right: 5%; font-size: 2.5rem; transform: rotate(-14deg);">🌿</span>
+            <span class="bg-deco" style="top: 6%; right: 22%; font-size: 1.9rem; transform: rotate(-6deg);">ARN</span>
+            <span class="bg-deco" style="top: 94%; left: 20%; font-size: 1.9rem; transform: rotate(9deg);">Enzima</span>
+            <span class="bg-deco" style="top: 22%; left: 16%; font-size: 1.8rem; transform: rotate(14deg);">Meiosis</span>
+            <span class="bg-deco" style="top: 92%; right: 25%; font-size: 1.8rem; transform: rotate(7deg);">CO₂</span>
           </div>
-
-          <div class="materia-page">
+          <div class="materia-page" *ngIf="!isEntirePathCompleted() || activePathTab === 'path'">
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
             <ng-container *ngFor="let item of pathItems(); let i = index">
@@ -340,14 +354,14 @@ type PathItem = {
             </ng-container>
 
             <!-- NODO FINAL DE MAESTRÍA INFINITA (Solo cuando la ruta esté completada) -->
-            <div *ngIf="isEntirePathCompleted()" class="infinite-mastery-node-card" (click)="showInfiniteMastery = true">
+            <div *ngIf="isEntirePathCompleted()" class="infinite-mastery-node-card" (click)="activePathTab = 'infinite'">
               <div class="infinite-portal-badge">
                 <span class="portal-icon">🌟</span>
                 <div class="portal-text">
-                  <h4>Modo Infinito · Polígono de Maestría</h4>
-                  <p>Practica ilimitadamente con preguntas dinámicas de todos los ejes</p>
+                  <h4>⚡ Reforzar Materia · Modo Infinito</h4>
+                  <p>Práctica ilimitada por ejes y desafío diario al Núcleo Maestro</p>
                 </div>
-                <button class="btn-enter-portal">Entrar al Polígono →</button>
+                <button class="btn-enter-portal">Reforzar Ahora ⚡</button>
               </div>
             </div>
           </div>
@@ -357,7 +371,6 @@ type PathItem = {
     </div>
     <app-profile-modal *ngIf="showProfileModal" (close)="showProfileModal = false"></app-profile-modal>
     <app-settings-modal *ngIf="showSettingsModal" (close)="showSettingsModal = false"></app-settings-modal>
-    <app-infinite-mastery-modal *ngIf="showInfiniteMastery" [materiaId]="'biologia'" (close)="showInfiniteMastery = false"></app-infinite-mastery-modal>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <!-- PHYSICS SIMULATOR PANEL (only for ciencias-fisica) -->
@@ -1614,13 +1627,62 @@ type PathItem = {
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
       transition: all 0.2s;
     }
-    .btn-enter-portal:hover {
-      background: #fbbf24;
-      transform: scale(1.05);
+    .path-view-segmented-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 1.25rem 1rem 0.5rem;
+      z-index: 10;
+      position: relative;
+    }
+    .path-segmented-control {
+      display: flex;
+      background: #ffffff;
+      padding: 0.35rem;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      gap: 0.4rem;
+    }
+    .seg-btn {
+      background: transparent;
+      border: none;
+      padding: 0.55rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .seg-btn:hover {
+      color: #0f172a;
+      background: #f8fafc;
+    }
+    .seg-btn.active {
+      background: var(--accent-primary, #047857);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
+    }
+    .embedded-mastery-wrapper {
+      position: relative;
+      z-index: 5;
+      width: 100%;
     }
   `]
 })
-export class MateriaBiologiaPathComponent implements AfterViewInit, OnDestroy {
+export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDestroy {
+  activePathTab: 'path' | 'infinite' = 'path';
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['mode'] === 'infinite') {
+        this.activePathTab = 'infinite';
+      }
+    });
+  }
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);

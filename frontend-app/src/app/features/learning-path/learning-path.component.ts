@@ -11,11 +11,12 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.component';
 
 @Component({
   selector: 'app-learning-path',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent, InfiniteMasteryModalComponent],
   template: `
     <div class="lp-layout">
       <!-- SIDEBAR -->
@@ -222,7 +223,12 @@ import { PaymentService } from '../../core/services/payment.service';
                     </div>
 
                     <!-- Botón -->
-                    <div class="cta-wrap">
+                    <div class="cta-wrap" style="display: flex; align-items: center; gap: 0.4rem;">
+                      <button *ngIf="getMateriaProgress(m.id).percentage === 100"
+                        class="btn-reinforce-action"
+                        (click)="goToMateria(m, 'infinite', $event)">
+                        ⚡ REFORZAR
+                      </button>
                       <button class="btn-main-action"
                         [class.btn-start]="getMateriaProgress(m.id).percentage === 0"
                         [class.btn-continue]="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100"
@@ -266,6 +272,7 @@ import { PaymentService } from '../../core/services/payment.service';
       </main>
       <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsClose()"></app-settings-modal>
       <app-profile-modal *ngIf="showProfileModal" [scrollTarget]="profileScrollTarget" (close)="onProfileModalClose()"></app-profile-modal>
+      <app-infinite-mastery-modal *ngIf="showInfiniteMastery" [materiaId]="selectedInfiniteMateria" (close)="showInfiniteMastery = false"></app-infinite-mastery-modal>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
@@ -333,6 +340,36 @@ import { PaymentService } from '../../core/services/payment.service';
       background: rgba(255, 255, 255, 0.25);
     }
     .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: #ffffff; text-decoration: none; transition: all 0.2s; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-size: 1.05rem; font-weight: 500; }
+    .btn-review {
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .btn-review:hover {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .btn-reinforce-action {
+      background: linear-gradient(135deg, #855cd6, #f59e0b);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.5rem 0.85rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.35);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+    .btn-reinforce-action:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
+      filter: brightness(1.1);
+    }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
     .nav-item.active { 
       background: rgba(139,92,246,0.18); 
@@ -933,14 +970,25 @@ export class LearningPathComponent implements OnInit, OnDestroy {
       .reduce((acc, cap) => acc + cap.secciones.length, 0);
   }
 
-  goToMateria(m: Materia) {
+  goToMateria(m: Materia, mode?: 'infinite', event?: Event) {
+    if (event) event.stopPropagation();
+    const queryParams = mode ? { mode } : undefined;
     if (m.id === 'historia') {
-      this.router.navigate(['/ruta/historia']);
+      this.router.navigate(['/ruta/historia'], { queryParams });
     } else if (m.id === 'quimica' || m.id === 'ciencias-quimica' || m.id === 'ciencias') {
-      this.router.navigate(['/ruta/quimica']);
+      this.router.navigate(['/ruta/quimica'], { queryParams });
     } else {
-      this.router.navigate(['/ruta', m.id]);
+      this.router.navigate(['/ruta', m.id], { queryParams });
     }
+  }
+
+  showInfiniteMastery = false;
+  selectedInfiniteMateria = 'mat1';
+
+  openInfiniteMastery(event: Event, materiaId: string) {
+    event.stopPropagation();
+    this.selectedInfiniteMateria = materiaId;
+    this.showInfiniteMastery = true;
   }
 
   confirmLogout() {
