@@ -86,36 +86,36 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
             </div>
             <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.85rem;">
               <div class="key-card">
-                <span class="key-label">Opción A</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyAnsA)" (keydown)="captureKey($event, 'keyAnsA')" readonly class="key-input"/>
+                <label class="key-label" for="key-ansA">Opción A</label>
+                <input id="key-ansA" type="text" [value]="formatKeyName(settingsForm.keyAnsA)" (keydown)="captureKey($event, 'keyAnsA')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Opción B</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyAnsB)" (keydown)="captureKey($event, 'keyAnsB')" readonly class="key-input"/>
+                <label class="key-label" for="key-ansB">Opción B</label>
+                <input id="key-ansB" type="text" [value]="formatKeyName(settingsForm.keyAnsB)" (keydown)="captureKey($event, 'keyAnsB')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Opción C</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyAnsC)" (keydown)="captureKey($event, 'keyAnsC')" readonly class="key-input"/>
+                <label class="key-label" for="key-ansC">Opción C</label>
+                <input id="key-ansC" type="text" [value]="formatKeyName(settingsForm.keyAnsC)" (keydown)="captureKey($event, 'keyAnsC')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Opción D</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyAnsD)" (keydown)="captureKey($event, 'keyAnsD')" readonly class="key-input"/>
+                <label class="key-label" for="key-ansD">Opción D</label>
+                <input id="key-ansD" type="text" [value]="formatKeyName(settingsForm.keyAnsD)" (keydown)="captureKey($event, 'keyAnsD')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Opción E</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyAnsE)" (keydown)="captureKey($event, 'keyAnsE')" readonly class="key-input"/>
+                <label class="key-label" for="key-ansE">Opción E</label>
+                <input id="key-ansE" type="text" [value]="formatKeyName(settingsForm.keyAnsE)" (keydown)="captureKey($event, 'keyAnsE')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Siguiente</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyNext)" (keydown)="captureKey($event, 'keyNext')" readonly class="key-input"/>
+                <label class="key-label" for="key-next">Siguiente</label>
+                <input id="key-next" type="text" [value]="formatKeyName(settingsForm.keyNext)" (keydown)="captureKey($event, 'keyNext')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Anterior</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyPrev)" (keydown)="captureKey($event, 'keyPrev')" readonly class="key-input"/>
+                <label class="key-label" for="key-prev">Anterior</label>
+                <input id="key-prev" type="text" [value]="formatKeyName(settingsForm.keyPrev)" (keydown)="captureKey($event, 'keyPrev')" readonly class="key-input"/>
               </div>
               <div class="key-card">
-                <span class="key-label">Cerrar / Salir</span>
-                <input type="text" [value]="formatKeyName(settingsForm.keyExit)" (keydown)="captureKey($event, 'keyExit')" readonly class="key-input"/>
+                <label class="key-label" for="key-exit">Cerrar / Salir</label>
+                <input id="key-exit" type="text" [value]="formatKeyName(settingsForm.keyExit)" (keydown)="captureKey($event, 'keyExit')" readonly class="key-input"/>
               </div>
             </div>
             <div class="keyboard-info-banner">
@@ -147,7 +147,7 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
           </div>
           <div class="action-bar">
             <button class="btn-report" (click)="showReportBugModal = true">
-              <img src="assets/images/iconosParaElementos/P_ReportarBug.png" alt="Reportar un problema" class="report-bug-icon"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_ReportarBug.svg" alt="Reportar un problema" class="report-bug-icon"/>
             </button>
             <button class="primary" [class.dirty]="isDirty()" [class.shake]="shakeSaveButton" (click)="saveSettings()" [disabled]="saving || loading || !isDirty()">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>

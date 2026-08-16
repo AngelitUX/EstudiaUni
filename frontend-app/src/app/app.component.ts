@@ -6,6 +6,7 @@ import { FirestoreService } from './core/services/firestore.service';
 import { PaymentService } from './core/services/payment.service';
 import { PricingModalComponent } from './features/payment/pricing-modal.component';
 import { KeyboardNavigationService } from './core/services/keyboard-navigation.service';
+import { SeoService } from './core/services/seo.service';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
   public readonly paymentService = inject(PaymentService);
   private router = inject(Router);
   private keyboardNavService = inject(KeyboardNavigationService);
+  private seoService = inject(SeoService);
 
   @HostListener('document:click', ['$event'])
   onGlobalClick(event: MouseEvent) {
@@ -38,6 +40,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.keyboardNavService.init();
+    this.seoService.init();
 
     // Scroll to top on navigation change
     this.router.events.pipe(

@@ -42,7 +42,7 @@ import { PaymentService } from '../../core/services/payment.service';
           </ng-template>
         </div>
         
-        <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">
+        <button class="mobile-menu-btn" [class.open]="mobileMenuOpen" (click)="mobileMenuOpen = !mobileMenuOpen" [attr.aria-expanded]="mobileMenuOpen" aria-label="Abrir menú">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -129,12 +129,12 @@ import { PaymentService } from '../../core/services/payment.service';
             </p>
             
             <div class="hero-cta-group">
-              <!-- COMPACT SOCIAL PROOF ROW (only shown for logged-out visitors, above the CTA buttons) -->
-              <div class="hero-social-proof" *ngIf="!isLoggedIn()">
+              <!-- COMPACT SOCIAL PROOF ROW (kept for logged-in users too so the hero column keeps the same height/position) -->
+              <div class="hero-social-proof">
                 <div class="avatar-stack">
-                  <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-                  <img src="assets/img/seccion opiniones/2.png" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-                  <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img src="assets/imagesHome/seccion opiniones/1.jpg" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img src="assets/imagesHome/seccion opiniones/2.png" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img src="assets/imagesHome/seccion opiniones/3.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
                 </div>
                 <div class="proof-text">
                   <div class="star-rating">⭐⭐⭐⭐⭐</div>
@@ -162,21 +162,21 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- MODERN BENEFITS BAR (Replaces stats) -->
             <div class="hero-benefits-bar">
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Adaptativo"></div>
+                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Adaptativo"></div>
                 <div class="chip-info">
                   <strong>Adaptativo</strong>
                   <span>La IA crea tu plan de estudio</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="En tiempo real"></div>
+                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="En tiempo real"></div>
                 <div class="chip-info">
                   <strong>En tiempo real</strong>
                   <span>Explicaciones al instante mientras ensayas</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/iconosParaElementos/P_Logro.png" alt="100% enfocado"></div>
+                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Logro.svg" alt="100% enfocado"></div>
                 <div class="chip-info">
                   <strong>100% enfocado</strong>
                   <span>Solo contenido oficial PAES</span>
@@ -351,7 +351,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="bento-grid">
             <!-- Large Card 1 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Rutas de Aprendizaje"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Rutas de Aprendizaje"></div>
               <h3>Rutas de Aprendizaje</h3>
               <p>Sigue un plan de estudio estructurado y personalizado. Avanza paso a paso dominando cada tema hasta alcanzar tu puntaje ideal.</p>
               <div class="bento-visual">
@@ -376,7 +376,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
             <!-- Large Card 2 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_Lenguaje.png" alt="Ensayos PAES"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Lenguaje.svg" alt="Ensayos PAES"></div>
               <h3>Ensayos PAES (Reales y Asistidos)</h3>
               <p>Mídete con ensayos oficiales del DEMRE. Practica en modo real con tiempo límite o en modo asistido con apoyo y feedback al instante.</p>
               <div class="bento-visual">
@@ -401,28 +401,28 @@ import { PaymentService } from '../../core/services/payment.service';
             
             <!-- Small Card 1 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Práctica Adaptativa"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Práctica Adaptativa"></div>
               <h3>Práctica Adaptativa</h3>
               <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_m2.png" alt="Visualiza tu Progreso"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_m2.svg" alt="Visualiza tu Progreso"></div>
               <h3>Visualiza tu Progreso</h3>
               <p>Mide tu avance diario e identifica áreas de mejora al instante.</p>
             </div>
             
             <!-- Small Card 3 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Explora tu Futuro"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Explora tu Futuro"></div>
               <h3>Explora tu Futuro</h3>
               <p>Descubre universidades y carreras según tu ubicación e intereses.</p>
             </div>
 
             <!-- Small Card 4 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Acceso Inmediato"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Acceso Inmediato"></div>
               <h3>Acceso Inmediato</h3>
               <p>Comienza gratis hoy. Sin ingresar tarjeta de crédito.</p>
             </div>
@@ -692,15 +692,15 @@ import { PaymentService } from '../../core/services/payment.service';
         
         <div class="tabs-container">
           <div class="tabs-buttons">
-            <button class="tab-btn" [class.active]="activeTab === 0" (click)="activeTab = 0">
+            <button class="tab-btn" [class.active]="activeTab === 0" (click)="selectDemoTab(0)">
               <span class="tab-number">1</span> Ruta de aprendizaje
               <div class="active-indicator"></div>
             </button>
-            <button class="tab-btn" [class.active]="activeTab === 1" (click)="activeTab = 1">
+            <button class="tab-btn" [class.active]="activeTab === 1" (click)="selectDemoTab(1)">
               <span class="tab-number">2</span> Ensayos PAES
               <div class="active-indicator"></div>
             </button>
-            <button class="tab-btn" [class.active]="activeTab === 2" (click)="activeTab = 2">
+            <button class="tab-btn" [class.active]="activeTab === 2" (click)="selectDemoTab(2)">
               <span class="tab-number">3</span> Consulta al tutor IA
               <div class="active-indicator"></div>
             </button>
@@ -710,14 +710,13 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- Tab 1: Ruta de aprendizaje -->
             <div *ngIf="activeTab === 0" class="tab-pane fade-in">
               <div class="tab-visual tab-dashboard-wrapper">
-                <video 
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742570/decoraciones/como_funciona/1_ruta.mp4" 
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742570/decoraciones/como_funciona/1_ruta.gif"
-                  autoplay 
-                  loop 
-                  muted 
-                  playsinline 
-                  preload="auto"
+                <video
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/v1786850264/30FPSQuality.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0/v1786850264/30FPSQuality.jpg"
+                  loop
+                  muted
+                  playsinline
+                  preload="none"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -727,14 +726,13 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- Tab 2: Ensayos PAES -->
             <div *ngIf="activeTab === 1" class="tab-pane fade-in">
               <div class="tab-visual tab-exam-wrapper">
-                <video 
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742574/decoraciones/como_funciona/2_ensayos.mp4" 
+                <video
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742574/decoraciones/como_funciona/2_ensayos.mp4"
                   poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742574/decoraciones/como_funciona/2_ensayos.gif"
-                  autoplay 
-                  loop 
-                  muted 
-                  playsinline 
-                  preload="auto"
+                  loop
+                  muted
+                  playsinline
+                  preload="none"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -744,14 +742,13 @@ import { PaymentService } from '../../core/services/payment.service';
             <!-- Tab 3: Consulta al tutor IA -->
             <div *ngIf="activeTab === 2" class="tab-pane fade-in">
               <div class="tab-visual tab-chat-wrapper">
-                <video 
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742576/decoraciones/como_funciona/3_consulta.mp4" 
+                <video
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742576/decoraciones/como_funciona/3_consulta.mp4"
                   poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742576/decoraciones/como_funciona/3_consulta.gif"
-                  autoplay 
-                  loop 
-                  muted 
-                  playsinline 
-                  preload="auto"
+                  loop
+                  muted
+                  playsinline
+                  preload="none"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -865,7 +862,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="testimonial-card testimonial-card-1">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/img/seccion opiniones/1.jpg" alt="Estudiante Mati" loading="lazy" decoding="async">
+                <img src="assets/imagesHome/seccion opiniones/1.jpg" alt="Estudiante Mati" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -893,7 +890,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="testimonial-card featured testimonial-card-2">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/img/seccion opiniones/2.png" alt="Estudiante ValeRojas" loading="lazy" decoding="async">
+                <img src="assets/imagesHome/seccion opiniones/2.png" alt="Estudiante ValeRojas" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -919,7 +916,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="testimonial-card testimonial-card-3">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/img/seccion opiniones/3.webp" alt="Estudiante Seba" loading="lazy" decoding="async">
+                <img src="assets/imagesHome/seccion opiniones/3.webp" alt="Estudiante Seba" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -1226,6 +1223,10 @@ import { PaymentService } from '../../core/services/payment.service';
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
         </div>
+
+        <div class="news-scroll-indicator" aria-hidden="true">
+          <div class="news-scroll-thumb"></div>
+        </div>
       </section>
 
       <!-- FAQ SECTION -->
@@ -1312,8 +1313,8 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="cta-content glass-card">
           <h2>¿Listo para mejorar tu puntaje?</h2>
           <p>Únete a miles de estudiantes preparándose con EstudiaUni</p>
-          <button class="btn btn-primary btn-large btn-glow" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
-            {{ isLoggedIn() ? '⚡ Ir a mi Dashboard' : 'Crear Cuenta Gratis' }}
+          <button class="btn btn-primary btn-large btn-glow cta-final-btn" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
+            {{ isLoggedIn() ? 'Ir a mi Dashboard' : 'Crear Cuenta Gratis' }}
           </button>
         </div>
       </section>
@@ -1765,28 +1766,60 @@ import { PaymentService } from '../../core/services/payment.service';
     }
     .mobile-menu-btn {
       display: none;
-      flex-direction: column;
-      gap: 5px;
+      position: relative;
+      width: 34px;
+      height: 34px;
       background: none;
       border: none;
       cursor: pointer;
-      padding: 5px;
+      padding: 0;
     }
     .mobile-menu-btn span {
-      width: 25px;
+      position: absolute;
+      left: 5px;
+      width: 24px;
       height: 2px;
+      border-radius: 2px;
       background: var(--text-primary);
-      transition: 0.3s;
+      transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+    .mobile-menu-btn span:nth-child(1) { top: 11px; }
+    .mobile-menu-btn span:nth-child(2) { top: 16px; }
+    .mobile-menu-btn span:nth-child(3) { top: 21px; }
+    /* Hamburger → X morph: the two outer bars slide onto the middle bar's line and rotate
+       into an X while the middle bar fades out. */
+    .mobile-menu-btn.open span:nth-child(1) {
+      top: 16px;
+      transform: rotate(45deg);
+    }
+    .mobile-menu-btn.open span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    .mobile-menu-btn.open span:nth-child(3) {
+      top: 16px;
+      transform: rotate(-45deg);
     }
     .mobile-menu {
-      display: none;
+      display: flex;
       flex-direction: column;
       gap: 1rem;
-      padding: 1rem 2rem 2rem;
+      padding: 0 2rem;
       background: white;
-      border-bottom: 2px solid var(--glass-border);
+      border-bottom: 2px solid transparent;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s ease;
     }
-    .mobile-menu.open { display: flex; }
+    .mobile-menu.open {
+      max-height: 28rem;
+      padding: 1rem 2rem 2rem;
+      opacity: 1;
+      transform: translateY(0);
+      border-bottom-color: var(--glass-border);
+    }
     .mobile-menu a {
       color: var(--text-primary);
       padding: 0.5rem 0;
@@ -2093,6 +2126,8 @@ import { PaymentService } from '../../core/services/payment.service';
       }
       .hero-offer-badge, .active-students-badge {
         max-width: 100%;
+        font-size: 0.68rem;
+        padding: 0.26rem 0.65rem;
       }
       .hero-offer-badge {
         white-space: normal;
@@ -2100,6 +2135,10 @@ import { PaymentService } from '../../core/services/payment.service';
         justify-content: center;
         text-align: center;
         row-gap: 0.2rem;
+      }
+      .offer-discount-chip {
+        font-size: 0.62rem;
+        padding: 0.1rem 0.4rem;
       }
     }
 
@@ -2227,6 +2266,9 @@ import { PaymentService } from '../../core/services/payment.service';
     .hero-sim-card {
       min-height: 840px;
       box-sizing: border-box;
+    }
+    .hero-sim-card.glass-card {
+      border: 2px solid #cbd5e1;
     }
     .sim-card-header {
       display: flex;
@@ -4039,6 +4081,9 @@ import { PaymentService } from '../../core/services/payment.service';
       font-size: 1.2rem;
       margin-bottom: 2rem;
     }
+    .cta-final-btn {
+      border-radius: 12px;
+    }
 
     /* ===== FOOTER ===== */
     .footer {
@@ -4320,6 +4365,9 @@ import { PaymentService } from '../../core/services/payment.service';
     }
     .news-card.glass-card {
       border: 2px solid #cbd5e1;
+    }
+    .news-scroll-indicator {
+      display: none;
     }
     .news-card:hover {
       transform: translateY(-8px);
@@ -4662,7 +4710,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .tabs-container {
       display: flex;
       gap: 3rem;
-      max-width: 1200px;
+      max-width: 1440px;
       width: 100%;
       margin: 0 auto;
       padding: 0 2rem;
@@ -4674,6 +4722,7 @@ import { PaymentService } from '../../core/services/payment.service';
       flex: 1;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       gap: 1.2rem;
     }
     .tab-btn {
@@ -4770,7 +4819,7 @@ import { PaymentService } from '../../core/services/payment.service';
     }
 
     .tab-content {
-      flex: 1.8;
+      flex: 2.4;
       background: transparent;
       backdrop-filter: none;
       padding: 0;
@@ -4814,7 +4863,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .tab-visual {
       flex: 1;
       border-radius: 28px;
-      min-height: 330px;
+      min-height: 520px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4967,7 +5016,17 @@ import { PaymentService } from '../../core/services/payment.service';
     
     @media (max-width: 900px) {
       .tabs-container { flex-direction: column; gap: 2rem; }
-      .tab-btn.active { transform: translateY(0); }
+      .tab-btn.active { transform: none !important; }
+      .active-indicator { display: none; }
+      /* En layout apilado, .tab-content/.tab-pane pierden una altura definida, así que el video
+         (height: 100% inline) colapsa a su tamaño intrínseco. Al posicionarlo en absoluto se ajusta
+         siempre al tamaño real de .tab-visual (que sí tiene min-height), sin depender de esa cadena. */
+      .tab-visual .real-video-player {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
     }
 
     /* ===== PRICING HIERARCHY ===== */
@@ -5452,6 +5511,7 @@ import { PaymentService } from '../../core/services/payment.service';
       .hero-left-content {
         align-items: center;
         text-align: center;
+        min-width: 0;
       }
       .hero-subtitle {
         text-align: center;
@@ -5462,6 +5522,7 @@ import { PaymentService } from '../../core/services/payment.service';
       .hero-right-preview {
         max-width: 540px;
         margin: 0 auto;
+        min-width: 0;
       }
     }
     @media (max-width: 640px) {
@@ -5472,13 +5533,35 @@ import { PaymentService } from '../../core/services/payment.service';
       .sim-ai-split-panel {
         grid-template-columns: 1fr;
       }
+      /* Avatars + stars stay on one centered row (proof-text is unwrapped via display:contents
+         so its children become direct flex items); the sentence wraps to its own full-width
+         line below instead of every piece stacking as a separate row. */
       .hero-social-proof {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 0.35rem;
       }
       .proof-text {
-        align-items: center;
+        display: contents;
+      }
+      .proof-text span {
+        width: 100%;
+        text-align: center;
+      }
+      /* A max-width:540px + margin:auto card can't actually shrink below its content's
+         min width, so on narrow phones it overflowed the grid track and got clipped by
+         .hero-section's overflow:hidden, throwing the whole hero column off-center. */
+      .hero-right-preview {
+        max-width: 100%;
+        margin: 0;
+      }
+      .hero-sim-card {
+        padding: 1.5rem;
+        min-width: 0;
+      }
+      .sim-card-header {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
       }
     }
     @media (max-width: 768px) {
@@ -5503,15 +5586,24 @@ import { PaymentService } from '../../core/services/payment.service';
         justify-content: space-between !important;
         align-items: center !important;
       }
-      .hero-section { padding-top: 6.5rem; overflow: hidden; }
-      .hero-title { font-size: clamp(1.8rem, 6vw, 2.6rem); }
+      .hero-section { padding-top: 6.5rem; padding-bottom: 1.5rem; overflow: hidden; }
+      .hero-title { font-size: clamp(3rem, 10.5vw, 3.8rem); }
       .hero-subtitle { font-size: 1rem; }
       .hero-actions { flex-direction: column; width: 100%; max-width: 320px; margin: 0 auto; gap: 0.75rem; }
       .hero-actions .btn { width: 100%; justify-content: center; }
+      /* The button's glow shadow eats into its own margin, so the gap below reads tighter
+         than the equal-value gap above it — bump it so both feel symmetric. */
+      .hero-cta-group { margin-bottom: 3.5rem; }
       .bento-grid { grid-template-columns: 1fr; }
       .bento-large { grid-column: span 1; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; padding: 0 1.25rem; }
       .section-title { font-size: 1.85rem; }
+      /* These sections carry desktop-sized vertical padding (7rem/8rem) that reads as a huge
+         dead-space gap once stacked on a narrow phone — halve the side that borders the
+         neighboring section so the gap shrinks without touching each section's own interior spacing. */
+      .features-section { padding-top: 3.5rem; }
+      .foco-section { padding-bottom: 3rem; }
+      .videos-section { padding-top: 4rem; }
 
       /* Foco Speech Bubble on Mobile */
       .foco-speech-bubble {
@@ -5543,12 +5635,32 @@ import { PaymentService } from '../../core/services/payment.service';
       .tab-btn { flex-shrink: 0; white-space: nowrap; font-size: 0.88rem; padding: 0.7rem 1.1rem; }
       .news-card { min-width: 85vw; max-width: 85vw; }
       .news-carousel-container { padding: 0 0.5rem; }
+      .news-scroll-indicator {
+        display: block;
+        position: relative;
+        width: min(160px, 40%);
+        height: 5px;
+        margin: 0.75rem auto 0;
+        background: rgba(133, 92, 214, 0.15);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .news-scroll-thumb {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 33%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #855cd6, #3b82f6);
+        will-change: left, width;
+      }
       .bento-card { padding: 1.5rem 1.25rem; }
       .roadmap-visual { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
     }
     @media (max-width: 480px) {
       .navbar { padding: 0.45rem 0.75rem; }
-      .nav-logo { font-size: 1.2rem; }
+      .nav-logo { font-size: 1.7rem; }
       .pricing-card { padding: 1.5rem 1.25rem; }
       .legal-modal-content { width: 95%; padding: 1.25rem; max-height: 85vh; }
       .legal-modal-header .close-btn { width: 44px; height: 44px; font-size: 1.3rem; }
@@ -5635,6 +5747,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   });
 
   activeTab = 0;
+  videosSectionInView = false;
   billingPeriod: 'monthly' | 'yearly' = 'monthly';
 
   openFaq: number | null = null;
@@ -5684,7 +5797,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       icon: '⚠️',
       tag: '¡Advertencia!',
       linkUrl: 'https://www.elmostrador.cl/datos-utiles/2026/05/19/inscripcion-paes-2026-demre-lanza-dura-advertencia-por-cambio-clave-que-podria-dejarte-fuera/',
-      imageUrl: 'assets/img/seccion noticias/noticia1.jpeg'
+      imageUrl: 'assets/imagesHome/seccion noticias/noticia1.jpeg'
     },
     {
       title: 'Comenzó el periodo de inscripción a la PAES de invierno 2026',
@@ -5696,7 +5809,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       icon: '❄️',
       tag: 'PAES Invierno',
       linkUrl: 'https://www.mineduc.cl/comenzo-el-periodo-de-inscripcion-a-la-paes-de-invierno-2026-admision-2027/',
-      imageUrl: 'assets/img/seccion noticias/noticia2.jpg'
+      imageUrl: 'assets/imagesHome/seccion noticias/noticia2.jpg'
     },
     {
       title: 'PAES Invierno 2026: cuándo es y cómo hacer la inscripción',
@@ -5708,7 +5821,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       icon: '📝',
       tag: 'Guía Práctica',
       linkUrl: 'https://www.iplacex.cl/blogs/paes-invierno-2026-cuando-es-y-como-hacer-la-inscripcion/',
-      imageUrl: 'assets/img/seccion noticias/noticia3.webp'
+      imageUrl: 'assets/imagesHome/seccion noticias/noticia3.webp'
     }
   ];
 
@@ -6109,11 +6222,27 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       const data = await this.firestoreService.getNews();
       if (data && data.length > 0) {
         this.news = data;
+        requestAnimationFrame(() => this.updateNewsScrollThumb());
       }
     } catch (e) {
       console.error('Error loading news from Firestore:', e);
     }
   }
+
+  private newsTrackEl: HTMLElement | null = null;
+  private newsThumbEl: HTMLElement | null = null;
+
+  /** Keeps the mobile news-carousel indicator bar in sync with horizontal scroll position. */
+  private updateNewsScrollThumb = () => {
+    const track = this.newsTrackEl;
+    const thumb = this.newsThumbEl;
+    if (!track || !thumb || !track.scrollWidth) return;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    const widthPct = Math.max(15, Math.min(100, (track.clientWidth / track.scrollWidth) * 100));
+    const leftPct = maxScroll > 0 ? (track.scrollLeft / maxScroll) * (100 - widthPct) : 0;
+    thumb.style.width = widthPct + '%';
+    thumb.style.left = leftPct + '%';
+  };
 
   ngAfterViewInit() {
     requestAnimationFrame(() => {
@@ -6122,6 +6251,14 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Registrar eventos en zona externa de Angular (cero lag y sin layout thrashing)
     this.zone.runOutsideAngular(() => {
+      this.newsTrackEl = document.querySelector('.news-track') as HTMLElement;
+      this.newsThumbEl = document.querySelector('.news-scroll-thumb') as HTMLElement;
+      this.updateNewsScrollThumb();
+      if (this.newsTrackEl) {
+        this.registerGlobalListener(this.newsTrackEl, 'scroll', this.updateNewsScrollThumb, { passive: true });
+      }
+      this.registerGlobalListener(window, 'resize', this.updateNewsScrollThumb, { passive: true });
+
       const sectionEl = document.getElementById('foco-tutor');
       const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
 
@@ -6264,6 +6401,35 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const animatedElements = document.querySelectorAll('.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .hero-stats, .faq-item, .news-card');
     animatedElements.forEach(el => observer.observe(el));
+
+    // Demo video: only fetch/play while the "Mira cómo funciona" section is in view, like an auto-looping gif.
+    // Pausing off-screen avoids wasted bandwidth/CPU on a video the user isn't looking at.
+    const videosSection = document.querySelector('.videos-section');
+    if (videosSection) {
+      const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          this.videosSectionInView = entry.isIntersecting;
+          const video = entry.target.querySelector('video.real-video-player') as HTMLVideoElement | null;
+          if (!video) return;
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: 0.25 });
+      videoObserver.observe(videosSection);
+    }
+  }
+
+  selectDemoTab(i: number) {
+    this.activeTab = i;
+    if (this.videosSectionInView) {
+      setTimeout(() => {
+        const video = document.querySelector('.videos-section video.real-video-player') as HTMLVideoElement | null;
+        video?.play().catch(() => {});
+      }, 0);
+    }
   }
 
   // Removed @HostListener('window:scroll') to fix scroll lag.

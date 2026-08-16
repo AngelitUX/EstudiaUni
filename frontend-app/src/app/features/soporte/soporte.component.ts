@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -667,7 +667,10 @@ interface FaqItem {
     }
   `]
 })
-export class SoporteComponent {
+export class SoporteComponent implements OnInit, OnDestroy {
+  private document = inject(DOCUMENT);
+  private faqSchemaScript?: HTMLScriptElement;
+
   searchQuery = '';
   openFaq: number | null = null;
   sending = false;
@@ -680,6 +683,26 @@ export class SoporteComponent {
     category: '',
     message: ''
   };
+
+  ngOnInit() {
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: this.allFaqs.map(faq => ({
+        '@type': 'Question',
+        name: faq.q,
+        acceptedAnswer: { '@type': 'Answer', text: faq.a }
+      }))
+    };
+    this.faqSchemaScript = this.document.createElement('script');
+    this.faqSchemaScript.type = 'application/ld+json';
+    this.faqSchemaScript.text = JSON.stringify(faqSchema);
+    this.document.head.appendChild(this.faqSchemaScript);
+  }
+
+  ngOnDestroy() {
+    this.faqSchemaScript?.remove();
+  }
 
   private readonly allFaqs: FaqItem[] = [
     {

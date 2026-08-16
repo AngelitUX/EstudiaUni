@@ -13,6 +13,7 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [CommonModule],
   template: `
     <div class="test-page" *ngIf="test() as t" [ngClass]="'level-' + questionLevel().num">
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Prueba de Matemática</h1>
       <!-- Watermark Math Ornaments -->
       <div class="math-bg-ornaments">
         <div class="math-sym sym-1">∑ xᵢ</div>

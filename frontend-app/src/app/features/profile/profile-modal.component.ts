@@ -35,7 +35,7 @@ import { CareerService, Career } from '../../core/services/career.service';
                   <div class="avatar-overlay">
                     <span>Cambiar foto</span>
                   </div>
-                  <input #photoInput type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;" [disabled]="!(isProPlan() || adminService.isAdmin())"/>
+                  <input #photoInput id="profile-photo-input" aria-label="Subir foto de perfil" type="file" accept="image/*" (change)="onPhotoFileSelected($event)" style="display: none;" [disabled]="!(isProPlan() || adminService.isAdmin())"/>
                 </div>
                 <div class="emoji-pill clickable" (click)="$event.stopPropagation(); showEmojiPicker = true" title="Cambiar emote">
                   {{ profileForm.profileEmoji || '✨' }}
@@ -44,7 +44,7 @@ import { CareerService, Career } from '../../core/services/career.service';
 
               <div class="profile-summary">
                 <div class="name-edit-wrap">
-                  <input *ngIf="isEditingName" [(ngModel)]="profileForm.displayName" class="title-input" (blur)="isEditingName = false" (keyup.enter)="isEditingName = false" #nameInput/>
+                  <input *ngIf="isEditingName" id="profile-name-input" aria-label="Nombre de perfil" [(ngModel)]="profileForm.displayName" class="title-input" (blur)="isEditingName = false" (keyup.enter)="isEditingName = false" #nameInput/>
                   <h2 class="profile-title" *ngIf="!isEditingName">{{ profileForm.displayName || 'Tu perfil' }}</h2>
                   <button class="btn-edit-name" (click)="toggleEditName()" [title]="isEditingName ? 'Confirmar' : 'Editar nombre'">
                     {{ isEditingName ? '✅' : '✏️' }}
@@ -211,7 +211,7 @@ import { CareerService, Career } from '../../core/services/career.service';
               </div>
               <div class="editor-body">
                 <div class="crop-container" #cropContainer (mousedown)="onCropStart($event)" (touchstart)="onCropStart($event)">
-                  <img [src]="imageToEdit" class="img-full-preview" [style.transform]="'rotate(' + rotation + 'deg)'" #imgRef/>
+                  <img [src]="imageToEdit" alt="Vista previa de la imagen a editar" class="img-full-preview" [style.transform]="'rotate(' + rotation + 'deg)'" #imgRef/>
                   <div class="crop-overlay" [style.left.px]="cropX" [style.top.px]="cropY" [style.width.px]="cropSize" [style.height.px]="cropSize">
                     <div class="crop-handle" (mousedown)="onResizeStart($event)" (touchstart)="onResizeStart($event)"></div>
                   </div>
@@ -242,7 +242,7 @@ import { CareerService, Career } from '../../core/services/career.service';
         </div>
         <div class="confirm-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -731,16 +731,16 @@ export class ProfileModalComponent implements OnInit {
   emojiOptions = ['✨', '🔥', '🎯', '🚀', '📚', '🧠', '😎', '🌟', '🎓', '⚡', '💪', '🦊', '🐼', '🦄', '😄', '🤓', '🥳', '😺', '🌈', '🍀', '🪐', '🌙', '☀️', '🎵', '🎮', '🏆', '💎', '🧩', '🫶', '🛡️'];
 
   avatarOptions = [
-    'assets/images/avatars/avatar_1.png',
-    'assets/images/avatars/avatar_2.png',
-    'assets/images/avatars/avatar_3.png',
-    'assets/images/avatars/avatar_4.png',
-    'assets/images/avatars/avatar_5.png',
-    'assets/images/avatars/avatar_6.png',
-    'assets/images/avatars/avatar_7.png',
-    'assets/images/avatars/avatar_8.png',
-    'assets/images/avatars/avatar_9.png',
-    'assets/images/avatars/avatar_10.png'
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_1.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_2.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_3.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_4.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_5.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_6.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_7.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_8.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_9.svg',
+    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_10.svg'
   ];
 
   selectAvatar(avatar: string): void {
@@ -830,7 +830,7 @@ export class ProfileModalComponent implements OnInit {
       next: (profile) => {
         if (profile) {
           this.profileForm.displayName = profile.displayName || '';
-          this.profileForm.photoURL = profile.photoURL || 'assets/images/avatars/avatar_predeterminado.png';
+          this.profileForm.photoURL = profile.photoURL || 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Perfil.svg';
           this.profileForm.bio = profile.bio || '';
           this.profileForm.profileEmoji = this.normalizeEmoji(profile.profileEmoji);
           this.profileForm.school = profile.school || '';

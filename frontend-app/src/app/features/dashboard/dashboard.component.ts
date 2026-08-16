@@ -37,24 +37,24 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard" id="tour-nav-inicio">
-            <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/>
             <span class="nav-text">Inicio</span>
           </a>
           <a class="nav-item" routerLink="/ruta" id="tour-nav-ruta">
-            <img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
             <span class="nav-text">Ruta de Aprendizaje</span>
           </a>
 
           <a class="nav-item" routerLink="/ensayos" id="tour-nav-ensayos">
-            <img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/>
             <span class="nav-text">Ensayos PAES</span>
           </a>
           <a class="nav-item" routerLink="/mini-ensayo" id="tour-nav-mini">
-            <img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/>
             <span class="nav-text">Mini Ensayos</span>
           </a>
           <a class="nav-item" routerLink="/mente-veloz" id="tour-nav-mente">
-            <img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/>
             <span class="nav-text">Mente Veloz</span>
           </a>
 
@@ -64,21 +64,21 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
             <a class="nav-item" routerLink="/encuentra-tu-carrera">
-              <img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/>
               <span class="nav-text">Encuentra tu Carrera</span>
             </a>
             <a class="nav-item" routerLink="/calculadora-nem">
-              <img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/>
               <span class="nav-text">Calculadora NEM</span>
             </a>
             <a class="nav-item" routerLink="/recursos">
-              <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/>
               <span class="nav-text">Recursos Adicionales</span>
             </a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
-            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -86,11 +86,11 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -126,24 +126,24 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           </div>
           <nav class="sidebar-nav">
             <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/>
               <span class="nav-text">Inicio</span>
             </a>
             <a class="nav-item" routerLink="/ruta" (click)="mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
               <span class="nav-text">Ruta de Aprendizaje</span>
             </a>
 
             <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/>
               <span class="nav-text">Ensayos PAES</span>
             </a>
             <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/>
               <span class="nav-text">Mini Ensayos</span>
             </a>
             <a class="nav-item" routerLink="/mente-veloz" (click)="mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/>
               <span class="nav-text">Mente Veloz</span>
             </a>
 
@@ -153,22 +153,22 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
               <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileMenuOpen = false">
-                <img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/>
+                <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/>
                 <span class="nav-text">Encuentra tu Carrera</span>
               </a>
               <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileMenuOpen = false">
-                <img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/>
+                <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/>
                 <span class="nav-text">Calculadora NEM</span>
               </a>
               <a class="nav-item" routerLink="/recursos" (click)="mobileMenuOpen = false">
-                <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/>
+                <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/>
                 <span class="nav-text">Recursos Adicionales</span>
               </a>
             </div>
             
             <!-- Sidebar Promo Card -->
             <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
-              <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
               <h4>Pásate a PRO</h4>
               <p>Explicaciones con IA y Ensayos Ilimitados</p>
               <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -176,11 +176,11 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileMenuOpen = false">
-              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -224,9 +224,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
               <div class="countdown-row">
                 <span class="countdown-label">⏳ {{ nextExamLabel }}:</span>
                 <div class="countdown-timer">
-                  <div class="time-unit"><span>{{ countdown.days }}</span><label>d</label></div>
-                  <div class="time-unit"><span>{{ countdown.hours }}</span><label>h</label></div>
-                  <div class="time-unit"><span>{{ countdown.minutes }}</span><label>m</label></div>
+                  <div class="time-unit"><span>{{ countdown.days }}</span><span class="unit">d</span></div>
+                  <div class="time-unit"><span>{{ countdown.hours }}</span><span class="unit">h</span></div>
+                  <div class="time-unit"><span>{{ countdown.minutes }}</span><span class="unit">m</span></div>
                 </div>
               </div>
 
@@ -561,7 +561,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -912,7 +912,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .countdown-timer { display: flex; gap: 0.5rem; align-items: center; }
     .time-unit { display: flex; align-items: baseline; gap: 1px; }
     .time-unit span { font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); min-width: 16px; text-align: center; margin: 0; line-height: 1; }
-    .time-unit label { font-size: 0.7rem; font-weight: 600; color: #6b7280; margin: 0; line-height: 1; }
+    .time-unit .unit { font-size: 0.7rem; font-weight: 600; color: #6b7280; margin: 0; line-height: 1; }
 
     .welcome-actions { display: flex; align-items: center; gap: 1rem; }
     .profile-menu-wrap { position: relative; }
