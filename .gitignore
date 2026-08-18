@@ -1,0 +1,32 @@
+# ── Dependencias ──
+node_modules/
+
+# ── Builds ──
+dist/
+.angular/
+frontend-app/dist/
+
+# ── Firebase ──
+# Cache local de despliegue: se regenera solo en cada `firebase deploy`.
+.firebase/
+firebase-debug.log
+firestore-debug.log
+serviceAccountKey.json
+firebase-admin-key.json
+
+# ── Entorno / secretos ──
+.env
+.env.local
+.env.production
+
+# ── Mocks locales de contenido (ver README_TESTING.md) ──
+*-mock-local.json
+
+# ── Salidas de scripts sueltos ──
+seed_output.txt
+debug.txt
+
+# ── Editores / SO ──
+.idea/
+.DS_Store
+Thumbs.db

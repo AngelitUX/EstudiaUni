@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, HostListener } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadTest } from './services/paes-content.service';
 import { KatexService } from '../../core/services/katex.service';
 
 
@@ -269,6 +269,17 @@ import { KatexService } from '../../core/services/katex.service';
       .stat-box { min-width: 75px; padding: 0.6rem 0.9rem; }
       .bottom-actions { flex-direction: column; }
     }
+
+    /* ── Contencion de desbordamiento horizontal (movil) ──
+       Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
+       ningun contenedor con scroll: en pantallas estrechas empujaban el ancho de
+       toda la pagina y aparecia scroll horizontal. Ahora cada bloque ancho se
+       desplaza dentro de si mismo. */
+    :host { display: block; max-width: 100%; overflow-x: clip; }
+    ::ng-deep .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-bottom: 0.25rem; }
+    ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+    ::ng-deep img, ::ng-deep svg { max-width: 100%; height: auto; }
+    ::ng-deep pre { max-width: 100%; overflow-x: auto; }
   `]
 })
 export class SeccionTestReviewComponent {
@@ -304,6 +315,10 @@ export class SeccionTestReviewComponent {
   }));
 
   constructor() {
+    // Trae el test de esta seccion bajo demanda (1 lectura), en vez de que el
+    // servicio cargue los 502 tests en cada arranque. Ver ensureTestLoaded().
+    autoLoadTest(() => this.seccionId());
+
     this.seccionId.set(this.route.snapshot.paramMap.get('seccionId') || '');
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.getVoices();

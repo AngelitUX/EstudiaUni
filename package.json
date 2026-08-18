@@ -4,19 +4,16 @@
   "private": true,
   "description": "EstudiaUni.cl - Plataforma de preparación PAES",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend-app && npm install && cd ../frontend-landing && npm install && cd ..",
+    "install:all": "cd backend && npm install && cd ../frontend-app && npm install && cd ..",
     "build:app": "cd frontend-app && npm run build && cd ..",
-    "build:landing": "cd frontend-landing && npm run generate && cd ..",
     "build:backend": "cd backend && npm run build && cd ..",
-    "build:all": "npm run build:backend && npm run build:app && npm run build:landing",
+    "build:all": "npm run build:backend && npm run build:app",
     "deploy:app": "npm run build:app && firebase deploy --only hosting:app",
-    "deploy:landing": "npm run build:landing && firebase deploy --only hosting:landing",
-    "deploy:hosting": "npm run build:app && npm run build:landing && firebase deploy --only hosting",
+    "deploy:hosting": "npm run build:app && firebase deploy --only hosting",
     "deploy:firestore": "firebase deploy --only firestore",
     "deploy:all": "npm run build:all && firebase deploy",
     "dev:backend": "cd backend && npm run start:dev",
     "dev:app": "cd frontend-app && npm start",
-    "dev:landing": "cd frontend-landing && npm run dev",
     "seed": "cd backend && npm run seed && cd .."
   },
   "devDependencies": {},
@@ -32,11 +29,18 @@
       "✅ Loading states: Botones deshabilitados durante requests",
       "Ver comentarios en archivos: admin.guard.ts, toast.service.ts, simulation-runner.component.ts"
     ],
+    "estado": [
+      "EN DESARROLLO: la app todavia NO esta hosteada ni en produccion.",
+      "El landing dejo de ser un proyecto aparte (frontend-landing/): ahora vive dentro",
+      "de la app Angular como features/auth/home.component.ts, servido en la ruta '/'.",
+      "Por eso se eliminaron los scripts build:landing / deploy:landing / dev:landing."
+    ],
     "deploy": [
-      "Windows: deploy.bat [app|landing|all]",
-      "Linux/Mac: ./deploy.sh [app|landing|all]",
-      "NPM: npm run deploy:hosting (app+landing) o deploy:all (todo)",
-      "Ver DEPLOY.md para más info"
+      "npm run deploy:app       -> build de la app + firebase deploy --only hosting:app",
+      "npm run deploy:firestore -> solo reglas e indices de Firestore",
+      "npm run deploy:all       -> build completo + firebase deploy",
+      "ANTES del primer deploy: apuntar apiUrl de frontend-app/src/environments/environment.ts",
+      "al backend NestJS desplegado (hoy apunta a http://localhost:3000). Ver CLAUDE.md seccion 11."
     ]
   }
 }

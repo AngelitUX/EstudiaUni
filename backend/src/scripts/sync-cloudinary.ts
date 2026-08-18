@@ -1,13 +1,10 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { configureCloudinary } from './cloudinary.config';
 import * as admin from 'firebase-admin';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dqm3syhwr',
-  api_key: process.env.CLOUDINARY_API_KEY || '469121327526224',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'VuuszgyIVRd-sTA0u-pVsE-9u-0',
-});
+configureCloudinary();
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');

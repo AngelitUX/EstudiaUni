@@ -2,10 +2,19 @@ const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const path = require('path');
 
-cloudinary.config({ 
-  cloud_name: 'dqm3syhwr', 
-  api_key: '469121327526224', 
-  api_secret: 'VuuszgyIVRd-sTA0u-pVsE-9u-0' 
+require('dotenv').config();
+
+// Credenciales desde backend/.env — antes estaban hardcodeadas aqui y el
+// secreto quedo expuesto en el historial de git. Rotar en Cloudinary.
+const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  throw new Error('[Cloudinary] Faltan CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET en backend/.env');
+}
+
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET
 });
 
 const uploadImages = async () => {
