@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaesContentService } from './services/paes-content.service';
+import { enforceLearningAccess } from './services/learning-access.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
 import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, CAP1_SUMMARY_SLIDES, CAP2_SUMMARY_SLIDES, CAP3_SUMMARY_SLIDES, HIST_CAP1_SUMMARY_SLIDES, HIST_CAP2_SUMMARY_SLIDES, HIST_CAP3_SUMMARY_SLIDES, HIST_CAP4_SUMMARY_SLIDES, HIST_CAP5_SUMMARY_SLIDES } from './guide-slides-data';
@@ -140,6 +141,17 @@ import { LOCALIZAR_SLIDES, SLIDE5_QUIZ, SLIDE_QUIZ2, CAP1_SUMMARY_SLIDES, CAP2_S
       .theory-card { padding: 1.5rem; }
       .theory-card-content { grid-template-columns: 1fr; }
     }
+
+    /* ── Contencion de desbordamiento horizontal (movil) ──
+       Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
+       ningun contenedor con scroll: en pantallas estrechas empujaban el ancho de
+       toda la pagina y aparecia scroll horizontal. Ahora cada bloque ancho se
+       desplaza dentro de si mismo. */
+    :host { display: block; max-width: 100%; overflow-x: clip; }
+    ::ng-deep .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-bottom: 0.25rem; }
+    ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+    ::ng-deep img, ::ng-deep svg { max-width: 100%; height: auto; }
+    ::ng-deep pre { max-width: 100%; overflow-x: auto; }
   `]
 })
 export class CapituloDetailComponent {
@@ -163,6 +175,10 @@ export class CapituloDetailComponent {
   capitulo = computed(() => this.paes.getCapitulosByMateria(this.materiaId()).find(c => c.id === this.capituloId()));
 
   constructor() {
+    // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
+    // Reactivo porque el contenido carga async (ver enforceLearningAccess).
+    enforceLearningAccess({ materiaId: () => this.materiaId(), capituloId: () => this.capituloId() });
+
     this.route.paramMap.subscribe(params => {
       this.materiaId.set(params.get('materiaId') || '');
       this.capituloId.set(params.get('capituloId') || '');

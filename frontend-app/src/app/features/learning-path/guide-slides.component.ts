@@ -247,6 +247,17 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       :host ::ng-deep .slide-image-wrap { float: none; width: 100%; margin: 1.5rem 0; display: flex; justify-content: center; }
       :host ::ng-deep .slide-image { max-width: 85%; }
     }
+
+    /* ── Contencion de desbordamiento horizontal (movil) ──
+       Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
+       ningun contenedor con scroll: en pantallas estrechas empujaban el ancho de
+       toda la pagina y aparecia scroll horizontal. Ahora cada bloque ancho se
+       desplaza dentro de si mismo. */
+    :host { display: block; max-width: 100%; overflow-x: clip; }
+    ::ng-deep .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-bottom: 0.25rem; }
+    ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+    ::ng-deep img, ::ng-deep svg { max-width: 100%; height: auto; }
+    ::ng-deep pre { max-width: 100%; overflow-x: auto; }
   `]
 })
 export class GuideSlidesComponent implements OnChanges {

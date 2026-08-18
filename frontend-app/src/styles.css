@@ -1264,6 +1264,19 @@ body .logout-confirm-modal .btn-danger {
   .main-content {
     margin-left: 0 !important;
     max-width: 100% !important;
+    /* Reserva para .mobile-header, que es position:fixed y mide 60px.
+       Sin esto, los primeros 60px del contenido quedan DEBAJO de la barra:
+       en la Ruta el subtítulo "Elige una materia..." salía cortado y los
+       botones de la cabecera quedaban medio tapados.
+
+       Va aquí, y con !important, porque la regla `.main-content { padding: 0
+       !important }` de más arriba (sección STANDARD DASHBOARD HEADER) anula
+       cualquier padding declarado antes.
+
+       Dashboard y Mente Veloz ya compensaban estos 60px en sus propios
+       estilos de componente; la Ruta, sus materias y Ensayos no. Repetir el
+       mismo valor no acumula padding. */
+    padding-top: 60px !important;
   }
 }
 .dashboard-header {
@@ -1433,6 +1446,10 @@ body .logout-confirm-modal .btn-danger {
 .dashboard-body {
   flex: 1;
   background: var(--bg-color);
+  /* El padding lateral se reduce en pantallas estrechas (ver más abajo).
+     Con los 2.5rem fijos, en un móvil de 320px se comían 80px = 25% del ancho,
+     y como este contenedor lleva overflow:hidden el contenido sobrante no
+     desbordaba: se RECORTABA, quedando inaccesible. */
   padding: 1.5rem 2.5rem 2.5rem;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -1507,4 +1524,42 @@ div.driver-popover .driver-popover-arrow {
 .driver-active-element {
   border-radius: 12px !important;
   box-shadow: 0 0 0 4px rgba(133, 92, 214, 0.6) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Padding lateral responsive del cuerpo de página.
+   Añadido tras medir que .dashboard-body mantenía 2.5rem (40px) por lado en
+   TODOS los anchos: a 320px dejaba solo 240px útiles, lo que recortaba nodos
+   y títulos de la Ruta de Aprendizaje.
+   Afecta a las 15 vistas que usan .dashboard-body (dashboard, ensayos,
+   mente veloz, mini ensayos, herramientas y las 6 rutas).
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard-body { padding: 1.25rem 1.25rem 2rem; }
+}
+@media (max-width: 480px) {
+  .dashboard-body { padding: 1rem 0.75rem 1.75rem; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX: la sidebar de escritorio tapaba el contenido en pantallas ≤1024px.
+
+   Había dos reglas en conflicto:
+     · línea ~499  @media (max-width:1024px) { aside.sidebar, .sidebar { display:none !important } }
+     · línea ~863  body .sidebar { display:flex !important; position:fixed !important; ... }
+
+   `aside.sidebar` y `body .sidebar` tienen la MISMA especificidad (0,1,1) y las
+   dos llevan !important, así que ganaba la segunda por ir después. Resultado:
+   en móvil y tablet se mostraban a la vez la sidebar fija de 260px y el
+   .mobile-header, mientras .main-content conservaba margin-left:0 — la sidebar
+   se comía 260px de 375 (69% de la pantalla) tapando la ruta.
+
+   Se resuelve con mayor especificidad (0,1,2) y posición final en el archivo.
+   El menú móvil es .mobile-menu, un elemento distinto, así que no se ve afectado.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  body aside.sidebar,
+  body .sidebar {
+    display: none !important;
+  }
 }

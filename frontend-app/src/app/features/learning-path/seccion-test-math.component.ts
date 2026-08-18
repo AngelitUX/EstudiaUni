@@ -2,7 +2,8 @@ import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener, P
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadTest } from './services/paes-content.service';
+import { enforceLearningAccess } from './services/learning-access.service';
 import { MathKatexService } from '../../core/services/math-katex.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -535,6 +536,17 @@ import { ToastService } from '../../core/services/toast.service';
       .dot-indicators { gap: 4px; }
       .dot { width: 8px; height: 8px; }
     }
+
+    /* ── Contencion de desbordamiento horizontal (movil) ──
+       Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
+       ningun contenedor con scroll: en pantallas estrechas empujaban el ancho de
+       toda la pagina y aparecia scroll horizontal. Ahora cada bloque ancho se
+       desplaza dentro de si mismo. */
+    :host { display: block; max-width: 100%; overflow-x: clip; }
+    ::ng-deep .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-bottom: 0.25rem; }
+    ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+    ::ng-deep img, ::ng-deep svg { max-width: 100%; height: auto; }
+    ::ng-deep pre { max-width: 100%; overflow-x: auto; }
   `]
 })
 export class SeccionTestMathComponent implements OnInit, OnDestroy {
@@ -556,6 +568,18 @@ export class SeccionTestMathComponent implements OnInit, OnDestroy {
   seccionId = signal('');
   seccion = computed(() => this.paes.getSeccionById(this.seccionId()));
   test = computed(() => this.paes.getTestBySeccionId(this.seccionId()));
+
+  // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
+  // Este componente no tiene constructor, asi que el guard se instala como
+  // inicializador de campo (tambien es contexto de inyeccion). Va despues de
+  // `seccionId` para que la señal ya exista cuando el effect la lea.
+  private readonly _accessGuard = enforceLearningAccess({
+    seccionId: () => this.seccionId(),
+  });
+
+  // Trae el test de esta seccion bajo demanda (1 lectura), en vez de que el
+  // servicio cargue los 502 tests en cada arranque. Ver ensureTestLoaded().
+  private readonly _testLoader = autoLoadTest(() => this.seccionId());
   shuffledPreguntas = signal<any[]>([]);
 
   answers = signal(new Map<number, 'A' | 'B' | 'C' | 'D'>());
