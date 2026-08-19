@@ -461,9 +461,11 @@ export class InfiniteMasteryService {
     progress.totalCorrect += correctCount;
 
     if (passed) {
-      progress.bossDefeatedToday = true;
-      progress.level += 1; // Solo sube de nivel si se vence al 100%
-      this.toast.success(`👑 ¡HAS DERROTADO AL NÚCLEO MAESTRO! Nivel aumentado a Lv. ${progress.level}`);
+      if (!progress.bossDefeatedToday) {
+        progress.bossDefeatedToday = true;
+        progress.level += 1; // Solo sube de nivel una vez al día
+        this.toast.success(`👑 ¡HAS DERROTADO AL NÚCLEO MAESTRO! Nivel aumentado a Lv. ${progress.level}`);
+      }
     }
 
     progress.history.unshift({

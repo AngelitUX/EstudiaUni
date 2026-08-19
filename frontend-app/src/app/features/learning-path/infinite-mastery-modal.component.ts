@@ -1499,7 +1499,7 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   }
 
   handleBossNodeClick(): void {
-    if (!this.isBossUnlocked) return;
+    if (!this.isBossUnlocked || this.progress.bossDefeatedToday) return;
     this.startBossQuiz();
   }
 
