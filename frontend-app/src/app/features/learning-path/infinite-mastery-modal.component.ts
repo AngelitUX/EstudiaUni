@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { InfiniteMasteryService, MasteryAxis, MasterySubjectConfig, MasteryProgress } from '../../core/services/infinite-mastery.service';
 import { PaesContentService } from './services/paes-content.service';
 import { PoolPregunta } from './models/paes.models';
@@ -50,7 +50,7 @@ interface PolygonVertex {
               <h2 class="mastery-title">Modo Infinito · {{ config.title }}</h2>
               <span class="daily-badge">📅 Ciclo Diario</span>
             </div>
-            <span class="mastery-subtitle">Práctica ilimitada, maestría por ejes temáticos y desafío al Núcleo Maestro</span>
+            <span class="mastery-subtitle">Práctica diaria por ejes temáticos y desafío al Núcleo Maestro (100% de aciertos para dominar)</span>
           </div>
         </div>
         <button *ngIf="!isEmbedded" class="btn-close" (click)="closeModal()" aria-label="Cerrar">&times;</button>
@@ -59,15 +59,11 @@ interface PolygonVertex {
       <!-- ═══ VISTA 1: POLÍGONO DE MAESTRÍA ═══ -->
       <div class="polygon-view" *ngIf="viewState === 'polygon'">
         
-        <!-- TOP STATS & RESET TIMER BAR -->
+        <!-- TOP STATS & RESET TIMER BAR (SIN XP, ENFOCADO EN NIVEL Y EJES) -->
         <div class="stats-ribbon">
           <div class="stat-pill">
             <span class="stat-icon">🏆</span>
             <span>Nivel de Maestría <strong>Lv. {{ progress.level }}</strong></span>
-          </div>
-          <div class="stat-pill">
-            <span class="stat-icon">✨</span>
-            <span><strong>{{ progress.xp }}</strong> XP</span>
           </div>
           <div class="stat-pill">
             <span class="stat-icon">🎯</span>
@@ -90,12 +86,6 @@ interface PolygonVertex {
                   <stop offset="65%" [attr.stop-color]="isBossUnlocked ? '#fbbf24' : (config.themeColor || '#1e3a8a')" stop-opacity="0.05"/>
                   <stop offset="100%" [attr.stop-color]="config.themeColor || '#1e3a8a'" stop-opacity="0"/>
                 </radialGradient>
-
-                <!-- Glow Filter for Active Elements -->
-                <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
               </defs>
 
               <!-- Central Core Glow Backdrop -->
@@ -169,9 +159,9 @@ interface PolygonVertex {
 
         <!-- BOTTOM INSTRUCTIONS / HELPER -->
         <div class="polygon-footer">
-          <p *ngIf="!isBossUnlocked">💡 Completa los <strong>{{ config.axes.length }} ejes temáticos</strong> de hoy para desbloquear el <strong>Núcleo Maestro (Jefe Multi-Eje)</strong>.</p>
-          <p *ngIf="isBossUnlocked && !progress.bossDefeatedToday" class="boss-alert-text">🔥 <strong>¡Todos los ejes conquistados!</strong> Haz clic en el Núcleo Central para enfrentarte al Jefe y subir tu Nivel de Maestría.</p>
-          <p *ngIf="progress.bossDefeatedToday" class="boss-victory-text">✨ <strong>¡Gran trabajo!</strong> Has derrotado al Núcleo Maestro de hoy. El ciclo se renovará a la medianoche.</p>
+          <p *ngIf="!isBossUnlocked">💡 Completa los <strong>{{ config.axes.length }} ejes temáticos</strong> con <strong>100% de aciertos</strong> para desbloquear el <strong>Núcleo Maestro (Jefe)</strong>.</p>
+          <p *ngIf="isBossUnlocked && !progress.bossDefeatedToday" class="boss-alert-text">🔥 <strong>¡Todos los ejes conquistados!</strong> Haz clic en el Núcleo Central para enfrentarte al Jefe, lograr el 100% y subir tu Nivel de Maestría.</p>
+          <p *ngIf="progress.bossDefeatedToday" class="boss-victory-text">✨ <strong>¡Gran trabajo!</strong> Has derrotado al Núcleo Maestro de hoy y subiste de nivel. El ciclo se renovará a la medianoche.</p>
         </div>
       </div>
 
@@ -195,26 +185,24 @@ interface PolygonVertex {
         <!-- PROGRESS BAR -->
         <div class="quiz-progress-track">
           <div class="quiz-progress-fill" 
-               [style.width.%]="((currentQuestionIndex + 1) / activeQuizQuestions.length) * 100" 
+               [style.width.%]="(currentQuestionIndex / activeQuizQuestions.length) * 100" 
                [style.background]="isBossQuiz ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : (selectedAxis?.color || config.themeColor)"></div>
         </div>
 
         <!-- QUESTION CONTENT -->
         <div class="quiz-content" *ngIf="currentQuestion">
           
-          <div class="preamble-box" *ngIf="currentQuestion.preambulo_texto">
-            <p>{{ currentQuestion.preambulo_texto }}</p>
-          </div>
+          <div class="preamble-box" *ngIf="currentQuestion.preambulo_texto" [innerHTML]="parseMixed(currentQuestion.preambulo_texto)"></div>
 
           <div class="question-image-box" *ngIf="currentQuestion.preambulo_imagen_url">
             <img [src]="currentQuestion.preambulo_imagen_url" alt="Contexto de la pregunta" class="q-image"/>
           </div>
 
-          <p class="question-enunciado">{{ currentQuestion.enunciado }}</p>
+          <p class="question-enunciado" [innerHTML]="parseMixed(currentQuestion.enunciado)"></p>
 
           <div class="formula-box" *ngIf="currentQuestion.formula_latex" [innerHTML]="renderLatex(currentQuestion.formula_latex)"></div>
 
-          <!-- ALTERNATIVAS -->
+          <!-- ALTERNATIVAS CON SOPORTE KATEX MIXTO -->
           <div class="options-grid">
             <button *ngFor="let key of optionKeys"
                     class="option-btn"
@@ -224,18 +212,22 @@ interface PolygonVertex {
                     [disabled]="hasAnswered"
                     (click)="selectOption(key)">
               <span class="option-key">{{ key }}</span>
-              <span class="option-text">{{ getOptionText(currentQuestion, key) }}</span>
+              <span class="option-text" [innerHTML]="parseMixed(getOptionText(currentQuestion, key))"></span>
               <span class="option-check-icon" *ngIf="hasAnswered && key === currentQuestion.respuesta_correcta">✓</span>
               <span class="option-check-icon" *ngIf="hasAnswered && selectedAnswer === key && key !== currentQuestion.respuesta_correcta">✗</span>
             </button>
           </div>
 
-          <!-- EXPLICACIÓN / FEEDBACK -->
+          <!-- EXPLICACIÓN / FEEDBACK PASO A PASO CON KATEX -->
           <div class="feedback-card" *ngIf="hasAnswered">
             <div class="feedback-status" [class.is-correct]="selectedAnswer === currentQuestion.respuesta_correcta">
-              {{ selectedAnswer === currentQuestion.respuesta_correcta ? '¡Respuesta Correcta! 🌟' : 'Respuesta Incorrecta' }}
+              <span class="status-badge-icon">{{ selectedAnswer === currentQuestion.respuesta_correcta ? '✓' : '✗' }}</span>
+              <span>{{ selectedAnswer === currentQuestion.respuesta_correcta ? '¡Respuesta Correcta! 🌟' : 'Respuesta Incorrecta' }}</span>
+              <span class="correct-answer-pill" *ngIf="selectedAnswer !== currentQuestion.respuesta_correcta">
+                Respuesta correcta: <strong>Opción {{ currentQuestion.respuesta_correcta }}</strong>
+              </span>
             </div>
-            <p class="feedback-explanation">{{ getExplanation(currentQuestion) }}</p>
+            <div class="feedback-explanation-body" [innerHTML]="renderExplanation(currentQuestion)"></div>
           </div>
 
         </div>
@@ -266,41 +258,48 @@ interface PolygonVertex {
 
       <!-- ═══ VISTA 3: RESUMEN DE RESULTADOS ═══ -->
       <div class="summary-view" *ngIf="viewState === 'summary'">
-        <div class="summary-card">
+        <div class="summary-card" [class.summary-passed]="lastQuizResult?.passed" [class.summary-failed]="!lastQuizResult?.passed">
           
-          <div class="summary-badge-wrap" [class.boss-victory-badge]="isBossQuiz">
-            <span class="summary-emoji" *ngIf="!isBossQuiz">{{ quizCorrectCount >= (activeQuizQuestions.length * 0.6) ? '🎉' : '💪' }}</span>
-            <span class="summary-emoji" *ngIf="isBossQuiz">👑</span>
+          <div class="summary-badge-wrap" [class.boss-victory-badge]="isBossQuiz && lastQuizResult?.passed" [class.failed-badge]="!lastQuizResult?.passed">
+            <span class="summary-emoji" *ngIf="lastQuizResult?.passed && !isBossQuiz">🎉</span>
+            <span class="summary-emoji" *ngIf="lastQuizResult?.passed && isBossQuiz">👑</span>
+            <span class="summary-emoji" *ngIf="!lastQuizResult?.passed">❌</span>
           </div>
 
-          <h3 class="summary-title" *ngIf="!isBossQuiz">
-            {{ quizCorrectCount >= (activeQuizQuestions.length * 0.6) ? '¡Eje Temático Dominado!' : '¡Buen Intento!' }}
-          </h3>
-          <h3 class="summary-title boss-title-victory" *ngIf="isBossQuiz">
-            ¡NÚCLEO MAESTRO DERROTADO!
-          </h3>
+          <!-- TITULOS PASSED VS FAILED -->
+          <ng-container *ngIf="lastQuizResult?.passed">
+            <h3 class="summary-title" *ngIf="!isBossQuiz">¡Eje Temático Dominado!</h3>
+            <h3 class="summary-title boss-title-victory" *ngIf="isBossQuiz">¡NÚCLEO MAESTRO DERROTADO!</h3>
+            <p class="summary-subtitle" *ngIf="!isBossQuiz">¡Perfección total (100% de aciertos)! Has dominado el eje <strong>{{ selectedAxis?.name }}</strong> de hoy.</p>
+            <p class="summary-subtitle" *ngIf="isBossQuiz">¡Felicitaciones! Has completado el reto global del día sin errores y has subido de Nivel de Maestría.</p>
+          </ng-container>
 
-          <p class="summary-subtitle" *ngIf="!isBossQuiz">Has completado el entrenamiento de <strong>{{ selectedAxis?.name }}</strong>.</p>
-          <p class="summary-subtitle" *ngIf="isBossQuiz">Has conquistado el reto multidisciplinario diario de <strong>{{ config.title }}</strong>.</p>
+          <ng-container *ngIf="!lastQuizResult?.passed">
+            <h3 class="summary-title failed-title">Desafío No Superado</h3>
+            <p class="summary-subtitle failed-subtitle">Para dominar este eje hoy debes responder <strong>todas las preguntas correctamente (100% de aciertos)</strong>. ¡Vuelve a intentarlo!</p>
+          </ng-container>
 
           <div class="summary-stats-grid">
             <div class="summary-stat-box">
-              <span class="stat-num">{{ quizCorrectCount }} / {{ activeQuizQuestions.length }}</span>
-              <span class="stat-label">Aciertos</span>
-            </div>
-            <div class="summary-stat-box">
-              <span class="stat-num">+{{ lastQuizResult?.xpEarned || 0 }}</span>
-              <span class="stat-label">XP Ganada</span>
+              <span class="stat-num" [class.text-green]="lastQuizResult?.passed" [class.text-red]="!lastQuizResult?.passed">
+                {{ quizCorrectCount }} / {{ activeQuizQuestions.length }}
+              </span>
+              <span class="stat-label">Aciertos ({{ Math.round((quizCorrectCount / activeQuizQuestions.length) * 100) }}%)</span>
             </div>
             <div class="summary-stat-box" *ngIf="lastQuizResult?.leveledUp">
               <span class="stat-num text-gradient">Lv. {{ lastQuizResult?.newLevel }}</span>
-              <span class="stat-label">¡Nuevo Nivel!</span>
+              <span class="stat-label">¡Nuevo Nivel de Maestría!</span>
             </div>
           </div>
 
-          <button class="btn-continue-polygon" (click)="returnToPolygon()">
-            Volver al Polígono de Maestría →
-          </button>
+          <div class="summary-actions-wrap">
+            <button *ngIf="!lastQuizResult?.passed" class="btn-retry-quiz" (click)="retryCurrentQuiz()">
+              🔁 Reintentar Desafío Diario
+            </button>
+            <button class="btn-continue-polygon" (click)="returnToPolygon()">
+              {{ lastQuizResult?.passed ? 'Volver al Polígono de Maestría →' : 'Salir al Polígono' }}
+            </button>
+          </div>
         </div>
       </div>
     </ng-template>
@@ -1041,30 +1040,66 @@ interface PolygonVertex {
       font-size: 1.15rem;
     }
 
+    /* ENHANCED FEEDBACK CARD WITH DETAILED RESOLUTION */
     .feedback-card {
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 1rem 1.25rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
       animation: fadeIn 0.3s ease;
     }
 
     .feedback-status {
       font-weight: 900;
-      font-size: 0.95rem;
-      color: #ef4444;
-      margin-bottom: 0.35rem;
+      font-size: 1.05rem;
+      color: #dc2626;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .feedback-status.is-correct {
-      color: #10b981;
+      color: #059669;
     }
 
-    .feedback-explanation {
-      font-size: 0.88rem;
-      color: #475569;
-      line-height: 1.55;
-      margin: 0;
+    .status-badge-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #fee2e2;
+      color: #dc2626;
+      font-size: 0.85rem;
+    }
+
+    .feedback-status.is-correct .status-badge-icon {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .correct-answer-pill {
+      font-size: 0.82rem;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      padding: 0.2rem 0.6rem;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    .feedback-explanation-body {
+      font-size: 0.92rem;
+      color: #334155;
+      line-height: 1.65;
+      background: #ffffff;
+      padding: 0.85rem 1.15rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
     }
 
     .quiz-footer {
@@ -1114,17 +1149,17 @@ interface PolygonVertex {
     }
 
     .summary-card {
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
       background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 20px;
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      border-radius: 24px;
       padding: 2.25rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06);
     }
 
     .summary-badge-wrap {
@@ -1137,6 +1172,16 @@ interface PolygonVertex {
       align-items: center;
       justify-content: center;
       margin-bottom: 1rem;
+    }
+
+    .summary-card.summary-passed .summary-badge-wrap {
+      background: #d1fae5;
+      border-color: #10b981;
+    }
+
+    .failed-badge {
+      background: #fee2e2 !important;
+      border-color: #ef4444 !important;
     }
 
     .boss-victory-badge {
@@ -1156,6 +1201,10 @@ interface PolygonVertex {
       margin: 0 0 0.5rem 0;
     }
 
+    .failed-title {
+      color: #dc2626 !important;
+    }
+
     .boss-title-victory {
       background: linear-gradient(135deg, #d97706, #dc2626, #7c3aed);
       -webkit-background-clip: text;
@@ -1163,9 +1212,14 @@ interface PolygonVertex {
     }
 
     .summary-subtitle {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: #64748b;
       margin: 0 0 1.5rem 0;
+      line-height: 1.5;
+    }
+
+    .failed-subtitle {
+      color: #475569;
     }
 
     .summary-stats-grid {
@@ -1187,9 +1241,17 @@ interface PolygonVertex {
     }
 
     .stat-num {
-      font-size: 1.5rem;
+      font-size: 1.45rem;
       font-weight: 900;
       color: var(--subject-theme, #1e3a8a);
+    }
+
+    .text-green {
+      color: #059669 !important;
+    }
+
+    .text-red {
+      color: #dc2626 !important;
     }
 
     .text-gradient {
@@ -1205,10 +1267,36 @@ interface PolygonVertex {
       margin-top: 0.2rem;
     }
 
+    .summary-actions-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .btn-retry-quiz {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: #ffffff;
+      padding: 0.85rem 1.5rem;
+      border-radius: 14px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-retry-quiz:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(225, 29, 72, 0.45);
+      filter: brightness(1.08);
+    }
+
     .btn-continue-polygon {
       background: var(--subject-theme, #1e3a8a);
       color: #ffffff;
-      padding: 0.85rem 2rem;
+      padding: 0.85rem 1.5rem;
       border-radius: 14px;
       border: none;
       font-size: 0.95rem;
@@ -1270,9 +1358,12 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @Output() backToPath = new EventEmitter<void>();
 
+  Math = Math;
+
   private masteryService = inject(InfiniteMasteryService);
   private paesContent = inject(PaesContentService);
   private katexService = inject(KatexService);
+  private sanitizer = inject(DomSanitizer);
 
   config!: MasterySubjectConfig;
   progress!: MasteryProgress;
@@ -1294,7 +1385,7 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   hasAnswered: boolean = false;
   quizCorrectCount: number = 0;
 
-  lastQuizResult: { leveledUp: boolean; newLevel: number; xpEarned: number } | null = null;
+  lastQuizResult: { passed: boolean; leveledUp: boolean; newLevel: number } | null = null;
 
   get currentQuestion(): PoolPregunta | null {
     return this.activeQuizQuestions[this.currentQuestionIndex] || null;
@@ -1317,10 +1408,10 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   }
 
   async loadMasteryData(): Promise<void> {
+    await this.paesContent.ensurePoolPreguntasLoaded();
     this.config = this.masteryService.getSubjectConfig(this.materiaId);
     this.progress = this.masteryService.getProgress(this.materiaId);
     this.computePolygon();
-    await this.paesContent.ensurePoolPreguntasLoaded();
   }
 
   private startCountdownTimer(): void {
@@ -1358,7 +1449,6 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
       const y = cy + radius * Math.sin(angle);
       points.push(`${Math.round(x)},${Math.round(y)}`);
 
-      // Determine label positioning direction relative to circle
       const labelPositionClass = this.getLabelPositionClass(angle);
 
       return {
@@ -1378,7 +1468,7 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   private getLabelPositionClass(angle: number): string {
     let a = angle;
     while (a > Math.PI) a -= 2 * Math.PI;
-    while (a < -Math.PI) a += 2 * Math.PI;
+    while (a < -Math.PI) a -= 2 * Math.PI;
 
     const sin = Math.sin(a);
     const cos = Math.cos(a);
@@ -1397,7 +1487,7 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   startAxisQuiz(axis: MasteryAxis): void {
     this.selectedAxis = axis;
     this.isBossQuiz = false;
-    this.activeQuizQuestions = this.masteryService.generateAxisQuiz(this.materiaId, axis.id, 5);
+    this.activeQuizQuestions = this.masteryService.getDailyAxisQuiz(this.materiaId, axis.id, 5);
     
     if (this.activeQuizQuestions.length === 0) return;
 
@@ -1416,10 +1506,18 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   startBossQuiz(): void {
     this.selectedAxis = null;
     this.isBossQuiz = true;
-    this.activeQuizQuestions = this.masteryService.generateBossQuiz(this.materiaId, 8);
+    this.activeQuizQuestions = this.masteryService.getDailyBossQuiz(this.materiaId, 8);
 
     if (this.activeQuizQuestions.length === 0) return;
 
+    this.currentQuestionIndex = 0;
+    this.selectedAnswer = null;
+    this.hasAnswered = false;
+    this.quizCorrectCount = 0;
+    this.viewState = 'quiz';
+  }
+
+  retryCurrentQuiz(): void {
     this.currentQuestionIndex = 0;
     this.selectedAnswer = null;
     this.hasAnswered = false;
@@ -1489,17 +1587,48 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
     return this.katexService.render(latex);
   }
 
-  getOptionText(q: PoolPregunta | null, key: 'A' | 'B' | 'C' | 'D'): string {
-    if (!q || !q.alternativas) return '';
-    return q.alternativas[key] || '';
+  parseMixed(text: string | null | undefined): SafeHtml {
+    if (!text) return '';
+    const renderedSafe = this.katexService.renderMixedText(text);
+    const rendered = (renderedSafe as any)?.changingThisBreaksApplicationSecurity || String(renderedSafe);
+    const bolded = rendered.replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>');
+    const withBreaks = bolded.replace(/&lt;br&gt;/g, '<br>');
+    const unescapedHtml = withBreaks
+      .replace(/&lt;div(.*?)&gt;/g, '<div$1>')
+      .replace(/&lt;\/div&gt;/g, '</div>')
+      .replace(/&lt;svg(.*?)&gt;/g, '<svg$1>')
+      .replace(/&lt;\/svg&gt;/g, '</svg>')
+      .replace(/&lt;line(.*?)&gt;/g, '<line$1>')
+      .replace(/&lt;\/line&gt;/g, '</line>')
+      .replace(/&lt;circle(.*?)&gt;/g, '<circle$1>')
+      .replace(/&lt;\/circle&gt;/g, '</circle>')
+      .replace(/&lt;text(.*?)&gt;/g, '<text$1>')
+      .replace(/&lt;\/text&gt;/g, '</text>')
+      .replace(/&lt;path(.*?)&gt;/g, '<path$1>')
+      .replace(/&lt;\/path&gt;/g, '</path>')
+      .replace(/&lt;polygon(.*?)&gt;/g, '<polygon$1>')
+      .replace(/&lt;\/polygon&gt;/g, '</polygon>')
+      .replace(/&lt;rect(.*?)&gt;/g, '<rect$1>')
+      .replace(/&lt;\/rect&gt;/g, '</rect>');
+    return this.sanitizer.bypassSecurityTrustHtml(unescapedHtml);
   }
 
-  getExplanation(q: PoolPregunta | null): string {
+  renderExplanation(q: PoolPregunta | null): SafeHtml {
     if (!q) return '';
-    if (this.selectedAnswer === q.respuesta_correcta) {
-      return q.feedback_acierto || '¡Excelente razonamiento!';
+    const isCorrect = this.selectedAnswer === q.respuesta_correcta;
+    const rawText = isCorrect
+      ? (q.feedback_acierto || (q as any).explicacion || (q as any).resolucion || '¡Excelente razonamiento! Has seleccionado la alternativa correcta.')
+      : (q.feedback_error || (q as any).explicacion || (q as any).resolucion || 'Revisa con calma el procedimiento paso a paso para resolver este problema.');
+    return this.parseMixed(rawText);
+  }
+
+  getOptionText(q: PoolPregunta | null, key: 'A' | 'B' | 'C' | 'D'): string {
+    if (!q || !q.alternativas) return '';
+    if (Array.isArray(q.alternativas)) {
+      const idx = key === 'A' ? 0 : key === 'B' ? 1 : key === 'C' ? 2 : 3;
+      return q.alternativas[idx] || '';
     }
-    return q.feedback_error || 'Revisa los conceptos clave para reforzar este tema.';
+    return (q.alternativas as any)[key] || '';
   }
 
   onBackToPath(): void {
