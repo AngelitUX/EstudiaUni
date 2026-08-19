@@ -11,6 +11,9 @@ interface PolygonVertex {
   axis: MasteryAxis;
   x: number;
   y: number;
+  xPercent: number;
+  yPercent: number;
+  labelPositionClass: string;
   completed: boolean;
 }
 
@@ -77,71 +80,91 @@ interface PolygonVertex {
         </div>
 
         <!-- DYNAMIC SVG POLYGON CONTAINER -->
-        <div class="polygon-container">
-          <svg class="polygon-svg" viewBox="0 0 540 460">
-            <defs>
-              <!-- Central Core Glow Gradient -->
-              <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" [attr.stop-color]="isBossUnlocked ? '#f59e0b' : (config.themeColor || '#1e3a8a')" [attr.stop-opacity]="isBossUnlocked ? '0.35' : '0.15'"/>
-                <stop offset="60%" [attr.stop-color]="isBossUnlocked ? '#fbbf24' : (config.themeColor || '#1e3a8a')" stop-opacity="0.08"/>
-                <stop offset="100%" [attr.stop-color]="config.themeColor || '#1e3a8a'" stop-opacity="0"/>
-              </radialGradient>
-            </defs>
+        <div class="polygon-wrapper">
+          <div class="polygon-container">
+            <svg class="polygon-svg" viewBox="0 0 600 520" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <!-- Central Core Glow Gradient -->
+                <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" [attr.stop-color]="isBossUnlocked ? '#f59e0b' : (config.themeColor || '#1e3a8a')" [attr.stop-opacity]="isBossUnlocked ? '0.35' : '0.12'"/>
+                  <stop offset="65%" [attr.stop-color]="isBossUnlocked ? '#fbbf24' : (config.themeColor || '#1e3a8a')" stop-opacity="0.05"/>
+                  <stop offset="100%" [attr.stop-color]="config.themeColor || '#1e3a8a'" stop-opacity="0"/>
+                </radialGradient>
 
-            <!-- Background Core Glow Area -->
-            <circle cx="270" cy="230" r="95" fill="url(#coreGlow)" [class.pulsing-core]="isBossUnlocked"/>
+                <!-- Glow Filter for Active Elements -->
+                <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
 
-            <!-- Outer Polygon Connecting Lines -->
-            <polygon [attr.points]="polygonPointsString"
-                     class="polygon-outer-ring"
-                     [attr.stroke]="config.themeColor || '#1e3a8a'"/>
+              <!-- Central Core Glow Backdrop -->
+              <circle cx="300" cy="245" r="110" fill="url(#coreGlow)" [class.pulsing-core]="isBossUnlocked"/>
 
-            <!-- Inner Spoke Lines from Center to Vertices -->
-            <line *ngFor="let v of vertices"
-                  x1="270" y1="230"
-                  [attr.x2]="v.x" [attr.y2]="v.y"
-                  class="polygon-spoke"
-                  [class.spoke-active]="v.completed"
-                  [attr.stroke]="v.completed ? '#10b981' : '#cbd5e1'"/>
-          </svg>
+              <!-- Outer Base Polygon Track (soft pipe underlay) -->
+              <polygon [attr.points]="polygonPointsString"
+                       class="polygon-outer-track"/>
 
-          <!-- INTERACTIVE VERTEX NODES (HTML OVERLAY) -->
-          <div *ngFor="let v of vertices; let i = index"
-               class="vertex-node-wrapper"
-               [style.left.px]="v.x"
-               [style.top.px]="v.y"
-               [class.completed]="v.completed"
-               (click)="startAxisQuiz(v.axis)">
-            <div class="vertex-bubble" [style.--axis-color]="v.axis.color">
-              <span class="vertex-icon">{{ v.axis.icon }}</span>
-              <span class="completed-badge" *ngIf="v.completed">✓</span>
+              <!-- Outer Active Polygon Ring (crisp thematic line) -->
+              <polygon [attr.points]="polygonPointsString"
+                       class="polygon-outer-ring"
+                       [attr.stroke]="config.themeColor || '#1e3a8a'"/>
+
+              <!-- Radial Spoke Lines from Center (300, 245) to Vertices -->
+              <g *ngFor="let v of vertices">
+                <!-- Base Spoke Track -->
+                <line x1="300" y1="245"
+                      [attr.x2]="v.x" [attr.y2]="v.y"
+                      class="polygon-spoke-track"/>
+                
+                <!-- Active / Completed Energy Spoke -->
+                <line x1="300" y1="245"
+                      [attr.x2]="v.x" [attr.y2]="v.y"
+                      class="polygon-spoke"
+                      [class.spoke-active]="v.completed"
+                      [attr.stroke]="v.completed ? '#10b981' : '#cbd5e1'"/>
+              </g>
+            </svg>
+
+            <!-- INTERACTIVE VERTEX NODES (HTML OVERLAY) -->
+            <div *ngFor="let v of vertices; let i = index"
+                 class="vertex-node-wrapper"
+                 [ngClass]="v.labelPositionClass"
+                 [class.completed]="v.completed"
+                 [style.left.%]="v.xPercent"
+                 [style.top.%]="v.yPercent"
+                 (click)="startAxisQuiz(v.axis)">
+              <div class="vertex-bubble" [style.--axis-color]="v.axis.color">
+                <span class="vertex-icon">{{ v.axis.icon }}</span>
+                <span class="completed-badge" *ngIf="v.completed">✓</span>
+              </div>
+              <div class="vertex-label-card">
+                <span class="vertex-title">{{ v.axis.shortName }}</span>
+                <span class="vertex-status">{{ v.completed ? 'Dominado Hoy' : 'Practicar →' }}</span>
+              </div>
             </div>
-            <div class="vertex-label-card">
-              <span class="vertex-title">{{ v.axis.shortName }}</span>
-              <span class="vertex-status">{{ v.completed ? 'Dominado Hoy' : 'Practicar →' }}</span>
+
+            <!-- CENTRAL BOSS NODE / NÚCLEO MAESTRO INTERACTIVO -->
+            <div class="boss-node-wrapper"
+                 [class.boss-unlocked]="isBossUnlocked && !progress.bossDefeatedToday"
+                 [class.boss-defeated]="progress.bossDefeatedToday"
+                 [class.boss-locked]="!isBossUnlocked"
+                 (click)="handleBossNodeClick()">
+              <div class="boss-bubble">
+                <span class="boss-icon" *ngIf="progress.bossDefeatedToday">👑</span>
+                <span class="boss-icon" *ngIf="isBossUnlocked && !progress.bossDefeatedToday">🔥</span>
+                <span class="boss-icon" *ngIf="!isBossUnlocked">🔒</span>
+                <div class="boss-level-tag">Lv. {{ progress.level }}</div>
+              </div>
+              <div class="boss-label-card">
+                <span class="boss-title">Núcleo Maestro</span>
+                <span class="boss-status" *ngIf="progress.bossDefeatedToday">¡Conquistado Hoy!</span>
+                <span class="boss-status highlight" *ngIf="isBossUnlocked && !progress.bossDefeatedToday">¡Desafiar Jefe! ⚡</span>
+                <span class="boss-status" *ngIf="!isBossUnlocked">Completa los {{ config.axes.length }} ejes</span>
+              </div>
             </div>
+
           </div>
-
-          <!-- CENTRAL BOSS NODE / NÚCLEO MAESTRO INTERACTIVO -->
-          <div class="boss-node-wrapper"
-               [class.boss-unlocked]="isBossUnlocked && !progress.bossDefeatedToday"
-               [class.boss-defeated]="progress.bossDefeatedToday"
-               [class.boss-locked]="!isBossUnlocked"
-               (click)="handleBossNodeClick()">
-            <div class="boss-bubble">
-              <span class="boss-icon" *ngIf="progress.bossDefeatedToday">👑</span>
-              <span class="boss-icon" *ngIf="isBossUnlocked && !progress.bossDefeatedToday">🔥</span>
-              <span class="boss-icon" *ngIf="!isBossUnlocked">🔒</span>
-              <div class="boss-level-tag">Lv. {{ progress.level }}</div>
-            </div>
-            <div class="boss-label-card">
-              <span class="boss-title">Núcleo Maestro</span>
-              <span class="boss-status" *ngIf="progress.bossDefeatedToday">¡Conquistado Hoy!</span>
-              <span class="boss-status highlight" *ngIf="isBossUnlocked && !progress.bossDefeatedToday">¡Desafiar Jefe! ⚡</span>
-              <span class="boss-status" *ngIf="!isBossUnlocked">Completa los {{ config.axes.length }} ejes</span>
-            </div>
-          </div>
-
         </div>
 
         <!-- BOTTOM INSTRUCTIONS / HELPER -->
@@ -291,15 +314,15 @@ interface PolygonVertex {
     /* EMBEDDED CONTAINER (Lienzo integrado en la ruta) */
     .embedded-infinite-container {
       width: 100%;
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 1.5rem 1.25rem 4rem;
+      padding: 1.25rem 1rem 4rem;
       background: transparent;
       color: #0f172a;
       font-family: inherit;
     }
 
-    /* MODAL OVERLAY (Solo si se abre como popup flotante) */
+    /* MODAL OVERLAY (Si se abre como popup) */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -318,7 +341,7 @@ interface PolygonVertex {
 
     .modal-card {
       width: 100%;
-      max-width: 880px;
+      max-width: 920px;
       max-height: 94vh;
       background: #ffffff;
       border: 1px solid rgba(0, 0, 0, 0.1);
@@ -337,10 +360,10 @@ interface PolygonVertex {
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 20px 20px 0 0;
-      backdrop-filter: blur(10px);
-      margin-bottom: 1rem;
+      backdrop-filter: blur(12px);
+      margin-bottom: 1.25rem;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
     }
 
@@ -355,15 +378,15 @@ interface PolygonVertex {
       background: #f1f5f9;
       color: #475569;
       border: 1px solid #cbd5e1;
-      padding: 0.4rem 0.85rem;
-      border-radius: 10px;
+      padding: 0.45rem 0.95rem;
+      border-radius: 12px;
       font-size: 0.82rem;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 0.35rem;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .btn-back-path:hover {
@@ -375,10 +398,10 @@ interface PolygonVertex {
     .materia-icon {
       font-size: 2rem;
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 0.35rem 0.55rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 0.4rem 0.65rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
     }
 
     .title-row {
@@ -398,7 +421,7 @@ interface PolygonVertex {
     .daily-badge {
       font-size: 0.75rem;
       font-weight: 800;
-      padding: 0.2rem 0.6rem;
+      padding: 0.2rem 0.65rem;
       border-radius: 99px;
       background: #e0f2fe;
       border: 1px solid #bae6fd;
@@ -441,17 +464,19 @@ interface PolygonVertex {
       padding: 0.85rem 1.25rem;
       background: #ffffff;
       border: 1px solid rgba(0, 0, 0, 0.07);
-      border-radius: 16px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
       flex-wrap: wrap;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.75rem;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .stat-pill {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 0.4rem 0.85rem;
+      padding: 0.45rem 0.95rem;
       font-size: 0.82rem;
       display: flex;
       align-items: center;
@@ -484,13 +509,21 @@ interface PolygonVertex {
       flex-direction: column;
       align-items: center;
       padding: 0.5rem 0;
+      width: 100%;
+    }
+
+    .polygon-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem 0;
     }
 
     .polygon-container {
       position: relative;
-      width: 540px;
-      height: 460px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 600 / 520;
       user-select: none;
     }
 
@@ -500,23 +533,46 @@ interface PolygonVertex {
       overflow: visible;
     }
 
+    /* SVG TRACKS & LINES */
+    .polygon-outer-track {
+      fill: rgba(248, 250, 252, 0.6);
+      stroke: #e2e8f0;
+      stroke-width: 8px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     .polygon-outer-ring {
-      fill: rgba(0, 0, 0, 0.02);
+      fill: none;
       stroke-width: 3.5px;
-      stroke-dasharray: 6 6;
-      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
+    }
+
+    .polygon-spoke-track {
+      stroke: #e2e8f0;
+      stroke-width: 7px;
+      stroke-linecap: round;
     }
 
     .polygon-spoke {
-      stroke-width: 2.5px;
-      stroke-dasharray: 4 4;
-      transition: all 0.3s;
+      stroke-width: 3px;
+      stroke-linecap: round;
+      transition: all 0.35s ease;
     }
 
     .polygon-spoke.spoke-active {
-      stroke-width: 3.5px;
-      stroke-dasharray: none;
-      filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
+      stroke-width: 4.5px;
+      stroke: #10b981 !important;
+      filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.65));
+      animation: energyPulse 3s infinite ease-in-out;
+    }
+
+    @keyframes energyPulse {
+      0% { opacity: 0.85; }
+      50% { opacity: 1; }
+      100% { opacity: 0.85; }
     }
 
     .pulsing-core {
@@ -524,8 +580,8 @@ interface PolygonVertex {
     }
 
     @keyframes pulseCoreGlow {
-      0% { transform: scale(0.92); transform-origin: 270px 230px; opacity: 0.6; }
-      100% { transform: scale(1.18); transform-origin: 270px 230px; opacity: 1; }
+      0% { transform: scale(0.92); transform-origin: 300px 245px; opacity: 0.6; }
+      100% { transform: scale(1.18); transform-origin: 300px 245px; opacity: 1; }
     }
 
     /* VERTEX NODES */
@@ -533,33 +589,34 @@ interface PolygonVertex {
       position: absolute;
       transform: translate(-50%, -50%);
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
       z-index: 10;
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .vertex-node-wrapper:hover {
       transform: translate(-50%, -50%) scale(1.12);
+      z-index: 25;
     }
 
     .vertex-bubble {
-      width: 64px;
-      height: 64px;
+      width: 66px;
+      height: 66px;
       border-radius: 50%;
       background: #ffffff;
       border: 3.5px solid var(--axis-color, #1e3a8a);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 0 12px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08), 0 0 14px rgba(0, 0, 0, 0.04);
       position: relative;
-      transition: all 0.2s;
+      transition: all 0.25s;
     }
 
     .vertex-icon {
-      font-size: 1.7rem;
+      font-size: 1.75rem;
     }
 
     .completed-badge {
@@ -568,7 +625,7 @@ interface PolygonVertex {
       right: -3px;
       background: #10b981;
       color: #ffffff;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 900;
       width: 22px;
       height: 22px;
@@ -586,28 +643,31 @@ interface PolygonVertex {
       box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
     }
 
+    /* FLOATING LABEL CARD (Dynamic Directional Positioning) */
     .vertex-label-card {
-      margin-top: 0.45rem;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 10px;
-      padding: 0.3rem 0.65rem;
+      position: absolute;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      padding: 0.35rem 0.75rem;
       text-align: center;
       white-space: nowrap;
       pointer-events: none;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s ease;
     }
 
     .vertex-title {
       display: block;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 800;
       color: #0f172a;
     }
 
     .vertex-status {
       display: block;
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #64748b;
     }
@@ -616,40 +676,67 @@ interface PolygonVertex {
       color: #059669;
     }
 
+    /* Position Variants */
+    .vertex-node-wrapper.label-pos-top .vertex-label-card {
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .vertex-node-wrapper.label-pos-bottom .vertex-label-card,
+    .vertex-node-wrapper.label-pos-bottom-left .vertex-label-card,
+    .vertex-node-wrapper.label-pos-bottom-right .vertex-label-card {
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .vertex-node-wrapper.label-pos-left .vertex-label-card {
+      right: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .vertex-node-wrapper.label-pos-right .vertex-label-card {
+      left: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
     /* CENTRAL BOSS NODE */
     .boss-node-wrapper {
       position: absolute;
-      top: 230px;
-      left: 270px;
+      top: 47.11%; /* 245 / 520 */
+      left: 50%;
       transform: translate(-50%, -50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      z-index: 12;
+      z-index: 15;
       cursor: pointer;
       transition: all 0.25s;
     }
 
     .boss-bubble {
-      width: 80px;
-      height: 80px;
+      width: 86px;
+      height: 86px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      transition: all 0.3s;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .boss-node-wrapper.boss-locked .boss-bubble {
-      background: #f1f5f9;
-      border: 3.5px solid #cbd5e1;
-      color: #94a3b8;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border: 3.5px solid #94a3b8;
+      color: #64748b;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
     .boss-node-wrapper.boss-unlocked {
-      animation: bossPulseFloat 2s infinite ease-in-out;
+      animation: bossPulseFloat 2.2s infinite ease-in-out;
     }
 
     .boss-node-wrapper.boss-unlocked:hover {
@@ -657,19 +744,19 @@ interface PolygonVertex {
     }
 
     .boss-node-wrapper.boss-unlocked .boss-bubble {
-      background: radial-gradient(circle at 35% 35%, #fef3c7, #fde047);
+      background: radial-gradient(circle at 35% 35%, #fef3c7, #f59e0b);
       border: 4px solid #f59e0b;
-      box-shadow: 0 0 25px rgba(245, 158, 11, 0.6), 0 0 45px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.7), 0 0 60px rgba(245, 158, 11, 0.3);
     }
 
     .boss-node-wrapper.boss-defeated .boss-bubble {
-      background: radial-gradient(circle at 35% 35%, #f5f3ff, #ddd6fe);
+      background: radial-gradient(circle at 35% 35%, #f5f3ff, #c4b5fd);
       border: 3.5px solid #8b5cf6;
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.45);
     }
 
     .boss-icon {
-      font-size: 2.3rem;
+      font-size: 2.4rem;
     }
 
     .boss-level-tag {
@@ -678,35 +765,36 @@ interface PolygonVertex {
       background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 99px;
-      padding: 0.1rem 0.45rem;
-      font-size: 0.65rem;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.68rem;
       font-weight: 900;
       color: #ffffff;
     }
 
     .boss-label-card {
-      margin-top: 0.5rem;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      padding: 0.35rem 0.75rem;
+      margin-top: 0.55rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(0, 0, 0, 0.09);
+      border-radius: 14px;
+      padding: 0.4rem 0.85rem;
       text-align: center;
       white-space: nowrap;
       pointer-events: none;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
 
     .boss-title {
       display: block;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 900;
       color: #0f172a;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
     }
 
     .boss-status {
       display: block;
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       font-weight: 700;
       color: #64748b;
     }
@@ -736,7 +824,7 @@ interface PolygonVertex {
       padding: 0.85rem 1.5rem;
       border-radius: 16px;
       border: 1px solid rgba(0, 0, 0, 0.07);
-      margin-top: 1rem;
+      margin-top: 1.25rem;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
     }
 
@@ -1136,6 +1224,40 @@ interface PolygonVertex {
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
+    /* RESPONSIVE ADJUSTMENTS */
+    @media (max-width: 640px) {
+      .polygon-container {
+        max-width: 440px;
+      }
+      .vertex-bubble {
+        width: 54px;
+        height: 54px;
+      }
+      .vertex-icon {
+        font-size: 1.45rem;
+      }
+      .vertex-title {
+        font-size: 0.72rem;
+      }
+      .vertex-status {
+        font-size: 0.6rem;
+      }
+      .boss-bubble {
+        width: 72px;
+        height: 72px;
+      }
+      .boss-icon {
+        font-size: 1.9rem;
+      }
+      .stats-ribbon {
+        gap: 0.5rem;
+      }
+      .stat-pill {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+      }
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1223,9 +1345,11 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   computePolygon(): void {
     const axes = this.config.axes;
     const n = axes.length;
-    const cx = 270;
-    const cy = 230;
-    const radius = 145;
+    const cx = 300;
+    const cy = 245;
+    const radius = 165;
+    const svgWidth = 600;
+    const svgHeight = 520;
 
     const points: string[] = [];
     this.vertices = axes.map((axis, i) => {
@@ -1234,15 +1358,40 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
       const y = cy + radius * Math.sin(angle);
       points.push(`${Math.round(x)},${Math.round(y)}`);
 
+      // Determine label positioning direction relative to circle
+      const labelPositionClass = this.getLabelPositionClass(angle);
+
       return {
         axis,
         x: Math.round(x),
         y: Math.round(y),
+        xPercent: (x / svgWidth) * 100,
+        yPercent: (y / svgHeight) * 100,
+        labelPositionClass,
         completed: this.progress.completedAxes.includes(axis.id)
       };
     });
 
     this.polygonPointsString = points.join(' ');
+  }
+
+  private getLabelPositionClass(angle: number): string {
+    let a = angle;
+    while (a > Math.PI) a -= 2 * Math.PI;
+    while (a < -Math.PI) a += 2 * Math.PI;
+
+    const sin = Math.sin(a);
+    const cos = Math.cos(a);
+
+    if (sin < -0.55) {
+      return 'label-pos-top';
+    } else if (sin > 0.55) {
+      if (cos < -0.3) return 'label-pos-bottom-left';
+      if (cos > 0.3) return 'label-pos-bottom-right';
+      return 'label-pos-bottom';
+    } else {
+      return cos < 0 ? 'label-pos-left' : 'label-pos-right';
+    }
   }
 
   startAxisQuiz(axis: MasteryAxis): void {
