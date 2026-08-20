@@ -1,8 +1,12 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { Firestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy } from '@angular/fire/firestore';
+import { Firestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, writeBatch } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
 import { PoolPregunta, MateriaId } from '../../learning-path/models/paes.models';
 import { PaesContentService } from '../../learning-path/services/paes-content.service';
+
+// Firestore permite hasta 500 escrituras por batch; nos quedamos por debajo
+// del límite para dejar margen a otras operaciones concurrentes.
+const BULK_IMPORT_CHUNK_SIZE = 400;
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -42,6 +46,25 @@ export class AdminService {
     { id: 'historia', label: 'Historia y Ciencias Sociales', icon: '🏛️' },
   ];
 
+  // Fuente única de temas válidos por materia. Tanto el editor individual
+  // como el importador masivo de JSON validan contra este mismo mapa, para
+  // que los temas que aparecen en el selector de Mini Ensayos sean siempre
+  // consistentes sin importar por qué vía se creó la pregunta.
+  readonly temasPorMateria: Record<MateriaId, string[]> = {
+    'matematicas-m1': ['Números', 'Álgebra y Funciones', 'Geometría', 'Probabilidad y Estadística'],
+    'matematicas-m2': ['Números', 'Álgebra y Funciones', 'Geometría', 'Probabilidad y Estadística'],
+    'competencia-lectora': ['Rastrear y localizar', 'Relacionar e interpretar', 'Evaluar y reflexionar'],
+    'ciencias-biologia': ['Organización, estructura y actividad celular', 'Procesos y funciones biológicas', 'Herencia y evolución', 'Organismo y ambiente'],
+    'ciencias-fisica': ['Mecánica', 'Ondas', 'Energía', 'Electricidad y magnetismo'],
+    'ciencias-quimica': ['Estructura atómica y enlaces', 'Química orgánica', 'Reacciones químicas y estequiometría'],
+    'ciencias-tp': ['Biología TP', 'Física TP', 'Química TP'],
+    'historia': ['Mundo, América y Chile', 'Formación Ciudadana', 'Economía y Sociedad']
+  };
+
+  getTemasForMateria(materiaId: MateriaId): string[] {
+    return this.temasPorMateria[materiaId] || [];
+  }
+
   constructor() {
     // Auto-check admin status when auth state changes
     authState(this.auth).subscribe(user => {
@@ -65,87 +88,6 @@ export class AdminService {
       this._isAdmin.set(false);
       return false;
     }
-  }
-
-  async cleanupDatabase(): Promise<{ deletedUsers: number, deletedAdmins: number, updatedUsers: number }> {
-    const whitelist = [
-      '4AHAu2xomGPiQPuhO7Nk9HJggy22',
-      'J3Bsp1TZ92QcriwOxYzsjqPdGVu1',
-      'Iz89GJLdakR3iOiokl6AfmjcomF2',
-      'gr9lsUQB18R5TGaTOknrZjPQDS2',
-      'fqfhKmRQ8NU55KLGc05DjhnVChP2',
-      'TIJ56kj8wlM7Jlvh8wmBJDFzNUy2',
-      'PQLYe6RgqmQmDwdL9Q25y2XynX62',
-      'PSkf4nj3XfaQlekOlVoxZuw170z2',
-      'rnDrpdyISBFMwGKWBLOWLAEDfnQ2',
-      '6N81QZQ7fIdeXAU1kPzVLE3jTKM2',
-      'm6D8ujsOh6f4Qk7jwsfDE1dvUAt2',
-      'H1ulAzlSK5cKoFRJY3je5ddlTfc2'
-    ];
-
-    const adminUids = [
-      'PSkf4nj3XfaQlekOlVoxZuw170z2',
-      'rnDrpdyISBFMwGKWBLOWLAEDfnQ2'
-    ];
-
-    let deletedUsers = 0;
-    let deletedAdmins = 0;
-    let updatedUsers = 0;
-
-    try {
-      // 1. Limpiar colección 'users' y actualizar roles
-      const usersRef = collection(this.firestore, 'users');
-      const usersSnap = await getDocs(usersRef);
-      for (const docSnap of usersSnap.docs) {
-        const uid = docSnap.id;
-        if (!whitelist.includes(uid)) {
-          // Borrar documento de usuario fantasma
-          await deleteDoc(doc(this.firestore, 'users', uid));
-          deletedUsers++;
-          
-          // Borrar subcolección 'actividad' si existiese
-          const actRef = collection(this.firestore, `users/${uid}/actividad`);
-          const actSnap = await getDocs(actRef);
-          for (const actDoc of actSnap.docs) {
-            await deleteDoc(doc(this.firestore, `users/${uid}/actividad`, actDoc.id));
-          }
-        } else {
-          // Actualizar rol del usuario en la lista activa
-          const isUserAdmin = adminUids.includes(uid);
-          await updateDoc(doc(this.firestore, 'users', uid), {
-            role: isUserAdmin ? 'admin' : 'student'
-          });
-          updatedUsers++;
-        }
-      }
-
-      // 2. Limpiar colección 'admins'
-      const adminsRef = collection(this.firestore, 'admins');
-      const adminsSnap = await getDocs(adminsRef);
-      for (const docSnap of adminsSnap.docs) {
-        const uid = docSnap.id;
-        if (!adminUids.includes(uid)) {
-          await deleteDoc(doc(this.firestore, 'admins', uid));
-          deletedAdmins++;
-        }
-      }
-
-      // 3. Limpiar 'intentos' huérfanos
-      const intentosRef = collection(this.firestore, 'intentos');
-      const intentosSnap = await getDocs(intentosRef);
-      for (const docSnap of intentosSnap.docs) {
-        const intento = docSnap.data();
-        const odId = intento['odId'];
-        if (odId && !whitelist.includes(odId)) {
-          await deleteDoc(doc(this.firestore, 'intentos', docSnap.id));
-        }
-      }
-    } catch (err) {
-      console.error('Error executing cleanupDatabase:', err);
-      throw err;
-    }
-
-    return { deletedUsers, deletedAdmins, updatedUsers };
   }
 
   // ─── Filter ───
@@ -204,6 +146,61 @@ export class AdminService {
     this._preguntas.update(list => [{ ...data, id: docRef.id } as PoolPregunta, ...list]);
     
     return docRef.id;
+  }
+
+  /**
+   * Crea muchas preguntas de una vez usando writeBatch (chunks de hasta
+   * BULK_IMPORT_CHUNK_SIZE). Cada chunk se confirma atómicamente: si un
+   * chunk falla, todos los anteriores ya quedaron guardados y el chunk que
+   * falló (junto con los que venían después) no se intenta — por eso el
+   * resultado reporta hasta qué índice se guardó, en vez de fallar todo o
+   * nada para una importación de cientos de preguntas.
+   */
+  async createPreguntasBulk(
+    preguntas: Omit<PoolPregunta, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>[],
+    onProgress?: (savedCount: number, total: number) => void,
+  ): Promise<{ savedCount: number; failedFromIndex: number | null; error?: string }> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No authenticated user');
+
+    const now = new Date().toISOString();
+    const created: PoolPregunta[] = [];
+    let savedCount = 0;
+
+    for (let start = 0; start < preguntas.length; start += BULK_IMPORT_CHUNK_SIZE) {
+      const chunk = preguntas.slice(start, start + BULK_IMPORT_CHUNK_SIZE);
+      const batch = writeBatch(this.firestore);
+      const chunkDocs: PoolPregunta[] = [];
+
+      for (const pregunta of chunk) {
+        const ref = doc(collection(this.firestore, 'pool_preguntas'));
+        const data = { ...pregunta, createdAt: now, updatedAt: now, createdBy: user.uid };
+        batch.set(ref, data);
+        chunkDocs.push({ ...data, id: ref.id } as PoolPregunta);
+      }
+
+      try {
+        await batch.commit();
+        created.push(...chunkDocs);
+        savedCount += chunk.length;
+        onProgress?.(savedCount, preguntas.length);
+      } catch (error: any) {
+        // Este chunk no se guardó; los anteriores sí. Persistimos igualmente
+        // el estado local/caché de lo que sí se guardó antes de reportar.
+        if (created.length > 0) {
+          this.paesContent.clearPoolPreguntasCache();
+          this._preguntas.update(list => [...created, ...list]);
+        }
+        return { savedCount, failedFromIndex: start, error: error.message };
+      }
+    }
+
+    if (created.length > 0) {
+      this.paesContent.clearPoolPreguntasCache();
+      this._preguntas.update(list => [...created, ...list]);
+    }
+
+    return { savedCount, failedFromIndex: null };
   }
 
   async updatePregunta(id: string, changes: Partial<PoolPregunta>): Promise<void> {

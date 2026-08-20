@@ -4,21 +4,25 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdminService } from './services/admin.service';
+import { AdminSidebarComponent } from './admin-sidebar.component';
 import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
 import { KatexService } from '../../core/services/katex.service';
 
 @Component({
   selector: 'app-question-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminSidebarComponent],
   template: `
-    <div class="editor-page">
-      <header class="editor-header">
-        <a routerLink="/admin" class="btn-back">← Volver</a>
-        <h1>{{ isEditing() ? '✏️ Editar Pregunta' : '➕ Nueva Pregunta' }}</h1>
-      </header>
+    <div class="admin-layout">
+      <app-admin-sidebar></app-admin-sidebar>
+      <main class="admin-main-content">
+        <div class="editor-page">
+          <header class="editor-header">
+            <a routerLink="/admin" class="btn-back">← Volver</a>
+            <h1>{{ isEditing() ? '✏️ Editar Pregunta' : '➕ Nueva Pregunta' }}</h1>
+          </header>
 
-      <div class="editor-grid">
+          <div class="editor-grid">
         <!-- FORM -->
         <div class="form-section">
           <!-- MATERIA + TEMA -->
@@ -163,11 +167,15 @@ import { KatexService } from '../../core/services/katex.service';
           </div>
         </div>
       </div>
+        </div>
+      </main>
     </div>
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: #fafafa !important; color: var(--text-primary); padding-bottom: 4rem; }
-    .editor-page { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    :host { display: block; min-height: 100vh; background: #fafafa !important; color: var(--text-primary); }
+    .admin-layout { display: flex; min-height: 100vh; }
+    .admin-main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); box-sizing: border-box; background: #fafafa; }
+    .editor-page { max-width: 1200px; margin: 0 auto; }
 
     .editor-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; }
     .editor-header h1 { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
@@ -432,20 +440,21 @@ import { KatexService } from '../../core/services/katex.service';
     .pv-opt-img { max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; }
 
     @media (max-width: 1024px) {
-      .editor-page { padding: 1.5rem; }
+      .admin-layout { flex-direction: column; }
+      .admin-main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
     }
     @media (max-width: 900px) {
       .editor-grid { grid-template-columns: 1fr; }
       .preview-section { position: static; }
     }
     @media (max-width: 768px) {
-      .editor-page { padding: 1.25rem; }
+      .admin-main-content { padding: 1.25rem; }
       .editor-header { flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
       .editor-header h1 { font-size: 1.6rem; }
       .form-section { padding: 1.5rem; }
     }
     @media (max-width: 480px) {
-      .editor-page { padding: 1rem; }
+      .admin-main-content { padding: 1rem; }
       .editor-header h1 { font-size: 1.35rem; }
       .form-section { padding: 1.1rem; }
       .form-actions { flex-direction: column-reverse; }
@@ -466,17 +475,6 @@ export class QuestionEditorComponent implements OnInit {
   isEditing = signal(false);
   saving = signal(false);
   editId = '';
-
-  TEMAS_POR_MATERIA: Record<MateriaId, string[]> = {
-    'matematicas-m1': ['Números', 'Álgebra y Funciones', 'Geometría', 'Probabilidad y Estadística'],
-    'matematicas-m2': ['Números', 'Álgebra y Funciones', 'Geometría', 'Probabilidad y Estadística'],
-    'competencia-lectora': ['Rastrear y localizar', 'Relacionar e interpretar', 'Evaluar y reflexionar'],
-    'ciencias-biologia': ['Organización, estructura y actividad celular', 'Procesos y funciones biológicas', 'Herencia y evolución', 'Organismo y ambiente'],
-    'ciencias-fisica': ['Mecánica', 'Ondas', 'Energía', 'Electricidad y magnetismo'],
-    'ciencias-quimica': ['Estructura atómica y enlaces', 'Química orgánica', 'Reacciones químicas y estequiometría'],
-    'ciencias-tp': ['Biología TP', 'Física TP', 'Química TP'],
-    'historia': ['Mundo, América y Chile', 'Formación Ciudadana', 'Economía y Sociedad']
-  };
 
   form: {
     materiaId: MateriaId;
@@ -590,7 +588,7 @@ export class QuestionEditorComponent implements OnInit {
   }
 
   getTemasForMateria(materiaId: MateriaId): string[] {
-    return this.TEMAS_POR_MATERIA[materiaId] || [];
+    return this.adminSvc.getTemasForMateria(materiaId);
   }
 
   onMateriaChange() {

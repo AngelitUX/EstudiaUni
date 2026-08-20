@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-18 · Rama en la que se escribió: `creando.mdYRuta`
+> Última actualización: 2026-08-20 · Rama en la que se escribió: `panelAdmin`
 
 ---
 
@@ -55,6 +55,7 @@ tres cosas: **IA (Foco)**, **pagos (Flow + transferencias)** y **admin de suscri
 | Chat con Foco, análisis de ensayo, recomendaciones IA | Backend NestJS `/api/ai/*` |
 | Suscripciones Flow, cupones, transferencias | Backend NestJS `/api/subscriptions/*` |
 | Admin de suscripciones (otorgar/revocar/aprobar) | Backend NestJS `/api/admin/*` |
+| Admin: listar/filtrar usuarios, otorgar/extender/revocar Premium | Backend NestJS `/api/admin/users`, `/api/admin/subscriptions/*` |
 | Pool de preguntas del panel admin | Firestore directo (`pool_preguntas`) |
 
 ### ⚠️ Divergencia de esquema backend vs frontend
@@ -89,7 +90,10 @@ decisión explícita del equipo.
 ### Backend (`backend/`)
 - **NestJS 10** + `firebase-admin` (Admin SDK).
 - **@google/generative-ai** → `gemini-2.5-flash` (el paquete `openai` está instalado pero **no se usa**).
-- **@nestjs/throttler**: 60 req/min global.
+- **@nestjs/throttler**: 60 req/min global, aplicado vía `APP_GUARD` en `app.module.ts`
+  (hasta 2026-08-20 el módulo estaba configurado pero **nunca aplicado** — `ThrottlerModule.forRoot()`
+  solo registra la config, hace falta el `APP_GUARD` para que rija; los `@Throttle(...)` de
+  `ai-feedback.controller.ts` no hacían nada mientras tanto).
 - **cloudinary**: scripts de subida de imágenes (no en runtime).
 - Prefijo global `/api`, `ValidationPipe` con `whitelist` + `forbidNonWhitelisted`.
 - Puerto `3000` por defecto.
@@ -132,7 +136,13 @@ decisión explícita del equipo.
 | `/modules`, `/topic/:moduleId/:topicId`, `/simulation/:attemptId` | **Legacy**, del esquema viejo |
 
 ### Admin (`authGuard` + `adminGuard`)
-`/admin` (pool de preguntas) · `/admin/pregunta/:id` · `/admin/recursos` · `/admin/bugs` · `/admin/suscripciones`
+`/admin` (pool de preguntas) · `/admin/pregunta/:id` · `/admin/recursos` · `/admin/bugs` ·
+`/admin/suscripciones` · `/admin/usuarios` (listar/filtrar/otorgar-extender-revocar Premium, 2026-08-20)
+
+Las 5 páginas comparten un único `AdminSidebarComponent` (`features/admin/admin-sidebar.component.ts`,
+2026-08-20) — antes cada una tenía su propia copia del sidebar y se habían desincronizado (ver
+Bitácora). Las páginas que necesitan contenido extra en el sidebar (los filtros por materia del pool
+de preguntas) lo proyectan vía `<ng-content>`.
 
 ### ⚠️ Rutas duplicadas por materia
 Biología, Física y Química tienen **componentes aislados** (`materia-biologia-path`, `materia-fisica-path`,
@@ -161,7 +171,7 @@ estos archivos son casi idénticos entre sí (~150 KB cada uno) y se desincroniz
 | `recursos_adicionales/{id}` | Recursos (con placeholders si está vacía) | Admin |
 | `news/{id}` | Noticias — **lectura pública sin auth** | Admin |
 | `bug_reports/{id}` | Reportes de bugs (crea cualquier user, lee solo admin) | Usuario |
-| `admins/{uid}` | Whitelist de admins. Solo se agregan **a mano** desde la consola | Nadie por código |
+| `admins/{uid}` | Whitelist de admins. Solo se agregan **a mano** desde la consola. Lectura restringida a dueño o admin (antes cualquier autenticado podía enumerar todos los admins, 2026-08-20) | Nadie por código |
 
 ### Colecciones del backend (pagos e IA)
 `manual_payments`, `flow_registrations`, `flow_subscriptions`, `flow_invoices`, `discount_codes`,
@@ -298,7 +308,18 @@ Prompts separados según el momento — **esto es deliberado, no lo unifiques**:
 - **Signals** para estado (`signal()`, `WritableSignal`), `inject()` en vez de constructor injection.
 - **Sidebar duplicada**: cada página de nivel superior reimplementa su propia sidebar y menú móvil
   en el template. Si cambias un ítem de navegación, hay que cambiarlo en **todas**: dashboard,
-  ensayos-list, mente-veloz, career-finder, recursos, nem-calculator, learning-path, admin.
+  ensayos-list, mente-veloz, career-finder, recursos, nem-calculator, learning-path.
+  **Excepción: el panel admin ya NO duplica su sidebar** (ver sección 4) — desde 2026-08-20 las
+  5 páginas de `/admin/*` comparten `AdminSidebarComponent`. Si agregas una página admin nueva,
+  usa ese componente en vez de copiar el patrón viejo.
+- **Ojo con nombres de clase CSS genéricos en componentes nuevos**: `styles.css` tiene bloques
+  globales tipo "GLOBAL SIDEBAR STYLES" / "STANDARD DASHBOARD HEADER STYLES" con `!important`
+  sobre selectores como `.sidebar`, `.sidebar-header`, `.main-content`, `.nav-item`, pensados para
+  el sidebar del dashboard/ruta de aprendizaje. Si un componente nuevo reutiliza esos mismos
+  nombres de clase, el CSS global le gana al del componente (aunque tenga más especificidad —
+  el global usa `!important`), sin ningún error visible. Esto rompió el panel admin dos veces
+  (2026-08-20, ver Bitácora) hasta que se renombraron sus clases con prefijo `admin-` (`.admin-sidebar`,
+  `.admin-main-content`, etc.). Antes de nombrar una clase nueva, `grep` rápido sobre `styles.css`.
 - **Nada de emojis nuevos en la UI**: hubo un commit dedicado a quitarlos (`080f8f8a`). Se usan
   **SVG desde `assets/images/Nuevos VideosEIlustraciones/iconosSVG/`**.
 - Estilos: tokens CSS en `src/styles.css` (`--accent-primary: #855cd6` morado de marca,
@@ -399,7 +420,8 @@ Flow **no publica credenciales de sandbox compartidas**: cada comercio crea su c
 ### ✅ Funcionando
 Auth completo (email + Google, con verificación y migración de UID), ruta de aprendizaje de las 8 materias,
 ensayos PAES en ambos modos, mini ensayos, Mente Veloz, Foco IA en todos sus contextos, panel admin
-(preguntas, recursos, bugs, suscripciones), calculadora NEM, buscador de carreras, sistema freemium con
+(preguntas, recursos, bugs, suscripciones, **usuarios** — listar/filtrar/otorgar-extender-revocar Premium,
+2026-08-20), calculadora NEM, buscador de carreras, sistema freemium con
 límites y cooldowns, reglas de Firestore endurecidas, SEO (meta tags dinámicos, canonical, JSON-LD,
 sitemap, robots), accesibilidad, notificaciones, landing con videos.
 
@@ -458,7 +480,11 @@ se empaquetó.
   que deberían vivir en `src/scripts/`.
 - Archivos `.backup.ts` de contenido versionados junto a los originales (>1 MB entre ambos).
 - Componentes `materia-*-path.component.ts` casi idénticos (~150 KB × 5) — se desincronizan.
-- Sidebar duplicada en 8+ componentes.
+- Sidebar duplicada en 8+ componentes del sitio general (dashboard, ensayos-list, mente-veloz,
+  career-finder, recursos, nem-calculator, learning-path). **El panel admin ya no tiene este
+  problema** (unificado en `AdminSidebarComponent`, 2026-08-20) — si se quiere replicar el patrón
+  para el resto del sitio, es un trabajo aparte, no trivial por las clases CSS globales con las
+  que colisiona (ver sección 8).
 - Sin tests: `karma`/`jasmine` y `jest` configurados, cero specs escritos.
 - El proyecto vive en `master` con ramas de feature mergeadas vía MR; hay 15+ ramas remotas viejas.
 
@@ -468,6 +494,109 @@ se empaquetó.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-20 — Panel Admin: auditoría de seguridad, sidebar unificado y módulo Usuarios
+Backend typecheck ✅ · build frontend (AOT) ✅ en cada paso · verificado en navegador contra
+Firestore/Auth reales (no mocks) con una cuenta admin real.
+
+**Auditoría de seguridad del panel admin — hallazgos y fixes:**
+- `AdminService.cleanupDatabase()` (frontend) — método real, con botón "Depurar DB" visible en
+  Pool de Preguntas, que borraba usuarios/admins/intentos según una whitelist de 12 UIDs
+  **hardcodeada en el bundle público**. Con usuarios reales habría borrado a casi todos. Eliminado
+  por completo (método + botón), no se intentó "arreglarlo".
+- Endpoints `/admin/modules`, `/admin/questions`, `/admin/simulations` recibían `data: any` sin
+  ningún DTO — el `ValidationPipe` global (`whitelist`/`forbidNonWhitelisted`) no protege nada
+  cuando el tipo declarado es una interfaz plana en vez de una clase con decoradores de
+  `class-validator`. Se les agregó DTO propio (`admin/dto/admin-content.dto.ts`). **Ojo:** ninguno
+  de estos 3 endpoints lo llama el frontend hoy (todo pasa por `pool_preguntas` directo) — parecen
+  muertos, no se borraron por si acaso.
+- `AdminGuard` (backend) y `FirebaseService.isAdmin()` tenían lógica **distinta** para el campo
+  `active` de `admins/{uid}` (uno exigía `active === true`, el otro solo bloqueaba si
+  `active === false`) — un doc admin sin ese campo podía ser "admin" para beneficios premium pero
+  "no-admin" para los endpoints REST. Unificado: `AdminGuard` ahora delega en
+  `FirebaseService.isAdmin()`, una sola fuente de verdad.
+- `firestore.rules`: `admins/{adminId}` permitía lectura a cualquier autenticado (se podía
+  enumerar todos los UIDs admin). Ahora `isOwner(adminId) || isAdmin()`.
+- `ThrottlerModule` estaba configurado pero nunca aplicado (ver sección 3) — agregado como
+  `APP_GUARD` en `app.module.ts`.
+- KaTeX (`katex.service.ts` y su duplicado `math-katex.service.ts`) usaba `trust: true`, que
+  habilita comandos LaTeX (`\href`, `\htmlData`) capaces de inyectar HTML/JS arbitrario — relevante
+  porque `formula_latex` viene de contenido cargado por admins (incluida importación masiva de
+  JSON, menos revisada a mano). Cambiado a `trust: false` (default seguro de KaTeX, sigue
+  renderizando toda fórmula matemática normal).
+- **Hallazgo bajado de prioridad a pedido del equipo:** `pool_preguntas`/`preguntas` permiten
+  lectura a cualquier autenticado, así que `respuesta_correcta` es técnicamente visible consultando
+  Firestore directo (afecta también al ensayo real, no solo al pool). Se decidió NO arreglarlo:
+  el único perjudicado sería el propio estudiante haciendo trampa sin recibir feedback, no hay
+  ganancia real ni afecta a otros usuarios. Ver memoria de sesión (`feedback_security_severity_selfharm`)
+  antes de re-priorizar esto.
+
+**Sidebar del panel admin unificado (`features/admin/admin-sidebar.component.ts`):**
+Las 5 páginas (`/admin`, `/admin/pregunta/:id`, `/admin/recursos`, `/admin/bugs`,
+`/admin/suscripciones`, + la nueva `/admin/usuarios`) tenían cada una su propia copia pegada del
+sidebar, desincronizadas: a Suscripciones le faltaba el link "Nueva Pregunta", a Recursos le
+faltaba "Suscripciones y Pagos", el badge de conteo de preguntas aparecía en unas y en otras no,
+y el editor de preguntas no tenía sidebar en absoluto (salía completamente del panel al crear/editar).
+Ahora una sola copia, con `routerLinkActive` en vez de una clase `active` puesta a mano por archivo.
+
+Dos bugs de layout encontrados **durante la unificación, no antes**:
+1. El header del sidebar quedó con una altura fija (110px) que le quedaba chica al logo + el badge
+   "ADMIN PANEL" al combinar variantes de CSS de las distintas copias — el contenido se desbordaba
+   sobre el nav y **le robaba el click** al primer ítem ("Pool de Preguntas" navegaba a Dashboard).
+   Arreglado quitando la altura fija (crece según contenido).
+2. Root cause más grave: `styles.css` tiene bloques globales sin scope (`GLOBAL SIDEBAR STYLES`,
+   `STANDARD DASHBOARD HEADER STYLES`) con `!important` sobre `.sidebar`, `.sidebar-header`,
+   `.main-content`, `.nav-item`, etc., pensados para el sidebar del dashboard/ruta de aprendizaje.
+   El panel admin reutilizaba esos mismos nombres → el CSS global le ganaba al del componente sin
+   ningún error visible (fondo negro donde debía ser claro, `padding` forzado a 0, texto oscuro
+   invisible sobre fondo oscuro). Arreglado renombrando TODO con prefijo `admin-`
+   (`.admin-sidebar`, `.admin-sidebar-header`, `.admin-nav-item`, `.admin-main-content`, etc.) en
+   las 5 páginas. **Ver la nota nueva en sección 8** — cualquier componente nuevo debe evitar estos
+   nombres genéricos.
+
+**Nuevo módulo `/admin/usuarios`** (backend `admin/admin.service.ts` `listUsers()` +
+`admin/dto/list-users-query.dto.ts`, endpoint `GET /api/admin/users`; frontend
+`admin-users.component.ts` + `admin-users.service.ts`):
+- Lista paginada (cursor-based), filtro por plan (Todos/Free/Premium), búsqueda por email con
+  autocompletado mientras se escribe (debounce 300ms + `switchMap` para cancelar búsquedas
+  desactualizadas), columna de días restantes de Premium, botones **Otorgar** (usuario free),
+  **Extender** (usuario premium, suma días — ver abajo) y **Quitar** Premium — estos tres
+  reutilizan `PaymentService.adminGrantSubscription/adminExtendSubscription/adminRevokeSubscription`,
+  los mismos endpoints que ya usaba "Suscripciones y Pagos".
+- **Nuevo endpoint** `POST /api/admin/subscriptions/extend` (`SubscriptionsService.manualExtend`,
+  `ExtendSubscriptionDto`): a diferencia de `manualGrant` (que siempre resetea el período completo
+  desde hoy, en meses), `manualExtend` **suma días exactos** a lo que le queda al usuario —
+  toma como base el mayor entre "hoy" y su `endDate` actual, y deja `startDate` intacto. Usado
+  solo por el botón "Extender"; "Otorgar" sigue llamando a `manualGrant` sin cambios.
+- Bugs reales encontrados **en producción, no en un test**, mientras se probaba en vivo con datos
+  reales (créditos a probar contra la BD real en vez de confiar solo en que compilara):
+  - `orderBy('createdAt')` excluía a **todos** los usuarios de la lista, porque Firestore excluye
+    de un `orderBy` cualquier doc sin ese campo, y la mayoría de las cuentas reales no lo tienen
+    (se agregó después de que existieran). Cambiado a `orderBy(FieldPath.documentId())` (todo doc
+    tiene id). Para "Registrado" se usa `metadata.creationTime` de Firebase Auth (batch
+    `admin.auth().getUsers()`), que sí existe siempre, en vez de depender de Firestore.
+  - `FirebaseFirestore.FieldPath` usado como valor (`FirebaseFirestore.FieldPath.documentId()`)
+    es solo un namespace de **tipos** de TypeScript — compila bien pero explota en runtime
+    (`ReferenceError`). Hay que importar `firebase-admin` como valor (`admin.firestore.FieldPath`).
+  - El filtro de plan usaba `where('plan','==','free')` contra Firestore, pero el valor que se
+    **muestra** en pantalla es calculado con fallback (`plan==='premium' || subscription.tier
+    ==='premium'`) para cuentas a las que nunca se les escribió el campo `plan` top-level. Result:
+    filtrar "Free" mostraba solo 1 de 8 usuarios que la tabla "Todos" sí mostraba como Free. Movido
+    el filtro a memoria, después de calcular el mismo `plan` que se muestra, para que filtro y
+    display usen exactamente la misma definición.
+  - `takeUntilDestroyed()` llamado dentro de `ngOnInit()` (no es contexto de inyección) tira
+    NG0203 en runtime y el `.subscribe()` de la búsqueda en vivo nunca se establecía — nada pasaba
+    al escribir. Hay que inyectar `DestroyRef` como campo de clase y pasarlo explícito:
+    `takeUntilDestroyed(this.destroyRef)`.
+
+**Dato operativo, no un cambio de código:** se agregó a `contactolimoslime@gmail.com` como admin
+real (`admins/{uid}` con `active:true`) para poder probar el panel en vivo, a pedido explícito del
+usuario. Sigue teniendo ese permiso en producción — sacarlo a mano desde la consola de Firebase si
+no era la intención dejarlo así.
+
+**Pendiente, solo se conversó, nada implementado:** dónde correrá el backend en producción. Sin
+decidir todavía entre Cloud Run (mismo proyecto GCP, más natural dado que ya están en Firebase) o
+Railway/Render (deploy más simple, plataforma aparte). Ver bloqueante #1 en sección 11.
 
 ### 2026-08-18 — Tests bajo demanda (−53% lecturas) + cabecera móvil tapada
 Typecheck ✅ · 26/26 tests ✅ · build producción ✅ · medido en navegador a 414 y 1400px.

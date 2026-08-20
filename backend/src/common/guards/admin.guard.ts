@@ -36,21 +36,16 @@ export class AdminGuard implements CanActivate {
     }
 
     try {
-      // Check if user exists in /admins collection
-      const adminDoc = await this.firebaseService.firestore
-        .collection('admins')
-        .doc(user.uid)
-        .get();
+      // Delegates to FirebaseService.isAdmin() so the "is this uid an admin"
+      // logic lives in exactly one place (previously this guard and
+      // FirebaseService.isAdmin() disagreed on how to treat a missing
+      // `active` field, which could let a doc be admin in one path but not
+      // the other).
+      const isAdmin = await this.firebaseService.isAdmin(user.uid);
 
-      if (!adminDoc.exists) {
+      if (!isAdmin) {
         this.logger.warn(`User ${user.uid} attempted to access admin endpoint`);
         throw new ForbiddenException('Admin access required');
-      }
-
-      // Optionally, check for specific role
-      const adminData = adminDoc.data();
-      if (adminData && !adminData.active) {
-        throw new ForbiddenException('Admin account is inactive');
       }
 
       return true;
