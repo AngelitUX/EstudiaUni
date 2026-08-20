@@ -5,17 +5,13 @@
     },
     {
       "path": "frontend-app"
-    },
-    {
-      "path": "frontend-landing"
     }
   ],
   "settings": {
     "typescript.tsc.autoDetect": "on",
     "eslint.workingDirectories": [
       "./backend",
-      "./frontend-app",
-      "./frontend-landing"
+      "./frontend-app"
     ]
   }
 }

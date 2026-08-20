@@ -35,24 +35,24 @@ interface MateriaOption {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-          <a class="nav-item" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item active" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item" routerLink="/ruta"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item active" routerLink="/mini-ensayo"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card" (click)="paymentService.openPricingModal()">
-            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -60,11 +60,11 @@ interface MateriaOption {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -96,19 +96,19 @@ interface MateriaOption {
             <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item active" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item active" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             <div class="sidebar-section-title">HERRAMIENTAS</div>
-            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </nav>
           <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
-            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/><span class="nav-text">Configuración</span></a>
-            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/><span class="nav-text">Cerrar Sesión</span></a>
+            <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/><span class="nav-text">Configuración</span></a>
+            <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/><span class="nav-text">Cerrar Sesión</span></a>
           </div>
         </div>
       </div>
@@ -262,7 +262,7 @@ interface MateriaOption {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -478,14 +478,14 @@ export class MiniEnsayoSetupComponent implements OnInit {
   dailyStatus = signal<{ allowed: boolean; nextAvailableAt?: Date }>({ allowed: true });
 
   materias: MateriaOption[] = [
-    { id: 'competencia-lectora', label: 'Comp. Lectora', icon: 'assets/images/iconosParaElementos/P_Lenguaje.png' },
-    { id: 'matematicas-m1', label: 'Matemáticas M1', icon: 'assets/images/iconosParaElementos/P_m1.png' },
-    { id: 'matematicas-m2', label: 'Matemáticas M2', icon: 'assets/images/iconosParaElementos/P_m2.png' },
-    { id: 'ciencias-biologia', label: 'Biología', icon: 'assets/images/iconosParaElementos/P_Biologia.png' },
-    { id: 'ciencias-fisica', label: 'Física', icon: 'assets/images/iconosParaElementos/P_Fisica.png' },
-    { id: 'ciencias-quimica', label: 'Química', icon: 'assets/images/iconosParaElementos/P_Quimica.png' },
-    { id: 'ciencias-tp', label: 'Ciencias TP', icon: 'assets/images/iconosParaElementos/P_TecnicoProfesional.png' },
-    { id: 'historia', label: 'Historia', icon: 'assets/images/iconosParaElementos/P_Historia.png' },
+    { id: 'competencia-lectora', label: 'Comp. Lectora', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Lenguaje.svg' },
+    { id: 'matematicas-m1', label: 'Matemáticas M1', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_m1.svg' },
+    { id: 'matematicas-m2', label: 'Matemáticas M2', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_m2.svg' },
+    { id: 'ciencias-biologia', label: 'Biología', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Biologia.svg' },
+    { id: 'ciencias-fisica', label: 'Física', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Fisica.svg' },
+    { id: 'ciencias-quimica', label: 'Química', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Quimica.svg' },
+    { id: 'ciencias-tp', label: 'Ciencias TP', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_TecnicoProfesional.svg' },
+    { id: 'historia', label: 'Historia', icon: 'assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Historia.svg' },
   ];
 
   selectedMateria = signal<MateriaId | null>(null);

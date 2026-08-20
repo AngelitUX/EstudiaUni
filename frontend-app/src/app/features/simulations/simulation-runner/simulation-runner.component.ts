@@ -39,6 +39,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   imports: [CommonModule],
   template: `
     <div class="simulation-container animate-fade-in" *ngIf="attempt && !showResults">
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ attempt.type === 'quiz' ? 'Mini-Quiz Adaptativo' : 'Ensayo PAES' }}</h1>
       <header class="sim-header">
         <div class="sim-title">{{ attempt.type === 'quiz' ? 'Mini-Quiz Adaptativo' : 'Ensayo PAES' }}</div>
         <div class="sim-timer" *ngIf="timeLeft">Tiempo: {{ formatTime(timeLeft) }}</div>
@@ -78,7 +79,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     <!-- Resultados -->
     <div class="results-container animate-fade-in" *ngIf="showResults && results">
       <div class="glass-card text-center">
-        <h2>¡Resultados!</h2>
+        <h1>¡Resultados!</h1>
         <div class="score-display">
           <div class="score-number">{{ results.score?.percentage }}%</div>
           <div class="score-desc">Rendimiento</div>

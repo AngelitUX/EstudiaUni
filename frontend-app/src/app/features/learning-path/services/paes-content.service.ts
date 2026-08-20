@@ -1,14 +1,14 @@
-import { Injectable, signal, computed, inject, Injector } from '@angular/core';
+import { Injectable, signal, computed, inject, Injector, effect, untracked } from '@angular/core';
 import { Materia, Capitulo, Seccion, TestPaes, SeccionProgress, TestResult, TestAnswer } from '../models/paes.models';
-import { Firestore, collection, getDocs, collectionGroup } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, collectionGroup, doc, getDoc } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { DashboardService } from '../../../core/services/dashboard.service';
 
 const LOCAL_MATERIAS: Materia[] = [
-  { id: 'comp-lectora', title: 'Competencia Lectora', slug: 'competencia-lectora', icon: '📖', order: 1, isActive: true, imageUrl: 'assets/images/subjects/comp-lectora.png' },
-  { id: 'mat1', title: 'Competencia Matemática 1 (M1)', slug: 'matematica-1', icon: '📐', order: 2, isActive: true, imageUrl: 'assets/images/subjects/matematica1.png' },
-  { id: 'mat2', title: 'Competencia Matemática 2 (M2)', slug: 'matematica-2', icon: '✏️', order: 3, isActive: true, imageUrl: 'assets/images/subjects/matematica2.png' },
-  { id: 'historia', title: 'Historia y Cs. Sociales', slug: 'historia', icon: '🏛️', order: 4, isActive: true, imageUrl: 'assets/images/subjects/historia.png' },
+  { id: 'comp-lectora', title: 'Competencia Lectora', slug: 'competencia-lectora', icon: '📖', order: 1, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/comp-lectora.avif' },
+  { id: 'mat1', title: 'Competencia Matemática 1 (M1)', slug: 'matematica-1', icon: '📐', order: 2, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica1.avif' },
+  { id: 'mat2', title: 'Competencia Matemática 2 (M2)', slug: 'matematica-2', icon: '✏️', order: 3, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica2.avif' },
+  { id: 'historia', title: 'Historia y Cs. Sociales', slug: 'historia', icon: '🏛️', order: 4, isActive: true, imageUrl: 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/historia.avif' },
   { id: 'ciencias', title: 'Ciencias', slug: 'ciencias', icon: '🧬', order: 5, isActive: true }
 ];
 
@@ -292,6 +292,13 @@ export class PaesContentService {
   private poolPreguntasLoaded = false;
   private poolPreguntasLoadingPromise: Promise<void> | null = null;
 
+  // Carga de contenido en vuelo. `onAuthStateChanged` puede dispararse varias
+  // veces (refresco de token, reconexión, hot-reload), y cada llamada a
+  // loadDataFromFirestore() hace 4 getDocs de colecciones completas. Sin este
+  // guard, dos disparos casi simultáneos —antes de que se escriba la caché—
+  // duplicaban todas esas lecturas.
+  private contentLoadingPromise: Promise<void> | null = null;
+
   // Signal para estado de carga
   loading = signal(true);
 
@@ -445,7 +452,22 @@ export class PaesContentService {
     return result.sort((a, b) => a.order - b.order);
   }
 
-  private async loadDataFromFirestore() {
+  /**
+   * Punto de entrada de la carga de contenido. Coalesce las llamadas
+   * concurrentes en una sola: si ya hay una carga en vuelo, devuelve esa misma
+   * promesa en vez de lanzar otra tanda de lecturas a Firestore.
+   */
+  private loadDataFromFirestore(): Promise<void> {
+    if (this.contentLoadingPromise) return this.contentLoadingPromise;
+
+    this.contentLoadingPromise = this.doLoadDataFromFirestore().finally(() => {
+      this.contentLoadingPromise = null;
+    });
+
+    return this.contentLoadingPromise;
+  }
+
+  private async doLoadDataFromFirestore() {
     const CACHE_KEY = LEARNING_PATH_CACHE_KEY;
     const cacheTimeKey = LEARNING_PATH_CACHE_TIME_KEY;
     const cacheTTL = 30 * 60 * 1000; // 30 minutos
@@ -504,31 +526,19 @@ export class PaesContentService {
       }
       const capitulos: Capitulo[] = [];
 
-      // 4. Cargar todos los tests (como referencias)
-      let testsSnap;
-      try {
-        testsSnap = await getDocs(collection(this.firestore, 'lp_tests'));
-      } catch (err) {
-        console.error('[PaesContentService] Error cargando lp_tests desde Firestore:', err);
-        throw err;
-      }
+      // 4. Los tests YA NO se cargan aqui.
+      //
+      // Antes se hacia getDocs(lp_tests) trayendo los 502 documentos de test en
+      // cada carga en frio, aunque el alumno fuese a abrir uno solo. Sumado a
+      // materias + capitulos + secciones eran 941 lecturas por arranque, lo que
+      // agotaba la cuota diaria de Firestore (y al agotarse, la app cae al
+      // contenido local desfasado).
+      //
+      // Ahora cada test se pide individualmente al entrar en su seccion, via
+      // ensureTestLoaded(). Las secciones conservan su `testId` para poder
+      // resolverlo despues. El contenido servido desde los seeds locales
+      // (comp-lectora, historia) trae el test embebido y no gasta ninguna lectura.
       const testsMap = new Map<string, TestPaes>();
-      testsSnap.docs.forEach(doc => {
-        const data = doc.data() as any;
-        let preguntas = data.preguntas || [];
-        if (data.preguntaIds && Array.isArray(data.preguntaIds)) {
-          preguntas = data.preguntaIds
-            .map((pid: string) => poolMap.get(pid))
-            .filter((p: any) => !!p);
-        }
-
-        testsMap.set(doc.id, {
-          ...data,
-          id: doc.id,
-          preguntas
-        } as TestPaes);
-      });
-
       // 5. Cargar todas las secciones de una sola vez con un Collection Group
       let seccionesSnap;
       try {
@@ -636,10 +646,10 @@ export class PaesContentService {
         // Asignar imágenes a las materias si no vienen de Firestore
         materias.forEach(m => {
           if (!m.imageUrl) {
-            if (m.id === 'comp-lectora' || m.slug === 'competencia-lectora') m.imageUrl = 'assets/images/subjects/comp-lectora.png';
-            else if (m.id === 'mat1' || m.slug === 'matematica-1') m.imageUrl = 'assets/images/subjects/matematica1.png';
-            else if (m.id === 'mat2' || m.slug === 'matematica-2') m.imageUrl = 'assets/images/subjects/matematica2.png';
-            else if (m.id === 'historia' || m.slug === 'historia') m.imageUrl = 'assets/images/subjects/historia.png';
+            if (m.id === 'comp-lectora' || m.slug === 'competencia-lectora') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/comp-lectora.avif';
+            else if (m.id === 'mat1' || m.slug === 'matematica-1') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica1.avif';
+            else if (m.id === 'mat2' || m.slug === 'matematica-2') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica2.avif';
+            else if (m.id === 'historia' || m.slug === 'historia') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/historia.avif';
           }
         });
 
@@ -915,9 +925,19 @@ export class PaesContentService {
   private loadLocalFallbacks() {
     this._materias.set(LOCAL_MATERIAS);
     this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
-    this.applyHistoriaImageMapping(CAPITULOS);
-    this.enrichHistoriaChapters4And5(CAPITULOS);
-    this._capitulos.set(CAPITULOS);
+
+    // `CAPITULOS` (seed-data.ts) NO incluye los capítulos de Historia: esos viven
+    // en `HISTORIA_CAPITULOS` (seed-historia.ts) y hasta ahora solo se añadían por
+    // la vía de Firestore/caché. Sin conexión, Historia se quedaba con un único
+    // capítulo placeholder en vez de sus 5 reales.
+    const historiaFaltante = HISTORIA_CAPITULOS.filter(
+      (h: any) => !CAPITULOS.some((c: any) => c.id === h.id),
+    );
+    const capitulos = [...CAPITULOS, ...historiaFaltante];
+
+    this.applyHistoriaImageMapping(capitulos);
+    this.enrichHistoriaChapters4And5(capitulos);
+    this._capitulos.set(this.syncLocalChapters(capitulos));
   }
 
   // ─── Queries ───
@@ -1004,6 +1024,81 @@ export class PaesContentService {
     return seccion?.test;
   }
 
+  // ─── Carga bajo demanda de tests ───
+
+  /** testIds ya resueltos en esta sesión (evita repetir la lectura). */
+  private testsCargados = new Set<string>();
+  /** Peticiones en vuelo, para coalescer llamadas simultáneas al mismo test. */
+  private testsEnVuelo = new Map<string, Promise<void>>();
+
+  /**
+   * Trae de Firestore el test de una sección, si hace falta.
+   *
+   * Sustituye a la carga masiva de `lp_tests` (502 documentos por arranque).
+   * Cuesta UNA lectura la primera vez que se abre cada sección, y cero después.
+   *
+   * No hace nada —y no gasta lecturas— cuando:
+   *  · la sección ya trae el test embebido (contenido de los seeds locales),
+   *  · el test ya se cargó antes en esta sesión,
+   *  · estamos en modo mocks locales.
+   *
+   * Si la lectura falla, deja la sección como estaba y NO lanza: la vista
+   * seguirá mostrando lo que tuviera, en vez de romperse.
+   */
+  async ensureTestLoaded(seccionId: string): Promise<void> {
+    if (!seccionId || this.useMocksMode) return;
+
+    const seccion = this.getSeccionById(seccionId);
+    if (!seccion) return;
+
+    // Ya viene con preguntas (seed local o cargado previamente).
+    if (seccion.test && (seccion.test.preguntas?.length ?? 0) > 0) return;
+
+    const testId = (seccion as any).testId as string | undefined;
+    if (!testId) return;
+    if (this.testsCargados.has(testId)) return;
+
+    const enVuelo = this.testsEnVuelo.get(testId);
+    if (enVuelo) return enVuelo;
+
+    const peticion = (async () => {
+      try {
+        const snap = await getDoc(doc(this.firestore, 'lp_tests', testId));
+        if (!snap.exists()) {
+          console.warn(`[PaesContentService] La sección "${seccionId}" apunta al test "${testId}", que no existe.`);
+          return;
+        }
+        const data = snap.data() as any;
+        const test: TestPaes = { ...data, id: snap.id, preguntas: data.preguntas || [] };
+        this.attachTestToSeccion(seccionId, test);
+        this.testsCargados.add(testId);
+      } catch (e: any) {
+        console.error(`[PaesContentService] No se pudo cargar el test "${testId}": ${e?.message || e}`);
+      } finally {
+        this.testsEnVuelo.delete(testId);
+      }
+    })();
+
+    this.testsEnVuelo.set(testId, peticion);
+    return peticion;
+  }
+
+  /**
+   * Inserta el test en su sección dentro de `_capitulos`, de forma inmutable
+   * para que los `computed()` de las vistas se recalculen solos.
+   */
+  private attachTestToSeccion(seccionId: string, test: TestPaes): void {
+    this._capitulos.update(capitulos =>
+      capitulos.map(cap => {
+        if (!cap.secciones?.some(s => s.id === seccionId)) return cap;
+        return {
+          ...cap,
+          secciones: cap.secciones.map(s => (s.id === seccionId ? { ...s, test } : s)),
+        };
+      }),
+    );
+  }
+
   // ─── Progreso ───
 
   getSeccionProgress(seccionId: string): SeccionProgress | undefined {
@@ -1043,8 +1138,18 @@ export class PaesContentService {
     const test = this.getTestBySeccionId(seccionId);
     if (!test) throw new Error('Test not found');
 
+    const preguntas = test.preguntas || [];
+
+    // Un test sin preguntas hacía `0/0 = NaN`: el NaN se propagaba a `score` y a
+    // `bestScore` (Math.max(x, NaN) === NaN), se serializaba a `null` en
+    // localStorage y dejaba el progreso de esa sección corrupto de forma
+    // permanente. Ante un test vacío cortamos antes con un error explícito.
+    if (preguntas.length === 0) {
+      throw new Error(`El test de la sección "${seccionId}" no tiene preguntas.`);
+    }
+
     const seccion = this.getSeccionById(seccionId);
-    const gradedAnswers: TestAnswer[] = test.preguntas.map(p => {
+    const gradedAnswers: TestAnswer[] = preguntas.map(p => {
       const selected = answers.get(p.id) || null;
       return {
         preguntaId: p.id,
@@ -1054,14 +1159,14 @@ export class PaesContentService {
     });
 
     const totalCorrect = gradedAnswers.filter(a => a.isCorrect).length;
-    const score = Math.round((totalCorrect / test.preguntas.length) * 100);
+    const score = Math.round((totalCorrect / preguntas.length) * 100);
 
     const result: TestResult = {
       seccionId,
       answers: gradedAnswers,
       score,
       totalCorrect,
-      totalQuestions: test.preguntas.length,
+      totalQuestions: preguntas.length,
       completedAt: new Date().toISOString()
     };
 
@@ -1074,7 +1179,7 @@ export class PaesContentService {
       materiaId: seccion?.materiaId || '',
       completed: (currentProgress?.completed || false) || isPassing,
       bestScore: Math.max(currentProgress?.bestScore || 0, score),
-      totalQuestions: test.preguntas.length,
+      totalQuestions: preguntas.length,
       correctAnswers: totalCorrect,
       lastAttemptDate: result.completedAt,
       attempts: (currentProgress?.attempts || 0) + 1
@@ -1097,7 +1202,7 @@ export class PaesContentService {
         subjectIcon: materia?.icon || '📚',
         score,
         totalCorrect,
-        totalQuestions: test.preguntas.length,
+        totalQuestions: preguntas.length,
       });
     } catch { /* ignore */ }
 
@@ -1154,4 +1259,28 @@ export class PaesContentService {
       }
     } catch { /* ignore */ }
   }
+}
+
+/**
+ * Pide el test de la sección en cuanto se conoce su id y el contenido está
+ * cargado. Llamar desde el constructor del componente (contexto de inyección).
+ *
+ * Es reactivo porque el contenido llega de forma asíncrona: en el momento de
+ * construir el componente puede que la sección todavía no exista en memoria.
+ *
+ * `untracked` evita que el effect dependa de `_capitulos` — que es justo lo que
+ * `ensureTestLoaded` acaba modificando— y con ello un ciclo de reevaluaciones.
+ */
+export function autoLoadTest(seccionId: () => string): void {
+  const paes = inject(PaesContentService);
+
+  effect(
+    () => {
+      const id = seccionId();
+      const cargando = paes.loading();
+      if (!id || cargando) return;
+      untracked(() => { void paes.ensureTestLoaded(id); });
+    },
+    { allowSignalWrites: true },
+  );
 }

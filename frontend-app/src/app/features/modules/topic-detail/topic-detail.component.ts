@@ -15,7 +15,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     <div class="topic-detail-container animate-fade-in" *ngIf="topic">
       <header class="topic-header">
         <button class="btn-back mb-4" (click)="goBack()">← Volver</button>
-        <h2>{{ topic.title }}</h2>
+        <h1>{{ topic.title }}</h1>
         <div class="badges">
           <span class="badge">Nivel {{ topic.difficultyLevel }}</span>
           <span class="badge">{{ topic.estimatedMinutes }} minutos</span>
@@ -66,7 +66,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       min-height: 100vh;
       color: #ffffff;
     }
-    .topic-header h2 {
+    .topic-header h1 {
       font-family: var(--font-heading);
       font-size: 2rem;
       font-weight: 700;
@@ -232,7 +232,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       .topic-detail-container {
         padding: 1.25rem;
       }
-      .topic-header h2 {
+      .topic-header h1 {
         font-size: 1.6rem;
       }
       .glass-card {
@@ -247,7 +247,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       .topic-detail-container {
         padding: 1rem;
       }
-      .topic-header h2 {
+      .topic-header h1 {
         font-size: 1.4rem;
       }
       .badges {

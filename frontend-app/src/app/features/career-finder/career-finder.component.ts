@@ -28,24 +28,24 @@ import { PaymentService } from '../../core/services/payment.service';
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-          <a class="nav-item" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item" routerLink="/ruta"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item active" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item active" routerLink="/encuentra-tu-carrera"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -53,11 +53,11 @@ import { PaymentService } from '../../core/services/payment.service';
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -78,29 +78,29 @@ import { PaymentService } from '../../core/services/payment.service';
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item active" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item active" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -148,7 +148,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <div class="profile-menu-wrap">
               <button class="profile-trigger" (click)="showProfileModal = true">
                 <span class="profile-avatar-wrap">
-                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
+                  <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto de perfil" class="profile-avatar" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
                   <ng-template #avatarFallback><span class="profile-avatar fallback">{{ profileInitial() }}</span></ng-template>
                 </span>
               </button>
@@ -183,12 +183,13 @@ import { PaymentService } from '../../core/services/payment.service';
         <section class="finder-form glass-card">
           <div class="form-grid">
             <div class="form-group search-group">
-              <label>Busca tu carrera</label>
+              <label for="carrera-query">Busca tu carrera</label>
               <div class="input-with-icon">
                 <span class="icon">🔍</span>
-                <input 
-                  type="text" 
-                  placeholder="Ej: Ingeniería Civil, Medicina..." 
+                <input
+                  id="carrera-query"
+                  type="text"
+                  placeholder="Ej: Ingeniería Civil, Medicina..."
                   [(ngModel)]="filters.query"
                   (input)="search()"
                 >
@@ -196,11 +197,12 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
 
             <div class="form-group">
-              <label>Ubicación</label>
+              <label for="carrera-ubicacion">Ubicación</label>
               <div class="custom-select-container">
                 <div class="combobox-wrapper" [class.open]="showLocDropdown()">
-                  <input 
-                    type="text" 
+                  <input
+                    id="carrera-ubicacion"
+                    type="text"
                     class="combobox-input"
                     [placeholder]="filters.ubicacion || 'Todas las regiones'"
                     [(ngModel)]="locSearchQuery"
@@ -227,11 +229,12 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
 
             <div class="form-group">
-              <label>Universidad</label>
+              <label for="carrera-universidad">Universidad</label>
               <div class="custom-select-container">
                 <div class="combobox-wrapper" [class.open]="showUniDropdown()">
-                  <input 
-                    type="text" 
+                  <input
+                    id="carrera-universidad"
+                    type="text"
                     class="combobox-input"
                     [placeholder]="filters.universidad || 'Todas las instituciones'"
                     [(ngModel)]="uniSearchQuery"
@@ -259,7 +262,7 @@ import { PaymentService } from '../../core/services/payment.service';
           </div>
 
           <div class="interests-section">
-            <label>Selecciona tus intereses y habilidades:</label>
+            <span class="interests-section-title">Selecciona tus intereses y habilidades:</span>
             <div class="interests-grid">
               <button *ngFor="let interest of availableInterests" 
                       class="interest-pill" 
@@ -276,7 +279,7 @@ import { PaymentService } from '../../core/services/payment.service';
         <section class="results-section">
           <!-- WELCOME STATE (When no search yet) -->
           <div *ngIf="!hasSearched()" class="welcome-search">
-            <img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="welcome-icon"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="welcome-icon"/>
             <h2>Comienza tu búsqueda</h2>
             <p>Escribe el nombre de una carrera o selecciona tus intereses para ver recomendaciones personalizadas.</p>
           </div>
@@ -437,7 +440,9 @@ import { PaymentService } from '../../core/services/payment.service';
 
         <!-- Chat Input -->
         <div class="ai-input-area">
+          <label for="career-ai-chat-input" class="visually-hidden">Escribe tu pregunta al tutor IA</label>
           <textarea
+            id="career-ai-chat-input"
             class="ai-input"
             [(ngModel)]="chatInputText"
             (keydown.enter)="onEnterKey($event)"
@@ -475,7 +480,7 @@ import { PaymentService } from '../../core/services/payment.service';
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -686,7 +691,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .input-with-icon input { padding-left: 2.8rem; width: 100%; }
 
     .interests-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); }
-    .interests-section label { display: block; font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); }
+    .interests-section-title { display: block; font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); }
     .interests-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
     .interest-pill { padding: 0.6rem 1.25rem; border-radius: 999px; border: 2px solid var(--glass-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 600; font-size: 0.9rem; }
     .interest-pill:hover { border-color: var(--accent-primary); background: rgba(133,92,214,0.05); transform: translateY(-2px); }
@@ -856,6 +861,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .quick-btn:hover:not(:disabled) { background: #e0e7ff; border-color: #a5b4fc; color: #4338ca; }
     .quick-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .ai-input-area { padding: 1rem 1.25rem; background: #ffffff; display: flex; gap: 0.75rem; align-items: flex-end; }
     .ai-input { flex: 1; border: 2px solid #e2e8f0; border-radius: 12px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; resize: none; background: #f8fafc; transition: border-color 0.2s; outline: none; }
     .ai-input:focus { border-color: #3b82f6; background: #ffffff; }

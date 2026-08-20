@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed, HostListener, AfterViewIni
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { LearningAccessService } from './services/learning-access.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
@@ -20,6 +21,8 @@ type PathItem = {
   imageUrl?: string;
   isCurrentChapter?: boolean;
   isLocked?: boolean;
+  /** Bloqueado por el limite del Plan Basico (1 capitulo por materia), no por progreso. */
+  isPremiumLocked?: boolean;
   nodes?: any[];
   rowIndex?: number;
   isCentered?: boolean;
@@ -40,24 +43,24 @@ type PathItem = {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -65,11 +68,11 @@ type PathItem = {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -85,29 +88,29 @@ type PathItem = {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -192,10 +195,20 @@ type PathItem = {
               <div *ngIf="item.type === 'chapter'" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div class="chapter-splash" [ngClass]="[item.capituloId, getChapterProgress(item.capituloId).pct === 100 ? 'chapter-completed' : '']" style="margin-bottom: 7rem; width: 100%;">
                   <div class="splash-bg-pattern"></div>
+
+                  <!-- Muro de pago: capitulo fuera del Plan Basico -->
+                  <div class="premium-lock-overlay" *ngIf="item.isPremiumLocked" (click)="paymentService.openPricingModal()">
+                    <div class="plo-card">
+                      <svg class="plo-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2zm6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1zM12 3a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z"/></svg>
+                      <h3 class="plo-title">Capitulo exclusivo PRO</h3>
+                      <p class="plo-desc">Con el Plan Basico puedes cursar el primer capitulo de cada materia. Hazte PRO para desbloquear los {{ access.lockedChapterCount(materiaId()) }} capitulos restantes.</p>
+                      <button class="plo-btn" type="button" (click)="$event.stopPropagation(); paymentService.openPricingModal()">Mejorar a PRO</button>
+                    </div>
+                  </div>
                   <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/focoBiologia" alt="Foco" class="splash-mascot chapter-image-custom" />
+                      <img src="assets/images/Nuevos VideosEIlustraciones/GifsFocoWEBP/focoBiologia.webp" alt="Foco" class="splash-mascot chapter-image-custom" width="290" height="290" loading="lazy" decoding="async" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
@@ -227,7 +240,7 @@ type PathItem = {
                       EMPEZAR
                       <div class="tooltip-arrow"></div>
                     </div>
-                    <button class="splash-guide-btn" [class.locked]="item.isLocked" (click)="!item.isLocked && goToGuide(item.capituloId)" style="flex: 1;">
+                    <button class="splash-guide-btn" [class.locked]="item.isLocked || item.isPremiumLocked" (click)="item.isPremiumLocked ? paymentService.openPricingModal() : (!item.isLocked && goToGuide(item.capituloId))" style="flex: 1;">
                       <span class="sgb-icon">📖</span> Resumen del Capítulo
                     </button>
                     <button *ngIf="adminService.isAdmin()"
@@ -280,7 +293,7 @@ type PathItem = {
                 <div class="node-wrapper" 
                      [style.display]="'flex'"
                      [style.flex-direction]="item.nodes!.length > 1 ? 'row' : 'column'"
-                     [style.gap]="item.nodes!.length === 3 ? 'calc(180px - 72px)' : (item.nodes!.length === 2 ? 'calc(280px - 72px)' : '0')"
+                     [style.gap]="getBranchGap(item.nodes!.length)"
                      style="align-items: center; justify-content: center;">
                      
                   <ng-container *ngFor="let node of item.nodes; let nodeIdx = index; let isLast = last">
@@ -313,24 +326,30 @@ type PathItem = {
                         [class.node-completed]="node.status === 'completed'"
                         [class.node-active]="node.status === 'active'"
                         [class.node-locked]="node.status === 'locked'"
+                        [class.node-premium-locked]="node.isPremiumLocked"
                         (click)="handleNodeClick(node)">
                         <div class="node-inner">
-                          <ng-container *ngIf="node.isBoss">
+                          <ng-container *ngIf="node.isPremiumLocked">
+                            <svg class="node-icon icon-premium-lock" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2zm6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1zM12 3a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z"/>
+                            </svg>
+                          </ng-container>
+                          <ng-container *ngIf="node.isBoss && !node.isPremiumLocked">
                             <svg class="node-icon icon-boss" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M12 2C7.03 2 3 6.03 3 11V14.5C3 15.33 3.67 16 4.5 16H6V20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20V16H19.5C20.33 16 21 15.33 21 14.5V11C21 6.03 16.97 2 12 2ZM8 10C6.9 10 6 9.1 6 8C6 6.9 6.9 6 8 6C9.1 6 10 6.9 10 8C10 9.1 9.1 10 8 10ZM16 10C14.9 10 14 9.1 14 8C14 6.9 14.9 6 16 6C17.1 6 18 6.9 18 8C18 9.1 17.1 10 16 10ZM15 19H9V16H15V19Z" />
                             </svg>
                           </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !node.isProTip && isPracticeNode(node)">
+                          <ng-container *ngIf="!node.isBoss && !node.isProTip && isPracticeNode(node) && !node.isPremiumLocked">
                             <svg class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
                             </svg>
                           </ng-container>
-                          <ng-container *ngIf="!node.isBoss && node.isProTip">
+                          <ng-container *ngIf="!node.isBoss && node.isProTip && !node.isPremiumLocked">
                             <svg class="node-icon icon-pro-tip" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
                             </svg>
                           </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !node.isProTip && !isPracticeNode(node)">
+                          <ng-container *ngIf="!node.isBoss && !node.isProTip && !isPracticeNode(node) && !node.isPremiumLocked">
                             <svg class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
@@ -345,7 +364,7 @@ type PathItem = {
                         [class.title-practice]="!node.isBoss && !node.isProTip && isPracticeNode(node)"
                         [class.title-pro-tip]="node.isProTip"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
-                        {{ node.title }}
+                        {{ node.isPremiumLocked ? '???' : node.title }}
                       </div>
                     </div>
                   </ng-container>
@@ -786,7 +805,7 @@ type PathItem = {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -1088,6 +1107,65 @@ type PathItem = {
     .node-active:active { transform: scale(1.1) translateY(8px); box-shadow: 0 0 0 #a559d6, 0 0 0 4px rgba(206,130,255,0.2); }
 
     /* LOCKED STATE */
+    /* ── Muro de pago del Plan Basico ── */
+    .premium-lock-overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 1rem; border-radius: inherit; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(3px); cursor: pointer; }
+    .plo-card { width: 100%; max-width: 340px; text-align: center; color: #fff; }
+    /* Antes era el emoji de candado, pero la fuente no tiene ese glifo y salia
+       un cuadrado vacio (tofu). Con un SVG inline se ve igual en cualquier equipo. */
+    .plo-icon { display: block; width: 34px; height: 34px; margin: 0 auto 0.5rem; color: #ffc800; }
+    /* Candado de los nodos bloqueados por plan */
+    .icon-premium-lock { color: #b45309 !important; width: 26px; height: 26px; }
+    .plo-title { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; margin: 0 0 0.4rem; color: #fff; }
+    .plo-desc { font-size: 0.85rem; line-height: 1.45; margin: 0 0 0.9rem; color: rgba(255,255,255,0.85); }
+    .plo-btn { background: linear-gradient(135deg, #ffc800, #ff9600); color: #1e293b; border: none; border-radius: 99px; padding: 0.6rem 1.4rem; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.18); }
+    .plo-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+    @media (max-width: 480px) {
+      .plo-title { font-size: 1rem; }
+      .plo-desc { font-size: 0.78rem; }
+      .plo-btn { width: 100%; }
+    }
+
+    /* ── Correcciones responsive medidas en móvil (320/375/414) ──
+       1) .splash-hero era flex con la mascota a 180px FIJOS y .splash-info a
+          flex:1 min-width:0, sin ninguna media query: a 320px la columna de
+          info quedaba en 0px y el titulo, la insignia y las stats del capitulo
+          se recortaban fuera de pantalla (invisibles por el overflow:hidden).
+       2) .node-title es absoluto con white-space:nowrap y sin max-width, asi
+          que crecia hasta 296px dentro de una columna mas estrecha y se
+          cortaba, ademas de solaparse con el titulo del nodo vecino. */
+    /* width:max-content es imprescindible: .node-title es position:absolute y,
+       sin ancho propio, al quitarle el nowrap se encogia al ancho de su contenedor
+       (el nodo, ~64px) en vez de respetar el max-width, partiendo el texto en
+       vertical. Es lo mismo que ya hacia .node-title.historia-title con width:150px,
+       por eso Historia/Biologia/Fisica no sufrian el problema.
+       overflow-wrap: break-word (no anywhere) evita cortar dentro de las palabras. */
+    .node-title { width: max-content; max-width: min(46vw, 190px); white-space: normal; overflow-wrap: break-word; }
+    /* .subcapitulo-title lleva white-space:nowrap en estilos INLINE, de ahi el !important. */
+    .subcapitulo-title { width: max-content !important; max-width: min(76vw, 260px) !important; white-space: normal !important; text-align: center; line-height: 1.15; }
+    @media (max-width: 900px) {
+      .splash-hero { flex-direction: column; text-align: center; gap: 1rem; }
+      .splash-mascot-area { width: 140px; height: 140px; }
+      .splash-info { width: 100%; }
+      .splash-stats { justify-content: center; flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .splash-mascot-area { width: 108px; height: 108px; }
+      .splash-mascot { max-width: 100%; height: auto; }
+      .splash-title { font-size: 1.15rem; }
+      .node-title { font-size: 0.78rem; max-width: min(42vw, 150px); }
+      /* Se centra sobre un nodo que en las filas ramificadas NO esta centrado en
+         el viewport, asi que con 260px se salia por un lado. Cota mas estrecha. */
+      .subcapitulo-title { max-width: min(40vw, 150px) !important; font-size: 12px !important; letter-spacing: 0.5px !important; padding: 4px 10px !important; }
+    }
+    /* Objetivos tactiles minimos (antes 22-32px) */
+    @media (max-width: 768px) {
+      .mobile-menu-btn { min-width: 44px; min-height: 44px; }
+      .btn-back { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+    }
+
+    .node-premium-locked { background: #fde68a !important; box-shadow: 0 6px 0 #d97706 !important; }
+    .node-premium-locked .node-inner { background: #fde68a !important; }
+    .node-premium-locked .node-icon { color: #b45309 !important; }
     .node-locked { background: #e5e5e5; box-shadow: 0 6px 0 #cccccc; cursor: not-allowed; }
     .node-locked .node-inner { background: #e5e5e5; }
     .node-locked .node-icon { color: #afafaf; }
@@ -1241,6 +1319,15 @@ type PathItem = {
       right: -820px;
     }
     .sim-drawer.open { right: 0; }
+    /* El cajon expandido media 800px fijos, sin ningun override: en un movil de
+       375px se salia de la pantalla y provocaba scroll horizontal en toda la pagina. */
+    .sim-drawer { max-width: 100vw; }
+    .sim-drawer.expanded { max-width: 100vw; }
+    @media (max-width: 860px) {
+      .sim-drawer, .sim-drawer.expanded { width: 100vw; right: -100vw; }
+      .sim-drawer.open, .sim-drawer.open.expanded { right: 0; }
+      .sim-drawer-inner { padding: 1rem; }
+    }
     .sim-drawer.open.expanded { right: 0; }
     .sim-drawer::-webkit-scrollbar { width: 4px; }
     .sim-drawer::-webkit-scrollbar-track { background: transparent; }
@@ -1690,6 +1777,7 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
   public adminService = inject(AdminService);
   private auth = inject(AuthService);
   public paymentService = inject(PaymentService);
+  public access = inject(LearningAccessService);
 
   mobileOpen = false;
   showSettingsModal = false;
@@ -1827,7 +1915,10 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
     const name = this.firestoreService.profileSignal()?.displayName || '';
     return name.charAt(0).toUpperCase() || 'U';
   });
-  isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
+  // Delegado en LearningAccessService para que 'PRO' signifique lo mismo en toda
+  // la ruta: premium O admin. Antes cada componente lo calculaba aparte y dejaba
+  // fuera a los admin, que veian la ruta capada.
+  isProPlan = computed(() => this.access.isPro());
 
   materiaId = signal('');
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
@@ -1851,6 +1942,8 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
 
   // Pattern for horizontal zigzag staggering
   private offsets = [0, -80, -115, -80, 0, 80, 115, 80];
+  /** Cambia al redimensionar para que los computed del camino se recalculen. */
+  private viewportTick = signal(0);
 
   ngAfterViewInit() {
     // Initial draw will happen when panel opens
@@ -2572,7 +2665,42 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
   }
 
   getOffset(index: number): number {
-    return this.offsets[index % this.offsets.length];
+    const raw = this.offsets[index % this.offsets.length];
+    return Math.round(raw * this.pathOffsetScale());
+  }
+
+  /**
+   * Factor de escala del zig-zag del camino segun el ancho disponible.
+   * Los offsets base llegan a +-115px; con el ancho util de un movil de 320px
+   * eso empujaba hasta 28 nodos fuera del viewport, donde quedaban recortados
+   * (el contenedor lleva overflow:hidden, asi que no habia forma de verlos).
+   */
+  /**
+   * Separacion horizontal entre nodos hermanos de una fila ramificada.
+   * Estaba fijada en el template (208px para 2 nodos, 108px para 3), lo que
+   * daba un .node-wrapper de 336px dentro de una fila de 296px en un movil de
+   * 320px: los nodos de los extremos quedaban recortados fuera de pantalla.
+   */
+  getBranchGap(count: number): string {
+    const base = count === 3 ? 108 : count === 2 ? 208 : 0;
+    if (base === 0) return '0';
+    return Math.round(base * this.pathOffsetScale()) + 'px';
+  }
+
+  private pathOffsetScale(): number {
+    this.viewportTick();
+    if (typeof window === 'undefined') return 1;
+    const w = window.innerWidth;
+    if (w >= 700) return 1;
+    if (w >= 560) return 0.75;
+    if (w >= 430) return 0.55;
+    return 0.4;
+  }
+
+  // Redibuja el camino al rotar o redimensionar para que la escala se aplique.
+  @HostListener('window:resize')
+  onViewportResize() {
+    this.viewportTick.update(v => v + 1);
   }
 
   getAccordionZigzag(rowIndex: number): number {
@@ -2749,6 +2877,9 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
       let nodeIndex = 0;
       const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
       const chapterIsLocked = !unlockAll && foundActive;
+      // Bloqueo por plan: independiente del progreso y NO lo levanta unlockAll,
+      // para que el atajo de desarrollo no sirva como puerta trasera al contenido PRO.
+      const chapterPremiumLocked = !this.access.canAccessChapter(this.materiaId(), cap.id);
 
       // 1. Add Chapter Divider
       items.push({
@@ -2758,7 +2889,8 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
         subtitle: `Capítulo ${capIndex + 1}`,
         imageUrl: cap.imageUrl,
         isCurrentChapter: cap.id === activeChapterId,
-        isLocked: chapterIsLocked
+        isLocked: chapterIsLocked,
+        isPremiumLocked: !this.access.canAccessChapter(this.materiaId(), cap.id)
       });
 
       const guideProg = this.paes.getSeccionProgress('guide_' + cap.id);
@@ -2810,6 +2942,15 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
           if (!completed) allCompletedInRow = false;
 
           let status: 'completed' | 'active' | 'locked' = 'locked';
+
+          if (chapterPremiumLocked) {
+            // El muro de pago manda sobre cualquier otro estado.
+            return {
+              id: sec.id, capituloId: cap.id, title: sec.title, status: 'locked',
+              nodeIndex: nodeIndex++, tags: sec.tags, isBoss: sec.id === lastSectionId,
+              isProTip: sec.isProTip, isPractice: sec.isPractice, isPremiumLocked: true
+            } as any;
+          }
 
           if (completed) {
             status = 'completed';
@@ -2881,6 +3022,13 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
   });
 
   handleNodeClick(item: any) {
+    // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
+    // Se comprueba aqui ademas de en el destino porque el usuario tambien puede
+    // llegar escribiendo la URL a mano.
+    if (!this.access.canAccessSection(item.id)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
     if (item.status === 'locked' && !this.adminService.isAdmin() && !unlockAll) return;
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
@@ -2906,6 +3054,10 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
   }
 
   goToGuide(capId: string) {
+    if (!this.access.canAccessChapter(this.materiaId(), capId)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     this.router.navigate(['/ruta', this.materiaId(), capId]);
   }
 
@@ -3318,7 +3470,7 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
 
   forceRefresh() {
     Object.keys(localStorage).forEach(key => {
-      if (key.includes('paes_content_cache')) {
+      if (key.startsWith('learning_path_cache') || key.startsWith('pool_preguntas_cache')) {
         localStorage.removeItem(key);
       }
     });
@@ -3327,6 +3479,11 @@ export class MateriaBiologiaPathComponent implements OnInit, AfterViewInit, OnDe
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // Atajos de desarrollo (Alt+U desbloquear todo, Alt+C completar, Alt+X resetear).
+    // Estaban disponibles para CUALQUIER usuario: bastaba pulsar Alt+U para abrir
+    // la ruta completa, lo que ademas saltaba el limite freemium. Solo admins.
+    if (this.adminService.isAdmin() !== true) return;
+
     if (event.altKey && event.key.toLowerCase() === 'u') {
       this.toggleUnlockAllSteps();
     }

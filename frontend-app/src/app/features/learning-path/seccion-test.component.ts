@@ -2,7 +2,8 @@ import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener, P
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadTest } from './services/paes-content.service';
+import { enforceLearningAccess } from './services/learning-access.service';
 import { KatexService } from '../../core/services/katex.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -13,6 +14,7 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [CommonModule],
   template: `
     <div class="test-page" [class.boss-mode]="isBossMode()" [class.final-boss-mode]="isFinalBoss()" [class.taking-damage]="takingDamage()" *ngIf="test() as t">
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Prueba</h1>
       <!-- TOP BAR -->
       <div class="top-bar" [class.boss-bar]="isBossMode()">
         <button class="btn-close" (click)="confirmExit()" title="Salir">✕</button>
@@ -560,6 +562,17 @@ import { ToastService } from '../../core/services/toast.service';
       .dot-indicators { gap: 4px; }
       .dot { width: 8px; height: 8px; }
     }
+
+    /* ── Contencion de desbordamiento horizontal (movil) ──
+       Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
+       ningun contenedor con scroll: en pantallas estrechas empujaban el ancho de
+       toda la pagina y aparecia scroll horizontal. Ahora cada bloque ancho se
+       desplaza dentro de si mismo. */
+    :host { display: block; max-width: 100%; overflow-x: clip; }
+    ::ng-deep .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-bottom: 0.25rem; }
+    ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+    ::ng-deep img, ::ng-deep svg { max-width: 100%; height: auto; }
+    ::ng-deep pre { max-width: 100%; overflow-x: auto; }
   `]
 })
 export class SeccionTestComponent implements OnInit, OnDestroy {
@@ -707,6 +720,14 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   constructor() {
+    // Trae el test de esta seccion bajo demanda (1 lectura), en vez de que el
+    // servicio cargue los 502 tests en cada arranque. Ver ensureTestLoaded().
+    autoLoadTest(() => this.seccionId());
+
+    // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
+    // Reactivo porque el contenido carga async (ver enforceLearningAccess).
+    enforceLearningAccess({ seccionId: () => this.seccionId() });
+
     this.route.paramMap.subscribe(params => {
       this.seccionId.set(params.get('seccionId') || '');
       this.loadState();

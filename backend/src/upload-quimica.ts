@@ -1,11 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { configureCloudinary } from './scripts/cloudinary.config';
 import * as path from 'path';
 
-cloudinary.config({ 
-  cloud_name: 'dqm3syhwr', 
-  api_key: '469121327526224', 
-  api_secret: 'VuuszgyIVRd-sTA0u-pVsE-9u-0' 
-});
+configureCloudinary();
 
 const IMAGES = [
   'C:\\Users\\lucas\\Desktop\\Rutas\\Ruta Quimica\\cap 1.webp'

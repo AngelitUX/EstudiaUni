@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FirestoreService, Intento, Pregunta } from '../../core/services/firestore.service';
 import { PaymentService } from '../../core/services/payment.service';
@@ -7,6 +8,10 @@ import { Auth } from '@angular/fire/auth';
 import { from, map, forkJoin, of, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminService } from '../admin/services/admin.service';
+import { AiAssistService, FocoTokensExhaustedError } from '../../core/services/ai-assist.service';
+import { ToastService } from '../../core/services/toast.service';
+import { formatFocoMessage } from '../../core/utils/foco-message-format';
+import { FocoTokensBadgeComponent } from '../../shared/components/foco-tokens-badge.component';
 
 interface ReviewQuestion {
   id: number;
@@ -28,7 +33,7 @@ interface ReviewQuestion {
 @Component({
   selector: 'app-ensayo-review',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, FocoTokensBadgeComponent],
   template: `
     <div class="review-container animate-fade-in">
       <!-- LOADING OVERLAY -->
@@ -98,6 +103,7 @@ interface ReviewQuestion {
             </div>
             
             <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+            <app-foco-tokens-badge></app-foco-tokens-badge>
             <button class="btn btn-primary btn-sm" routerLink="/ensayos" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">
               Finalizar
             </button>
@@ -206,18 +212,29 @@ interface ReviewQuestion {
                 *ngFor="let opt of question.options"
                 class="option-review"
                 [class.user-selected]="question.userAnswer === opt.id"
-                [class.correct-answer]="question.userAnswer && question.correctAnswer === opt.id"
+                [class.correct-answer]="question.userAnswer && question.correctAnswer === opt.id && (isProPlan || question.isCorrect)"
                 [class.wrong-answer]="question.userAnswer === opt.id && question.correctAnswer !== opt.id">
 
                 <span class="option-id">{{ opt.id }}</span>
                 <span class="option-text">{{ opt.text }}</span>
 
-                <span class="option-indicator" *ngIf="question.userAnswer && question.correctAnswer === opt.id">✓ Correcta</span>
+                <span class="option-indicator" *ngIf="question.userAnswer && question.correctAnswer === opt.id && (isProPlan || question.isCorrect)">✓ Correcta</span>
                 <span class="option-indicator wrong" *ngIf="question.userAnswer === opt.id && question.correctAnswer !== opt.id">✗ Tu respuesta</span>
               </div>
             </div>
 
-            <!-- AI EXPLANATION REMOVED AS REQUESTED -->
+            <!-- Free plan: don't reveal which option was correct on a wrong answer — upsell instead -->
+            <p class="locked-answer-note" *ngIf="!isProPlan && question.userAnswer && !question.isCorrect">
+              🔒 <a (click)="paymentService.openPricingModal()">Actualiza a PRO</a> para ver cuál era la respuesta correcta y pedirle a Foco que te explique en qué te equivocaste.
+            </p>
+
+            <!-- Pro plan: ask Foco to explain the correct process + the student's specific mistake -->
+            <button
+              class="btn-ask-foco"
+              *ngIf="isProPlan && question.userAnswer && !question.isCorrect"
+              (click)="openFocoForQuestion(question)">
+              🐙 Preguntarle a Foco por qué me equivoqué
+            </button>
           </div>
         </div>
 
@@ -253,6 +270,43 @@ interface ReviewQuestion {
             </div>
 
             <button class="btn-cancel" (click)="mostrarModalMejorador = false" style="width: 100%; padding: 0.9rem; border-radius: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgba(0,0,0,0.08); background: #f1f5f9; color: #475569; transition: all 0.2s;">Quizás más tarde</button>
+          </div>
+        </div>
+
+        <!-- FOCO REVIEW CHAT (Pro): docked panel, not a blocking modal — the
+             question stays visible/scrollable next to (desktop) or above
+             (mobile) the chat while it's open. -->
+        <div class="foco-chat-card animate-fade-in" *ngIf="activeChatQuestion">
+          <div class="foco-chat-header">
+            <div class="foco-chat-header-left">
+              <span class="foco-chat-avatar">🐙</span>
+              <div>
+                <h4>Foco, tu Pulpo Tutor</h4>
+                <span class="foco-chat-status">{{ chatLoading ? 'Pensando...' : 'En línea' }}</span>
+              </div>
+            </div>
+            <button class="foco-chat-close" (click)="closeFocoChat()" aria-label="Cerrar tutor">✕</button>
+          </div>
+
+          <div class="foco-chat-messages" #focoChatScroll>
+            <div *ngFor="let msg of chatMessages" class="foco-chat-msg" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [innerHTML]="msg.role === 'assistant' ? formatFocoMessage(msg.content) : msg.content">
+            </div>
+            <div class="foco-chat-msg assistant loading" *ngIf="chatLoading">
+              <span class="foco-typing-dot"></span><span class="foco-typing-dot"></span><span class="foco-typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="foco-chat-input-area">
+            <textarea
+              class="foco-chat-input"
+              [(ngModel)]="chatInputText"
+              (keydown.enter)="onFocoEnterKey($event)"
+              [disabled]="chatLoading"
+              placeholder="Escribe tu pregunta de seguimiento... (Enter para enviar)"
+              rows="2"
+              maxlength="300">
+            </textarea>
+            <button class="foco-chat-send" (click)="sendFocoFollowUp()" [disabled]="chatLoading || !chatInputText.trim()" aria-label="Enviar">➤</button>
           </div>
         </div>
       </div>
@@ -484,45 +538,209 @@ interface ReviewQuestion {
     .option-review.correct-answer .option-id { background: #10b981; color: #fff; }
     .option-review.wrong-answer .option-id { background: #ef4444; color: #fff; }
 
-    /* ===== AI EXPLANATION ===== */
-    .ai-explanation {
-      margin-top: 1.5rem;
-      background: rgba(99, 102, 241, 0.05);
-      border: 2px solid rgba(99, 102, 241, 0.3);
-      border-radius: 12px;
+    /* ===== FREE PLAN LOCKED-ANSWER UPSELL ===== */
+    .locked-answer-note {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1.5px dashed rgba(245, 158, 11, 0.35);
+      border-radius: 10px;
+      color: #92400e;
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.5;
     }
-    .ai-header {
+    .locked-answer-note a { color: #7c3aed; text-decoration: underline; cursor: pointer; font-weight: 800; }
+
+    /* ===== ASK FOCO BUTTON (Pro) ===== */
+    .btn-ask-foco {
+      margin-top: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.25rem;
+      background: linear-gradient(135deg, #7c3aed, #4338ca);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-ask-foco:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35); }
+
+    /* ===== FOCO REVIEW CHAT (docked panel, not a blocking modal) =====
+       Deliberately NOT centered over a dark backdrop: the whole point is to
+       read Foco's explanation while the question card stays visible, so this
+       docks to the right edge on desktop (question list keeps scrolling
+       underneath/beside it) and becomes a bottom sheet on mobile that leaves
+       the top of the screen — where the question is — uncovered. */
+    .foco-chat-card {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(400px, 100vw);
+      height: 100vh;
+      max-height: 100vh;
+      background: #ffffff;
+      border-radius: 20px 0 0 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 5000;
+      box-shadow: -12px 0 40px -12px rgba(15, 23, 42, 0.35);
+    }
+    .foco-chat-header {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      flex-shrink: 0;
     }
-    .ai-icon { font-size: 1.5rem; }
-    .ai-title { font-weight: 600; color: var(--accent-primary); font-size: 1rem; }
-    .explanation-content { display: flex; flex-direction: column; gap: 1.25rem; }
-    .explanation-section h4 {
+    .foco-chat-header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .foco-chat-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #4338ca);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .foco-chat-header-left h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: #1e293b; }
+    .foco-chat-status { font-size: 0.72rem; color: #10b981; font-weight: 600; }
+    .foco-chat-close {
+      background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b;
+      width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .foco-chat-close:hover { background: #e2e8f0; color: #1e293b; }
+    .foco-chat-messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .foco-chat-msg {
+      max-width: 85%;
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .foco-chat-msg.user {
+      align-self: flex-end;
+      background: #ede9fe;
+      color: #4c1d95;
+      border-bottom-right-radius: 4px;
+    }
+    .foco-chat-msg.assistant {
+      align-self: flex-start;
+      background: #f1f5f9;
+      color: #1e293b;
+      border-bottom-left-radius: 4px;
+    }
+    .foco-chat-msg.loading { display: flex; gap: 0.3rem; align-items: center; padding: 1rem; }
+    .foco-typing-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #94a3b8;
+      animation: focoTypingBounce 1.2s infinite ease-in-out;
+    }
+    .foco-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .foco-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes focoTypingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.6; } 30% { transform: translateY(-4px); opacity: 1; } }
+    .foco-chat-input-area {
+      flex-shrink: 0;
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.85rem 1rem;
+      border-top: 2px solid #e2e8f0;
+      background: #ffffff;
+    }
+    .foco-chat-input {
+      flex: 1;
+      resize: none;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.6rem 0.75rem;
       font-size: 0.9rem;
+      font-family: inherit;
+      color: #1e293b;
+    }
+    .foco-chat-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 2px rgba(124,58,237,0.12); }
+    .foco-chat-input:disabled { opacity: 0.6; background: #f1f5f9; }
+    .foco-chat-send {
+      width: 42px; height: 42px; border-radius: 10px; border: none; flex-shrink: 0;
+      background: linear-gradient(135deg, #7c3aed, #4338ca); color: #fff;
+      font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .foco-chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Math/markdown rendering inside Foco's messages (see formatFocoMessage) */
+    .foco-chat-msg strong { font-weight: 800; }
+    .foco-chat-msg em { font-style: italic; }
+    .math-block {
+      display: block;
+      margin: 0.5rem auto;
+      text-align: center;
+      padding: 0.6rem;
+      background: rgba(241, 245, 249, 0.7);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: 'Cambria Math', 'Times New Roman', Times, serif, monospace;
+      font-size: 1rem;
+      color: #0f172a;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .math-inline {
+      font-family: 'Cambria Math', 'Times New Roman', Times, serif, monospace;
       font-weight: 600;
-      color: #fff;
-      margin-bottom: 0.5rem;
+      color: #1d4ed8;
+      padding: 0 2px;
     }
-    .explanation-section p { color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; }
-    .solution-box {
-      background: rgba(0, 0, 0, 0.2);
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: monospace;
+    .math-fraction {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 4px;
+      line-height: 1.1;
+      font-size: 0.88em;
     }
-    .solution-box p { color: #e2e8f0; }
-    .explanation-section.tip {
-      background: rgba(249, 115, 22, 0.1);
-      padding: 1rem;
-      border-radius: 8px;
-      border-left: 3px solid #f97316;
+    .fraction-num { border-bottom: 1.5px solid #475569; padding-bottom: 1px; }
+    .fraction-den { padding-top: 1px; }
+    .math-vector { position: relative; display: inline-block; padding-top: 0.1em; font-weight: 700; }
+    .math-vector::before {
+      content: "→"; position: absolute; top: -0.45em; left: 50%;
+      transform: translateX(-50%) scale(0.7, 0.5); font-size: 0.7em; font-weight: bold; line-height: 1;
     }
-    .explanation-section.tip h4 { color: #f97316; }
+    .math-hat { position: relative; display: inline-block; padding-top: 0.05em; font-weight: 700; }
+    .math-hat::before {
+      content: "^"; position: absolute; top: -0.4em; left: 50%;
+      transform: translateX(-50%) scale(1.1, 0.7); font-size: 0.8em; font-weight: bold; line-height: 1;
+    }
+
+    @media (max-width: 768px) {
+      /* Bottom sheet instead of a right-docked panel: leaves the top of the
+         screen (where the question card is) visible above it. */
+      .foco-chat-card {
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 58vh;
+        max-height: 58vh;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -12px 40px -12px rgba(15, 23, 42, 0.35);
+      }
+    }
 
     /* ===== ACTIONS ===== */
     .review-actions { display: flex; justify-content: center; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--glass-border); }
@@ -608,6 +826,8 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
   public paymentService = inject(PaymentService);
   private auth = inject(Auth);
   private adminService = inject(AdminService);
+  private aiAssistService = inject(AiAssistService);
+  private toast = inject(ToastService);
 
   examId = '';
   examTitle = 'Cargando...';
@@ -623,6 +843,15 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
   private resultsTimerInterval: any;
 
   questions: ReviewQuestion[] = [];
+
+  // Exposed so the template can call it directly on each message.
+  readonly formatFocoMessage = formatFocoMessage;
+
+  // Foco "why did I get this wrong" chat (Pro only)
+  activeChatQuestion: ReviewQuestion | null = null;
+  chatMessages: { role: 'user' | 'assistant'; content: string; timestamp: Date }[] = [];
+  chatLoading = false;
+  chatInputText = '';
 
   get isProPlan(): boolean {
     return this.firestoreService.profileSignal()?.plan === 'premium' || this.adminService.isAdmin() === true;
@@ -1003,5 +1232,97 @@ export class EnsayoReviewComponent implements OnInit, OnDestroy {
     });
 
     this.router.navigate(['/mini-ensayo'], { queryParams });
+  }
+
+  // ── Foco review chat (Pro only) ──
+
+  openFocoForQuestion(question: ReviewQuestion) {
+    this.activeChatQuestion = question;
+    this.chatMessages = [];
+    this.chatInputText = '';
+    // Auto-kicks off the explanation — the student didn't type this, but
+    // showing it as their own message keeps the chat transcript coherent
+    // (matches the "quick message" pattern used in the exam runner's chat).
+    this.chatMessages.push({
+      role: 'user',
+      content: '¿Cuál era el proceso para resolver esta pregunta y en qué pude haberme equivocado?',
+      timestamp: new Date()
+    });
+    this.chatLoading = true;
+    this.runFocoChat(question);
+  }
+
+  closeFocoChat() {
+    this.activeChatQuestion = null;
+    this.chatMessages = [];
+    this.chatInputText = '';
+  }
+
+  async sendFocoFollowUp() {
+    const text = this.chatInputText.trim();
+    if (!text || this.chatLoading || !this.activeChatQuestion) return;
+    this.chatInputText = '';
+    this.chatMessages.push({ role: 'user', content: text, timestamp: new Date() });
+    this.chatLoading = true;
+    await this.runFocoChat(this.activeChatQuestion);
+  }
+
+  onFocoEnterKey(event: Event) {
+    const ke = event as KeyboardEvent;
+    if (!ke.shiftKey) {
+      ke.preventDefault();
+      this.sendFocoFollowUp();
+    }
+  }
+
+  private async runFocoChat(question: ReviewQuestion) {
+    try {
+      const history = this.chatMessages.map(m => ({ role: m.role, content: m.content }));
+      const response = await this.aiAssistService.reviewChatViaBackend({
+        question: question.stem,
+        options: question.options,
+        userAnswer: question.userAnswer,
+        correctAnswer: question.correctAnswer || 'A',
+        subject: this.examId,
+        imageUrl: question.imageUrl,
+        readingImages: question.readingText,
+        history,
+      });
+
+      // Sync the local profile signal with the real, backend-confirmed usage
+      // instead of guessing/incrementing locally. Must go through .set() with
+      // a new object — mutating profile.dailyCredits in place doesn't notify
+      // Angular signals, so anything computed() from profileSignal() (like
+      // the Foco tokens badge) would silently keep showing stale numbers.
+      const profile = this.firestoreService.profileSignal();
+      if (profile) {
+        this.firestoreService.profileSignal.set({
+          ...profile,
+          dailyCredits: {
+            ...(profile.dailyCredits || {}),
+            focoTokensUsedToday: Math.max(0, response.limitTokens - response.remainingTokens)
+          }
+        });
+      }
+
+      this.chatMessages.push({ role: 'assistant', content: response.reply, timestamp: new Date() });
+    } catch (err) {
+      if (err instanceof FocoTokensExhaustedError) {
+        this.chatMessages.push({
+          role: 'assistant',
+          content: `⚠️ ${err.message}`,
+          timestamp: new Date()
+        });
+      } else {
+        this.toast.error('No se pudo conectar con el tutor IA.');
+        this.chatMessages.push({
+          role: 'assistant',
+          content: 'Lo siento, no pude conectarme en este momento. Intenta de nuevo.',
+          timestamp: new Date()
+        });
+      }
+    } finally {
+      this.chatLoading = false;
+    }
   }
 }

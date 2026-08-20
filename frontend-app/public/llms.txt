@@ -1,0 +1,24 @@
+# EstudiaUni.cl
+
+> Plataforma chilena para preparar la PAES (Prueba de Acceso a la Educación Superior) con inteligencia artificial, práctica adaptativa y simulacros completos.
+
+EstudiaUni.cl ayuda a estudiantes de Chile a prepararse para la PAES mediante una ruta de aprendizaje personalizada por materia, ensayos tipo PAES con corrección automática, un tutor con inteligencia artificial que explica los errores, y herramientas complementarias como una calculadora de puntaje NEM y un buscador de carreras universitarias.
+
+## Páginas principales
+
+- [Inicio](https://estudiauni.cl/): Presentación de la plataforma, sus funcionalidades y planes.
+- [Crear cuenta](https://estudiauni.cl/register): Registro gratuito para nuevos estudiantes.
+- [Iniciar sesión](https://estudiauni.cl/login): Acceso para usuarios existentes.
+- [Centro de Soporte](https://estudiauni.cl/soporte): Ayuda, preguntas frecuentes y contacto.
+- [Trabaja con Nosotros](https://estudiauni.cl/trabaja-con-nosotros): Programa de embajadores para compartir la plataforma.
+
+## Qué ofrece la plataforma
+
+- Ruta de aprendizaje adaptativa por materia: Competencia Lectora, Matemática M1, Matemática M2, Historia y Ciencias (Biología, Física, Química).
+- Ensayos PAES completos con corrección automática y revisión detallada de resultados.
+- Tutor con inteligencia artificial que explica por qué una respuesta es correcta o incorrecta.
+- Mini ensayos y minijuegos de práctica rápida (Mente Veloz).
+- Calculadora de puntaje NEM (Notas de Enseñanza Media).
+- Buscador de carreras universitarias con recomendaciones según intereses y habilidades.
+
+La mayoría de las funcionalidades de estudio requieren una cuenta gratuita; existe un plan Premium con beneficios adicionales.

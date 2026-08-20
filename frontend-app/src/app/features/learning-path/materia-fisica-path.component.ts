@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed, HostListener, AfterViewIni
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
+import { LearningAccessService } from './services/learning-access.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
@@ -20,6 +21,8 @@ type PathItem = {
   imageUrl?: string;
   isCurrentChapter?: boolean;
   isLocked?: boolean;
+  /** Bloqueado por el limite del Plan Basico (1 capitulo por materia), no por progreso. */
+  isPremiumLocked?: boolean;
   nodes?: any[];
   rowIndex?: number;
   isCentered?: boolean;
@@ -40,24 +43,24 @@ type PathItem = {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
-            <img src="assets/images/iconosParaElementos/P_Pro.png" alt="PRO" class="promo-crown"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="PRO" class="promo-crown"/>
             <h4>Pásate a PRO</h4>
             <p>Explicaciones con IA y Ensayos Ilimitados</p>
             <button class="btn-promo-sidebar">Ver Planes ⚡</button>
@@ -65,11 +68,11 @@ type PathItem = {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -85,29 +88,29 @@ type PathItem = {
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RutaDeAprendizaje.png" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnsayosPaes.png" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MiniEnsayos.png" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_MenteVeloz.png" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnsayosPaes.svg" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_EnncuentraTuCarrera.png" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_CalculadoraNEM.png" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CalculadoraNEM.svg" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_Configuracion.png" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Configuracion.svg" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -193,10 +196,20 @@ type PathItem = {
               <div *ngIf="item.type === 'chapter'" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div class="chapter-splash" [ngClass]="[item.capituloId, getChapterProgress(item.capituloId).pct === 100 ? 'chapter-completed' : '']" style="margin-bottom: 7rem; width: 100%;">
                   <div class="splash-bg-pattern"></div>
+
+                  <!-- Muro de pago: capitulo fuera del Plan Basico -->
+                  <div class="premium-lock-overlay" *ngIf="item.isPremiumLocked" (click)="paymentService.openPricingModal()">
+                    <div class="plo-card">
+                      <svg class="plo-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2zm6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1zM12 3a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z"/></svg>
+                      <h3 class="plo-title">Capitulo exclusivo PRO</h3>
+                      <p class="plo-desc">Con el Plan Basico puedes cursar el primer capitulo de cada materia. Hazte PRO para desbloquear los {{ access.lockedChapterCount(materiaId()) }} capitulos restantes.</p>
+                      <button class="plo-btn" type="button" (click)="$event.stopPropagation(); paymentService.openPricingModal()">Mejorar a PRO</button>
+                    </div>
+                  </div>
                   <div class="splash-inner">
                   <div class="splash-hero">
                     <div class="splash-mascot-area">
-                      <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/focoFisica" alt="Foco" class="splash-mascot chapter-image-custom" />
+                      <img src="assets/images/Nuevos VideosEIlustraciones/GifsFocoWEBP/focoFisica.webp" alt="Foco" class="splash-mascot chapter-image-custom" width="290" height="290" loading="lazy" decoding="async" />
                     </div>
                     <div class="splash-info">
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
@@ -228,7 +241,7 @@ type PathItem = {
                       EMPEZAR
                       <div class="tooltip-arrow"></div>
                     </div>
-                    <button class="splash-guide-btn" [class.locked]="item.isLocked" (click)="!item.isLocked && goToGuide(item.capituloId)" style="flex: 1;">
+                    <button class="splash-guide-btn" [class.locked]="item.isLocked || item.isPremiumLocked" (click)="item.isPremiumLocked ? paymentService.openPricingModal() : (!item.isLocked && goToGuide(item.capituloId))" style="flex: 1;">
                       <span class="sgb-icon">📖</span> Resumen del Capítulo
                     </button>
                     <button *ngIf="adminService.isAdmin()"
@@ -237,7 +250,7 @@ type PathItem = {
                       [title]="isGuideCompleted(item.capituloId) ? 'Marcar guía como incompleta' : 'Marcar guía como completada'"
                       (click)="toggleGuideCompletion($event, item.capituloId)">
                       <span class="admin-guide-icon-default">
-                        {{ isGuideCompleted(item.capituloId) ? '✓ Guía' : '⚡ Completar' }}
+                        {{ isGuideCompleted(item.capituloId) ? '✓ Guía' : 'Completar' }}
                       </span>
                       <span class="admin-guide-icon-hover">
                         ✕ Quitar
@@ -281,7 +294,7 @@ type PathItem = {
                 <div class="node-wrapper" 
                      [style.display]="item.nodes!.length > 1 ? 'flex' : 'flex'"
                      [style.flex-direction]="item.nodes!.length > 1 ? 'row' : 'column'"
-                     [style.gap]="item.nodes!.length === 3 ? 'calc(180px - 72px)' : (item.nodes!.length === 2 ? 'calc(280px - 72px)' : '0')"
+                     [style.gap]="getBranchGap(item.nodes!.length)"
                      style="align-items: center; justify-content: center;">
                      
                   <ng-container *ngFor="let node of item.nodes; let nodeIdx = index; let isLast = last">
@@ -314,24 +327,30 @@ type PathItem = {
                         [class.node-completed]="node.status === 'completed'"
                         [class.node-active]="node.status === 'active'"
                         [class.node-locked]="node.status === 'locked'"
+                        [class.node-premium-locked]="node.isPremiumLocked"
                         (click)="handleNodeClick(node)">
                         <div class="node-inner">
-                          <ng-container *ngIf="node.isBoss">
+                          <ng-container *ngIf="node.isPremiumLocked">
+                            <svg class="node-icon icon-premium-lock" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2zm6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1zM12 3a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z"/>
+                            </svg>
+                          </ng-container>
+                          <ng-container *ngIf="node.isBoss && !node.isPremiumLocked">
                             <svg class="node-icon icon-boss" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M12 2C7.03 2 3 6.03 3 11V14.5C3 15.33 3.67 16 4.5 16H6V20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20V16H19.5C20.33 16 21 15.33 21 14.5V11C21 6.03 16.97 2 12 2ZM8 10C6.9 10 6 9.1 6 8C6 6.9 6.9 6 8 6C9.1 6 10 6.9 10 8C10 9.1 9.1 10 8 10ZM16 10C14.9 10 14 9.1 14 8C14 6.9 14.9 6 16 6C17.1 6 18 6.9 18 8C18 9.1 17.1 10 16 10ZM15 19H9V16H15V19Z" />
                             </svg>
                           </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !node.isProTip && isPracticeNode(node)">
+                          <ng-container *ngIf="!node.isBoss && !node.isProTip && isPracticeNode(node) && !node.isPremiumLocked">
                             <svg class="node-icon icon-practice" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M20 9V7c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v2H10V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v2H2v6h2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h4v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2h2v-6h-2z"/>
                             </svg>
                           </ng-container>
-                          <ng-container *ngIf="!node.isBoss && node.isProTip">
+                          <ng-container *ngIf="!node.isBoss && node.isProTip && !node.isPremiumLocked">
                             <svg class="node-icon icon-pro-tip" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
                             </svg>
                           </ng-container>
-                          <ng-container *ngIf="!node.isBoss && !node.isProTip && !isPracticeNode(node)">
+                          <ng-container *ngIf="!node.isBoss && !node.isProTip && !isPracticeNode(node) && !node.isPremiumLocked">
                             <svg class="node-icon icon-star" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
@@ -346,7 +365,7 @@ type PathItem = {
                         [class.title-practice]="!node.isBoss && !node.isProTip && isPracticeNode(node)"
                         [class.title-pro-tip]="node.isProTip"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
-                        {{ node.title }}
+                        {{ node.isPremiumLocked ? '???' : node.title }}
                       </div>
                     </div>
                   </ng-container>
@@ -378,8 +397,8 @@ type PathItem = {
     <ng-container *ngIf="isPhysicsRoute()">
       <!-- Tab trigger button -->
       <button class="sim-tab-trigger" (click)="toggleSimPanel()" [class.panel-open]="simPanelOpen" [class.expanded]="simExpanded">
-        <span class="sim-tab-icon">⚗️</span>
-        <span class="sim-tab-label">Simulador</span>
+        <span class="sim-tab-icon"></span>
+        <span class="sim-tab-label">Simuladores Interactivos</span>
         <span class="sim-tab-arrow">{{ simPanelOpen ? '▶' : '◀' }}</span>
       </button>
 
@@ -388,7 +407,7 @@ type PathItem = {
         <div class="sim-drawer-inner">
           <div class="sim-header">
             <div class="sim-header-left">
-              <span class="sim-header-icon">⚗️</span>
+              <span class="sim-header-icon"></span>
               <div>
                 <h3 class="sim-title">Simuladores de Física</h3>
               </div>
@@ -406,7 +425,7 @@ type PathItem = {
           </div>
           
           <div class="sim-chapter-groups">
-            <select class="sim-chapter-select" (change)="setSimChapter($event)">
+            <select class="sim-chapter-select" name="simChapterSelect" id="simChapterSelect" aria-label="Seleccionar capítulo" (change)="setSimChapter($event)">
               <option value="0" [selected]="selectedSimChapterIndex === 0">1 — Mecánica</option>
               <option value="1" [selected]="selectedSimChapterIndex === 1">2 — Ondas</option>
               <option value="2" [selected]="selectedSimChapterIndex === 2">3 — Energía</option>
@@ -416,47 +435,47 @@ type PathItem = {
             
             <!-- CAP 1: Mecánica -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 0">
-              <button class="sim-tab" [class.active]="activeSimTab === 'projectile'" (click)="setSimTab('projectile')">🎯 Proyectil</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'inclined'" (click)="setSimTab('inclined')">📐 Plano Inclinado</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'projectile'" (click)="setSimTab('projectile')">Proyectil</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'inclined'" (click)="setSimTab('inclined')">Plano Inclinado</button>
             </div>
             <!-- CAP 2: Ondas -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 1">
-              <button class="sim-tab" [class.active]="activeSimTab === 'waves'" (click)="setSimTab('waves')">〜 Onda Sinusoidal</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'interference'" (click)="setSimTab('interference')">🔀 Interferencia</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'optics'" (click)="setSimTab('optics')">🔍 Óptica y Lentes</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'waves'" (click)="setSimTab('waves')">Onda Sinusoidal</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'interference'" (click)="setSimTab('interference')">Interferencia</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'optics'" (click)="setSimTab('optics')">Óptica y Lentes</button>
             </div>
             <!-- CAP 3: Energía -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 2">
-              <button class="sim-tab" [class.active]="activeSimTab === 'pendulum'" (click)="setSimTab('pendulum')">🕰️ Péndulo</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'calorimetry'" (click)="setSimTab('calorimetry')">🌡️ Calorimetría</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'pendulum'" (click)="setSimTab('pendulum')">Péndulo</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'calorimetry'" (click)="setSimTab('calorimetry')">Calorimetría</button>
             </div>
             <!-- CAP 4: Electricidad -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 3">
-              <button class="sim-tab" [class.active]="activeSimTab === 'coulomb'" (click)="setSimTab('coulomb')">⚡ Ley de Coulomb</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'circuit'" (click)="setSimTab('circuit')">🔋 Circuito Ohm</button>
-              <button class="sim-tab" [class.active]="activeSimTab === 'faraday'" (click)="setSimTab('faraday')">🧲 Ley de Faraday</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'coulomb'" (click)="setSimTab('coulomb')">Ley de Coulomb</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'circuit'" (click)="setSimTab('circuit')">Circuito Ohm</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'faraday'" (click)="setSimTab('faraday')">Ley de Faraday</button>
             </div>
             <!-- CAP 5: Tierra y Universo -->
             <div class="sim-tabs" *ngIf="selectedSimChapterIndex === 4">
-              <button class="sim-tab" [class.active]="activeSimTab === 'orbit'" (click)="setSimTab('orbit')">🪐 Órbita Planetaria</button>
+              <button class="sim-tab" [class.active]="activeSimTab === 'orbit'" (click)="setSimTab('orbit')">Órbita Planetaria</button>
             </div>
           </div>
 
           <!-- ═══ PROJECTILE SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'projectile'">
-            <div class="sim-info-badge">🎯 Movimiento parabólico — velocidad inicial, ángulo y gravedad</div>
+            <div class="sim-info-badge">Movimiento parabólico — velocidad inicial, ángulo y gravedad</div>
             <canvas #projectileCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Velocidad: <strong>{{ projVelocity }} m/s</strong></label>
-                <input type="range" min="10" max="50" [value]="projVelocity" (input)="projVelocity = +$any($event.target).value">
+                <label for="projVelocity">Velocidad: <strong>{{ projVelocity }} m/s</strong></label>
+                <input type="range" min="10" max="50" [value]="projVelocity" name="projVelocity" id="projVelocity" (input)="projVelocity = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <label>Ángulo: <strong>{{ projAngle }}°</strong></label>
-                <input type="range" min="5" max="85" [value]="projAngle" (input)="projAngle = +$any($event.target).value">
+                <label for="projAngle">Ángulo: <strong>{{ projAngle }}°</strong></label>
+                <input type="range" min="5" max="85" [value]="projAngle" name="projAngle" id="projAngle" (input)="projAngle = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="launchProjectile()">🚀 Lanzar</button>
+                <button class="sim-btn" style="flex: 1" (click)="launchProjectile()">Lanzar</button>
               </div>
             </div>
             <div class="sim-stats" *ngIf="projMaxHeight > 0">
@@ -472,20 +491,20 @@ type PathItem = {
 
           <!-- ═══ INCLINED PLANE SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'inclined'">
-            <div class="sim-info-badge">📐 Plano inclinado — fuerzas componentes y aceleración</div>
+            <div class="sim-info-badge">Plano inclinado — fuerzas componentes y aceleración</div>
             <canvas #inclinedCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Ángulo θ: <strong>{{ inclinedAngle }}°</strong></label>
-                <input type="range" min="5" max="75" [value]="inclinedAngle" (input)="inclinedAngle = +$any($event.target).value; drawInclined()">
+                <label for="inclinedAngle">Ángulo θ: <strong>{{ inclinedAngle }}°</strong></label>
+                <input type="range" min="5" max="75" [value]="inclinedAngle" name="inclinedAngle" id="inclinedAngle" (input)="inclinedAngle = +$any($event.target).value; drawInclined()">
               </div>
               <div class="sim-control-row">
-                <label>Masa: <strong>{{ inclinedMass }} kg</strong></label>
-                <input type="range" min="1" max="20" [value]="inclinedMass" (input)="inclinedMass = +$any($event.target).value; drawInclined()">
+                <label for="inclinedMass">Masa: <strong>{{ inclinedMass }} kg</strong></label>
+                <input type="range" min="1" max="20" [value]="inclinedMass" name="inclinedMass" id="inclinedMass" (input)="inclinedMass = +$any($event.target).value; drawInclined()">
               </div>
               <div class="sim-control-row">
-                <label>μ rozamiento: <strong>{{ inclinedMu }}</strong></label>
-                <input type="range" min="0" max="60" [value]="inclinedMu * 100" (input)="inclinedMu = +$any($event.target).value / 100; drawInclined()">
+                <label for="inclinedMu * 100">μ rozamiento: <strong>{{ inclinedMu }}</strong></label>
+                <input type="range" min="0" max="60" [value]="inclinedMu * 100" name="inclinedMu * 100" id="inclinedMu * 100" (input)="inclinedMu = +$any($event.target).value / 100; drawInclined()">
               </div>
             </div>
             <div class="sim-stats">
@@ -502,20 +521,20 @@ type PathItem = {
 
           <!-- ═══ WAVE SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'waves'">
-            <div class="sim-info-badge">〜 Onda sinusoidal — amplitud, frecuencia y longitud de onda</div>
+            <div class="sim-info-badge">Onda sinusoidal — amplitud, frecuencia y longitud de onda</div>
             <canvas #waveCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Amplitud: <strong>{{ waveAmplitude }}</strong></label>
-                <input type="range" min="10" max="60" [value]="waveAmplitude" (input)="waveAmplitude = +$any($event.target).value; drawWave()">
+                <label for="waveAmplitude">Amplitud: <strong>{{ waveAmplitude }}</strong></label>
+                <input type="range" min="10" max="60" [value]="waveAmplitude" name="waveAmplitude" id="waveAmplitude" (input)="waveAmplitude = +$any($event.target).value; drawWave()">
               </div>
               <div class="sim-control-row">
-                <label>Frecuencia: <strong>{{ waveFrequency }}</strong></label>
-                <input type="range" min="1" max="8" [value]="waveFrequency" (input)="waveFrequency = +$any($event.target).value; drawWave()">
+                <label for="waveFrequency">Frecuencia: <strong>{{ waveFrequency }}</strong></label>
+                <input type="range" min="1" max="8" [value]="waveFrequency" name="waveFrequency" id="waveFrequency" (input)="waveFrequency = +$any($event.target).value; drawWave()">
               </div>
               <div class="sim-control-row">
-                <label>Animación</label>
-                <button class="sim-btn" (click)="toggleWaveAnimation()">{{ waveAnimating ? '⏸ Pausar' : '▶ Animar' }}</button>
+                <label for="interfFreq1">Animación</label>
+                <button class="sim-btn" (click)="toggleWaveAnimation()">{{ waveAnimating ? 'Pausar' : 'Animar' }}</button>
               </div>
             </div>
             <div class="sim-formulas-container">
@@ -526,24 +545,24 @@ type PathItem = {
 
           <!-- ═══ INTERFERENCE SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'interference'">
-            <div class="sim-info-badge">🔀 Superposición de ondas — constructiva y destructiva</div>
+            <div class="sim-info-badge">Superposición de ondas — constructiva y destructiva</div>
             <canvas #interferenceCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
                 <label>Frec. onda 1: <strong>{{ interfFreq1 }}</strong></label>
-                <input type="range" min="1" max="6" [value]="interfFreq1" (input)="interfFreq1 = +$any($event.target).value; drawInterference()">
+                <input type="range" min="1" max="6" [value]="interfFreq1" name="interfFreq1" id="interfFreq1" (input)="interfFreq1 = +$any($event.target).value; drawInterference()">
               </div>
               <div class="sim-control-row">
-                <label>Frec. onda 2: <strong>{{ interfFreq2 }}</strong></label>
-                <input type="range" min="1" max="6" [value]="interfFreq2" (input)="interfFreq2 = +$any($event.target).value; drawInterference()">
+                <label for="interfFreq2">Frec. onda 2: <strong>{{ interfFreq2 }}</strong></label>
+                <input type="range" min="1" max="6" [value]="interfFreq2" name="interfFreq2" id="interfFreq2" (input)="interfFreq2 = +$any($event.target).value; drawInterference()">
               </div>
               <div class="sim-control-row">
-                <label>Fase onda 2: <strong>{{ interfPhase }}°</strong></label>
-                <input type="range" min="0" max="360" [value]="interfPhase" (input)="interfPhase = +$any($event.target).value; drawInterference()">
+                <label for="interfPhase">Fase onda 2: <strong>{{ interfPhase }}°</strong></label>
+                <input type="range" min="0" max="360" [value]="interfPhase" name="interfPhase" id="interfPhase" (input)="interfPhase = +$any($event.target).value; drawInterference()">
               </div>
               <div class="sim-control-row">
-                <label>Animación</label>
-                <button class="sim-btn" (click)="toggleInterfAnimation()">{{ interfAnimating ? '⏸ Pausar' : '▶ Animar' }}</button>
+                <label for="pendulumLength">Animación</label>
+                <button class="sim-btn" (click)="toggleInterfAnimation()">{{ interfAnimating ? 'Pausar' : 'Animar' }}</button>
               </div>
             </div>
             <div class="sim-formulas-container">
@@ -555,19 +574,19 @@ type PathItem = {
 
           <!-- ═══ PENDULUM SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'pendulum'">
-            <div class="sim-info-badge">🕰️ Péndulo simple — conservación de energía mecánica</div>
+            <div class="sim-info-badge">Péndulo simple — conservación de energía mecánica</div>
             <canvas #pendulumCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
                 <label>Longitud: <strong>{{ pendulumLength }} m</strong></label>
-                <input type="range" min="1" max="10" [value]="pendulumLength" (input)="pendulumLength = +$any($event.target).value; resetPendulum()">
+                <input type="range" min="1" max="10" [value]="pendulumLength" name="pendulumLength" id="pendulumLength" (input)="pendulumLength = +$any($event.target).value; resetPendulum()">
               </div>
               <div class="sim-control-row">
-                <label>Ángulo inicial: <strong>{{ pendulumAngle0 }}°</strong></label>
-                <input type="range" min="5" max="60" [value]="pendulumAngle0" (input)="pendulumAngle0 = +$any($event.target).value; resetPendulum()">
+                <label for="pendulumAngle0">Ángulo inicial: <strong>{{ pendulumAngle0 }}°</strong></label>
+                <input type="range" min="5" max="60" [value]="pendulumAngle0" name="pendulumAngle0" id="pendulumAngle0" (input)="pendulumAngle0 = +$any($event.target).value; resetPendulum()">
               </div>
               <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="togglePendulum()">{{ pendulumRunning ? '⏸ Pausar' : '▶ Oscilar' }}</button>
+                <button class="sim-btn" style="flex: 1" (click)="togglePendulum()">{{ pendulumRunning ? 'Pausar' : 'Oscilar' }}</button>
               </div>
             </div>
             <div class="sim-stats">
@@ -583,20 +602,20 @@ type PathItem = {
 
           <!-- ═══ COULOMB SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'coulomb'">
-            <div class="sim-info-badge">⚡ Ley de Coulomb — fuerza entre cargas eléctricas</div>
+            <div class="sim-info-badge">Ley de Coulomb — fuerza entre cargas eléctricas</div>
             <canvas #coulombCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Carga q₁: <strong>{{ coulombQ1 }} μC</strong></label>
-                <input type="range" min="1" max="10" [value]="coulombQ1" (input)="coulombQ1 = +$any($event.target).value; drawCoulomb()">
+                <label for="coulombQ1">Carga q₁: <strong>{{ coulombQ1 }} μC</strong></label>
+                <input type="range" min="1" max="10" [value]="coulombQ1" name="coulombQ1" id="coulombQ1" (input)="coulombQ1 = +$any($event.target).value; drawCoulomb()">
               </div>
               <div class="sim-control-row">
-                <label>Carga q₂: <strong>{{ coulombQ2 }} μC</strong></label>
-                <input type="range" min="1" max="10" [value]="coulombQ2" (input)="coulombQ2 = +$any($event.target).value; drawCoulomb()">
+                <label for="coulombQ2">Carga q₂: <strong>{{ coulombQ2 }} μC</strong></label>
+                <input type="range" min="1" max="10" [value]="coulombQ2" name="coulombQ2" id="coulombQ2" (input)="coulombQ2 = +$any($event.target).value; drawCoulomb()">
               </div>
               <div class="sim-control-row">
-                <label>Distancia: <strong>{{ coulombDist }} m</strong></label>
-                <input type="range" min="1" max="10" [value]="coulombDist" (input)="coulombDist = +$any($event.target).value; drawCoulomb()">
+                <label for="coulombDist">Distancia: <strong>{{ coulombDist }} m</strong></label>
+                <input type="range" min="1" max="10" [value]="coulombDist" name="coulombDist" id="coulombDist" (input)="coulombDist = +$any($event.target).value; drawCoulomb()">
               </div>
             </div>
             <div class="sim-stats">
@@ -612,23 +631,23 @@ type PathItem = {
 
           <!-- ═══ CIRCUIT SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'circuit'">
-            <div class="sim-info-badge">🔋 Ley de Ohm — voltaje, corriente y resistencia en circuitos</div>
+            <div class="sim-info-badge">Ley de Ohm — voltaje, corriente y resistencia en circuitos</div>
             <canvas #circuitCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Voltaje V: <strong>{{ circuitV }} V</strong></label>
-                <input type="range" min="1" max="24" [value]="circuitV" (input)="circuitV = +$any($event.target).value; drawCircuit()">
+                <label for="circuitV">Voltaje V: <strong>{{ circuitV }} V</strong></label>
+                <input type="range" min="1" max="24" [value]="circuitV" name="circuitV" id="circuitV" (input)="circuitV = +$any($event.target).value; drawCircuit()">
               </div>
               <div class="sim-control-row">
-                <label>R₁: <strong>{{ circuitR1 }} Ω</strong></label>
-                <input type="range" min="1" max="20" [value]="circuitR1" (input)="circuitR1 = +$any($event.target).value; drawCircuit()">
+                <label for="circuitR1">R₁: <strong>{{ circuitR1 }} Ω</strong></label>
+                <input type="range" min="1" max="20" [value]="circuitR1" name="circuitR1" id="circuitR1" (input)="circuitR1 = +$any($event.target).value; drawCircuit()">
               </div>
               <div class="sim-control-row">
-                <label>R₂: <strong>{{ circuitR2 }} Ω</strong></label>
-                <input type="range" min="1" max="20" [value]="circuitR2" (input)="circuitR2 = +$any($event.target).value; drawCircuit()">
+                <label for="circuitR2">R₂: <strong>{{ circuitR2 }} Ω</strong></label>
+                <input type="range" min="1" max="20" [value]="circuitR2" name="circuitR2" id="circuitR2" (input)="circuitR2 = +$any($event.target).value; drawCircuit()">
               </div>
               <div class="sim-control-row">
-                <label>Tipo:</label>
+                <label for="calMass1">Tipo:</label>
                 <div style="display:flex;gap:0.35rem">
                   <button class="sim-btn" [class.sim-btn-outline]="circuitType !== 'series'" (click)="circuitType='series'; drawCircuit()">Serie</button>
                   <button class="sim-btn" [class.sim-btn-outline]="circuitType !== 'parallel'" (click)="circuitType='parallel'; drawCircuit()">Paralelo</button>
@@ -651,24 +670,24 @@ type PathItem = {
           
           <!-- ═══ CALORIMETRY SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'calorimetry'">
-            <div class="sim-info-badge">🌡️ Calorimetría — Equilibrio térmico de mezclas</div>
+            <div class="sim-info-badge">Calorimetría — Equilibrio térmico de mezclas</div>
             <canvas #calorimetryCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
                 <label>Masa 1: <strong>{{ calMass1 }} g</strong></label>
-                <input type="range" min="10" max="500" [value]="calMass1" (input)="calMass1 = +$any($event.target).value; drawCalorimetry()">
+                <input type="range" min="10" max="500" [value]="calMass1" name="calMass1" id="calMass1" (input)="calMass1 = +$any($event.target).value; drawCalorimetry()">
               </div>
               <div class="sim-control-row">
-                <label>Temp 1: <strong>{{ calTemp1 }} °C</strong></label>
-                <input type="range" min="0" max="100" [value]="calTemp1" (input)="calTemp1 = +$any($event.target).value; drawCalorimetry()">
+                <label for="calTemp1">Temp 1: <strong>{{ calTemp1 }} °C</strong></label>
+                <input type="range" min="0" max="100" [value]="calTemp1" name="calTemp1" id="calTemp1" (input)="calTemp1 = +$any($event.target).value; drawCalorimetry()">
               </div>
               <div class="sim-control-row">
-                <label>Masa 2: <strong>{{ calMass2 }} g</strong></label>
-                <input type="range" min="10" max="500" [value]="calMass2" (input)="calMass2 = +$any($event.target).value; drawCalorimetry()">
+                <label for="calMass2">Masa 2: <strong>{{ calMass2 }} g</strong></label>
+                <input type="range" min="10" max="500" [value]="calMass2" name="calMass2" id="calMass2" (input)="calMass2 = +$any($event.target).value; drawCalorimetry()">
               </div>
               <div class="sim-control-row">
-                <label>Temp 2: <strong>{{ calTemp2 }} °C</strong></label>
-                <input type="range" min="0" max="100" [value]="calTemp2" (input)="calTemp2 = +$any($event.target).value; drawCalorimetry()">
+                <label for="calTemp2">Temp 2: <strong>{{ calTemp2 }} °C</strong></label>
+                <input type="range" min="0" max="100" [value]="calTemp2" name="calTemp2" id="calTemp2" (input)="calTemp2 = +$any($event.target).value; drawCalorimetry()">
               </div>
             </div>
             <div class="sim-stats">
@@ -684,20 +703,20 @@ type PathItem = {
 
           <!-- ═══ OPTICS SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'optics'">
-            <div class="sim-info-badge">🔍 Óptica Geométrica — Formación de imagen en Lente Convergente</div>
+            <div class="sim-info-badge">Óptica Geométrica — Formación de imagen en Lente Convergente</div>
             <canvas #opticsCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Foco (f): <strong>{{ optFocal }} cm</strong></label>
-                <input type="range" min="20" max="80" [value]="optFocal" (input)="optFocal = +$any($event.target).value; drawOptics()">
+                <label for="optFocal">Foco (f): <strong>{{ optFocal }} cm</strong></label>
+                <input type="range" min="20" max="80" [value]="optFocal" name="optFocal" id="optFocal" (input)="optFocal = +$any($event.target).value; drawOptics()">
               </div>
               <div class="sim-control-row">
-                <label>Dist. Objeto (do): <strong>{{ optDist }} cm</strong></label>
-                <input type="range" min="10" max="250" [value]="optDist" (input)="optDist = +$any($event.target).value; drawOptics()">
+                <label for="optDist">Dist. Objeto (do): <strong>{{ optDist }} cm</strong></label>
+                <input type="range" min="10" max="250" [value]="optDist" name="optDist" id="optDist" (input)="optDist = +$any($event.target).value; drawOptics()">
               </div>
               <div class="sim-control-row">
-                <label>Alt. Objeto (ho): <strong>{{ optHeight }} cm</strong></label>
-                <input type="range" min="10" max="80" [value]="optHeight" (input)="optHeight = +$any($event.target).value; drawOptics()">
+                <label for="optHeight">Alt. Objeto (ho): <strong>{{ optHeight }} cm</strong></label>
+                <input type="range" min="10" max="80" [value]="optHeight" name="optHeight" id="optHeight" (input)="optHeight = +$any($event.target).value; drawOptics()">
               </div>
             </div>
             <div class="sim-stats">
@@ -713,23 +732,23 @@ type PathItem = {
 
           <!-- ═══ FARADAY SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'faraday'">
-            <div class="sim-info-badge">🧲 Ley de Faraday — Inducción electromagnética por flujo magnético</div>
+            <div class="sim-info-badge">Ley de Faraday — Inducción electromagnética por flujo magnético</div>
             <canvas #faradayCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Espiras (N): <strong>{{ faraN }}</strong></label>
-                <input type="range" min="1" max="10" [value]="faraN" (input)="faraN = +$any($event.target).value">
+                <label for="faraN">Espiras (N): <strong>{{ faraN }}</strong></label>
+                <input type="range" min="1" max="10" [value]="faraN" name="faraN" id="faraN" (input)="faraN = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <label>Área (A): <strong>{{ faraArea }}</strong></label>
-                <input type="range" min="1" max="20" [value]="faraArea" (input)="faraArea = +$any($event.target).value">
+                <label for="faraArea">Área (A): <strong>{{ faraArea }}</strong></label>
+                <input type="range" min="1" max="20" [value]="faraArea" name="faraArea" id="faraArea" (input)="faraArea = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <label>Velocidad imán: <strong>{{ faraSpeed }}</strong></label>
-                <input type="range" min="1" max="15" [value]="faraSpeed" (input)="faraSpeed = +$any($event.target).value">
+                <label for="faraSpeed">Velocidad imán: <strong>{{ faraSpeed }}</strong></label>
+                <input type="range" min="1" max="15" [value]="faraSpeed" name="faraSpeed" id="faraSpeed" (input)="faraSpeed = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="toggleFaraday()">{{ faraRunning ? '⏸ Pausar' : '▶ Animar' }}</button>
+                <button class="sim-btn" style="flex: 1" (click)="toggleFaraday()">{{ faraRunning ? 'Pausar' : 'Animar' }}</button>
               </div>
             </div>
             <div class="sim-stats">
@@ -744,19 +763,19 @@ type PathItem = {
 
           <!-- ═══ ORBIT SIMULATOR ═══ -->
           <div class="sim-content" *ngIf="activeSimTab === 'orbit'">
-            <div class="sim-info-badge">🪐 Órbita planetaria — gravedad y velocidad orbital</div>
+            <div class="sim-info-badge">Órbita planetaria — gravedad y velocidad orbital</div>
             <canvas #orbitCanvas class="sim-canvas"></canvas>
             <div class="sim-controls">
               <div class="sim-control-row">
-                <label>Masa estrella: <strong>{{ orbitMassStar }}</strong></label>
-                <input type="range" min="1" max="10" [value]="orbitMassStar" (input)="orbitMassStar = +$any($event.target).value">
+                <label for="orbitMassStar">Masa estrella: <strong>{{ orbitMassStar }}</strong></label>
+                <input type="range" min="1" max="10" [value]="orbitMassStar" name="orbitMassStar" id="orbitMassStar" (input)="orbitMassStar = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <label>Radio órbita: <strong>{{ orbitRadius }}</strong></label>
-                <input type="range" min="40" max="110" [value]="orbitRadius" (input)="orbitRadius = +$any($event.target).value">
+                <label for="orbitRadius">Radio órbita: <strong>{{ orbitRadius }}</strong></label>
+                <input type="range" min="40" max="110" [value]="orbitRadius" name="orbitRadius" id="orbitRadius" (input)="orbitRadius = +$any($event.target).value">
               </div>
               <div class="sim-control-row">
-                <button class="sim-btn" style="flex: 1" (click)="toggleOrbit()">{{ orbitRunning ? '⏸ Pausar' : '▶ Orbitar' }}</button>
+                <button class="sim-btn" style="flex: 1" (click)="toggleOrbit()">{{ orbitRunning ? 'Pausar' : 'Orbitar' }}</button>
               </div>
             </div>
             <div class="sim-stats">
@@ -787,7 +806,7 @@ type PathItem = {
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>
@@ -1089,6 +1108,65 @@ type PathItem = {
     .node-active:active { transform: scale(1.1) translateY(8px); box-shadow: 0 0 0 #a559d6, 0 0 0 4px rgba(206,130,255,0.2); }
 
     /* LOCKED STATE */
+    /* ── Muro de pago del Plan Basico ── */
+    .premium-lock-overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 1rem; border-radius: inherit; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(3px); cursor: pointer; }
+    .plo-card { width: 100%; max-width: 340px; text-align: center; color: #fff; }
+    /* Antes era el emoji de candado, pero la fuente no tiene ese glifo y salia
+       un cuadrado vacio (tofu). Con un SVG inline se ve igual en cualquier equipo. */
+    .plo-icon { display: block; width: 34px; height: 34px; margin: 0 auto 0.5rem; color: #ffc800; }
+    /* Candado de los nodos bloqueados por plan */
+    .icon-premium-lock { color: #b45309 !important; width: 26px; height: 26px; }
+    .plo-title { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; margin: 0 0 0.4rem; color: #fff; }
+    .plo-desc { font-size: 0.85rem; line-height: 1.45; margin: 0 0 0.9rem; color: rgba(255,255,255,0.85); }
+    .plo-btn { background: linear-gradient(135deg, #ffc800, #ff9600); color: #1e293b; border: none; border-radius: 99px; padding: 0.6rem 1.4rem; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.18); }
+    .plo-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+    @media (max-width: 480px) {
+      .plo-title { font-size: 1rem; }
+      .plo-desc { font-size: 0.78rem; }
+      .plo-btn { width: 100%; }
+    }
+
+    /* ── Correcciones responsive medidas en móvil (320/375/414) ──
+       1) .splash-hero era flex con la mascota a 180px FIJOS y .splash-info a
+          flex:1 min-width:0, sin ninguna media query: a 320px la columna de
+          info quedaba en 0px y el titulo, la insignia y las stats del capitulo
+          se recortaban fuera de pantalla (invisibles por el overflow:hidden).
+       2) .node-title es absoluto con white-space:nowrap y sin max-width, asi
+          que crecia hasta 296px dentro de una columna mas estrecha y se
+          cortaba, ademas de solaparse con el titulo del nodo vecino. */
+    /* width:max-content es imprescindible: .node-title es position:absolute y,
+       sin ancho propio, al quitarle el nowrap se encogia al ancho de su contenedor
+       (el nodo, ~64px) en vez de respetar el max-width, partiendo el texto en
+       vertical. Es lo mismo que ya hacia .node-title.historia-title con width:150px,
+       por eso Historia/Biologia/Fisica no sufrian el problema.
+       overflow-wrap: break-word (no anywhere) evita cortar dentro de las palabras. */
+    .node-title { width: max-content; max-width: min(46vw, 190px); white-space: normal; overflow-wrap: break-word; }
+    /* .subcapitulo-title lleva white-space:nowrap en estilos INLINE, de ahi el !important. */
+    .subcapitulo-title { width: max-content !important; max-width: min(76vw, 260px) !important; white-space: normal !important; text-align: center; line-height: 1.15; }
+    @media (max-width: 900px) {
+      .splash-hero { flex-direction: column; text-align: center; gap: 1rem; }
+      .splash-mascot-area { width: 140px; height: 140px; }
+      .splash-info { width: 100%; }
+      .splash-stats { justify-content: center; flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .splash-mascot-area { width: 108px; height: 108px; }
+      .splash-mascot { max-width: 100%; height: auto; }
+      .splash-title { font-size: 1.15rem; }
+      .node-title { font-size: 0.78rem; max-width: min(42vw, 150px); }
+      /* Se centra sobre un nodo que en las filas ramificadas NO esta centrado en
+         el viewport, asi que con 260px se salia por un lado. Cota mas estrecha. */
+      .subcapitulo-title { max-width: min(40vw, 150px) !important; font-size: 12px !important; letter-spacing: 0.5px !important; padding: 4px 10px !important; }
+    }
+    /* Objetivos tactiles minimos (antes 22-32px) */
+    @media (max-width: 768px) {
+      .mobile-menu-btn { min-width: 44px; min-height: 44px; }
+      .btn-back { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+    }
+
+    .node-premium-locked { background: #fde68a !important; box-shadow: 0 6px 0 #d97706 !important; }
+    .node-premium-locked .node-inner { background: #fde68a !important; }
+    .node-premium-locked .node-icon { color: #b45309 !important; }
     .node-locked { background: #e5e5e5; box-shadow: 0 6px 0 #cccccc; cursor: not-allowed; }
     .node-locked .node-inner { background: #e5e5e5; }
     .node-locked .node-icon { color: #afafaf; }
@@ -1188,37 +1266,37 @@ type PathItem = {
       background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
       color: white;
       border: none;
-      border-radius: 14px 0 0 14px;
-      padding: 1rem 0.6rem;
+      border-radius: 16px 0 0 16px;
+      padding: 1.2rem 0.7rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.4rem;
       cursor: pointer;
       z-index: 500;
-      box-shadow: -4px 0 20px rgba(124,58,237,0.35);
+      
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      min-width: 52px;
+      min-width: 54px;
     }
     .sim-tab-trigger:hover {
       background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
-      box-shadow: -6px 0 24px rgba(124,58,237,0.5);
-      padding-right: 0.85rem;
+      
+      padding-right: 1.1rem;
     }
     .sim-tab-trigger.panel-open {
       right: 400px;
-      border-radius: 14px 0 0 14px;
+      border-radius: 16px 0 0 16px;
       background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     }
     .sim-tab-trigger.panel-open.expanded {
       right: 800px;
     }
-    .sim-tab-icon { font-size: 1.4rem; }
+    .sim-tab-icon { font-size: 1.8rem; }
     .sim-tab-label {
-      font-size: 0.65rem;
+      font-size: 0.70rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       writing-mode: vertical-rl;
       text-orientation: mixed;
     }
@@ -1235,13 +1313,22 @@ type PathItem = {
       z-index: 499;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       overflow-y: auto;
-      box-shadow: -12px 0 40px rgba(0,0,0,0.1);
+      
     }
     .sim-drawer.expanded {
       width: 800px;
       right: -820px;
     }
     .sim-drawer.open { right: 0; }
+    /* El cajon expandido media 800px fijos, sin ningun override: en un movil de
+       375px se salia de la pantalla y provocaba scroll horizontal en toda la pagina. */
+    .sim-drawer { max-width: 100vw; }
+    .sim-drawer.expanded { max-width: 100vw; }
+    @media (max-width: 860px) {
+      .sim-drawer, .sim-drawer.expanded { width: 100vw; right: -100vw; }
+      .sim-drawer.open, .sim-drawer.open.expanded { right: 0; }
+      .sim-drawer-inner { padding: 1rem; }
+    }
     .sim-drawer.open.expanded { right: 0; }
     .sim-drawer::-webkit-scrollbar { width: 4px; }
     .sim-drawer::-webkit-scrollbar-track { background: transparent; }
@@ -1691,6 +1778,7 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
   public adminService = inject(AdminService);
   private auth = inject(AuthService);
   public paymentService = inject(PaymentService);
+  public access = inject(LearningAccessService);
 
   mobileOpen = false;
   showSettingsModal = false;
@@ -1828,7 +1916,10 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
     const name = this.firestoreService.profileSignal()?.displayName || '';
     return name.charAt(0).toUpperCase() || 'U';
   });
-  isProPlan = computed(() => this.firestoreService.profileSignal()?.plan === 'premium');
+  // Delegado en LearningAccessService para que 'PRO' signifique lo mismo en toda
+  // la ruta: premium O admin. Antes cada componente lo calculaba aparte y dejaba
+  // fuera a los admin, que veian la ruta capada.
+  isProPlan = computed(() => this.access.isPro());
 
   materiaId = signal('');
   materia = computed(() => this.paes.getMateriaById(this.materiaId()));
@@ -1852,6 +1943,8 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
 
   // Pattern for horizontal zigzag staggering
   private offsets = [0, -80, -115, -80, 0, 80, 115, 80];
+  /** Cambia al redimensionar para que los computed del camino se recalculen. */
+  private viewportTick = signal(0);
 
   ngAfterViewInit() {
     // Initial draw will happen when panel opens
@@ -1900,6 +1993,7 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
     this.interfAnimating = false; cancelAnimationFrame(this.interfAnimFrame);
     this.pendulumRunning = false; cancelAnimationFrame(this.pendulumAnimFrame);
     this.orbitRunning = false; cancelAnimationFrame(this.orbitAnimFrame);
+    this.faraRunning = false; cancelAnimationFrame(this.faraAnimReq);
     setTimeout(() => this.initCurrentSim(), 50);
   }
 
@@ -2014,7 +2108,7 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
     ctx.font = '13px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Ajusta los parámetros y', w / 2, h / 2 - 10);
-    ctx.fillText('presiona 🚀 Lanzar', w / 2, h / 2 + 10);
+    ctx.fillText('presiona Lanzar', w / 2, h / 2 + 10);
     ctx.textAlign = 'left';
 
     // Launch point
@@ -2573,7 +2667,42 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
   }
 
   getOffset(index: number): number {
-    return this.offsets[index % this.offsets.length];
+    const raw = this.offsets[index % this.offsets.length];
+    return Math.round(raw * this.pathOffsetScale());
+  }
+
+  /**
+   * Factor de escala del zig-zag del camino segun el ancho disponible.
+   * Los offsets base llegan a +-115px; con el ancho util de un movil de 320px
+   * eso empujaba hasta 28 nodos fuera del viewport, donde quedaban recortados
+   * (el contenedor lleva overflow:hidden, asi que no habia forma de verlos).
+   */
+  /**
+   * Separacion horizontal entre nodos hermanos de una fila ramificada.
+   * Estaba fijada en el template (208px para 2 nodos, 108px para 3), lo que
+   * daba un .node-wrapper de 336px dentro de una fila de 296px en un movil de
+   * 320px: los nodos de los extremos quedaban recortados fuera de pantalla.
+   */
+  getBranchGap(count: number): string {
+    const base = count === 3 ? 108 : count === 2 ? 208 : 0;
+    if (base === 0) return '0';
+    return Math.round(base * this.pathOffsetScale()) + 'px';
+  }
+
+  private pathOffsetScale(): number {
+    this.viewportTick();
+    if (typeof window === 'undefined') return 1;
+    const w = window.innerWidth;
+    if (w >= 700) return 1;
+    if (w >= 560) return 0.75;
+    if (w >= 430) return 0.55;
+    return 0.4;
+  }
+
+  // Redibuja el camino al rotar o redimensionar para que la escala se aplique.
+  @HostListener('window:resize')
+  onViewportResize() {
+    this.viewportTick.update(v => v + 1);
   }
 
   getAccordionZigzag(rowIndex: number): number {
@@ -2591,7 +2720,7 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
     if (item.nodes!.length === 1) return 'none';
     // For 2 nodes (double branch): always symmetric, no zigzag
     if (item.nodes!.length === 2) {
-      
+
       return `none`;
     }
     const zig = this.getAccordionZigzag(item.rowIndex!);
@@ -2750,6 +2879,9 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
       let nodeIndex = 0;
       const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
       const chapterIsLocked = !unlockAll && foundActive;
+      // Bloqueo por plan: independiente del progreso y NO lo levanta unlockAll,
+      // para que el atajo de desarrollo no sirva como puerta trasera al contenido PRO.
+      const chapterPremiumLocked = !this.access.canAccessChapter(this.materiaId(), cap.id);
 
       // 1. Add Chapter Divider
       items.push({
@@ -2759,7 +2891,8 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
         subtitle: `Capítulo ${capIndex + 1}`,
         imageUrl: cap.imageUrl,
         isCurrentChapter: cap.id === activeChapterId,
-        isLocked: chapterIsLocked
+        isLocked: chapterIsLocked,
+        isPremiumLocked: !this.access.canAccessChapter(this.materiaId(), cap.id)
       });
 
       const guideProg = this.paes.getSeccionProgress('guide_' + cap.id);
@@ -2811,6 +2944,15 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
           if (!completed) allCompletedInRow = false;
 
           let status: 'completed' | 'active' | 'locked' = 'locked';
+
+          if (chapterPremiumLocked) {
+            // El muro de pago manda sobre cualquier otro estado.
+            return {
+              id: sec.id, capituloId: cap.id, title: sec.title, status: 'locked',
+              nodeIndex: nodeIndex++, tags: sec.tags, isBoss: sec.id === lastSectionId,
+              isProTip: sec.isProTip, isPractice: sec.isPractice, isPremiumLocked: true
+            } as any;
+          }
 
           if (completed) {
             status = 'completed';
@@ -2882,6 +3024,13 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
   });
 
   handleNodeClick(item: any) {
+    // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
+    // Se comprueba aqui ademas de en el destino porque el usuario tambien puede
+    // llegar escribiendo la URL a mano.
+    if (!this.access.canAccessSection(item.id)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     const unlockAll = localStorage.getItem('unlockAllSteps') === 'true';
     if (item.status === 'locked' && !this.adminService.isAdmin() && !unlockAll) return;
     this.router.navigate(['/ruta', this.materiaId(), item.capituloId, item.id]);
@@ -2907,6 +3056,10 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
   }
 
   goToGuide(capId: string) {
+    if (!this.access.canAccessChapter(this.materiaId(), capId)) {
+      this.paymentService.openPricingModal();
+      return;
+    }
     this.router.navigate(['/ruta', this.materiaId(), capId]);
   }
 
@@ -3319,7 +3472,7 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
 
   forceRefresh() {
     Object.keys(localStorage).forEach(key => {
-      if (key.includes('paes_content_cache')) {
+      if (key.startsWith('learning_path_cache') || key.startsWith('pool_preguntas_cache')) {
         localStorage.removeItem(key);
       }
     });
@@ -3328,6 +3481,11 @@ export class MateriaFisicaPathComponent implements OnInit, AfterViewInit, OnDest
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // Atajos de desarrollo (Alt+U desbloquear todo, Alt+C completar, Alt+X resetear).
+    // Estaban disponibles para CUALQUIER usuario: bastaba pulsar Alt+U para abrir
+    // la ruta completa, lo que ademas saltaba el limite freemium. Solo admins.
+    if (this.adminService.isAdmin() !== true) return;
+
     if (event.altKey && event.key.toLowerCase() === 'u') {
       this.toggleUnlockAllSteps();
     }

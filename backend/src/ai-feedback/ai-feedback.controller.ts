@@ -18,6 +18,7 @@ import {
 import { AssistQuestionDto } from './dto/assist-question.dto';
 import { ChatRequestDto } from './dto/chat-message.dto';
 import { CareerChatRequestDto } from './dto/career-chat.dto';
+import { ReviewChatRequestDto } from './dto/review-chat.dto';
 import { RecommendationsRequestDto } from './dto/recommendations.dto';
 
 @Controller('ai')
@@ -116,6 +117,42 @@ export class AiFeedbackController {
     const result = await this.aiFeedbackService.careerChat(body);
     await this.subscriptionsService.consumeFocoToken(user.uid);
     return { ...result, remainingTokens: tokenCheck.remaining - 1, limitTokens: tokenCheck.limit };
+  }
+
+  // The review-explanation chat generates a much longer, denser reply than a
+  // quick in-exam hint (full worked process + mistake analysis), so it costs
+  // more of the daily allowance than a normal message.
+  private static readonly REVIEW_CHAT_TOKEN_COST = 3;
+
+  @Post('review-chat')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  async reviewChat(
+    @CurrentUser() user: CurrentUserData,
+    @Body() body: ReviewChatRequestDto,
+  ) {
+    const status = await this.subscriptionsService.getStatus(user.uid);
+    if (status.tier !== 'premium') {
+      throw new ForbiddenException({
+        code: 'PREMIUM_ONLY_FEATURE',
+        message: 'Preguntarle a Foco por qué te equivocaste es una función exclusiva del Plan PRO.',
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    const cost = AiFeedbackController.REVIEW_CHAT_TOKEN_COST;
+    const tokenCheck = await this.subscriptionsService.checkFocoTokens(user.uid, cost);
+    if (!tokenCheck.allowed) {
+      throw new ForbiddenException({
+        code: 'FOCO_TOKENS_EXHAUSTED',
+        limit: tokenCheck.limit,
+        message: `Esta explicación consume ${cost} fichas y te quedan ${tokenCheck.remaining}. Se recargarán mañana a la misma hora.`,
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    const result = await this.aiFeedbackService.reviewChat(body);
+    await this.subscriptionsService.consumeFocoToken(user.uid, cost);
+    return { ...result, remainingTokens: Math.max(0, tokenCheck.remaining - cost), limitTokens: tokenCheck.limit };
   }
 
   @Post('recommendations')

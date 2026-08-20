@@ -2,7 +2,8 @@ import { Component, inject, signal, computed, HostListener, OnDestroy } from '@a
 import { CommonModule, NgIf, NgFor, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadTest } from './services/paes-content.service';
+import { enforceLearningAccess } from './services/learning-access.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
 import { GUIA_TIPOS_TEXTO_SLIDES, QUIZ_TIPOS_TEXTO } from './guide-slides-data';
@@ -346,6 +347,17 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
     @keyframes pulseGlow { 0% { transform: scale(1); text-shadow: 0 0 10px rgba(88, 204, 2, 0.3); } 50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(88, 204, 2, 0.7); } 100% { transform: scale(1); text-shadow: 0 0 10px rgba(88, 204, 2, 0.3); } }
     @keyframes testPulse { 0%, 100% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 10px rgba(133,92,214,0); } }
     @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } .voice-dropdown-menu { right: auto; left: 0; } }
+
+    /* ── Contencion de desbordamiento horizontal (movil) ──
+       Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
+       ningun contenedor con scroll: en pantallas estrechas empujaban el ancho de
+       toda la pagina y aparecia scroll horizontal. Ahora cada bloque ancho se
+       desplaza dentro de si mismo. */
+    :host { display: block; max-width: 100%; overflow-x: clip; }
+    ::ng-deep .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-bottom: 0.25rem; }
+    ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+    ::ng-deep img, ::ng-deep svg { max-width: 100%; height: auto; }
+    ::ng-deep pre { max-width: 100%; overflow-x: auto; }
   `]
 })
 export class SeccionBiologiaDetailComponent {
@@ -384,6 +396,14 @@ export class SeccionBiologiaDetailComponent {
   });
 
   constructor() {
+    // Trae el test de esta seccion bajo demanda (1 lectura), en vez de que el
+    // servicio cargue los 502 tests en cada arranque. Ver ensureTestLoaded().
+    autoLoadTest(() => this.seccionId());
+
+    // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
+    // Reactivo porque el contenido carga async (ver enforceLearningAccess).
+    enforceLearningAccess({ materiaId: () => this.materiaId(), seccionId: () => this.seccionId() });
+
     this.route.paramMap.subscribe(params => {
       const url = this.router.url;
         let matId = 'biologia';

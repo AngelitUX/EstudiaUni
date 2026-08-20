@@ -15,6 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterLink, SettingsModalComponent, ProfileModalComponent],
   template: `
     <div class="runner-layout-wrap" *ngIf="session() as sess">
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Mini Ensayo en Curso</h1>
       <!-- MAIN CONTENT -->
       <main class="main-content runner-page animate-fade-in-down">
 <header class="top-bar">
@@ -131,7 +132,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
         <div class="modal-body">
           <div class="confirm-content">
-            <img src="assets/images/iconosParaElementos/P_CerrarSesion.png" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
+            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Cerrar Sesion" class="confirm-icon confirm-icon-img"/>
             <h3>¿Estás seguro de que quieres salir?</h3>
             <p>Se cerrará tu sesión actual y volverás a la página de inicio.</p>
           </div>

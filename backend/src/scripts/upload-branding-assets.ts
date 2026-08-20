@@ -1,14 +1,11 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { configureCloudinary } from './cloudinary.config';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dqm3syhwr',
-  api_key: process.env.CLOUDINARY_API_KEY || '469121327526224',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'VuuszgyIVRd-sTA0u-pVsE-9u-0',
-});
+configureCloudinary();
 
 const ASSETS_DIR = path.resolve(__dirname, '../../../frontend-app/src/assets/img');
 // focoBiologia.gif / focoFisica.gif were 31-36MB raw screen recordings — compressed via
