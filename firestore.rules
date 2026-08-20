@@ -185,7 +185,10 @@ service cloud.firestore {
 
     // ============ ADMINS ============
     match /admins/{adminId} {
-      allow read: if isAuthenticated();
+      // Un usuario solo puede leer su propio doc (para saber si es admin);
+      // los admins pueden leer cualquiera. Evita que cualquier usuario
+      // autenticado pueda enumerar todos los UIDs con privilegios de admin.
+      allow read: if isOwner(adminId) || isAdmin();
       allow write: if false; // Solo se puede agregar admins manualmente
     }
 

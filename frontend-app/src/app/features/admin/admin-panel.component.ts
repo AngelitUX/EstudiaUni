@@ -2,47 +2,16 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AdminService } from './services/admin.service';
+import { AdminSidebarComponent } from './admin-sidebar.component';
 import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AdminSidebarComponent],
   template: `
     <div class="admin-layout">
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img [src]="adminSvc.isAdmin() ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="sidebar-logo-img" />
-          </a>
-          <div class="admin-panel-tag">ADMIN PANEL</div>
-        </div>
-
-        <nav class="sidebar-nav">
-          <a routerLink="/admin" class="nav-item active">
-            <span class="nav-icon">📋</span>
-            <span class="nav-text">Pool de Preguntas</span>
-            <span class="nav-count">{{ adminSvc.totalPreguntas() }}</span>
-          </a>
-          <a routerLink="/admin/pregunta/nueva" class="nav-item">
-            <span class="nav-icon">➕</span>
-            <span class="nav-text">Nueva Pregunta</span>
-          </a>
-          <a routerLink="/admin/suscripciones" class="nav-item">
-            <span class="nav-icon">💳</span>
-            <span class="nav-text">Suscripciones y Pagos</span>
-          </a>
-          <a routerLink="/admin/recursos" class="nav-item">
-            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/>
-            <span class="nav-text">Recursos</span>
-          </a>
-          <a routerLink="/admin/bugs" class="nav-item">
-            <span class="nav-icon">🐛</span>
-            <span class="nav-text">Reportes de Bug</span>
-          </a>
-        </nav>
-
+      <app-admin-sidebar>
         <div class="sidebar-divider"></div>
 
         <!-- FILTROS POR MATERIA -->
@@ -61,17 +30,10 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
             </button>
           }
         </div>
-
-        <div class="sidebar-footer" style="padding: 1.25rem 0.75rem;">
-          <a class="nav-item logout-btn-sidebar" routerLink="/dashboard">
-            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/>
-            <span class="nav-text">Dashboard</span>
-          </a>
-        </div>
-      </aside>
+      </app-admin-sidebar>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in-down">
+      <main class="admin-main-content animate-fade-in-down">
         <!-- HEADER -->
         <header class="content-header">
           <div class="header-left">
@@ -81,9 +43,6 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
           <div class="header-actions">
             <button class="btn-refresh" (click)="refresh()" [disabled]="adminSvc.loading()">
               {{ adminSvc.loading() ? '⏳' : '🔄' }} Actualizar
-            </button>
-            <button class="btn-refresh" (click)="runCleanup()" [disabled]="cleaning()" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">
-              {{ cleaning() ? '🧹 Depurando...' : '🧹 Depurar DB' }}
             </button>
             <button class="btn-refresh" (click)="importModalOpen.set(true)" style="background: rgba(133,92,214,0.08); border-color: rgba(133,92,214,0.3); color: var(--accent-primary);">
               📥 Importar JSON
@@ -243,9 +202,17 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
               [disabled]="importing()"></textarea>
           </div>
 
-          @if (importError()) {
+          @if (importErrors().length > 0) {
             <div class="status-box error-box">
-              ❌ {{ importError() }}
+              ❌ Se encontraron {{ importErrors().length }} problema(s):
+              <ul class="error-list">
+                @for (err of importErrors().slice(0, 50); track err) {
+                  <li>{{ err }}</li>
+                }
+              </ul>
+              @if (importErrors().length > 50) {
+                <p>...y {{ importErrors().length - 50 }} más.</p>
+              }
             </div>
           }
 
@@ -275,94 +242,12 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     }
   `,
   styles: [`
-    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     .admin-layout {
       display: flex;
       min-height: 100vh;
-    }
-
-    /* SIDEBAR */
-    .sidebar { 
-      width: 260px; 
-      background: rgba(255, 255, 255, 0.85) !important; 
-      backdrop-filter: blur(20px) !important;
-      border-right: 1px solid rgba(133,92,214,0.15) !important; 
-      display: flex; 
-      flex-direction: column; 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      height: 100vh; 
-      z-index: 100; 
-    }
-    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
-    
-    .admin-panel-tag {
-      font-size: 0.65rem; 
-      background: rgba(139, 92, 246, 0.25); 
-      color: #c084fc; 
-      padding: 0.2rem 0.6rem; 
-      border-radius: 99px; 
-      margin-top: 0.5rem; 
-      font-weight: 800; 
-      letter-spacing: 0.08em;
-      display: inline-block;
-    }
-
-    .sidebar-nav { 
-      padding: 1rem 0.75rem; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 0.5rem; 
-    }
-    .nav-item { 
-      display: flex; 
-      align-items: center; 
-      gap: 0.85rem; 
-      padding: 0.9rem 1.1rem; 
-      border-radius: 12px; 
-      color: var(--text-primary) !important; 
-      text-decoration: none; 
-      transition: all 0.2s; 
-      cursor: pointer; 
-      font-size: 1.05rem;
-      font-weight: 500;
-    }
-    .nav-item:hover { 
-      background: rgba(133,92,214,0.08) !important; 
-      color: var(--text-primary) !important; 
-      transform: translateX(4px);
-    }
-    .nav-item.active { 
-      background: rgba(133,92,214,0.15) !important; 
-      color: var(--accent-primary) !important; 
-      border: none !important; 
-      border-left: 3.5px solid var(--accent-primary) !important; 
-      box-shadow: 0 4px 12px rgba(133,92,214,0.12) !important; 
-      font-weight: 700 !important; 
-    }
-    .nav-item.active .nav-icon { filter: brightness(1.1) !important; }
-    .nav-item.active .nav-text { color: var(--accent-primary) !important; }
-    .nav-icon { 
-      font-size: 1.35rem; 
-      width: 32px; 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .nav-count { 
-      margin-left: auto; 
-      font-size: 0.75rem; 
-      background: rgba(133,92,214,0.1); 
-      color: var(--accent-primary);
-      padding: 0.2rem 0.6rem; 
-      border-radius: 99px; 
-      font-weight: 700; 
     }
 
     .sidebar-divider { height: 1px; background: rgba(133,92,214,0.15); margin: 0.5rem 0.75rem; }
@@ -413,11 +298,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       justify-content: center;
     }
 
-    .logout-btn-sidebar { color: #ef4444 !important; opacity: 0.8 !important; }
-    .logout-btn-sidebar:hover { background: rgba(239, 68, 68, 0.08) !important; color: #ef4444 !important; opacity: 1 !important; }
-
     /* MAIN CONTENT */
-    .main-content { 
+    .admin-main-content { 
       flex: 1; 
       margin-left: 260px; 
       padding: 2.5rem; 
@@ -722,15 +604,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     /* RESPONSIVE */
     @media (max-width: 1024px) {
       .admin-layout { flex-direction: column; }
-      .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,0.15);
-      }
-      .sidebar-divider, .filter-section, .sidebar-footer { display: none; }
-      .main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
+      .sidebar-divider, .filter-section { display: none; }
+      .admin-main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
       .content-header { flex-direction: column; gap: 1.25rem; }
       .stats-bar { grid-template-columns: repeat(4, 1fr); }
     }
@@ -739,7 +614,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       .content-header h1 { font-size: 2.2rem; }
     }
     @media (max-width: 480px) {
-      .main-content { padding: 1rem; }
+      .admin-main-content { padding: 1rem; }
       .content-header h1 { font-size: 1.7rem; }
       .subtitle { font-size: 1rem; }
       .header-actions { width: 100%; }
@@ -843,7 +718,15 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       background: #fef2f2;
       color: #b91c1c;
       border: 1px solid #fca5a5;
+      max-height: 260px;
+      overflow-y: auto;
     }
+    .error-list {
+      margin: 0.5rem 0 0;
+      padding-left: 1.25rem;
+      font-weight: 500;
+    }
+    .error-list li { margin-bottom: 0.3rem; }
     .success-box {
       background: #f0fdf4;
       color: #15803d;
@@ -912,39 +795,31 @@ export class AdminPanelComponent implements OnInit {
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
   deleteTarget = signal<PoolPregunta | null>(null);
   deleting = signal(false);
-  cleaning = signal(false);
-
-  async runCleanup() {
-    if (!confirm('¿Estás seguro de que deseas depurar la base de datos? Se eliminarán todas las cuentas fantasmas (no registradas en Authentication) y se reorganizarán los roles de forma segura.')) {
-      return;
-    }
-    
-    this.cleaning.set(true);
-    try {
-      const result = await this.adminSvc.cleanupDatabase();
-      alert(`🎉 ¡Depuración completada de forma 100% segura!\n\n- Usuarios fantasmas eliminados: ${result.deletedUsers}\n- Administradores huérfanos eliminados: ${result.deletedAdmins}\n- Usuarios activos actualizados/ordenados: ${result.updatedUsers}`);
-      this.refresh();
-    } catch (error) {
-      console.error('Error running cleanup:', error);
-      alert('Hubo un error al depurar la base de datos. Consulta la consola.');
-    } finally {
-      this.cleaning.set(false);
-    }
-  }
 
   // ─── Bulk JSON Importer State ───
   importModalOpen = signal(false);
   importJsonText = signal('');
   importing = signal(false);
   importProgress = signal({ current: 0, total: 0 });
-  importError = signal<string | null>(null);
+  importErrors = signal<string[]>([]);
   importSuccess = signal<string | null>(null);
+
+  private readonly validMateriaIds: MateriaId[] = [
+    'competencia-lectora',
+    'matematicas-m1',
+    'matematicas-m2',
+    'ciencias-biologia',
+    'ciencias-fisica',
+    'ciencias-quimica',
+    'ciencias-tp',
+    'historia'
+  ];
 
   closeImportModal() {
     if (this.importing()) return;
     this.importModalOpen.set(false);
     this.importJsonText.set('');
-    this.importError.set(null);
+    this.importErrors.set([]);
     this.importSuccess.set(null);
   }
 
@@ -954,71 +829,75 @@ export class AdminPanelComponent implements OnInit {
   }
 
   validateAndImport() {
-    this.importError.set(null);
+    this.importErrors.set([]);
     this.importSuccess.set(null);
-    
+
     const text = this.importJsonText().trim();
     if (!text) {
-      this.importError.set('Por favor, ingresa un JSON.');
+      this.importErrors.set(['Por favor, ingresa un JSON.']);
       return;
     }
-    
+
     let parsed: any;
     try {
       parsed = JSON.parse(text);
     } catch (e: any) {
-      this.importError.set(`JSON inválido: ${e.message}`);
+      this.importErrors.set([`JSON inválido: ${e.message}`]);
       return;
     }
-    
+
     const list = Array.isArray(parsed) ? parsed : [parsed];
     if (list.length === 0) {
-      this.importError.set('El JSON está vacío o no contiene preguntas.');
+      this.importErrors.set(['El JSON está vacío o no contiene preguntas.']);
       return;
     }
-    
-    const validMateriaIds: MateriaId[] = [
-      'competencia-lectora',
-      'matematicas-m1',
-      'matematicas-m2',
-      'ciencias-biologia',
-      'ciencias-fisica',
-      'ciencias-quimica',
-      'ciencias-tp',
-      'historia'
-    ];
-    
+
+    // Validamos TODAS las preguntas y acumulamos todos los errores en vez de
+    // detenernos en la primera, para que una importación de cientos de
+    // preguntas se pueda corregir de una sola pasada.
+    const errors: string[] = [];
     const validatedQuestions: Omit<PoolPregunta, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>[] = [];
-    
+
     for (let i = 0; i < list.length; i++) {
       const q = list[i];
-      
-      if (!q.materiaId || !validMateriaIds.includes(q.materiaId)) {
-        this.importError.set(`Pregunta [Índice ${i}]: "materiaId" es requerido y debe ser uno de: ${validMateriaIds.join(', ')}`);
-        return;
+      const prefix = `Pregunta [Índice ${i}]`;
+
+      if (!q.materiaId || !this.validMateriaIds.includes(q.materiaId)) {
+        errors.push(`${prefix}: "materiaId" es requerido y debe ser uno de: ${this.validMateriaIds.join(', ')}`);
+        continue;
       }
-      if (!q.tema || typeof q.tema !== 'string') {
-        this.importError.set(`Pregunta [Índice ${i}]: "tema" es requerido y debe ser una cadena de texto.`);
-        return;
+
+      const temasValidos = this.adminSvc.getTemasForMateria(q.materiaId);
+      if (!q.tema || typeof q.tema !== 'string' || !temasValidos.includes(q.tema)) {
+        errors.push(`${prefix}: "tema" debe ser exactamente uno de los temas válidos para ${q.materiaId}: ${temasValidos.join(', ')}`);
+        continue;
       }
       if (!q.enunciado || typeof q.enunciado !== 'string') {
-        this.importError.set(`Pregunta [Índice ${i}]: "enunciado" es requerido y debe ser una cadena de texto.`);
-        return;
+        errors.push(`${prefix}: "enunciado" es requerido y debe ser una cadena de texto.`);
+        continue;
       }
       if (!q.alternativas || typeof q.alternativas !== 'object') {
-        this.importError.set(`Pregunta [Índice ${i}]: "alternativas" debe ser un objeto con las llaves A, B, C, D.`);
-        return;
+        errors.push(`${prefix}: "alternativas" debe ser un objeto con las llaves A, B, C, D.`);
+        continue;
       }
       const alts = q.alternativas;
       if (!alts.A || !alts.B || !alts.C || !alts.D) {
-        this.importError.set(`Pregunta [Índice ${i}]: "alternativas" debe contener opciones para A, B, C y D.`);
-        return;
+        errors.push(`${prefix}: "alternativas" debe contener opciones para A, B, C y D.`);
+        continue;
       }
       if (!q.respuesta_correcta || !['A', 'B', 'C', 'D'].includes(q.respuesta_correcta)) {
-        this.importError.set(`Pregunta [Índice ${i}]: "respuesta_correcta" es requerida y debe ser A, B, C o D.`);
-        return;
+        errors.push(`${prefix}: "respuesta_correcta" es requerida y debe ser A, B, C o D.`);
+        continue;
       }
-      
+      if (!q.feedback_acierto || typeof q.feedback_acierto !== 'string' || !q.feedback_acierto.trim()) {
+        errors.push(`${prefix}: "feedback_acierto" es requerido (explica por qué la respuesta es correcta).`);
+        continue;
+      }
+      if (!q.feedback_error || typeof q.feedback_error !== 'string' || !q.feedback_error.trim()) {
+        errors.push(`${prefix}: "feedback_error" es requerido (da una pista o corrección para quien se equivoca).`);
+        continue;
+      }
+
       validatedQuestions.push({
         materiaId: q.materiaId,
         tema: q.tema,
@@ -1034,28 +913,40 @@ export class AdminPanelComponent implements OnInit {
           D: String(alts.D),
         },
         respuesta_correcta: q.respuesta_correcta as 'A' | 'B' | 'C' | 'D',
-        feedback_acierto: q.feedback_acierto || '¡Correcto!',
-        feedback_error: q.feedback_error || 'Inténtalo de nuevo.'
+        feedback_acierto: q.feedback_acierto.trim(),
+        feedback_error: q.feedback_error.trim(),
       });
     }
-    
+
+    if (errors.length > 0) {
+      this.importErrors.set(errors);
+      return;
+    }
+
     this.startImporting(validatedQuestions);
   }
 
   async startImporting(questions: Omit<PoolPregunta, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>[]) {
     this.importing.set(true);
     this.importProgress.set({ current: 0, total: questions.length });
-    
+
     try {
-      for (let i = 0; i < questions.length; i++) {
-        await this.adminSvc.createPregunta(questions[i]);
-        this.importProgress.set({ current: i + 1, total: questions.length });
+      const result = await this.adminSvc.createPreguntasBulk(questions, (savedCount, total) => {
+        this.importProgress.set({ current: savedCount, total });
+      });
+
+      if (result.failedFromIndex !== null) {
+        this.importErrors.set([
+          `Se guardaron ${result.savedCount} de ${questions.length} preguntas. Falló al llegar al índice ${result.failedFromIndex}: ${result.error}. ` +
+          `Las primeras ${result.savedCount} ya quedaron guardadas — vuelve a intentar solo desde el índice ${result.failedFromIndex} en adelante.`
+        ]);
+      } else {
+        this.importSuccess.set(`🎉 ¡Éxito! Se importaron ${result.savedCount} preguntas correctamente.`);
+        this.importJsonText.set('');
       }
-      this.importSuccess.set(`🎉 ¡Éxito! Se importaron ${questions.length} preguntas correctamente.`);
-      this.importJsonText.set('');
       this.adminSvc.loadPreguntas();
     } catch (e: any) {
-      this.importError.set(`Error al subir preguntas: ${e.message}`);
+      this.importErrors.set([`Error al subir preguntas: ${e.message}`]);
     } finally {
       this.importing.set(false);
     }

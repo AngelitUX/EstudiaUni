@@ -133,6 +133,11 @@ export class PaymentService {
     return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/grant`, data);
   }
 
+  adminExtendSubscription(data: { targetEmailOrUid: string; durationDays: number; reason?: string }): Observable<{ success: boolean; message: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/extend`, data);
+  }
+
   adminRevokeSubscription(data: { targetEmailOrUid: string; reason?: string }): Observable<{ success: boolean; message: string }> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/revoke`, data);

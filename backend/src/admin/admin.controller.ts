@@ -4,6 +4,7 @@ import {
   Get,
   Body,
   Param,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -14,9 +15,17 @@ import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
 import {
   GrantSubscriptionDto,
+  ExtendSubscriptionDto,
   RevokeSubscriptionDto,
   ApproveTransferDto,
 } from '../subscriptions/dto/manual-payment.dto';
+import {
+  UpsertModuleDto,
+  UpsertTopicDto,
+  UpsertQuestionDto,
+  CreateSimulationDto,
+} from './dto/admin-content.dto';
+import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { CurrentUser, CurrentUserData } from '../common/decorators/current-user.decorator';
 
 @Controller('admin')
@@ -28,14 +37,14 @@ export class AdminController {
   ) {}
 
   @Post('modules')
-  async upsertModule(@Body() body: { moduleId?: string; data: any }) {
+  async upsertModule(@Body() body: UpsertModuleDto) {
     return this.adminService.upsertModule(body.moduleId || null, body.data);
   }
 
   @Post('modules/:moduleId/topics')
   async upsertTopic(
     @Param('moduleId') moduleId: string,
-    @Body() body: { topicId?: string; data: any },
+    @Body() body: UpsertTopicDto,
   ) {
     return this.adminService.upsertTopic(
       moduleId,
@@ -45,18 +54,23 @@ export class AdminController {
   }
 
   @Post('questions')
-  async upsertQuestion(@Body() body: { questionId?: string; data: any }) {
+  async upsertQuestion(@Body() body: UpsertQuestionDto) {
     return this.adminService.upsertQuestion(body.questionId || null, body.data);
   }
 
   @Post('simulations')
-  async createSimulation(@Body() data: any) {
-    return this.adminService.createSimulation(data);
+  async createSimulation(@Body() body: CreateSimulationDto) {
+    return this.adminService.createSimulation(body.data);
   }
 
   @Get('stats')
   async getStats() {
     return this.adminService.getStats();
+  }
+
+  @Get('users')
+  async listUsers(@Query() query: ListUsersQueryDto) {
+    return this.adminService.listUsers(query);
   }
 
   // ─── ADMIN SUBSCRIPTION & PAYMENT ENDPOINTS ───
@@ -76,6 +90,20 @@ export class AdminController {
       dto.targetEmailOrUid,
       dto.durationMonths,
       dto.planType || 'monthly',
+      user.uid,
+      dto.reason,
+    );
+  }
+
+  @Post('subscriptions/extend')
+  @HttpCode(HttpStatus.OK)
+  async extendSubscription(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: ExtendSubscriptionDto,
+  ) {
+    return this.subscriptionsService.manualExtend(
+      dto.targetEmailOrUid,
+      dto.durationDays,
       user.uid,
       dto.reason,
     );

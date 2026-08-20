@@ -274,6 +274,12 @@ export const baseRoutes: Routes = [
     data: { title: 'Admin · Suscripciones' }
   },
   {
+    path: 'admin/usuarios',
+    loadComponent: () => import('./features/admin/admin-users.component').then(m => m.AdminUsersComponent),
+    canActivate: [authGuard, adminGuard],
+    data: { title: 'Admin · Usuarios' }
+  },
+  {
     path: 'encuentra-tu-carrera',
     loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
     canActivate: [authGuard, emailVerifiedGuard],

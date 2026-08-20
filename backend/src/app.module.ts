@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -47,6 +48,15 @@ import { AdminModule } from './admin/admin.module';
 
     // Admin
     AdminModule,
+  ],
+  providers: [
+    // ThrottlerModule.forRoot() only registers the rate-limit config; it
+    // does not enforce it anywhere on its own. Registering ThrottlerGuard
+    // as an APP_GUARD is what actually applies it to every request.
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
