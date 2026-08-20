@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-20 · Rama en la que se escribió: `panelAdmin`
+> Última actualización: 2026-08-20 · Rama en la que se escribió: `rutaInfinita`
 
 ---
 
@@ -728,6 +728,26 @@ verdad, no por regex como los antiguos `check_dupes.py` / `check_levels.py`).
 **Fuera de alcance:** el contenido real de producción vive en **Firestore** y no se pudo
 auditar (requiere credenciales). Esto cubre los seeds, que son lo que se siembra y el
 fallback offline. Tampoco se auditaron los bancos de ensayos (`assets/*-preguntas-db.json`).
+
+### 2026-08-20 — Modo Infinito / Polígono de Maestría Diaria (Nueva Feature)
+Build ✅ · typecheck ✅ · probado en desktop y mobile.
+
+**Implementación de la Maestría Infinita tras completar el 100% de una materia:**
+- **`InfiniteMasteryService` (`src/app/core/services/infinite-mastery.service.ts`):**
+  - Mapeo de polígonos geométricos según la materia: 3 ejes (Competencia Lectora), 4 ejes (Matemática M1, M2, Física, Química, Biología) y 5 ejes (Historia).
+  - Pool combinado de preguntas: integra `pool_preguntas` de Firestore + extracción automática de preguntas con sus alternativas, fórmulas LaTeX y feedback de todos los capítulos/secciones de la materia correspondiente.
+  - Seeding diario estático: genera 5 preguntas por eje y 8 para el jefe al inicio del día y las mantiene estáticas durante toda la jornada.
+  - Regla estricta del 100% de aciertos: exige responder todas las preguntas bien para dominar un eje y derrotar al Núcleo Maestro.
+  - Bloqueo de 1 nivel por día para el Núcleo Maestro con reseteo sincronizado a la medianoche.
+- **`InfiniteMasteryModalComponent` (`src/app/features/learning-path/infinite-mastery-modal.component.ts`):**
+  - Modo embebido en el lienzo (`isEmbedded`) integrado en la propia página de la ruta sin modales oscuros, con estética clara y paleta de colores `--subject-theme` por materia.
+  - Polígono SVG escalable con pistas de fondo suaves, trazos vivos y animación de pulso energético en ejes completados.
+  - Posicionamiento direccional dinámico de etiquetas (`label-pos-top`, `bottom`, `left`, `right`) para evitar colisiones entre nodos externos y el núcleo central.
+  - Renderizado KaTeX mixto (`parseMixed`) con `DomSanitizer` para enunciados, alternativas y explicaciones paso a paso.
+  - Barra de progreso reactiva desde 0% y tarjeta de resumen con reintento diario.
+- **Integración y Navegación:**
+  - Botón `⚡ REFORZAR` en el catálogo (`learning-path.component.ts`) activo únicamente para materias con 100% de progreso.
+  - Switcher segmentado `[ 🗺️ Ruta Principal ] [ ⚡ Modo Infinito ]` incrustado en los 6 componentes de ruta (`materia-math-path`, `materia-historia-path`, `materia-fisica-path`, `materia-quimica-path`, `materia-biologia-path`, `materia-path`) con sincronización de query param `?mode=infinite`.
 
 ### 2026-08-18 — QA de la Ruta con 3 agentes: bugs encontrados y corregidos
 Verificado: 22/22 tests ✅ · build producción ✅ · medido en navegador a 320/375/1024/1400.
