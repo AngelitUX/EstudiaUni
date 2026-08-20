@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
@@ -9,6 +9,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.component';
 
 type NodeItem = { id: string, capituloId: string, title: string, status: 'completed' | 'active' | 'locked', nodeIndex: number, tags?: string[], isCrown?: boolean, isProTip?: boolean };
 
@@ -31,7 +32,7 @@ type PathItem = {
 @Component({
   selector: 'app-materia-historia-path',
   standalone: true,
-  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent],
+  imports: [CommonModule, RouterModule, SettingsModalComponent, ProfileModalComponent, InfiniteMasteryModalComponent],
   template: `
     <div class="lp-layout">
       <!-- SIDEBAR -->
@@ -131,6 +132,7 @@ type PathItem = {
             <button class="btn-upgrade-pro" style="background: linear-gradient(135deg, #e11d48, #be123c); font-size: 0.8rem; border-radius: 99px; margin-right: 0.5rem;" (click)="toggleUnlockAllSteps()">
               {{ isUnlockedAll() ? '🔒 Bloquear Ruta' : '🔓 Desbloquear todo' }}
             </button> -->
+
             <button *ngIf="adminService.isAdmin()" class="btn-upgrade-pro" style="background: linear-gradient(135deg, #10b981, #059669); margin-right: 0.5rem;" (click)="forceRefresh()">
               🔄 Actualizar Datos
             </button>
@@ -151,8 +153,25 @@ type PathItem = {
         </header>
 
         <div class="dashboard-body" style="position: relative; overflow: hidden; min-height: 100vh;">
+          <!-- SUB-NAV SEGMENTED SWITCHER (Solo cuando la ruta esté completada) -->
+          <div *ngIf="isEntirePathCompleted()" class="path-view-segmented-wrap">
+            <div class="path-segmented-control">
+              <button class="seg-btn" [class.active]="activePathTab === 'path'" (click)="activePathTab = 'path'">
+                <span>🗺️</span> Ruta Principal
+              </button>
+              <button class="seg-btn" [class.active]="activePathTab === 'infinite'" (click)="activePathTab = 'infinite'">
+                <span>⚡</span> Modo Infinito (Polígono de Maestría)
+              </button>
+            </div>
+          </div>
+
+          <!-- EMBEDDED INFINITE MASTERY VIEW -->
+          <div *ngIf="isEntirePathCompleted() && activePathTab === 'infinite'" class="embedded-mastery-wrapper">
+            <app-infinite-mastery-modal [materiaId]="'historia'" [isEmbedded]="true" (backToPath)="activePathTab = 'path'"></app-infinite-mastery-modal>
+          </div>
+
           <!-- HISTORY BACKGROUND DECORATIONS -->
-          <div class="physics-bg-decorations">
+          <div class="physics-bg-decorations" *ngIf="!isEntirePathCompleted() || activePathTab === 'path'">
             <span class="bg-deco-orbit"></span>
             <span class="bg-deco-orbit-alt"></span>
             <span class="bg-deco" style="top: 4%; left: 4%; font-size: 2.4rem; transform: rotate(-12deg);">1810</span>
@@ -168,7 +187,7 @@ type PathItem = {
             <span class="bg-deco" style="top: 22%; left: 16%; font-size: 1.8rem; transform: rotate(14deg);">👑</span>
             <span class="bg-deco" style="top: 92%; right: 25%; font-size: 1.8rem; transform: rotate(7deg);">Colonia</span>
           </div>
-          <div class="materia-page">
+          <div class="materia-page" *ngIf="!isEntirePathCompleted() || activePathTab === 'path'">
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
             <ng-container *ngFor="let item of pathItems(); let i = index">
@@ -353,6 +372,18 @@ type PathItem = {
                 </div>
               </div>
             </ng-container>
+
+            <!-- NODO FINAL DE MAESTRÍA INFINITA (Solo cuando la ruta esté completada) -->
+            <div *ngIf="isEntirePathCompleted()" class="infinite-mastery-node-card" (click)="activePathTab = 'infinite'">
+              <div class="infinite-portal-badge">
+                <span class="portal-icon">🌟</span>
+                <div class="portal-text">
+                  <h4>⚡ Reforzar Materia · Modo Infinito</h4>
+                  <p>Práctica ilimitada por ejes y desafío diario al Núcleo Maestro</p>
+                </div>
+                <button class="btn-enter-portal">Reforzar Ahora ⚡</button>
+              </div>
+            </div>
           </div>
         </div>
         </div>
@@ -1602,9 +1633,142 @@ type PathItem = {
       .node-active .node-inner { width: 68px; height: 68px; }
       .node-icon { width: 28px; height: 28px; }
     }
+    .btn-infinite-mastery-top {
+      background: linear-gradient(135deg, #c2410c, #ea580c);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 99px;
+      padding: 0.45rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-infinite-mastery-top:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 20px rgba(234, 88, 12, 0.5);
+      filter: brightness(1.1);
+    }
+    .infinite-mastery-node-card {
+      margin: 3.5rem auto 5rem;
+      max-width: 520px;
+      width: 90%;
+      background: linear-gradient(135deg, #431407, #7c2d12);
+      border: 2px solid rgba(234, 88, 12, 0.5);
+      border-radius: 24px;
+      padding: 1.5rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(67, 20, 7, 0.4), 0 0 20px rgba(234, 88, 12, 0.3);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .infinite-mastery-node-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: #f59e0b;
+      box-shadow: 0 16px 40px rgba(67, 20, 7, 0.6), 0 0 30px rgba(245, 158, 11, 0.4);
+    }
+    .infinite-portal-badge {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      position: relative;
+      z-index: 2;
+    }
+    .portal-icon {
+      font-size: 2.6rem;
+      animation: floatPortal 3s ease-in-out infinite;
+    }
+    @keyframes floatPortal {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(8deg); }
+    }
+    .portal-text h4 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .portal-text p {
+      margin: 0.25rem 0 0;
+      font-size: 0.85rem;
+      color: #fed7aa;
+      font-weight: 500;
+    }
+    .btn-enter-portal {
+      background: #f59e0b;
+      color: #431407;
+      border: none;
+      border-radius: 12px;
+      padding: 0.6rem 1.1rem;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-left: auto;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+      transition: all 0.2s;
+    }
+    .path-view-segmented-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 1.25rem 1rem 0.5rem;
+      z-index: 10;
+      position: relative;
+    }
+    .path-segmented-control {
+      display: flex;
+      background: #ffffff;
+      padding: 0.35rem;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      gap: 0.4rem;
+    }
+    .seg-btn {
+      background: transparent;
+      border: none;
+      padding: 0.55rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .seg-btn:hover {
+      color: #0f172a;
+      background: #f8fafc;
+    }
+    .seg-btn.active {
+      background: var(--accent-primary, #c2410c);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(194, 65, 12, 0.25);
+    }
+    .embedded-mastery-wrapper {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+    }
   `]
 })
-export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
+export class MateriaHistoriaPathComponent implements OnInit, AfterViewInit, OnDestroy {
+  activePathTab: 'path' | 'infinite' = 'path';
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['mode'] === 'infinite') {
+        this.activePathTab = 'infinite';
+      }
+    });
+  }
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -1618,6 +1782,7 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
   showSettingsModal = false;
   showProfileModal = false;
   showLogoutConfirm = false;
+  showInfiniteMastery = false;
 
   // ─── Physics Simulator State ───
   simPanelOpen = false;
@@ -2941,6 +3106,17 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
 
   isGuideCompleted(capId: string): boolean {
     return !!this.paes.getSeccionProgress('guide_' + capId)?.completed;
+  }
+
+  isEntirePathCompleted(): boolean {
+    if (this.isUnlockedAll()) return true;
+    const caps = this.capitulos();
+    if (!caps || caps.length === 0) return false;
+    return caps.every(cap => {
+      const guideDone = this.isGuideCompleted(cap.id);
+      const secsDone = (cap.secciones || []).every(sec => !!this.paes.getSeccionProgress(sec.id)?.completed);
+      return guideDone && secsDone;
+    });
   }
 
   confirmLogout() {
