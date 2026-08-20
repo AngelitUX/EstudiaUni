@@ -37,7 +37,7 @@ export class MathKatexService {
       const htmlString = katex.renderToString(latex, {
         displayMode,
         throwOnError: false,
-        trust: true,
+        trust: false,
         strict: false,
         output: 'html',
       });
@@ -58,7 +58,7 @@ export class MathKatexService {
       katex.render(latex, element, {
         displayMode,
         throwOnError: false,
-        trust: true,
+        trust: false,
         strict: false,
       });
     } catch (error) {
@@ -95,7 +95,7 @@ export class MathKatexService {
       const latexHtml = katex.renderToString(latexBlock, {
         displayMode: isDisplayMode,
         throwOnError: false,
-        trust: true,
+        trust: false,
         strict: false,
         output: 'html',
       });

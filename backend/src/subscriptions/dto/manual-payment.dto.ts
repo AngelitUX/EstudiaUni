@@ -52,6 +52,20 @@ export class GrantSubscriptionDto {
   reason?: string;
 }
 
+export class ExtendSubscriptionDto {
+  @IsString()
+  @IsNotEmpty()
+  targetEmailOrUid: string;
+
+  @IsNumber()
+  @Min(1)
+  durationDays: number;
+
+  @IsString()
+  @IsOptional()
+  reason?: string;
+}
+
 export class RevokeSubscriptionDto {
   @IsString()
   @IsNotEmpty()

@@ -37,7 +37,13 @@ export class KatexService {
       const htmlString = katex.renderToString(latex, {
         displayMode,
         throwOnError: false,
-        trust: true,
+        // trust:false (default de KaTeX) sigue renderizando toda fórmula
+        // matemática normal, pero bloquea comandos como \href/\htmlData que
+        // permiten inyectar HTML/JS arbitrario — relevante porque este texto
+        // viene de contenido cargado por admins (incluida importación masiva
+        // de JSON) y se renderiza vía bypassSecurityTrustHtml a todos los
+        // estudiantes.
+        trust: false,
         strict: false,
         output: 'html',
       });
@@ -58,7 +64,7 @@ export class KatexService {
       katex.render(latex, element, {
         displayMode,
         throwOnError: false,
-        trust: true,
+        trust: false,
         strict: false,
       });
     } catch (error) {
@@ -95,7 +101,7 @@ export class KatexService {
       const latexHtml = katex.renderToString(latexBlock, {
         displayMode: isDisplayMode,
         throwOnError: false,
-        trust: true,
+        trust: false,
         strict: false,
         output: 'html',
       });

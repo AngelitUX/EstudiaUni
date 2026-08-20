@@ -50,9 +50,10 @@ export class FirebaseService implements OnModuleInit {
   }
 
   /**
-   * Mirrors AdminGuard's check: a user is admin if they have a doc in
-   * /admins with active !== false. Used to grant admins Pro-tier treatment
-   * (limits, cooldowns, results lock) outside of admin-only endpoints.
+   * Single source of truth for admin status: a user is admin if they have a
+   * doc in /admins with active !== false. Used both by AdminGuard (to gate
+   * /admin/* endpoints) and to grant admins Pro-tier treatment (limits,
+   * cooldowns, results lock) outside of admin-only endpoints.
    */
   async isAdmin(uid: string): Promise<boolean> {
     try {

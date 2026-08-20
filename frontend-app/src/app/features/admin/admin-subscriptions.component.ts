@@ -3,51 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PaymentService, TransactionRecord } from '../../core/services/payment.service';
+import { AdminSidebarComponent } from './admin-sidebar.component';
 
 @Component({
   selector: 'app-admin-subscriptions',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminSidebarComponent],
   template: `
     <div class="admin-layout">
-      <!-- SIDEBAR -->
-            <aside class="sidebar">
-        <div class="sidebar-header">
-          <a routerLink="/dashboard" class="sidebar-logo" style="text-decoration:none; display: flex; align-items: center; justify-content: center;">
-            <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni" alt="EstudiaUni" class="sidebar-logo-img" />
-          </a>
-          <div class="admin-panel-tag">ADMIN PANEL</div>
-        </div>
-
-        <nav class="sidebar-nav">
-          <a routerLink="/admin" class="nav-item">
-            <span class="nav-icon">📋</span>
-            <span class="nav-text">Pool de Preguntas</span>
-          </a>
-          <a routerLink="/admin/suscripciones" class="nav-item active">
-            <span class="nav-icon">💳</span>
-            <span class="nav-text">Suscripciones y Pagos</span>
-          </a>
-          <a routerLink="/admin/recursos" class="nav-item">
-            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RecursosAdicionales.svg" alt="Recursos Adicionales" class="nav-icon-img"/>
-            <span class="nav-text">Recursos</span>
-          </a>
-          <a routerLink="/admin/bugs" class="nav-item">
-            <span class="nav-icon">🐛</span>
-            <span class="nav-text">Reportes de Bug</span>
-          </a>
-        </nav>
-
-        <div class="sidebar-footer" style="padding: 1.25rem 0.75rem; margin-top: auto;">
-          <a class="nav-item logout-btn-sidebar" routerLink="/dashboard">
-            <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/>
-            <span class="nav-text">Dashboard</span>
-          </a>
-        </div>
-      </aside>
+      <app-admin-sidebar></app-admin-sidebar>
 
       <!-- MAIN CONTENT -->
-      <main class="main-content animate-fade-in-down">
+      <main class="admin-main-content animate-fade-in-down">
         <!-- HEADER -->
         <header class="content-header">
           <div class="header-left">
@@ -185,26 +152,12 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
     </div>
   `,
   styles: [`
-    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
     :host { display: block; min-height: 100vh; background: #fafafa; color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
     .admin-layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-right: 1px solid rgba(133,92,214,0.15); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { height: 110px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0 1rem; box-sizing: border-box; }
-    
-    .admin-panel-tag { font-size: 0.65rem; background: rgba(139, 92, 246, 0.25); color: #c084fc; padding: 0.2rem 0.6rem; border-radius: 99px; margin-top: 0.5rem; font-weight: 800; }
-    
-    .sidebar-nav { padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.1rem; border-radius: 12px; color: var(--text-primary); text-decoration: none; font-size: 1.05rem; font-weight: 500; }
-    .nav-item:hover { background: rgba(133,92,214,0.08); }
-    .nav-item.active { background: rgba(133,92,214,0.15); color: var(--accent-primary); border-left: 3.5px solid var(--accent-primary); font-weight: 700; }
-    .nav-icon { font-size: 1.35rem; width: 32px; display: flex; justify-content: center; }
-    .logout-btn-sidebar { color: #ef4444 !important; opacity: 0.8; }
 
-    .main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); background: #fafafa; }
+    .admin-main-content { flex: 1; margin-left: 260px; padding: 2.5rem; max-width: calc(100% - 260px); background: #fafafa; }
     .content-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 1.5rem; }
     .content-header h1 { font-size: 2.5rem; font-weight: 800; margin: 0; }
     .subtitle { font-size: 1.05rem; color: var(--text-secondary); margin: 0.4rem 0 0; }
@@ -265,13 +218,12 @@ import { PaymentService, TransactionRecord } from '../../core/services/payment.s
     /* RESPONSIVE */
     @media (max-width: 1024px) {
       .admin-layout { flex-direction: column; }
-      .sidebar { position: relative; width: 100%; height: auto; border-right: none; }
-      .main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
+      .admin-main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
       .content-header { flex-direction: column; }
       .admin-table { min-width: 800px; }
     }
     @media (max-width: 480px) {
-      .main-content { padding: 1rem; }
+      .admin-main-content { padding: 1rem; }
       .content-header h1 { font-size: 1.7rem; }
       .header-actions { width: 100%; }
       .header-actions .btn-refresh,

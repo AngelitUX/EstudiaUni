@@ -547,6 +547,80 @@ export class SubscriptionsService {
   }
 
   /**
+   * ADMIN: Extend an existing Plan PRO by N days, counted from whichever is
+   * later: the current `endDate` (if still in the future) or today. A
+   * diferencia de manualGrant (que siempre resetea el período completo
+   * desde hoy y solo admite meses), esto SUMA días exactos a lo que ya le
+   * queda — usado por el botón "Extender" para no acortarle el período a
+   * alguien que aún tiene días pendientes, y para poder darle un número de
+   * días arbitrario (no solo bloques de meses).
+   */
+  async manualExtend(targetEmailOrUid: string, durationDays: number, adminUid: string, reason?: string) {
+    const user = await this.findUserByEmailOrUid(targetEmailOrUid);
+    if (!user) {
+      throw new NotFoundException(`Usuario no encontrado para "${targetEmailOrUid}"`);
+    }
+
+    const userDoc = await this.firebaseService.firestore.collection('users').doc(user.uid).get();
+    const currentSub = userDoc.data()?.subscription;
+
+    let baseDate = new Date();
+    if (currentSub?.endDate) {
+      const currentEnd = typeof currentSub.endDate.toDate === 'function'
+        ? currentSub.endDate.toDate()
+        : new Date(currentSub.endDate);
+      if (currentEnd > baseDate) {
+        baseDate = currentEnd;
+      }
+    }
+
+    const endDate = new Date(baseDate);
+    endDate.setDate(endDate.getDate() + durationDays);
+
+    try {
+      // merge:true hace merge recursivo en el mapa `subscription`, así que
+      // esto solo toca los campos listados abajo (incluido `startDate`, que
+      // se deja intacto — sigue reflejando cuándo se hizo premium por
+      // primera vez, no cuándo se extendió).
+      await this.firebaseService.firestore
+        .collection('users')
+        .doc(user.uid)
+        .set({
+          subscription: {
+            tier: 'premium',
+            status: 'active',
+            cancelAtPeriodEnd: false,
+            endDate,
+            extendedBy: adminUid,
+            extendReason: reason || 'Extendido manualmente por Admin',
+          },
+          plan: 'premium',
+          updatedAt: new Date(),
+        }, { merge: true });
+
+      await this.firebaseService.firestore.collection('admin_audit_logs').add({
+        action: 'EXTEND_PREMIUM',
+        adminUid,
+        targetUid: user.uid,
+        targetEmail: user.email,
+        durationDays,
+        reason,
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] manualExtend Firestore error: ${e.message}`);
+    }
+
+    return {
+      success: true,
+      message: `Plan Pro extendido ${durationDays} día(s) para ${user.email || user.uid}. Ahora vence el ${endDate.toLocaleDateString('es-CL')}.`,
+      uid: user.uid,
+      email: user.email,
+      endDate,
+    };
+  }
+
+  /**
    * ADMIN: Revoke Plan PRO from a user.
    */
   async manualRevoke(targetEmailOrUid: string, adminUid: string, reason?: string) {
