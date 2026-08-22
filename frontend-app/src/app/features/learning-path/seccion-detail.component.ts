@@ -57,16 +57,26 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
           <h1>{{ sec.title }}</h1>
         </div>
 
-        <!-- VOICE CONTROLS (Collapsible) -->
+        <!-- VOICE CONTROLS (siempre visibles, no desplegable) -->
         <div class="voice-dropdown-container" *ngIf="!isMathModule()">
-          <button class="btn-voice-toggle" (click)="voiceMenuOpen = !voiceMenuOpen">
-            🎧 Audio descriptivo <span class="arrow" [class.open]="voiceMenuOpen">▼</span>
-          </button>
-          <div class="voice-dropdown-menu" [class.open]="voiceMenuOpen">
-            <button class="btn-voice" (click)="readGuide()" title="Leer guía (Tecla 1)">🔊 1. Qué aprenderás</button>
-            <button class="btn-voice" *ngIf="sec.test?.contexto_base" (click)="readContext()" title="Leer texto (Tecla 2)">🔊 2. Texto práctica</button>
-            <button class="btn-voice" *ngIf="sec.datos_claves?.length" (click)="readTips()" title="Leer tips (Tecla 3)">🔊 3. Tips clave</button>
-            <button class="btn-voice btn-stop" (click)="stopReading()" title="Detener (Tecla 4)">⏹️ 4. Detener</button>
+          <span class="voice-panel-label">🎧 Audio Descriptivo</span>
+          <div class="voice-dropdown-menu">
+            <button class="btn-voice" (click)="readGuide()">
+              <svg class="btn-voice-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Qué aprenderás
+            </button>
+            <button class="btn-voice" *ngIf="sec.test?.contexto_base" (click)="readContext()">
+              <svg class="btn-voice-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Texto práctica
+            </button>
+            <button class="btn-voice" *ngIf="sec.datos_claves?.length" (click)="readTips()">
+              <svg class="btn-voice-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Tips clave
+            </button>
+            <button class="btn-voice btn-stop" (click)="stopReading()">
+              <svg class="btn-voice-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              Detener
+            </button>
           </div>
         </div>
       </div>
@@ -351,17 +361,21 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
     .btn-next:hover { box-shadow: 0 2px 0 #4caf00; }
 
     /* VOICE CONTROLS */
-    .voice-dropdown-container { position: relative; z-index: 100; }
-    .btn-voice-toggle { display: flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-voice-toggle:hover { background: rgba(133,92,214,0.15); }
-    .btn-voice-toggle .arrow { font-size: 0.7rem; transition: transform 0.2s; }
-    .btn-voice-toggle .arrow.open { transform: rotate(180deg); }
-    .voice-dropdown-menu { display: flex; flex-direction: column; gap: 0.25rem; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; background: #fff; padding: 0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid rgba(133,92,214,0.1); }
-    .voice-dropdown-menu.open { max-height: 250px; opacity: 1; padding: 0.5rem; }
-    .btn-voice { background: transparent; border: none; text-align: left; color: var(--text-primary); border-radius: 6px; padding: 0.6rem 0.8rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .btn-voice:hover { background: rgba(133,92,214,0.08); color: var(--accent-primary); }
-    .btn-stop { color: #ef4444; border-top: 1px dashed rgba(239,68,68,0.2); margin-top: 0.25rem; border-radius: 0 0 6px 6px; }
-    .btn-stop:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
+    /* Botones siempre visibles con ícono (antes un desplegable "🎧 Audio descriptivo ▼" que
+       había que abrir para ver las acciones). */
+    .voice-dropdown-container { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; z-index: 100; }
+    .voice-panel-label { font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); }
+    .voice-dropdown-menu { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .btn-voice {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: #fff; border: 2px solid var(--accent-primary); color: var(--accent-primary);
+      border-radius: 10px; padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-voice-icon { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-voice:hover { background: var(--accent-primary); color: #fff; }
+    .btn-stop { color: #ef4444; border-color: #ef4444; }
+    .btn-stop:hover { background: #ef4444; color: #fff; }
 
     /* PRO TIP UI */
     .pro-tip-card { background: linear-gradient(135deg, #fff, rgba(255, 150, 0, 0.05)); border: 2px solid rgba(255, 150, 0, 0.2); animation: fadeSlide 0.5s ease-out; text-align: center; padding: 2.5rem 2rem; }
@@ -391,7 +405,7 @@ import { SortPracticeComponent } from './sort-practice/sort-practice.component';
     @keyframes ctaBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     @keyframes pulseGlow { 0% { transform: scale(1); text-shadow: 0 0 10px rgba(88, 204, 2, 0.3); } 50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(88, 204, 2, 0.7); } 100% { transform: scale(1); text-shadow: 0 0 10px rgba(88, 204, 2, 0.3); } }
     @keyframes testPulse { 0%, 100% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 0 rgba(133,92,214,0.3); } 50% { box-shadow: 0 5px 0 #6b46b8, 0 0 0 10px rgba(133,92,214,0); } }
-    @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } .voice-dropdown-menu { right: auto; left: 0; } }
+    @media (max-width: 640px) { .cta-card { padding: 2rem 1.25rem; } .practice-card { padding: 1.25rem; } }
 
     /* ── Contencion de desbordamiento horizontal (movil) ──
        Las formulas KaTeX en bloque, las tablas y las imagenes anchas no tenian
@@ -419,7 +433,6 @@ export class SeccionDetailComponent {
   seccionId = signal('');
   practiceCompleted = signal(false);
   previewTextIndex = signal(0);
-  voiceMenuOpen = false;
 
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
   isScienceOrMath = computed(() => {

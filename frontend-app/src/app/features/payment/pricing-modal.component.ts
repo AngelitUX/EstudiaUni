@@ -6,7 +6,6 @@ import { FirestoreService } from '../../core/services/firestore.service';
 
 type ModalStep = 'plans' | 'recipient';
 type RecipientMode = 'self' | 'gift';
-type PaymentMethodOption = 'flow' | 'transfer';
 type EmailStatus = 'idle' | 'checking' | 'found' | 'not_found';
 type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
@@ -90,7 +89,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </div>
           </div>
 
-          <p class="secure-checkout-text">🔒 Suscripción 100% segura a través de Flow y Transferencia Bancaria</p>
+          <p class="secure-checkout-text">🔒 Suscripción 100% segura a través de Flow</p>
         </ng-container>
 
         <!-- ─────────────── STEP 2: Recipient, Method & Plan ─────────────── -->
@@ -103,7 +102,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </button>
 
             <div class="step-header">
-              <div class="step-icon-wrap">🎯</div>
+              <img class="step-icon-wrap" src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="Plan PRO" />
               <h2>¿Para quién es el Plan Pro?</h2>
               <p>Elige si activar el Pro en tu cuenta o regalárselo a alguien más.</p>
             </div>
@@ -166,21 +165,14 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               </p>
             </div>
 
-            <!-- ── PAYMENT METHOD SELECTOR ── -->
-            <div class="method-selector-section" style="margin-top: 1.5rem;">
-              <label class="section-label-sm">Método de Pago:</label>
-              <div class="method-tabs">
-                <button class="method-tab" [class.active]="paymentMethod() === 'flow'" (click)="setPaymentMethod('flow')">
-                  💳 Flow <span class="sub-tag">(Tarjetas, suscripción)</span>
-                </button>
-                <button class="method-tab" [class.active]="paymentMethod() === 'transfer'" (click)="setPaymentMethod('transfer')">
-                  🏛️ Transferencia <span class="sub-tag">(Manual)</span>
-                </button>
+            <!-- ── FLOW SUBSCRIPTION FLOW (único método de pago) ── -->
+            <div>
+              <label class="section-label-sm" style="margin-top: 1.5rem; display:block;">Método de Pago:</label>
+              <div class="flow-only-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                Flow <span class="sub-tag">(Tarjetas de crédito y débito, suscripción)</span>
               </div>
-            </div>
 
-            <!-- ── FLOW SUBSCRIPTION FLOW ── -->
-            <div *ngIf="paymentMethod() === 'flow'">
               <!-- Coupon Toggle -->
               <div class="coupon-toggle-row" style="margin-top: 1.25rem;">
                 <label class="checkbox-container">
@@ -231,47 +223,6 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                 <span *ngIf="loadingCheckout()" class="loading-dots">Conectando con Flow</span>
               </button>
               <p class="secure-checkout-text">🔒 Suscripción con renovación automática ({{ billingCycle() === 'monthly' ? 'mensual' : 'anual' }}) — cancela cuando quieras</p>
-            </div>
-
-            <!-- ── MANUAL TRANSFER FLOW ── -->
-            <div *ngIf="paymentMethod() === 'transfer'" style="margin-top: 1.25rem;">
-              <div class="bank-details-box">
-                <h4>🏛️ Datos para Transferencia Bancaria:</h4>
-                <div class="bank-grid">
-                  <div><strong>Banco:</strong> Banco de Chile / BancoEstado</div>
-                  <div><strong>Tipo de Cuenta:</strong> Cuenta Vista / Corriente</div>
-                  <div><strong>N° de Cuenta:</strong> 77-654321-0</div>
-                  <div><strong>RUT:</strong> 77.654.321-K</div>
-                  <div><strong>Nombre:</strong> EstudiaUni SpA</div>
-                  <div><strong>Correo Pagos:</strong> pagos&#64;estudiauni.cl</div>
-                </div>
-                <p class="bank-amount-notice">
-                  Monto exacto a transferir: <strong>$ {{ couponResult()?.valid ? formatPrice(couponResult()!.finalAmount!) : (billingCycle() === 'monthly' ? '9.990' : '69.990') }} CLP</strong>
-                </p>
-              </div>
-
-              <div class="transfer-form" *ngIf="!transferSubmitted()">
-                <div class="form-row-sm">
-                  <label>Banco Emisor (tu banco):</label>
-                  <input type="text" class="text-input-styled" placeholder="Ej: BancoEstado, Santander, Falabella" [(ngModel)]="bankName" />
-                </div>
-                <div class="form-row-sm">
-                  <label>N° de Comprobante o Transferencia:</label>
-                  <input type="text" class="text-input-styled" placeholder="Ej: 123456789" [(ngModel)]="transferNumber" />
-                </div>
-
-                <button class="btn-checkout big" style="margin-top: 1.25rem; background: linear-gradient(135deg, #059669, #047857);" (click)="submitTransferReport()" [disabled]="loadingCheckout() || !bankName.trim() || !transferNumber.trim() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
-                  <span *ngIf="!loadingCheckout()">📤 Notificar Transferencia</span>
-                  <span *ngIf="loadingCheckout()" class="loading-dots">Enviando comprobante</span>
-                </button>
-              </div>
-
-              <div class="transfer-success-box" *ngIf="transferSubmitted()">
-                <div class="ts-icon">🎉</div>
-                <h4>¡Comprobante de Transferencia Recibido!</h4>
-                <p>El equipo de EstudiaUni verificará tu transferencia N° <strong>{{ transferNumber }}</strong> y activará el Plan Pro en breve.</p>
-                <button class="btn-cancel" style="margin-top: 1rem; width: 100%;" (click)="closeModal()">Entendido, cerrar</button>
-              </div>
             </div>
 
           </div>
@@ -345,7 +296,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .btn-back { display:inline-flex; align-items:center; gap:0.4rem; border:none; background:transparent; color:var(--text-secondary); font-size:0.9rem; font-weight:600; cursor:pointer; padding:0.35rem 0.75rem; border-radius:8px; margin-bottom:1.5rem; }
     .btn-back:hover { background:var(--bg-secondary); color:var(--text-primary); }
     .step-header { text-align:center; margin-bottom:1.5rem; }
-    .step-icon-wrap { font-size:2.5rem; margin-bottom:0.5rem; }
+    .step-icon-wrap { width:56px; height:56px; margin:0 auto 0.5rem; display:block; filter:drop-shadow(0 2px 6px rgba(133,92,214,0.3)); }
     .step-header h2 { margin:0 0 0.5rem; font-size:1.6rem; font-weight:800; }
     .step-header p { margin:0; color:var(--text-secondary); font-size:0.95rem; }
     .mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem; background:var(--bg-secondary); padding:0.4rem; border-radius:16px; border:1px solid var(--glass-border); }
@@ -373,12 +324,11 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .feedback-msg.success { background:rgba(16,185,129,0.08); color:#047857; }
     .feedback-msg.error { background:rgba(239,68,68,0.08); color:#b91c1c; }
 
-    /* Method Selector */
+    /* Payment method (Flow only — recurring billing needs a card on file, a bank
+       transfer can't auto-renew, see pricing-modal notes) */
     .section-label-sm { display:block; font-size:0.82rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem; }
-    .method-tabs { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem; }
-    .method-tab { padding:0.75rem 0.85rem; border:2px solid var(--glass-border); background:var(--bg-secondary); border-radius:14px; font-weight:700; font-size:0.9rem; color:var(--text-secondary); cursor:pointer; text-align:center; }
-    .method-tab.active { border-color:var(--accent-primary); background:rgba(133,92,214,0.08); color:var(--accent-primary); }
-    .sub-tag { font-size:0.75rem; font-weight:500; opacity:0.8; }
+    .flow-only-badge { display:flex; align-items:center; gap:0.6rem; padding:0.85rem 1rem; border-radius:14px; border:2px solid var(--accent-primary); background:rgba(133,92,214,0.06); color:var(--accent-primary); font-weight:700; font-size:0.95rem; }
+    .sub-tag { font-size:0.75rem; font-weight:500; opacity:0.8; color:var(--text-secondary); }
 
     /* Coupon Toggle & Section */
     .checkbox-container { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
@@ -398,24 +348,6 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .coupon-feedback { font-size:0.85rem; font-weight:600; margin:0.5rem 0 0; padding:0.4rem 0.8rem; border-radius:8px; }
     .coupon-feedback.success { color:#047857; background:rgba(16,185,129,0.08); }
     .coupon-feedback.error { color:#b91c1c; background:rgba(239,68,68,0.08); }
-
-    /* Bank Details Box */
-    .bank-details-box { background:rgba(16,185,129,0.05); border:1.5px solid rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem; }
-    .bank-details-box h4 { margin:0 0 0.75rem; font-size:1rem; font-weight:800; color:#047857; }
-    .bank-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; font-size:0.88rem; color:var(--text-primary); }
-    .bank-amount-notice { margin:0.85rem 0 0; font-size:0.9rem; color:#065f46; border-top:1px dashed rgba(16,185,129,0.3); padding-top:0.6rem; }
-
-    /* Form inputs */
-    .form-row-sm { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.85rem; }
-    .form-row-sm label { font-size:0.85rem; font-weight:700; color:var(--text-secondary); }
-    .text-input-styled { padding:0.75rem 1rem; border-radius:12px; border:2px solid var(--glass-border); background:var(--bg-secondary); font-size:0.95rem; font-weight:600; color:var(--text-primary); outline:none; }
-    .text-input-styled:focus { border-color:var(--accent-primary); background:#fff; }
-
-    /* Transfer Success */
-    .transfer-success-box { text-align:center; padding:1.5rem 1rem; background:rgba(16,185,129,0.08); border-radius:16px; border:1.5px solid rgba(16,185,129,0.3); }
-    .ts-icon { font-size:3rem; margin-bottom:0.5rem; }
-    .transfer-success-box h4 { margin:0 0 0.5rem; color:#047857; font-weight:800; font-size:1.2rem; }
-    .transfer-success-box p { margin:0; font-size:0.92rem; color:var(--text-secondary); line-height:1.5; }
 
     /* Checkout */
     .btn-checkout { width:100%; padding:1rem; border:none; background:linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%); color:#fff; border-radius:14px; font-weight:800; font-size:1rem; cursor:pointer; transition:all 0.25s ease; box-shadow:0 4px 15px rgba(124,58,237,0.35); display:flex; align-items:center; justify-content:center; }
@@ -445,8 +377,6 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
       .mode-tabs { grid-template-columns: 1fr 1fr; }
       .mode-tab { padding: 0.7rem 0.5rem; font-size: 0.85rem; }
       .plan-selector-row { flex-direction: column; }
-      .method-tabs { grid-template-columns: 1fr; }
-      .bank-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 480px) {
@@ -477,7 +407,6 @@ export class PricingModalComponent implements OnInit {
 
   currentStep = signal<ModalStep>('plans');
   recipientMode = signal<RecipientMode>('self');
-  paymentMethod = signal<PaymentMethodOption>('flow');
   billingCycle = signal<'monthly' | 'yearly'>('monthly');
   loadingCheckout = signal<boolean>(false);
   cameFromHome = signal<boolean>(false);
@@ -495,11 +424,6 @@ export class PricingModalComponent implements OnInit {
   couponResult = signal<CouponValidationResponse | null>(null);
   couponFeedbackMsg = signal<string>('');
   hasDiscountCode = signal<boolean>(false);
-
-  // Manual Transfer flow
-  bankName = '';
-  transferNumber = '';
-  transferSubmitted = signal<boolean>(false);
 
   isPro = () => this.firestoreService.profileSignal()?.plan === 'premium';
   currentUserEmail = () => (this.firestoreService.profileSignal() as any)?.email || 'tu cuenta';
@@ -537,14 +461,9 @@ export class PricingModalComponent implements OnInit {
     this.cameFromHome.set(false);
     this.resetGiftState();
     this.resetCouponState();
-    this.transferSubmitted.set(false);
   }
 
   setMode(mode: RecipientMode) { this.recipientMode.set(mode); this.resetGiftState(); }
-
-  setPaymentMethod(method: PaymentMethodOption) {
-    this.paymentMethod.set(method);
-  }
 
   toggleDiscountCode() {
     this.hasDiscountCode.set(!this.hasDiscountCode());
@@ -639,31 +558,4 @@ export class PricingModalComponent implements OnInit {
     });
   }
 
-  submitTransferReport() {
-    if (!this.bankName.trim() || !this.transferNumber.trim()) return;
-    this.loadingCheckout.set(true);
-
-    const baseAmount = this.billingCycle() === 'monthly' ? 9990 : 69990;
-    const finalAmount = this.couponResult()?.valid ? this.couponResult()!.finalAmount! : baseAmount;
-
-    const data = {
-      planType: this.billingCycle(),
-      bankName: this.bankName.trim(),
-      transferNumber: this.transferNumber.trim(),
-      amount: finalAmount,
-      targetUid: this.recipientMode() === 'gift' ? this.giftTargetUid : undefined,
-      couponCode: this.couponStatus() === 'valid' ? this.couponCode.trim().toUpperCase() : undefined,
-    };
-
-    this.paymentService.submitManualTransfer(data).subscribe({
-      next: () => {
-        this.loadingCheckout.set(false);
-        this.transferSubmitted.set(true);
-      },
-      error: (err) => {
-        this.loadingCheckout.set(false);
-        alert('Error al enviar comprobante: ' + (err.error?.message || err.message));
-      }
-    });
-  }
 }

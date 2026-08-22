@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
+import { LegalModalComponent } from '../../../shared/components/legal-modal.component';
+import { PasswordVisibilityIconComponent } from '../../../shared/components/password-visibility-icon.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, LegalModalComponent, PasswordVisibilityIconComponent],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -24,6 +26,8 @@ export class RegisterComponent {
   error = '';
   showPassword = false;
   showConfirmPassword = false;
+  acceptedTerms = false;
+  legalModalType: 'terms' | 'privacy' | null = null;
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -108,7 +112,12 @@ export class RegisterComponent {
 
   async onSubmit() {
     this.error = '';
-    
+
+    if (!this.acceptedTerms) {
+      this.error = 'Debes aceptar los Términos de Servicio y la Política de Privacidad para crear una cuenta.';
+      return;
+    }
+
     // Validar nombre
     if (!this.name || this.name.trim().length < 2) {
       this.error = 'Por favor ingresa tu nombre completo (mínimo 2 caracteres).';
@@ -212,6 +221,12 @@ export class RegisterComponent {
 
   async registerWithGoogle() {
     this.error = '';
+
+    if (!this.acceptedTerms) {
+      this.error = 'Debes aceptar los Términos de Servicio y la Política de Privacidad para crear una cuenta.';
+      return;
+    }
+
     this.loading = true;
     try {
       await this.authService.loginWithGoogle();

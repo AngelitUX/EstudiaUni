@@ -69,9 +69,8 @@
             class="glass-input"
             style="padding-right: 2.5rem; width: 100%; box-sizing: border-box;"
           >
-          <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0;">
-            <span *ngIf="!showPassword">👁️</span>
-            <span *ngIf="showPassword">🙈</span>
+          <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()" [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0; display: flex;">
+            <app-password-visibility-icon [passwordVisible]="showPassword"></app-password-visibility-icon>
           </button>
         </div>
         <div style="text-align: right; margin-top: 0.5rem;">

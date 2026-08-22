@@ -471,7 +471,17 @@ export class FlowService {
       return;
     }
 
-    const subscriptionId = body.subscriptionId || invoiceStatus?.subscriptionId;
+    // SECURITY: subscriptionId must come from the verified Flow response, never
+    // from the raw webhook body. Flow's webhook payload isn't signed, so anyone
+    // could POST here with an `invoiceId` for a real (even their own) paid
+    // invoice alongside a forged `subscriptionId` pointing at a victim's
+    // subscription — if we trusted body.subscriptionId, that would extend the
+    // victim's Premium for free. invoiceStatus?.subscriptionId came back from a
+    // signed GET to Flow's API keyed by the invoiceId/token, so it can't be
+    // spoofed the same way. Only fall back to the body value when Flow gave us
+    // no invoiceStatus at all — in that case isPaid is false below regardless,
+    // so an unverified subscriptionId can't be used to grant anything.
+    const subscriptionId = invoiceStatus?.subscriptionId || body.subscriptionId;
     if (!subscriptionId) {
       this.logger.warn('[Flow] Webhook payload had no subscriptionId we could resolve — ignoring.');
       return;

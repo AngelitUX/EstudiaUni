@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, effect, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaesContentService } from './services/paes-content.service';
@@ -79,14 +79,35 @@ type PathItem = {
       </aside>
 
       <!-- MOBILE HEADER -->
-      <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none; display: flex; align-items: center;">
-          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
-        </a>
+      <div class="mobile-header" [class.mobile-header-with-pro]="!isProPlan() && !adminService.isAdmin()">
+        <div class="mobile-header-top">
+          <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+            <span style="display:flex;flex-direction:column;gap:4px;width:18px">
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            </span>
+          </button>
+          <a routerLink="/dashboard" class="mobile-logo-link">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+          </a>
+          <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+            <span class="profile-avatar-wrap">
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileNav" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
+              <ng-template #avatarMobileNav><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+            </span>
+          </button>
+        </div>
+        <div class="mobile-header-pro-row" *ngIf="!isProPlan() && !adminService.isAdmin()">
+          <button class="btn-upgrade-pro mobile-pro-pill" (click)="paymentService.openPricingModal()">Mejorar a PRO ⚡</button>
+        </div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div style="position: relative; padding: 0.75rem 1rem 0.75rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-start; align-items: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_10,y_202,w_471,h_86/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_1,y_204,w_489,h_81/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 180px; height: auto;" />
+            <button class="mobile-close-btn" (click)="mobileOpen=false" style="position: absolute; top: 0.75rem; right: 1.25rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+          </div>
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
@@ -153,25 +174,16 @@ type PathItem = {
         </header>
 
         <div class="dashboard-body" style="position: relative; overflow: hidden; min-height: 100vh;">
-          <!-- SUB-NAV SEGMENTED SWITCHER (Solo cuando la ruta esté completada) -->
-          <div *ngIf="isEntirePathCompleted()" class="path-view-segmented-wrap">
-            <div class="path-segmented-control">
-              <button class="seg-btn" [class.active]="activePathTab === 'path'" (click)="activePathTab = 'path'">
-                <span>🗺️</span> Ruta Principal
-              </button>
-              <button class="seg-btn" [class.active]="activePathTab === 'infinite'" (click)="activePathTab = 'infinite'">
-                <span>⚡</span> Modo Infinito (Polígono de Maestría)
-              </button>
-            </div>
-          </div>
-
-          <!-- EMBEDDED INFINITE MASTERY VIEW -->
-          <div *ngIf="isEntirePathCompleted() && activePathTab === 'infinite'" class="embedded-mastery-wrapper">
+          <!-- EMBEDDED INFINITE MASTERY VIEW: el Modo Infinito quedó reservado para una
+               actualización futura. No hay ningún selector ni botón visible para el usuario —
+               solo se activa para admins entrando desde /admin/modo-infinito (ver
+               isInfiniteModeUnlocked() y el effect() del constructor). -->
+          <div *ngIf="isInfiniteModeUnlocked() && activePathTab === 'infinite'" class="embedded-mastery-wrapper">
             <app-infinite-mastery-modal [materiaId]="'quimica'" [isEmbedded]="true" (backToPath)="activePathTab = 'path'"></app-infinite-mastery-modal>
           </div>
 
           <!-- CHEMISTRY BACKGROUND DECORATIONS -->
-          <div class="physics-bg-decorations" *ngIf="!isEntirePathCompleted() || activePathTab === 'path'">
+          <div class="physics-bg-decorations" *ngIf="!isInfiniteModeUnlocked() || activePathTab === 'path'">
             <span class="bg-deco-orbit"></span>
             <span class="bg-deco-orbit-alt"></span>
             <span class="bg-deco" style="top: 4%; left: 4%; font-size: 2.4rem; transform: rotate(-12deg);">H₂O</span>
@@ -187,7 +199,7 @@ type PathItem = {
             <span class="bg-deco" style="top: 22%; left: 16%; font-size: 1.8rem; transform: rotate(14deg);">K⁺</span>
             <span class="bg-deco" style="top: 92%; right: 25%; font-size: 1.8rem; transform: rotate(7deg);">H⁺</span>
           </div>
-          <div class="materia-page" *ngIf="!isEntirePathCompleted() || activePathTab === 'path'">
+          <div class="materia-page" *ngIf="!isInfiniteModeUnlocked() || activePathTab === 'path'">
           <!-- DUOLINGO PATH -->
           <div class="duo-path-container">
             <ng-container *ngFor="let item of pathItems(); let i = index">
@@ -358,6 +370,7 @@ type PathItem = {
                         [class.historia-title]="hasTreeLayout()"
                         [class.title-crown]="node.isCrown"
                         [class.title-practice]="!node.isCrown && isPracticeNode(node)"
+                        [class.node-title-branch]="item.nodes!.length > 2"
                         [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
                         {{ node.isPremiumLocked ? '???' : node.title }}
                       </div>
@@ -367,17 +380,6 @@ type PathItem = {
               </div>
             </ng-container>
 
-            <!-- NODO FINAL DE MAESTRÍA INFINITA (Solo cuando la ruta esté completada) -->
-            <div *ngIf="isEntirePathCompleted()" class="infinite-mastery-node-card" (click)="activePathTab = 'infinite'">
-              <div class="infinite-portal-badge">
-                <span class="portal-icon">🌟</span>
-                <div class="portal-text">
-                  <h4>⚡ Reforzar Materia · Modo Infinito</h4>
-                  <p>Práctica ilimitada por ejes y desafío diario al Núcleo Maestro</p>
-                </div>
-                <button class="btn-enter-portal">Reforzar Ahora ⚡</button>
-              </div>
-            </div>
           </div>
         </div>
         </div>
@@ -814,8 +816,10 @@ type PathItem = {
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes floatLogoNav { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
     .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 190px; height: auto; object-fit: contain; margin: 0; animation: floatLogoNav 3.5s ease-in-out infinite; }
+    .mobile-logo-link { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-decoration: none; line-height: 0; z-index: 1; }
     :host { display: block; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .lp-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -931,10 +935,13 @@ type PathItem = {
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MOBILE */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
-    .mobile-overlay.open { display: block; }
+    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 101; box-sizing: border-box; }
+    .mobile-header-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 1rem; gap: 1rem; box-sizing: border-box; width: 100%; }
+    .mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }
+    .mobile-header-pro-row { display: flex; justify-content: center; padding: 0 1rem 0.55rem; box-sizing: border-box; width: 100%; }
+    .mobile-pro-pill { width: 190px; max-width: 100%; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; box-sizing: border-box; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.2); }
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN */
@@ -1137,22 +1144,39 @@ type PathItem = {
     .subcapitulo-title { width: max-content !important; max-width: min(76vw, 260px) !important; white-space: normal !important; text-align: center; line-height: 1.15; }
     @media (max-width: 900px) {
       .splash-hero { flex-direction: column; text-align: center; gap: 1rem; }
-      .splash-mascot-area { width: 140px; height: 140px; }
+      /* focoQuimica.webp trae ~20-21% de relleno transparente alrededor del pulpo (medido
+         escaneando el canal alfa de un frame). Como el webp está ANIMADO (el pulpo se mueve),
+         un recorte ajustado al 100% del recuadro de un solo frame cortaba tentáculos en otros
+         puntos de la animación. Se escala dejando un 30% de margen extra sobre ese recuadro
+         (además de encoger el contenedor) para que quepa el rango de movimiento completo. */
+      /* El recorte por % (basado en el bounding box del canal alfa) seguía cortando puntas de
+         la ilustración en la práctica — el margen de seguridad no alcanzaba. En vez de seguir
+         ajustando ese margen a ciegas, se volvió al enfoque sin recorte: el contenedor ya es
+         flex+center por defecto (regla base, sin media query), así que basta con que la imagen
+         sea un ítem de flujo normal (no absolute) con object-fit:contain — se ve completa
+         siempre, sin importar cuánto se mueva la animación, a costa de que el personaje ocupe
+         menos del recuadro que con el recorte agresivo. */
+      .splash-mascot-area { width: 170px; height: 170px; }
+      .splash-mascot { position: static; width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
       .splash-info { width: 100%; }
       .splash-stats { justify-content: center; flex-wrap: wrap; }
+      /* Filas de 3 nodos muy juntos (ej. "Modo Ráfaga: Historia/Ciencias/Cotidiano"): con el
+         max-width normal (190px) los 3 títulos se pisaban entre sí, porque el espacio real
+         entre nodos en una fila de 3 es mucho menor que en el resto de la ruta (getBranchGap
+         angosta el gap en móvil). Se angosta a 2 líneas como máximo con line-clamp. */
+      .node-title.node-title-branch { max-width: 84px; font-size: 0.72rem; line-height: 1.15; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
     }
     @media (max-width: 480px) {
-      .splash-mascot-area { width: 108px; height: 108px; }
-      .splash-mascot { max-width: 100%; height: auto; }
+      .splash-mascot-area { width: 220px; height: 220px; }
       .splash-title { font-size: 1.15rem; }
       .node-title { font-size: 0.78rem; max-width: min(42vw, 150px); }
+      .node-title.node-title-branch { max-width: 72px; font-size: 0.68rem; }
       /* Se centra sobre un nodo que en las filas ramificadas NO esta centrado en
          el viewport, asi que con 260px se salia por un lado. Cota mas estrecha. */
       .subcapitulo-title { max-width: min(40vw, 150px) !important; font-size: 12px !important; letter-spacing: 0.5px !important; padding: 4px 10px !important; }
     }
     /* Objetivos tactiles minimos (antes 22-32px) */
     @media (max-width: 768px) {
-      .mobile-menu-btn { min-width: 44px; min-height: 44px; }
       .btn-back { min-width: 44px; min-height: 44px; flex-shrink: 0; }
     }
 
@@ -1617,6 +1641,16 @@ type PathItem = {
       .mobile-header { display: flex; }
       .main-content { margin-left: 0; max-width: 100%; }
       .materia-page { padding-top: 60px; }
+      /* La barra móvil fija ya trae logo + foto de perfil; estos mismos
+         elementos duplicados dentro de .dashboard-header quedaban apilados
+         debajo del título (foto "cortada" bajo el texto). */
+      .dashboard-header { height: auto !important; max-height: none !important; }
+      .dashboard-header .welcome-actions app-streak-icon,
+      .dashboard-header .welcome-actions .plan-badge,
+      .dashboard-header .welcome-actions .btn-upgrade-pro,
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      /* Plan Básico: el header fijo mide 104px (60px + fila de la píldora PRO) en vez de 60px. */
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
 
       .sim-drawer { width: 100vw; right: -100vw; }
       .sim-tab-trigger.panel-open { right: calc(100vw - 10px); }
@@ -1753,16 +1787,9 @@ type PathItem = {
     }
   `]
 })
-export class MateriaQuimicaPathComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MateriaQuimicaPathComponent implements AfterViewInit, OnDestroy {
   activePathTab: 'path' | 'infinite' = 'path';
 
-  ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      if (params['mode'] === 'infinite') {
-        this.activePathTab = 'infinite';
-      }
-    });
-  }
   private paes = inject(PaesContentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -2668,6 +2695,16 @@ export class MateriaQuimicaPathComponent implements OnInit, AfterViewInit, OnDes
     const paramId = this.route.snapshot.paramMap.get('materiaId');
     const dataId = this.route.snapshot.data['materiaId'];
     this.materiaId.set(paramId || dataId || 'quimica');
+
+    // Modo Infinito: reservado para una actualización futura. Solo el panel de admin
+    // (/admin/modo-infinito) puede activarlo, vía ?mode=infinite — ya no hay ningún botón
+    // visible para el usuario normal. adminService.isAdmin() resuelve async (empieza en
+    // null), así que se usa un effect() en vez de leerlo una sola vez en un ngOnInit.
+    effect(() => {
+      if (this.adminService.isAdmin() && this.route.snapshot.queryParams['mode'] === 'infinite') {
+        this.activePathTab = 'infinite';
+      }
+    });
   }
 
   getOffset(index: number): number {
@@ -3096,6 +3133,13 @@ export class MateriaQuimicaPathComponent implements OnInit, AfterViewInit, OnDes
       const secsDone = (cap.secciones || []).every(sec => !!this.paes.getSeccionProgress(sec.id)?.completed);
       return guideDone && secsDone;
     });
+  }
+
+  /** El Modo Infinito está reservado para una actualización futura: ya no hay ningún botón
+   * visible para activarlo. Solo queda accesible para admins (vía el panel de admin, que
+   * navega con ?mode=infinite), sin exigirles haber completado la ruta primero. */
+  isInfiniteModeUnlocked(): boolean {
+    return this.isEntirePathCompleted() || !!this.adminService.isAdmin();
   }
 
   confirmLogout() {

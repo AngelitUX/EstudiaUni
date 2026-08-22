@@ -5,11 +5,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { Auth } from '@angular/fire/auth';
+import { PasswordVisibilityIconComponent } from '../../../shared/components/password-visibility-icon.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PasswordVisibilityIconComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })

@@ -1329,7 +1329,10 @@ interface AiMessage {
         height: auto;
         min-height: calc(100vh - 64px);
         overflow: visible;
-        padding: 0.75rem;
+        /* Slightly tighter than desktop so the question card (and the question image inside
+           it, which is often the whole question — see .question-image-container below) gets
+           more of the screen's width on a phone. */
+        padding: 0.5rem;
       }
       .header-center { display: none; }
       .exam-title { display: none; }
@@ -1409,8 +1412,14 @@ interface AiMessage {
       .timer { padding: 0.4rem 0.7rem; font-size: 1.05rem; }
       .header-right .btn.btn-ghost { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
 
-      .question-card { padding: 1rem; }
+      .question-card { padding: 0.75rem; }
       .question-header { padding: 0.6rem 1rem; min-height: auto; flex-wrap: wrap; gap: 0.5rem; }
+
+      /* Most questions in this exam bank are scanned images (the "stem" text is just a
+         placeholder) — let the image bleed past the card's own padding a bit further so it
+         renders bigger and reads more clearly on a small screen, without touching the card's
+         rounded corners. */
+      .question-stem { margin-left: -0.5rem; margin-right: -0.5rem; }
 
       .options-nav-row { flex-direction: column; align-items: stretch; gap: 0.75rem; }
       .btn-nav-inline { width: 100%; min-width: 0; }
@@ -1828,8 +1837,16 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
   }
 
   goToQuestion(index: number) {
+    // Mobile: the question navigator opens as a full overlay. Picking a question is the
+    // natural "I'm done choosing" signal, so close it automatically instead of making the
+    // student close it manually every time before they can see the question they picked.
+    if (typeof window !== 'undefined' && window.innerWidth <= 900 && !this.isNavCollapsed) {
+      this.isNavCollapsed = true;
+      this.updateMobileOverlayScrollLock();
+    }
+
     if (this.currentIndex === index) return;
-    
+
     this.isImageLoading = true;
     this.currentIndex = index;
     if (this.isAssisted) {

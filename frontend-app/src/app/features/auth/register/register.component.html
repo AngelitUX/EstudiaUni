@@ -135,9 +135,8 @@
               #passwordInput="ngModel"
               style="padding-right: 2.5rem; width: 100%; box-sizing: border-box;"
             >
-            <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0;">
-              <span *ngIf="!showPassword">👁️</span>
-              <span *ngIf="showPassword">🙈</span>
+            <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()" [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0; display: flex;">
+              <app-password-visibility-icon [passwordVisible]="showPassword"></app-password-visibility-icon>
             </button>
           </div>
           <div class="password-requirements" *ngIf="password">
@@ -167,9 +166,8 @@
               #confirmPasswordInput="ngModel"
               style="padding-right: 2.5rem; width: 100%; box-sizing: border-box;"
             >
-            <button type="button" class="btn-toggle-password" (click)="toggleConfirmPasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0;">
-              <span *ngIf="!showConfirmPassword">👁️</span>
-              <span *ngIf="showConfirmPassword">🙈</span>
+            <button type="button" class="btn-toggle-password" (click)="toggleConfirmPasswordVisibility()" [attr.aria-label]="showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0; display: flex;">
+              <app-password-visibility-icon [passwordVisible]="showConfirmPassword"></app-password-visibility-icon>
             </button>
           </div>
           <small *ngIf="confirmPassword && password !== confirmPassword" class="error-text" style="display: block; margin-top: 0.25rem;">
@@ -177,7 +175,23 @@
           </small>
         </div>
 
-        <button type="submit" class="btn btn-primary w-full" [disabled]="!registerForm.form.valid || !isPasswordValid() || password !== confirmPassword || !isEmailDomainValid(email) || loading">
+        <div class="form-group form-group-checkbox">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="acceptedTerms"
+              name="acceptedTerms"
+            >
+            <span>
+              He leído y acepto los
+              <a style="cursor: pointer;" (click)="$event.preventDefault(); $event.stopPropagation(); legalModalType = 'terms'">Términos de Servicio</a>
+              y la
+              <a style="cursor: pointer;" (click)="$event.preventDefault(); $event.stopPropagation(); legalModalType = 'privacy'">Política de Privacidad</a>.
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full" [disabled]="!registerForm.form.valid || !isPasswordValid() || password !== confirmPassword || !isEmailDomainValid(email) || !acceptedTerms || loading">
           {{ loading ? 'Creando cuenta...' : 'Crear Cuenta' }}
         </button>
 
@@ -185,7 +199,7 @@
           <span>o continuar con</span>
         </div>
 
-        <button type="button" class="btn btn-google w-full" (click)="registerWithGoogle()" [disabled]="loading">
+        <button type="button" class="btn btn-google w-full" (click)="registerWithGoogle()" [disabled]="loading || !acceptedTerms">
           <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -201,4 +215,6 @@
       </form>
     </div>
   </div>
+
+  <app-legal-modal [type]="legalModalType" (close)="legalModalType = null"></app-legal-modal>
 </div>

@@ -63,14 +63,35 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
       </aside>
 
       <!-- MOBILE HEADER -->
-      <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = true">☰</button>
-        <a routerLink="/dashboard" style="text-decoration:none; display: flex; align-items: center;">
-          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
-        </a>
+      <div class="mobile-header" [class.mobile-header-with-pro]="!isProPlan() && !adminService.isAdmin()">
+        <div class="mobile-header-top">
+          <button class="mobile-menu-btn" (click)="mobileOpen = true" aria-label="Abrir menú">
+            <span style="display:flex;flex-direction:column;gap:4px;width:18px">
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            </span>
+          </button>
+          <a routerLink="/dashboard" class="mobile-logo-link">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+          </a>
+          <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+            <span class="profile-avatar-wrap">
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileNav" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
+              <ng-template #avatarMobileNav><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+            </span>
+          </button>
+        </div>
+        <div class="mobile-header-pro-row" *ngIf="!isProPlan() && !adminService.isAdmin()">
+          <button class="btn-upgrade-pro mobile-pro-pill" (click)="paymentService.openPricingModal()">Mejorar a PRO ⚡</button>
+        </div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div style="position: relative; padding: 0.75rem 1rem 0.75rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-start; align-items: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_10,y_202,w_471,h_86/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_1,y_204,w_489,h_81/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 180px; height: auto;" />
+            <button class="mobile-close-btn" (click)="mobileOpen=false" style="position: absolute; top: 0.75rem; right: 1.25rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+          </div>
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
             <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
@@ -224,11 +245,6 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
 
                     <!-- Botón -->
                     <div class="cta-wrap" style="display: flex; align-items: center; gap: 0.4rem;">
-                      <button *ngIf="getMateriaProgress(m.id).percentage === 100"
-                        class="btn-reinforce-action"
-                        (click)="goToMateria(m, 'infinite', $event)">
-                        ⚡ REFORZAR
-                      </button>
                       <button class="btn-main-action"
                         [class.btn-start]="getMateriaProgress(m.id).percentage === 0"
                         [class.btn-continue]="getMateriaProgress(m.id).percentage > 0 && getMateriaProgress(m.id).percentage < 100"
@@ -297,8 +313,10 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes floatLogoNav { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
     .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 190px; height: auto; object-fit: contain; margin: 0; animation: floatLogoNav 3.5s ease-in-out infinite; }
+    .mobile-logo-link { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-decoration: none; line-height: 0; z-index: 1; }
     :host { display: block; min-height: 100vh; background: #f8f9fa; color: var(--text-primary); }
     .lp-layout { display: flex; min-height: 100vh; }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -348,27 +366,6 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
     .btn-review:hover {
       background: #10b981;
       color: #ffffff;
-    }
-    .btn-reinforce-action {
-      background: linear-gradient(135deg, #855cd6, #f59e0b);
-      color: #ffffff;
-      font-size: 0.78rem;
-      font-weight: 800;
-      padding: 0.5rem 0.85rem;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.35);
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      white-space: nowrap;
-    }
-    .btn-reinforce-action:hover {
-      transform: translateY(-2px) scale(1.04);
-      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
-      filter: brightness(1.1);
     }
     .nav-item:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateX(4px); }
     .nav-item.active { 
@@ -482,10 +479,13 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MOBILE */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 1rem; align-items: center; gap: 1rem; z-index: 101; }
-    .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
-    .mobile-overlay.open { display: block; }
+    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 101; box-sizing: border-box; }
+    .mobile-header-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 1rem; gap: 1rem; box-sizing: border-box; width: 100%; }
+    .mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }
+    .mobile-header-pro-row { display: flex; justify-content: center; padding: 0 1rem 0.55rem; box-sizing: border-box; width: 100%; }
+    .mobile-pro-pill { width: 190px; max-width: 100%; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; box-sizing: border-box; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.2); }
     .mobile-menu { position: absolute; top: 0; left: 0; width: 280px; height: 100%; background: #0d0f17; padding: 2rem 1rem; }
 
     /* MAIN */
@@ -708,7 +708,21 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
       .mobile-header { display: flex; }
       .main-content { margin-left: 0; max-width: 100%; }
       .page-header { flex-direction: column; }
-      
+      /* La barra móvil fija (.mobile-header) ya trae logo + foto de perfil;
+         estos mismos elementos duplicados dentro de .dashboard-header quedaban
+         apilados debajo del título/descripción (foto "cortada" bajo el texto). */
+      /* El fallback global de styles.css fija .dashboard-header a height/max-height:
+         var(--header-height) (~110px, pensado para el zoom de escritorio) SIN excepción por
+         breakpoint — con el título+descripción de 2 líneas de algunos módulos, el contenido
+         real no entraba ahí y se desbordaba invisible/tapado bajo la tarjeta blanca de abajo. */
+      .dashboard-header { height: auto !important; max-height: none !important; }
+      .dashboard-header .welcome-actions app-streak-icon,
+      .dashboard-header .welcome-actions .plan-badge,
+      .dashboard-header .welcome-actions .btn-upgrade-pro,
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      /* Plan Básico: el header fijo mide 104px (60px + fila de la píldora PRO) en vez de 60px. */
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
+
       .horizontal-card { flex-direction: column; gap: 1.5rem; padding: 1.5rem; }
       .card-image-col { flex: 0 0 auto; }
       .materia-main-img { max-height: 180px; }

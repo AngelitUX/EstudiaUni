@@ -27,17 +27,6 @@ export interface CouponValidationResponse {
   finalAmount?: number;
 }
 
-export interface ManualTransferData {
-  planType: 'monthly' | 'yearly';
-  bankName: string;
-  transferNumber: string;
-  amount: number;
-  payerEmail?: string;
-  targetUid?: string;
-  receiptUrl?: string;
-  couponCode?: string;
-}
-
 export interface TransactionRecord {
   id: string;
   type: 'flow' | 'transfer';
@@ -112,16 +101,13 @@ export class PaymentService {
     return this.http.post<FlowSubscriptionResult>(url, { token });
   }
 
-  /**
-   * Submit manual bank transfer report
-   */
-  submitManualTransfer(data: ManualTransferData): Observable<{ success: boolean; message: string; transferId: string }> {
-    const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    const url = `${baseUrl}/api/subscriptions/transfer/submit`;
-    return this.http.post<{ success: boolean; message: string; transferId: string }>(url, data);
-  }
-
   // ── ADMIN PAYMENT ENDPOINTS ──
+  // NOTE: there is intentionally no customer-facing "submit manual transfer"
+  // method here anymore — the pricing modal only offers Flow now (see
+  // pricing-modal.component.ts). The backend endpoint (POST
+  // /subscriptions/transfer/submit) and the admin approval flow below are
+  // kept as-is for the historical/admin-initiated transfer records that
+  // already exist in `manual_payments`.
 
   getAdminTransactions(): Observable<TransactionRecord[]> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';

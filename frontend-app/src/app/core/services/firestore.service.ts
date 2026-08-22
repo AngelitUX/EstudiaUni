@@ -36,6 +36,9 @@ export interface UserProfile {
     status: string;
     startDate: any;
     endDate: any;
+    provider?: 'flow' | 'manual' | 'transfer';
+    planType?: 'monthly' | 'yearly';
+    cancelAtPeriodEnd?: boolean;
   };
   notificationsEnabled?: boolean;
   emailVerified?: boolean;

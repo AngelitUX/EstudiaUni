@@ -53,16 +53,26 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
           <h1>{{ sec.title }}</h1>
         </div>
 
-        <!-- A11Y AUDIO PANEL (Collapsible) -->
+        <!-- A11Y AUDIO PANEL (siempre visible, no desplegable) -->
         <div class="a11y-mini-panel-container" *ngIf="!isMathModule()">
-          <button class="btn-a11y-toggle" (click)="shortcutsMenuOpen = !shortcutsMenuOpen" title="Atajos de teclado">
-            🎧 Atajos de Audio <span class="arrow" [class.open]="shortcutsMenuOpen">▼</span>
-          </button>
-          <div class="a11y-mini-panel" [class.open]="shortcutsMenuOpen">
-            <span class="a11y-shortcut"><b>[P]</b> Leer Descripción</span>
-            <span class="a11y-shortcut" *ngIf="sec.test?.contexto_base"><b>[O]</b> Leer Contexto</span>
-            <span class="a11y-shortcut" *ngIf="sec.datos_claves?.length"><b>[T]</b> Leer Tips</span>
-            <span class="a11y-shortcut"><b>[I]</b> Detener</span>
+          <span class="a11y-panel-label">🎧 Audio Descriptivo</span>
+          <div class="a11y-mini-panel">
+            <button class="a11y-shortcut" (click)="readGuide()">
+              <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Leer Descripción
+            </button>
+            <button class="a11y-shortcut" *ngIf="sec.test?.contexto_base" (click)="readContext()">
+              <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Leer Contexto
+            </button>
+            <button class="a11y-shortcut" *ngIf="sec.datos_claves?.length" (click)="readTips()">
+              <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Leer Tips
+            </button>
+            <button class="a11y-shortcut a11y-shortcut-stop" (click)="stopReading()">
+              <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              Detener
+            </button>
           </div>
         </div>
       </div>
@@ -307,16 +317,23 @@ import { FillBlanksPracticeComponent } from './fill-blanks-practice.component';
     .btn-next:hover { box-shadow: 0 2px 0 #4caf00; }
 
     /* A11Y MINI PANEL */
-    .a11y-mini-panel-container { margin-top: 0.5rem; display: flex; flex-direction: column; align-items: flex-start; z-index: 100; }
-    .btn-a11y-toggle { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-a11y-toggle:hover { background: rgba(133,92,214,0.15); }
-    .btn-a11y-toggle .arrow { font-size: 0.6rem; transition: transform 0.2s; }
-    .btn-a11y-toggle .arrow.open { transform: rotate(180deg); }
-    
-    .a11y-mini-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.05); border-radius: 8px; padding: 0; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; border: 0px solid rgba(133,92,214,0.15); }
-    .a11y-mini-panel.open { max-height: 100px; opacity: 1; padding: 0.65rem 0.85rem; border-width: 1px; margin-top: 0.5rem; }
-    .a11y-shortcut { font-size: 0.75rem; color: var(--text-secondary); background: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05); }
-    .a11y-shortcut b { color: var(--text-primary); font-family: monospace; }
+    /* A11Y MINI PANEL: botones siempre visibles con ícono (antes un desplegable
+       "🎧 Atajos de Audio ▼" y texto "[P]/[O]/[T]/[I]" con el atajo de teclado). */
+    .a11y-mini-panel-container { margin-top: 0.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; z-index: 100; }
+    .a11y-panel-label { font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); }
+    .a11y-mini-panel { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .a11y-shortcut {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      color: var(--accent-primary); background: #fff;
+      padding: 0.45rem 0.85rem; border-radius: 10px;
+      border: 2px solid var(--accent-primary);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .a11y-icon { width: 14px; height: 14px; flex-shrink: 0; }
+    .a11y-shortcut:hover { background: var(--accent-primary); color: #fff; }
+    .a11y-shortcut-stop { color: #ef4444; border-color: #ef4444; }
+    .a11y-shortcut-stop:hover { background: #ef4444; color: #fff; }
 
     /* PRO TIP UI */
     .pro-tip-card { background: linear-gradient(135deg, #fff, rgba(255, 150, 0, 0.05)); border: 2px solid rgba(255, 150, 0, 0.2); animation: fadeSlide 0.5s ease-out; text-align: center; padding: 2.5rem 2rem; }
@@ -373,7 +390,6 @@ export class SeccionFisicaDetailComponent {
   capituloId = signal('');
   seccionId = signal('');
   practiceCompleted = signal(false);
-  shortcutsMenuOpen = false;
 
   isMathModule = computed(() => this.materiaId().toLowerCase().includes('mat'));
   isScienceOrMath = computed(() => {
