@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-22 (parte 15) · Rama en la que se escribió: `MejoraVisuales`
+> Última actualización: 2026-08-22 (parte 16) · Rama en la que se escribió: `MejoraVisuales`
 
 ---
 
@@ -510,6 +510,87 @@ se empaquetó.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-22 (parte 16) — Auditoría de seguridad de Flow, Flow como único método de pago en el
+modal de precios, `planType` persistido en `subscription`, y aviso de renovación con antelación
+Backend typecheck ✅ (tras `npm install` en `backend/` — faltaban `@google/generative-ai` y otras
+dependencias no instaladas en este entorno, nada relacionado con este cambio) · frontend typecheck
+✅ (`tsc --noEmit`) · verificado en navegador logueado con la cuenta real (`angapicar@gmail.com`)
+abriendo el modal de precios hasta el paso de pago.
+
+**Auditoría de la integración de Flow — 1 hallazgo real, corregido.** En
+`FlowService.handleRecurringWebhook()` (backend/src/subscriptions/flow.service.ts), la línea
+`const subscriptionId = body.subscriptionId || invoiceStatus?.subscriptionId;` confiaba primero en
+el campo `subscriptionId` del **body del webhook**, que Flow no firma — cualquiera puede hacerle un
+POST a `/api/subscriptions/flow/webhook` (no está detrás de `FirebaseAuthGuard` a propósito, porque
+Flow lo llama server-to-server). El resto del método SÍ hace lo correcto (nunca confía en el body
+para el estado de pago: siempre re-consulta `/invoice/get` a la API de Flow con una petición firmada
+usando `invoiceId`/`token`), pero como `subscriptionId` se tomaba del body en vez de la respuesta
+verificada, un atacante podía tomar el `invoiceId` de una factura real y pagada (incluso una propia,
+de sandbox o de un cobro legítimo cualquiera) y combinarlo con un `subscriptionId` falso apuntando a
+la suscripción de otra persona — el backend habría extendido el Plan PRO de la víctima gratis.
+Corregido invirtiendo la prioridad: `invoiceStatus?.subscriptionId || body.subscriptionId` — ahora
+sólo se usa el valor del body cuando Flow no devolvió ningún `invoiceStatus` verificado, caso en el
+que `isPaid` ya da `false` de todos modos (no se puede activar nada). El resto de la integración
+(firma HMAC-SHA256 de cada petición saliente en `sign()`, verificación server-to-server con
+`getRegisterStatus`, transacciones de Firestore para evitar dobles activaciones en
+`confirmRegistrationAndSubscribe`/`activateSubscription`, idempotencia de webhooks vía
+`flow_invoices/{invoiceDocId}`, ventana de 2 días en `extendSubscriptionPeriod` para no duplicar el
+período del primer cobro) ya estaba bien pensada — no se tocó nada más ahí.
+
+**El campo `planType` ('monthly'|'yearly') nunca se guardaba en `users/{uid}.subscription`**, pese a
+que `activateSubscription()`, `extendSubscriptionPeriod()` y `manualGrant()` ya reciben ese dato como
+parámetro. Se agregó a los tres (merge recursivo de Firestore: sólo toca esa clave, no pisa el resto
+del mapa `subscription`) — necesario para que el nuevo aviso de renovación (ver abajo) pueda mostrar
+el monto correcto, y útil en general para el panel admin a futuro.
+
+**Modal de precios: Flow pasa a ser el único método de pago visible** (`pricing-modal.component.ts`).
+Se sacó el selector de pestañas "💳 Flow / 🏛️ Transferencia" y todo el bloque de transferencia manual
+(datos bancarios, formulario de comprobante, pantalla de éxito) — reemplazado por una sola insignia
+fija "Flow (Tarjetas de crédito y débito, suscripción)". Esto no es sólo estético: una transferencia
+bancaria no puede auto-cobrarse periódicamente (no hay forma de que el banco reintente el cobro sin
+que el usuario actúe cada vez), así que nunca encajó con el modelo de suscripción recurrente que ya
+implementa Flow (`/customer/register` + `/subscription/create`) — Flow **tampoco** ofrece
+transferencia como medio para registrar una suscripción recurrente en su checkout alojado (eso sólo
+existe para pagos únicos vía `/payment/create`, que esta app no usa). El componente quedó sin el
+signal `paymentMethod`/tipo `PaymentMethodOption`, sin los campos `bankName`/`transferNumber`/
+`transferSubmitted` y sin `submitTransferReport()`. Se quitó también el ícono 🎯 de emoji sobre "¿Para
+quién es el Plan Pro?", reemplazado por `assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg`
+(el mismo ícono que ya usa el sidebar del dashboard para la píldora PRO) — verificado en navegador que
+carga bien (977×1024 natural, renderiza a 56×56). El texto "🔒 Suscripción 100% segura a través de
+Flow y Transferencia Bancaria" del paso 1 se acortó a "...a través de Flow".
+
+**No se tocó el backend de transferencia manual** (`SubscriptionsService.submitManualTransfer/
+approveTransfer`, `POST /subscriptions/transfer/submit`, el panel `/admin/suscripciones`): sigue
+existiendo para los registros históricos ya aprobados/pendientes en `manual_payments` y por si un
+admin necesita aprobar algo generado fuera de la UI. Sí se limpió el único código muerto que quedó
+tras sacar el formulario: `PaymentService.submitManualTransfer()` / la interfaz `ManualTransferData`
+en el frontend, que ya no tenían ningún llamador (`pricing-modal.component.ts` era el único).
+
+**Nuevo: aviso de renovación con antelación** (`features/payment/renewal-notice-banner.component.ts`,
+insertado en `dashboard.component.ts` justo dentro de `<main class="main-content">`, antes del
+`<header class="dashboard-header">` — en flujo normal del documento, **sin** `position:fixed/sticky`
+a propósito: el resto del sitio ya pelea bastante con headers fijos y paddings ajustados por página,
+ver sección 8, así que un banner fijo global habría chocado con eso). Flow no ofrece ningún webhook
+de "aviso antes de cobrar" (sólo el que ya existe, disparado DESPUÉS de cada intento de cobro), así
+que este aviso es 100% client-side: lee `subscription.endDate`/`planType`/`provider` del perfil ya
+sincronizado en tiempo real desde Firestore y, si faltan 3 días o menos para el `endDate` (y
+`provider === 'flow'`, `status === 'active'`, `!cancelAtPeriodEnd`), muestra "Tu Plan PRO se renueva
+automáticamente el [fecha] por $[monto] — se cobrará a tu tarjeta en Flow si no cancelas antes" con
+un botón a Configuración y un cierre que se recuerda en `localStorage` por fecha de renovación
+(vuelve a aparecer en el próximo ciclo). No se muestra para `provider: 'manual'|'transfer'` (esos
+planes no se auto-cobran, avisar sería engañoso). Verificado en navegador con la cuenta de prueba
+(Plan Básico): el banner no aparece y no tira errores de consola — no se pudo probar el caso
+visible (requeriría una suscripción Flow real venciendo en ≤3 días, que no existe en este entorno).
+
+**Estado real de Flow en este entorno: NO está configurado.** `backend/.env` sólo tiene las 3
+variables de Firebase — ninguna `FLOW_*` ni `BACKEND_PUBLIC_URL` ni `GEMINI_API_KEY`. El código de
+Flow está completo e implementado (confirmado en esta auditoría), pero nunca se ha ejecutado contra
+una cuenta real de Flow, ni siquiera en sandbox. Pendiente que el usuario cree su cuenta en
+`sandbox.flow.cl`, saque su API Key/Secret Key, corra `npm run setup:flow-plans` y complete
+`backend/.env` — instrucciones detalladas se dieron en la conversación, no repetidas aquí para no
+duplicar contenido que puede desactualizarse (los pasos exactos están en la sección 10 y en
+`backend/.env.example`, ya documentados).
 
 ### 2026-08-22 (parte 15) — Home desktop: más separación horizontal entre la columna de texto y la
 tarjeta de la simulación en vivo

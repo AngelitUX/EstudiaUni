@@ -21,11 +21,12 @@ import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
+import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent, HistoryModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SettingsModalComponent, ProfileModalComponent, StreakIconComponent, HistoryModalComponent, RenewalNoticeBannerComponent],
   template: `
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
@@ -193,6 +194,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
       <!-- MAIN CONTENT -->
       <main class="main-content animate-fade-in-down">
+        <app-renewal-notice-banner></app-renewal-notice-banner>
         <!-- HEADER -->
         <header class="dashboard-header">
           <div class="header-welcome-text">

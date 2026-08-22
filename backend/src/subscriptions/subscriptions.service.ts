@@ -334,6 +334,7 @@ export class SubscriptionsService {
           tier: 'premium',
           status: 'active',
           provider: providerInfo.provider,
+          planType,
           flowCustomerId: providerInfo.flowCustomerId || null,
           flowSubscriptionId: providerInfo.flowSubscriptionId || null,
           cancelAtPeriodEnd: false,
@@ -394,6 +395,7 @@ export class SubscriptionsService {
         subscription: {
           tier: 'premium',
           status: 'active',
+          planType,
           endDate: newEndDate,
         },
         plan: 'premium',
@@ -514,6 +516,7 @@ export class SubscriptionsService {
             tier: 'premium',
             status: 'active',
             provider: 'manual',
+            planType,
             cancelAtPeriodEnd: false,
             startDate,
             endDate,
