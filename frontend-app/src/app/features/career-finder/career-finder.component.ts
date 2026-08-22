@@ -64,19 +64,35 @@ import { PaymentService } from '../../core/services/payment.service';
       </aside>
 
       <!-- MOBILE HEADER -->
-      <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
-          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
-            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
-            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
-            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
-          </span>
-        </button>
-        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center"><span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-family:var(--font-heading);font-size:1.4rem;font-weight:900">EstudiaUni</span></a>
-        <div style="width:44px"></div>
+      <div class="mobile-header" [class.mobile-header-with-pro]="!isProPlan() && !adminService.isAdmin()">
+        <div class="mobile-header-top">
+          <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+            <span style="display:flex;flex-direction:column;gap:4px;width:18px">
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            </span>
+          </button>
+          <a routerLink="/dashboard" class="mobile-logo-link">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+          </a>
+          <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+            <span class="profile-avatar-wrap">
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileNav" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
+              <ng-template #avatarMobileNav><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+            </span>
+          </button>
+        </div>
+        <div class="mobile-header-pro-row" *ngIf="!isProPlan() && !adminService.isAdmin()">
+          <button class="btn-upgrade-pro mobile-pro-pill" (click)="paymentService.openPricingModal()">Mejorar a PRO ⚡</button>
+        </div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
+          <div style="position: relative; padding: 0.75rem 1rem 0.75rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-start; align-items: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_10,y_202,w_471,h_86/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_1,y_204,w_489,h_81/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 180px; height: auto;" />
+            <button class="mobile-close-btn" (click)="mobileOpen=false" style="position: absolute; top: 0.75rem; right: 1.25rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+          </div>
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
             <a class="nav-item" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
@@ -494,8 +510,10 @@ import { PaymentService } from '../../core/services/payment.service';
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes floatLogoNav { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
     .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 190px; height: auto; object-fit: contain; margin: 0; animation: floatLogoNav 3.5s ease-in-out infinite; }
+    .mobile-logo-link { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-decoration: none; line-height: 0; z-index: 1; }
     .career-layout { display: flex; min-height: 100vh; background: var(--bg-color); }
     
     /* SIDEBAR */
@@ -628,11 +646,13 @@ import { PaymentService } from '../../core/services/payment.service';
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MOBILE HEADER */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
-    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
-    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
-    .mobile-overlay.open { display: block; }
+    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); z-index: 101; box-sizing: border-box; }
+    .mobile-header-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 1rem; gap: 0.75rem; box-sizing: border-box; width: 100%; }
+    .mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }
+    .mobile-header-pro-row { display: flex; justify-content: center; padding: 0 1rem 0.55rem; box-sizing: border-box; width: 100%; }
+    .mobile-pro-pill { width: 190px; max-width: 100%; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; box-sizing: border-box; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.2); }
     .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; max-width: 85vw; height: 100vh; background: #0d0f17; padding: 0; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.5); z-index: 10000; display: flex; flex-direction: column; }
 
     /* MAIN CONTENT */
@@ -1060,7 +1080,8 @@ import { PaymentService } from '../../core/services/payment.service';
       aside.sidebar, .sidebar { display: none !important; }
       .mobile-header { display: flex !important; }
       .main-content { margin-left: 0 !important; padding: 0 !important; padding-top: 60px !important; max-width: 100vw !important; width: 100% !important; box-sizing: border-box !important; }
-      .dashboard-header { height: auto !important; padding: 1.25rem 1rem 0.75rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
+      .dashboard-header { height: auto !important; max-height: none !important; padding: 1.25rem 1rem 0.75rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
       .dashboard-header .welcome-actions { display: none !important; }
       .form-grid { grid-template-columns: 1fr 1fr; }
       .ai-promo-text span { display: none; }
@@ -1073,11 +1094,20 @@ import { PaymentService } from '../../core/services/payment.service';
       aside.sidebar, .sidebar { display: none !important; }
       .mobile-header { display: flex !important; }
       .main-content { margin-left: 0 !important; padding: 0 !important; padding-top: 60px !important; max-width: 100vw !important; width: 100% !important; box-sizing: border-box !important; }
-      .dashboard-header { height: auto !important; padding: 1rem 0.85rem 0.5rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
+      .dashboard-header { height: auto !important; max-height: none !important; padding: 1rem 0.85rem 0.5rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem !important; width: 100% !important; box-sizing: border-box !important; }
       .dashboard-header .welcome-actions { display: none !important; }
       .form-grid { grid-template-columns: 1fr; }
       .page-header h1 { font-size: 2.2rem; }
       .careers-grid { grid-template-columns: 1fr; }
+      /* The promo banner was a single flex row with a fixed-width icon + a nowrap heading +
+         the CTA button all fighting for space — on a phone the button had nowhere left to go
+         and got clipped at the screen edge. Wrapping the row lets the button drop to its own
+         full-width line instead. */
+      .ai-promo-banner { flex-wrap: wrap; padding: 1rem 1.25rem; }
+      .ai-promo-content { flex: 1 1 100%; }
+      .ai-promo-text { flex-wrap: wrap; }
+      .ai-promo-banner .btn { width: 100%; justify-content: center; }
       .ai-fab-btn { bottom: 1rem; right: 1rem; padding: 0.65rem 1rem; font-size: 0.85rem; }
       .finder-form { padding: 1.5rem; }
       .welcome-search { padding: 3rem 1.5rem; }
@@ -1085,6 +1115,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
     @media (max-width: 480px) {
       .main-content { padding-top: 60px !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
       .page-header h1 { font-size: 1.8rem; }
       .form-grid { grid-template-columns: 1fr; gap: 0.85rem; }
       .welcome-search { padding: 2.5rem 1.25rem; }

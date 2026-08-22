@@ -153,11 +153,11 @@ import { ToastService } from '../../core/services/toast.service';
         </div>
 
         <div class="dot-indicators">
-          <span *ngFor="let p of shuffledPreguntas(); let i = index"
+          <span *ngFor="let i of visibleDotIndices()"
             class="dot"
-            [class.answered]="answers().has(p.id)"
+            [class.answered]="answers().has(shuffledPreguntas()[i].id)"
             [class.current]="i === currentIndex()"
-            [ngClass]="getDotLevelClass(p)"
+            [ngClass]="getDotLevelClass(shuffledPreguntas()[i])"
             (click)="!showFeedback() && goToQuestion(i)"></span>
         </div>
 
@@ -528,10 +528,17 @@ import { ToastService } from '../../core/services/toast.service';
     .level-3 .opt-letter.sel { background: #ff9600; border-color: #ff9600; color: #fff; }
 
     @media (max-width: 640px) {
-      .question-card { padding: 1.5rem 1.5rem 1.5rem 2.5rem; }
-      .question-card::before { left: 1.75rem; }
+      /* El diseño "cuaderno" (línea roja de margen + anillado a la izquierda) funciona en
+         desktop, donde el ancho de sobra deja respirar al texto a la derecha de la línea.
+         En móvil, con mucho menos ancho, esa línea + el padding-left extra empujaban el
+         enunciado y las opciones hacia la izquierda, pegados y descentrados. En vez de solo
+         reposicionar la línea, se quita del todo y el padding vuelve a ser simétrico. */
+      .question-card { padding: 1.5rem; }
+      .question-card::before { display: none; }
       .question-card::after { display: none; }
-      .q-text { font-size: 1rem; }
+      .q-text { font-size: 1rem; text-align: center; }
+      .options-grid { align-items: center; }
+      .option-btn { justify-content: center; text-align: center; }
       .bottom-bar { padding: 0.75rem 1rem; }
       .dot-indicators { gap: 4px; }
       .dot { width: 8px; height: 8px; }
@@ -589,6 +596,21 @@ export class SeccionTestMathComponent implements OnInit, OnDestroy {
   currentIndex = signal(0);
   showFeedback = signal(false);
   contextCollapsed = false;
+
+  /** Ventana de puntitos a mostrar en la barra inferior: con niveles jefe de 10-15
+   * preguntas, un puntito por pregunta se salía de la pantalla y empujaba el botón
+   * Atacar/Comprobar fuera de la vista en móvil. Se cappea a un máximo centrado en la
+   * pregunta actual; el resto sigue navegable con Anterior/Continuar. */
+  private readonly maxVisibleDots = 9;
+  visibleDotIndices = computed(() => {
+    const total = this.shuffledPreguntas().length;
+    const max = this.maxVisibleDots;
+    if (total <= max) return Array.from({ length: total }, (_, i) => i);
+    const current = this.currentIndex();
+    let start = Math.max(0, current - Math.floor(max / 2));
+    if (start + max > total) start = total - max;
+    return Array.from({ length: max }, (_, i) => start + i);
+  });
 
   togglePhysicsContext(event: Event) {
     this.contextCollapsed = !this.contextCollapsed;

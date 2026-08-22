@@ -73,17 +73,22 @@ import { ToastService } from '../../core/services/toast.service';
             </div>
           </div>
 
-          <!-- NEW A11Y AUDIO PANEL (Only Biology and Physics) -->
+          <!-- A11Y AUDIO PANEL (Only Biology and Physics) — siempre visible, no desplegable -->
           <div class="a11y-mini-panel-container" *ngIf="isBiology() || isPhysics()">
-            <button class="btn-a11y-toggle" (click)="shortcutsMenuOpen = !shortcutsMenuOpen" title="Atajos de teclado">
-              🎧 Atajos <span class="arrow" [class.open]="shortcutsMenuOpen">▼</span>
-            </button>
-            <div class="a11y-mini-panel" [class.open]="shortcutsMenuOpen">
-              <span class="a11y-shortcut"><b>[P]</b> Leer Pregunta</span>
-              <span class="a11y-shortcut"><b>[O]</b> Leer Opciones</span>
-              <span class="a11y-shortcut"><b>[I]</b> Detener</span>
-              <span class="a11y-shortcut"><b>[1-4]</b> Elegir A-D</span>
-              <span class="a11y-shortcut"><b>[Espacio]</b> Comprobar/Continuar</span>
+            <span class="a11y-panel-label">🎧 Audio Descriptivo</span>
+            <div class="a11y-mini-panel">
+              <button class="a11y-shortcut" (click)="readQuestion()">
+                <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Leer Pregunta
+              </button>
+              <button class="a11y-shortcut" (click)="readOptions()">
+                <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Leer Opciones
+              </button>
+              <button class="a11y-shortcut a11y-shortcut-stop" (click)="stopReading()">
+                <svg class="a11y-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                Detener
+              </button>
             </div>
           </div>
 
@@ -159,9 +164,9 @@ import { ToastService } from '../../core/services/toast.service';
         </div>
 
         <div class="dot-indicators">
-          <span *ngFor="let p of shuffledPreguntas(); let i = index"
+          <span *ngFor="let i of visibleDotIndices()"
             class="dot"
-            [class.answered]="answers().has(p.id)"
+            [class.answered]="answers().has(shuffledPreguntas()[i].id)"
             [class.current]="i === currentIndex()"
             (click)="!showFeedback() && goToQuestion(i)"></span>
         </div>
@@ -475,17 +480,26 @@ import { ToastService } from '../../core/services/toast.service';
     .btn-stop { background: #fff; border-color: rgba(239,68,68,0.3); color: #ef4444; }
     .btn-stop:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
 
-    /* A11Y MINI PANEL (Biology) */
-    .a11y-mini-panel-container { margin-bottom: 1rem; display: flex; flex-direction: column; align-items: flex-start; }
-    .btn-a11y-toggle { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.08); border: 2px solid rgba(133,92,214,0.2); color: var(--accent-primary); border-radius: 8px; padding: 0.35rem 0.65rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-a11y-toggle:hover { background: rgba(133,92,214,0.15); }
-    .btn-a11y-toggle .arrow { font-size: 0.6rem; transition: transform 0.2s; }
-    .btn-a11y-toggle .arrow.open { transform: rotate(180deg); }
-    
-    .a11y-mini-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; background: rgba(133,92,214,0.05); border-radius: 8px; padding: 0; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; border: 0px solid rgba(133,92,214,0.15); }
-    .a11y-mini-panel.open { max-height: 100px; opacity: 1; padding: 0.65rem 0.85rem; border-width: 1px; margin-top: 0.5rem; }
-    .a11y-shortcut { font-size: 0.75rem; color: var(--text-secondary); background: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05); }
-    .a11y-shortcut b { color: var(--text-primary); font-family: monospace; }
+    /* A11Y MINI PANEL (Biology/Physics): botones siempre visibles con ícono (antes un
+       desplegable "🎧 Atajos ▼" con texto "[P]/[O]/[I]" del atajo de teclado, sin
+       equivalente táctil para móvil). Solo quedan las 3 acciones de audio — "[1-4] Elegir
+       A-D" y "[Espacio] Comprobar/Continuar" se quitaron porque ya tienen equivalente táctil
+       en pantalla (tocar la alternativa / tocar Comprobar). */
+    .a11y-mini-panel-container { margin-bottom: 1rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .a11y-panel-label { font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); }
+    .a11y-mini-panel { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .a11y-shortcut {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      color: var(--accent-primary); background: #fff;
+      padding: 0.45rem 0.85rem; border-radius: 10px;
+      border: 2px solid var(--accent-primary);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .a11y-icon { width: 14px; height: 14px; flex-shrink: 0; }
+    .a11y-shortcut:hover { background: var(--accent-primary); color: #fff; }
+    .a11y-shortcut-stop { color: #ef4444; border-color: #ef4444; }
+    .a11y-shortcut-stop:hover { background: #ef4444; color: #fff; }
 
     /* FOCUS ACCESSIBILITY */
     .option-btn:focus-visible, .btn-check:focus-visible, .btn-next:focus-visible, .btn-finish:focus-visible, .btn-secondary:focus-visible {
@@ -554,10 +568,18 @@ import { ToastService } from '../../core/services/toast.service';
     .level-3 .opt-letter.sel { background: #ff9600; border-color: #ff9600; color: #fff; }
 
     @media (max-width: 640px) {
-      .question-card { padding: 1.5rem 1.5rem 1.5rem 2.5rem; }
-      .question-card::before { left: 1.75rem; }
+      /* El diseño "cuaderno" (línea roja de margen + anillado a la izquierda) funciona en
+         desktop, donde el ancho de sobra deja respirar al texto a la derecha de la línea.
+         En móvil, con mucho menos ancho, esa línea + el padding-left extra empujaban el
+         enunciado y las opciones hacia la izquierda, pegados y descentrados. En vez de solo
+         reposicionar la línea, se quita del todo y el padding vuelve a ser simétrico. */
+      .question-card { padding: 1.5rem; }
+      .question-card.split-layout .split-left { padding: 1.5rem; }
+      .question-card::before { display: none; }
       .question-card::after { display: none; }
-      .q-text { font-size: 1rem; }
+      .q-text { font-size: 1rem; text-align: center; }
+      .options-grid { align-items: center; }
+      .option-btn { justify-content: center; text-align: center; }
       .bottom-bar { padding: 0.75rem 1rem; }
       .dot-indicators { gap: 4px; }
       .dot { width: 8px; height: 8px; }
@@ -599,6 +621,21 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   showFeedback = signal(false);
   contextCollapsed = false;
 
+  /** Ventana de puntitos a mostrar en la barra inferior: con niveles jefe de 10-15
+   * preguntas, un puntito por pregunta se salía de la pantalla y empujaba el botón
+   * Atacar/Comprobar fuera de la vista en móvil. Se cappea a un máximo centrado en la
+   * pregunta actual; el resto sigue navegable con Anterior/Continuar. */
+  private readonly maxVisibleDots = 9;
+  visibleDotIndices = computed(() => {
+    const total = this.shuffledPreguntas().length;
+    const max = this.maxVisibleDots;
+    if (total <= max) return Array.from({ length: total }, (_, i) => i);
+    const current = this.currentIndex();
+    let start = Math.max(0, current - Math.floor(max / 2));
+    if (start + max > total) start = total - max;
+    return Array.from({ length: max }, (_, i) => start + i);
+  });
+
   togglePhysicsContext(event: Event) {
     this.contextCollapsed = !this.contextCollapsed;
     if (!this.contextCollapsed) {
@@ -610,7 +647,6 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
   }
 
   voiceMenuOpen = false;
-  shortcutsMenuOpen = false;
   showExitConfirm = false;
   showGameOver = false;
   gameOverReason = signal('');
@@ -1004,21 +1040,18 @@ export class SeccionTestComponent implements OnInit, OnDestroy {
 
   nextQuestion() {
     this.showFeedback.set(false);
-    this.shortcutsMenuOpen = false;
     this.currentIndex.update(v => v + 1);
     this.saveState();
   }
 
   prevQuestion() {
     if (this.currentIndex() > 0 && !this.showFeedback()) {
-      this.shortcutsMenuOpen = false;
       this.currentIndex.update(v => v - 1);
       this.saveState();
     }
   }
 
   goToQuestion(index: number) {
-    this.shortcutsMenuOpen = false;
     this.currentIndex.set(index);
     this.saveState();
   }

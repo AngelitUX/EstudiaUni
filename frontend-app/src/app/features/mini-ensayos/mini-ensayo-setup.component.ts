@@ -71,29 +71,34 @@ interface MateriaOption {
       </aside>
 
       <!-- MOBILE HEADER -->
-      <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
-          <span style="display:flex;flex-direction:column;gap:5px;width:22px">
-            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
-            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
-            <span style="display:block;height:2.5px;background:#fff;border-radius:2px"></span>
-          </span>
-        </button>
-        <a routerLink="/dashboard" style="text-decoration:none;flex:1;text-align:center;display:flex;justify-content:center;">
-          <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
-        </a>
-        <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
-          <span class="profile-avatar-wrap">
-            <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileMe" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
-            <ng-template #avatarMobileMe><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
-          </span>
-        </button>
+      <div class="mobile-header" [class.mobile-header-with-pro]="!isProPlan() && !adminService.isAdmin()">
+        <div class="mobile-header-top">
+          <button class="mobile-menu-btn" (click)="mobileOpen = !mobileOpen" aria-label="Abrir menú">
+            <span style="display:flex;flex-direction:column;gap:4px;width:18px">
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            </span>
+          </button>
+          <a routerLink="/dashboard" class="mobile-logo-link">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+          </a>
+          <button class="profile-trigger" (click)="showProfileModal = true" style="background:none;border:none;cursor:pointer;padding:0">
+            <span class="profile-avatar-wrap">
+              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobileMe" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
+              <ng-template #avatarMobileMe><span class="profile-avatar fallback" style="width:32px;height:32px;font-size:0.9rem">{{ profileInitial() }}</span></ng-template>
+            </span>
+          </button>
+        </div>
+        <div class="mobile-header-pro-row" *ngIf="!isProPlan() && !adminService.isAdmin()">
+          <button class="btn-upgrade-pro mobile-pro-pill" (click)="paymentService.openPricingModal()">Mejorar a PRO ⚡</button>
+        </div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileOpen" (click)="mobileOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
-          <div style="padding: 1.5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 150px; height: auto;" />
-            <button (click)="mobileOpen=false" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.75rem; cursor: pointer; line-height: 1;">✕</button>
+          <div style="position: relative; padding: 0.75rem 1rem 0.75rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-start; align-items: center;">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_10,y_202,w_471,h_86/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_1,y_204,w_489,h_81/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 180px; height: auto;" />
+            <button class="mobile-close-btn" (click)="mobileOpen=false" style="position: absolute; top: 0.75rem; right: 1.25rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
             <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Inicio.svg" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
@@ -277,8 +282,10 @@ interface MateriaOption {
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes floatLogoNav { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
     .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 190px; height: auto; object-fit: contain; margin: 0; animation: floatLogoNav 3.5s ease-in-out infinite; }
+    .mobile-logo-link { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-decoration: none; line-height: 0; z-index: 1; }
     :host { display: block; min-height: 100vh; background: #0F1018; color: var(--text-primary); }
 
     .setup-container { width: 100%; max-width: 900px; padding: 2.5rem; border-radius: 24px; border: 2px solid var(--glass-border); display: flex; flex-direction: column; gap: 2.5rem; }
@@ -392,11 +399,13 @@ interface MateriaOption {
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* MOBILE HEADER */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 1rem; align-items: center; gap: 0.75rem; z-index: 101; }
-    .mobile-menu-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
-    .mobile-menu-btn:hover { background: rgba(255,255,255,0.15); }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 200; }
-    .mobile-overlay.open { display: block; }
+    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: rgba(13,15,23,0.99); border-bottom: 1px solid rgba(255,255,255,0.12); z-index: 101; box-sizing: border-box; }
+    .mobile-header-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 1rem; gap: 0.75rem; box-sizing: border-box; width: 100%; }
+    .mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }
+    .mobile-header-pro-row { display: flex; justify-content: center; padding: 0 1rem 0.55rem; box-sizing: border-box; width: 100%; }
+    .mobile-pro-pill { width: 190px; max-width: 100%; }
+    .mobile-menu-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; box-sizing: border-box; }
+    .mobile-menu-btn:hover { background: rgba(255,255,255,0.2); }
     .mobile-menu { position: fixed; top: 0; left: 0; width: 290px; max-width: 85vw; height: 100vh; background: #0d0f17; overflow-y: auto; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.5); z-index: 10000; }
 
     /* RESPONSIVE */
@@ -404,16 +413,46 @@ interface MateriaOption {
       aside.sidebar, .sidebar { display: none !important; }
       .mobile-header { display: flex !important; }
       .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
-      .dashboard-header { display: none !important; }
-      .dashboard-body { padding: 1.5rem !important; padding-top: 72px !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
+      .dashboard-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.35rem !important;
+        padding: 72px 1.5rem 0.5rem !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        border-bottom: none !important;
+      }
+      .dashboard-header .welcome-actions app-streak-icon,
+      .dashboard-header .welcome-actions .plan-badge,
+      .dashboard-header .welcome-actions .btn-upgrade-pro,
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content .dashboard-header { padding-top: 116px !important; }
+      .dashboard-body { padding: 1.5rem !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
       .setup-container { padding: 1.5rem !important; }
     }
     @media (max-width: 768px) {
       aside.sidebar, .sidebar { display: none !important; }
       .mobile-header { display: flex !important; }
       .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
-      .dashboard-header { display: none !important; }
-      .dashboard-body { padding: 1rem 0.85rem 2rem !important; padding-top: 72px !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
+      .dashboard-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.35rem !important;
+        padding: 72px 0.85rem 0.5rem !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        border-bottom: none !important;
+      }
+      .dashboard-header .welcome-actions app-streak-icon,
+      .dashboard-header .welcome-actions .plan-badge,
+      .dashboard-header .welcome-actions .btn-upgrade-pro,
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content .dashboard-header { padding-top: 116px !important; }
+      .dashboard-body { padding: 1rem 0.85rem 2rem !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
       .welcome-actions { flex-wrap: wrap; gap: 0.5rem; width: 100%; }
       .setup-container { padding: 1.25rem !important; }
       .materias-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
@@ -421,7 +460,6 @@ interface MateriaOption {
     @media (max-width: 480px) {
       .setup-container { padding: 1rem !important; }
       .materias-grid { grid-template-columns: repeat(2, 1fr); }
-      .dashboard-body { padding-top: 70px !important; }
     }
   `]
 })

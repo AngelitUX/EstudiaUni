@@ -375,11 +375,25 @@ body.spacing-xwide textarea {
   background: rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: blur(4px) !important;
   z-index: 10000 !important; /* Ensure z-index is elevated on top of other content */
-  display: none !important;
+  /* display:none/block can't be transitioned (it's all-or-nothing), which is why closing
+     used to snap shut instantly even though .mobile-menu's own `left` transition below looks
+     fine on the way in. Toggling opacity/visibility instead lets both the backdrop fade AND
+     the menu's slide play out smoothly in both directions. */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.28s ease, visibility 0.28s ease !important;
 }
 
 .mobile-overlay.open {
-  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-overlay,
+  .mobile-overlay .mobile-menu {
+    transition: none !important;
+  }
 }
 
 .mobile-overlay .mobile-menu {

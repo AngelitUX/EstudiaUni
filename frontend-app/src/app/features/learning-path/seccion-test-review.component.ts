@@ -268,6 +268,9 @@ import { KatexService } from '../../core/services/katex.service';
       .stats-row { gap: 0.6rem; }
       .stat-box { min-width: 75px; padding: 0.6rem 0.9rem; }
       .bottom-actions { flex-direction: column; }
+      /* [O]/[P] son atajos de teclado — no tienen sentido en un teléfono sin teclado
+         físico, y el propio botón ya es tocable. */
+      .btn-hint { display: none; }
     }
 
     /* ── Contencion de desbordamiento horizontal (movil) ──

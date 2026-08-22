@@ -280,6 +280,12 @@ export const baseRoutes: Routes = [
     data: { title: 'Admin · Usuarios' }
   },
   {
+    path: 'admin/modo-infinito',
+    loadComponent: () => import('./features/admin/admin-infinite-mode.component').then(m => m.AdminInfiniteModeComponent),
+    canActivate: [authGuard, adminGuard],
+    data: { title: 'Admin · Modo Infinito' }
+  },
+  {
     path: 'encuentra-tu-carrera',
     loadComponent: () => import('./features/career-finder/career-finder.component').then(m => m.CareerFinderComponent),
     canActivate: [authGuard, emailVerifiedGuard],

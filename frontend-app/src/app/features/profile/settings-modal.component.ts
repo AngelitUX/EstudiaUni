@@ -79,7 +79,7 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
               </label>
             </div>
           </div>
-          <div class="section-block">
+          <div class="section-block keyboard-shortcuts-section">
             <div class="section-header">
               <h3>Atajos de Teclado (Navegabilidad)</h3>
               <p>Haz clic en cada casilla y presiona la tecla que deseas asignar para responder y navegar por las lecciones.</p>
@@ -292,6 +292,8 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
       .action-bar{flex-direction:column;align-items:stretch;gap:0.75rem}
       .btn-report{justify-content:center}
       .primary{width:100%}
+      /* Keyboard shortcuts are meaningless on a touchscreen with no physical keyboard. */
+      .keyboard-shortcuts-section{display:none}
     }
   `]
 })

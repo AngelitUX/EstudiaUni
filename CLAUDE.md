@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-20 · Rama en la que se escribió: `panelAdmin`
+> Última actualización: 2026-08-22 (parte 15) · Rama en la que se escribió: `MejoraVisuales`
 
 ---
 
@@ -137,9 +137,11 @@ decisión explícita del equipo.
 
 ### Admin (`authGuard` + `adminGuard`)
 `/admin` (pool de preguntas) · `/admin/pregunta/:id` · `/admin/recursos` · `/admin/bugs` ·
-`/admin/suscripciones` · `/admin/usuarios` (listar/filtrar/otorgar-extender-revocar Premium, 2026-08-20)
+`/admin/suscripciones` · `/admin/usuarios` (listar/filtrar/otorgar-extender-revocar Premium, 2026-08-20) ·
+`/admin/modo-infinito` (selector de materia + botón para entrar al Modo Infinito de esa ruta,
+2026-08-22 parte 9 — ver sección 7.1 y Bitácora)
 
-Las 5 páginas comparten un único `AdminSidebarComponent` (`features/admin/admin-sidebar.component.ts`,
+Las 6 páginas comparten un único `AdminSidebarComponent` (`features/admin/admin-sidebar.component.ts`,
 2026-08-20) — antes cada una tenía su propia copia del sidebar y se habían desincronizado (ver
 Bitácora). Las páginas que necesitan contenido extra en el sidebar (los filtros por materia del pool
 de preguntas) lo proyectan vía `<ng-content>`.
@@ -255,6 +257,20 @@ El contenido soporta `svgContent` (diagramas de física), `formula_latex` (KaTeX
 **Contenido en código, no en la nube:** `features/learning-path/data/seed-data.ts` (426 KB) y
 `seed-historia.ts` (428 KB) son archivos TypeScript gigantes con todo el contenido. Hay copias
 `.backup` al lado. Estos archivos se **siembran** a Firestore con los scripts del backend.
+
+**Modo Infinito (Polígono de Maestría) — reservado para una actualización futura (2026-08-22
+parte 9):** `InfiniteMasteryModalComponent` (`infinite-mastery-modal.component.ts`) existe y
+funciona, pero **no está expuesto a los estudiantes**: se quitaron el selector "Ruta Principal /
+Modo Infinito" y la tarjeta "Reforzar Materia" que aparecían al completar una ruta, en los 6
+`materia-*-path.component.ts`. Solo se activa poniendo `activePathTab = 'infinite'`, algo que
+ahora únicamente ocurre vía el query param `?mode=infinite` **y** `adminService.isAdmin()` (un
+`effect()` en el constructor de cada componente, no un `ngOnInit` con `queryParams.subscribe` —
+`isAdmin()` resuelve async, así que leerlo una sola vez al cargar se saltaba admins reales que
+aún no habían confirmado). El único punto de entrada real es el panel de admin:
+`/admin/modo-infinito` (selector de materia + botón). Ahí también se relaja `isEntirePathCompleted()`
+vía `isInfiniteModeUnlocked()` para que un admin pueda entrar sin haber completado la ruta.
+Si en el futuro se decide lanzar esta feature a los usuarios, hay que reintroducir el selector/tarjeta
+en los 6 archivos (revisar la Bitácora de esa fecha para el diff exacto) y quitar el gate de admin.
 
 ### 7.2 Ensayos PAES
 Dos modos (`type ExamMode = 'real' | 'asistido'`):
@@ -494,6 +510,1113 @@ se empaquetó.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-22 (parte 15) — Home desktop: más separación horizontal entre la columna de texto y la
+tarjeta de la simulación en vivo
+Typecheck ✅ (`tsc --noEmit`) · verificado con `getBoundingClientRect` en 1440px, en dos pasadas
+(el usuario pidió subirlo más después de ver el primer valor).
+`.hero-grid { gap: 2.5rem }` → `3.5rem` (hueco de 40px a 56px) → `5rem` (80px) → **`4.5rem`**
+(hueco final: 72px, valor con el que quedó tras probar 3 valores). Sin efectos secundarios en
+ninguna pasada — es el único lugar donde se usa ese `gap` (columnas del hero), y a 1440px sigue
+cabiendo todo sin desbordar el `max-width: 1320px` del contenedor.
+
+### 2026-08-22 (parte 14) — Home desktop: la fila de avatares/estrellas + "Comenzar Gratis"/"Iniciar
+Sesión" se veía pegada a la izquierda pese a tener `align-items:center` puesto
+Typecheck ✅ (`tsc --noEmit`) · verificado con `getBoundingClientRect` en 1440px.
+
+**`.hero-cta-group` (el contenedor de la fila de avatares+estrellas y los dos botones) ya tenía
+`display: inline-flex; flex-direction: column; align-items: center`, pero `inline-flex` se encoge
+al ancho de su propio contenido (como `inline-block`) — así que "centrado" solo centraba esos
+elementos DENTRO de una caja ya angosta, pegada al ancho del contenido más ancho (los botones), sin
+relación con el ancho real de la columna izquierda del hero. Cambiado a `display: flex` (a secas):
+al ser block-level, por defecto ocupa el 100% del ancho disponible del contenedor padre, así que el
+`align-items: center` que ya estaba ahí pasa a centrar de verdad respecto a toda la columna.
+Verificado: `.hero-cta-group` mide exactamente el mismo ancho que `.hero-left-content` (709px = 709px,
+0px de hueco a los lados) y el centro horizontal de la fila de avatares y de la fila de botones
+coincide exactamente con el centro de la columna izquierda.
+
+### 2026-08-22 (parte 13) — Home desktop: píldoras superiores bajadas un poco, la tarjeta
+"Adaptativo/En tiempo real/100% enfocado" con el mismo contorno que la tarjeta de la simulación, y
+el aire muerto de 72px al fondo de la simulación recortado para que las dos tarjetas terminen a la
+misma altura
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador (1440px), incluyendo muestreo en vivo de la
+animación del demo del tutor IA (que cicla y cambia de alto) para no adivinar un valor fijo.
+
+**Píldoras ("919 estudiantes activos" / "41% OFF...") un poco más pegadas al borde superior de lo
+que se veía bien, tras el ajuste de `align-items:start` de una sesión anterior.** Se les agregó
+`margin-top: 0.6rem` a `.hero-top-badges` — antes tocaban el mismo `top` exacto que la tarjeta de
+la derecha (0px de diferencia), ahora quedan 9.6px más abajo, un respiro pequeño e intencional en
+vez de un alineado a rajatabla.
+
+**`.hero-benefits-bar` (la tarjeta con Adaptativo/En tiempo real/100% enfocado) tenía un contorno
+propio, más sutil (`1px solid rgba(133,92,214,0.16)`, morado tenue) que el de la tarjeta de la
+simulación (`.hero-sim-card.glass-card`, `2px solid #cbd5e1`, gris azulado).** Se igualó el borde de
+`.hero-benefits-bar` al de `.hero-sim-card` exactamente — pero probado en pantalla no convenció, así
+que en la misma sesión se revirtió a `border: none` (sin contorno), y después se pidió sacarle
+también el fondo, el `box-shadow` y el `backdrop-filter` — quedó sin ningún look de "tarjeta": solo
+queda el `display:grid` + `gap` + `padding` que ordenan los 3 chips (Adaptativo/En tiempo
+real/100% enfocado), que ahora se ven flotando directamente sobre el fondo del hero, sin caja
+detrás. Verificado con `getComputedStyle`: `background-color: rgba(0,0,0,0)`, `border: 0px none`,
+`box-shadow: none`, `backdrop-filter: none`.
+
+**La tarjeta de la simulación terminaba 72px más abajo que la tarjeta de beneficios (su
+`min-height: 840px` era mucho mayor de lo que el contenido real necesita), rompiendo la simetría
+que se buscaba en una sesión anterior.** Antes de tocar el valor a ciegas, se midió la altura NATURAL
+del contenido (sin el `min-height`) muestreando en vivo durante ~20 segundos, cubriendo varios
+ciclos completos de la animación del demo (el panel del Tutor IA pasa por 5 pasos —
+seleccionar/analizar/escribir/mostrar concepto— cada uno con distinto contenido y por lo tanto
+distinto alto): el rango real fue 742-764px, nunca más. El alto exacto que hacía falta para que el
+borde inferior de la tarjeta coincidiera con el de `.hero-benefits-bar` era 767.86px (calculado
+como `benefitsBottom - simCardTop`). Como ambos números casi coinciden, se bajó `min-height` de
+840px a **768px** — cubre de sobra el paso más alto de la animación (764px, cero riesgo de recortar
+contenido) y dado que actúa como piso fijo, mantiene la tarjeta siempre a esa altura sin importar en
+qué paso esté la animación (elimina también el jiggle de alto que tendría si se hubiera quitado el
+`min-height` del todo). Verificado tras el cambio: `rightBottom - benefitsBottom` = 0.14px (antes
+72.14px).
+
+### 2026-08-22 (parte 12) — Pestaña vertical de simuladores (Matemática M1/M2 y Física) reemplaza el
+nombre largo por un ícono SVG en móvil, y se oculta el tip "usa el botón Ampliar" (el botón ya
+estaba oculto en móvil desde antes)
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador: abriendo el cajón en móvil (375px) y
+comparando contra escritorio (1440px, sin cambios).
+
+**La pestaña fija "SIMULADORES INTERACTIVOS" (texto vertical, `writing-mode:vertical-rl`, en el
+borde derecho de la pantalla) ocupaba mucho alto en móvil — 25 letras verticales son una pestaña
+larga.** Se agregó un SVG dentro del `<span class="sim-tab-icon">` (antes vacío) — una curva sobre
+ejes para Matemática M1/M2 (`materia-math-path.component.ts`, se repitió en los 3 bloques
+duplicados del archivo, ver sección 8 sobre esta duplicación preexistente) y un átomo (3 elipses
+rotadas) para Física (`materia-fisica-path.component.ts`) — y se ocultó `.sim-tab-label` en el
+mismo `@media (max-width: 860px)` que ya existía para el cajón, mostrando el ícono en su lugar.
+Verificado: `triggerHeight` pasa de la altura que ocupaba el texto vertical a 70.6px con el ícono,
+en ambos archivos. En desktop (1440px) no cambia nada — el texto sigue ahí, el ícono queda oculto.
+
+**El tip "💡 Si no visualizas bien la simulación, usa el botón ↗ Ampliar de arriba" ya no aplicaba
+en móvil, porque ese mismo botón se ocultó ahí en una sesión anterior** (el cajón ya mide 100vw en
+móvil sea "ampliado" o no, así que Ampliar/Reducir no hace nada visible). Se le agregó
+`class="sim-expand-tip"` al `<div>` (antes sin clase, solo estilos inline) y se ocultó con
+`display: none !important` en el mismo breakpoint de 860px — el `!important` hace falta porque el
+`display:flex` está en un `style=""` inline, que sin `!important` le gana a una regla de clase
+externa. Verificado: `display:none` en móvil, `display:flex` intacto en desktop.
+
+### 2026-08-22 (parte 11) — Gifs de capítulo agrandados de nuevo (170px→220px en ≤480px, 130px→170px
+en ≤900px) ahora que `object-fit:contain` (parte 10) garantiza cero recorte sin importar el tamaño
+del contenedor, y botón "⚡ REFORZAR" quitado del índice de materias (llevaba al Modo Infinito,
+oculto para todos menos admins desde la parte 9)
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador forzando la carga real de la imagen (mismo
+método que en la parte 10) y comprobando ausencia del botón en el DOM.
+
+**Confirmado por el usuario con una captura real que el recorte por % seguía cortando contenido**
+(destellos/hoja/botella de la ilustración de Biología cortados en el borde) — la parte 10 ya lo
+había resuelto cambiando a `object-fit:contain` sin ningún recorte posible, a costa de que el
+personaje se viera más chico dentro del recuadro. Como ese enfoque nunca puede recortar (por
+diseño: `contain` solo escala hacia abajo para caber, nunca recorta), agrandar el contenedor no
+reintroduce el riesgo — así que se subieron los dos tamaños de `.splash-mascot-area` otra vez:
+130px→170px (`≤900px`) y 170px→220px (`≤480px`), en los 6 `materia-*-path.component.ts`. Verificado
+forzando la carga real de la imagen de Biología (`1280×720`) antes de medir: con el contenedor en
+220×220px, la imagen renderiza a 220×123.75px (llena el ancho completo, alto proporcional exacto a
+16:9), 0px cortado en cualquier eje.
+
+**Botón "⚡ REFORZAR" en las tarjetas de materia del índice de la Ruta de Aprendizaje
+(`learning-path.component.ts`, no confundir con los `materia-*-path.component.ts` de las partes
+anteriores — es una pantalla distinta, la lista con "N Capítulos · N Lecciones" y la barra de
+progreso).** Aparecía junto al botón principal cuando una materia llegaba al 100% y llamaba a
+`goToMateria(m, 'infinite', $event)` — es decir, navegaba a `/ruta/{materiaId}?mode=infinite`,
+exactamente el mismo mecanismo que la parte 9 dejó reservado solo para admins (`adminService.
+isAdmin()` en el `effect()` del constructor de cada `materia-*-path.component.ts`). Para un usuario
+normal el botón ya no *hacía* nada dañino (el query param se ignora sin ser admin), pero seguía
+siendo un botón visible y confuso que promete algo que no existe para ese usuario. Se quitó el
+`<button class="btn-reinforce-action" *ngIf="...percentage === 100">` completo junto con su CSS
+(`.btn-reinforce-action` y `:hover`, ya no se usan en ningún otro lado del archivo). El botón
+"REPASAR" que aparece al lado (mismo `*ngIf` de 100%, pero es `.btn-main-action` con la clase
+`.btn-review`) **no se tocó** — ese es el botón normal de repasar la materia ya completa, no tiene
+relación con el Modo Infinito.
+
+### 2026-08-22 (parte 10) — Gifs de capítulo: el recorte por porcentaje de la parte 9 seguía
+cortando la ilustración (confirmado con captura real del usuario, no solo medición de DOM) — se
+abandonó el recorte del todo a favor de un enfoque sin ningún riesgo de corte
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador con `naturalWidth`/`naturalHeight` reales
+tras forzar la carga de la imagen (`loading="lazy"` no dispara en el navegador de pruebas de esta
+sesión porque no compone frames visualmente — no es un bug real, solo una limitación del entorno
+de test; se confirmó cargando la imagen manualmente por JS antes de medir).
+
+**La causa exacta de "sigue cortando" no se pudo confirmar (seguía sin poder verse la animación
+en este entorno), pero ya no importa: se cambió de estrategia en vez de seguir ajustando el margen
+de seguridad a ciegas.** En las partes 8/9 el `.splash-mascot` se posicionaba con
+`position:absolute` + `width`/`left`/`top` en porcentajes calculados desde el bounding box del
+canal alfa de un frame, con `overflow:hidden` en el contenedor — cualquier parte de la ilustración
+(animada o no) que cayera fuera de ese recuadro calculado se recortaba limpio, y el usuario mandó
+una captura real (el pulpo verde de Biología) mostrando destellos/hoja/botella claramente cortados
+en el borde. En vez de seguir afinando el margen de seguridad (ya se había subido a 30% en la parte
+9 y no alcanzó), se volvió al enfoque **sin ningún recorte posible**: se sacó `overflow:hidden` del
+contenedor, `.splash-mascot` pasa a ser un ítem de flujo normal (`position:static`, ya no
+`absolute`) con `width:auto; height:auto; max-width:100%; max-height:100%; object-fit:contain`, y
+el centrado lo resuelve el propio contenedor (`.splash-mascot-area` ya es `display:flex;
+align-items:center; justify-content:center` en su regla base, sin media query). Con esto el canvas
+completo de cada `.webp` siempre cabe dentro del recuadro sin recortarse un solo píxel,
+sin importar cuánto se mueva la animación — la única contrapartida es que el personaje se ve un
+poco más chico que con el recorte agresivo (el recuadro deja de "rellenarse" al 100%, vuelve a
+tener aire a los lados o arriba/abajo según la proporción de cada imagen). Se quitaron los 6
+bloques de `width`/`left`/`top` en % por materia (ya no hacen falta: la regla nueva es idéntica
+para las 6, no depende de las coordenadas de cada imagen). Aplicado en los 6
+`materia-*-path.component.ts`, contenedor sin cambios de tamaño respecto a la parte 9 (130px/170px).
+Verificado forzando la carga real de la imagen por JS antes de medir (`naturalWidth`/`naturalHeight`
+confirmados: 1280×720 en Biología, 1920×1080 en Matemática — ambas 16:9): el `<img>` renderiza a
+170×95.6px dentro del recuadro de 170×170, centrado verticalmente (`top:37.19px`,
+`(170-95.6)/2≈37.19` ✓), ocupando el 100% del ancho disponible y 0% recortado en ningún eje.
+
+### 2026-08-22 (parte 9) — Modo Infinito restringido a admins (nueva página `/admin/modo-infinito`),
+rediseño final de los botones de audio descriptivo (sin desplegable, sin letras de atajo, ícono
+play/stop) y el diseño "cuaderno" de las lecciones quitado en móvil
+Typecheck ✅ (`tsc --noEmit`) tras cada tanda de cambios · `ng serve` reconstruyó sin errores ·
+verificado en navegador logueado con la cuenta real (`angapicar@gmail.com`, plan Básico) a 375px.
+El panel de admin nuevo (`/admin/modo-infinito`) se verificó indirectamente: el `adminGuard`
+redirige correctamente a `/dashboard` a esta cuenta (no-admin), lo que confirma que la ruta y el
+guard están bien conectados, pero **no se pudo probar visualmente el flujo completo de un admin
+real** (no había credenciales admin a mano en esta sesión) — revisar con una cuenta admin real la
+próxima vez que se toque esto.
+
+**Modo Infinito (Polígono de Maestría) pasa a ser solo para el equipo, no para estudiantes.**
+El pedido explícito: "lo queremos meter en una actualización futura" — no borrar el feature (que
+ya funciona, `InfiniteMasteryModalComponent`), solo sacarlo de la vista de cualquier usuario normal
+y dejarlo accesible únicamente desde el panel de admin. En los 6 `materia-*-path.component.ts` se
+quitaron dos elementos que antes aparecían al completar una ruta: el selector "🗺️ Ruta Principal /
+⚡ Modo Infinito" (`.path-view-segmented-wrap`) y la tarjeta "🌟 Reforzar Materia · Modo Infinito"
+(`.infinite-mastery-node-card`) — ambos eran los únicos disparadores que ponían
+`activePathTab = 'infinite'`. La vista embebida (`app-infinite-mastery-modal`) se dejó en el DOM
+(sigue funcionando si `activePathTab` llega a `'infinite'` por otra vía), pero ya no hay ningún
+botón que la alcance para un usuario normal.
+El mecanismo de entrada para admins **ya existía pero estaba mal resuelto**: cada componente tenía
+un `ngOnInit()` que leía `route.queryParams.subscribe(params => if (params['mode']==='infinite')
+activePathTab='infinite')` sin comprobar el rol — cualquiera que conociera el query param podía
+entrar. Se cambió a un `effect()` en el constructor que exige `adminService.isAdmin()` **y**
+`route.snapshot.queryParams['mode']==='infinite'`. Tuvo que ser un `effect()` y no una comprobación
+única en `ngOnInit`: `isAdmin()` es un signal que arranca en `null` (no confirmado) y resuelve
+async contra Firestore — leerlo una sola vez al montar el componente se saltaba admins reales cuyo
+rol aún no había terminado de confirmarse en ese instante. Se agregó `isInfiniteModeUnlocked()`
+(`isEntirePathCompleted() || adminService.isAdmin()`) para que un admin pueda entrar sin haber
+completado la ruta primero (impracticable para probar/enseñar la feature si se exigiera 100%
+completada), y se reemplazaron las 3 apariciones de `isEntirePathCompleted()` en el template
+(vista embebida, decoraciones de fondo, `.materia-page`) por esta nueva función en los 6 archivos.
+`OnInit` se sacó de los 6 componentes (ya no queda nada en `ngOnInit` que lo necesite).
+
+**Nueva página `/admin/modo-infinito`** (`admin-infinite-mode.component.ts`, sigue el mismo patrón
+que `admin-bugs.component.ts`: `AdminSidebarComponent` + `.admin-main-content`, sin reutilizar los
+nombres de clase genéricos que colisionan con `styles.css` — ver sección 8): un `<select>` con las
+7 materias reales (comp-lectora, mat1, mat2, historia, ciencias-biologia, ciencias-fisica,
+ciencias-quimica — se excluyó `ciencias`, el stub vacío) y un botón "⚡ Modo Infinito" que hace
+`router.navigate(['/ruta/' + materiaId], { queryParams: { mode: 'infinite' } })`. Agregado el ítem
+al `AdminSidebarComponent` y la ruta en `app.routes.base.ts` con el mismo `canActivate: [authGuard,
+adminGuard]` que el resto del panel.
+
+**Botones de audio descriptivo: última vuelta de rediseño, en 2 tandas dentro de esta misma parte.**
+Primero se aplicó el mismo tratamiento visual (contorno + ícono, sin desplegable) que ya se había
+hecho en las pantallas de descripción (bitácora anterior) al panel que quedaba pendiente: el de
+**durante la lección**, biología/física (`seccion-test.component.ts`, `.a11y-mini-panel-container`).
+Se quitó el botón toggle "🎧 Atajos ▼" (quedaba redundante con solo 3 acciones) y el panel pasó a
+mostrarse siempre, bajo la leyenda "🎧 Audio Descriptivo" — mismo patrón que
+`seccion-detail.component.ts`/`seccion-biologia-detail.component.ts`/`seccion-fisica-detail.component.ts`.
+De paso se limpiaron las 3 llamadas a `this.shortcutsMenuOpen = false` en `nextQuestion()`/
+`prevQuestion()`/`goToQuestion()` (existían para cerrar el panel al cambiar de pregunta; con el
+panel siempre visible, ya no hacían nada) y el campo `shortcutsMenuOpen` en sí.
+
+**"Diseño cuaderno" (línea roja de margen + anillado, `.question-card::before`/`::after`) — se
+veía bien en desktop pero rompía el móvil, y no era exclusivo de biología/física: es del runner
+compartido (`seccion-test.component.ts` y `seccion-test-math.component.ts`), afecta a cualquier
+materia que pase por ahí.** El fix anterior (bitácora previa) solo *reposicionaba* la línea roja en
+móvil (`left: 1.75rem`) sin quitarla, y dejaba el padding del `.question-card` asimétrico
+(`1.5rem 1.5rem 1.5rem 2.5rem`, el extra a la izquierda era para dejarle sitio a la línea) — con
+mucho menos ancho que en desktop, esa asimetría empujaba el enunciado y las opciones hacia la
+izquierda, pegados al borde y descentrados. Corregido en el `@media (max-width: 640px)` de ambos
+archivos: `.question-card::before { display: none }` (la línea ya no se reposiciona, se quita
+del todo), padding vuelto simétrico (`1.5rem` parejo), y `.q-text`/`.option-btn` con
+`text-align: center` (`.option-btn` además `justify-content: center`, es flex). Para física, que
+además tiene `.question-card.split-layout .split-left` (columna izquierda cuando hay imagen de
+apoyo) con el mismo padding asimétrico y sin cubrir en ningún media query, se agregó
+`padding: 1.5rem` ahí también. Verificado con `getComputedStyle` en un jefe real (15 preguntas):
+`::before` con `display:none`, `.question-card` con `padding:24px` parejo, `.q-text`/`.option-btn`
+con `textAlign:center` y `.option-btn` con `justifyContent:center`.
+
+**Gifs de capítulo: tercera y última vuelta de ajuste — el recorte "sin aire muerto" de la parte
+anterior dejaba de nuevo grande y, según el usuario, seguía cortando contenido.** La matemática del
+recorte (ancho/alto/posición en % calculados desde el bounding-box real del pulpo en cada webp) se
+reverificó con un script aparte y da exactamente 0% de contenido fuera del recuadro — el cálculo en
+sí no tenía el bug. La hipótesis más probable para "sigue cortando": **los 6 archivos son WEBP
+ANIMADOS** (el pulpo se mueve/flota) y el recuadro se midió sobre un solo frame fijo; en otros
+puntos de la animación el personaje puede extenderse más allá de ese recuadro (un tentáculo en
+movimiento, por ejemplo), y como el contenedor tiene `overflow:hidden`, esos instantes se recortan.
+No se pudo confirmar in situ si la animación efectivamente se mueve fuera del frame escaneado — el
+navegador de pruebas de esta sesión no compone frames visualmente (no hay pane visible), así que
+tampoco se pudo descartar. Ante la duda, se aplicó un margen de seguridad del 30% sobre el
+recuadro medido antes de calcular el recorte (en vez de ajustar al 100% exacto), lo que reduce
+bastante el zoom aplicado (ver tabla) y le da espacio de sobra a cualquier rango de movimiento de
+la animación, a costa de dejar un poco del relleno transparente original (mucho menos que el
+30-35% original, pero ya no 0%). También se encogió el contenedor una vez más, tal como pidió el
+usuario ("encógelos un poco más"): de 160/240px a 130/170px en los dos breakpoints móviles.
+
+| Materia (imagen) | `width`/`left`/`top` anteriores (0% margen) | Nuevos (30% margen) |
+|---|---|---|
+| Matemática (focoMatematica) | 194.13% / -47.83% / -7.08% | 149.33% / -25.25% / 6.09% |
+| Comp. Lectora (focoComprensionLectora) | 264.46% / -83.68% / -25.0% | 203.43% / -52.83% / -7.69% |
+| Historia (focoHistoria) | 243.35% / -73.38% / -19.96% | 187.19% / -44.91% / -3.82% |
+| Biología (focoBiologia) | 278.26% / -88.91% / -40.0% | 214.05% / -56.86% / -19.23% |
+| Física (focoFisica) | 220.13% / -59.52% / -24.40% | 169.33% / -34.25% / -7.23% |
+| Química (focoQuimica) | 303.32% / -101.98% / -34.60% | 233.32% / -66.90% / -15.07% |
+
+**Pendiente real, no resuelto en esta sesión:** confirmar visualmente (con capturas o video, no
+solo mediciones de DOM) que el margen del 30% es suficiente y no excesivo — nadie en esta sesión
+pudo ver el render final. Si en el futuro se puede verificar visualmente y el recorte sigue
+sintiéndose grande o sigue cortando, el margen (hoy `1.3`, hardcodeado al calcular cada valor, no
+una variable) es el primer lugar donde ajustar, junto con el tamaño de `.splash-mascot-area`
+(130px/170px). El método completo (script de escaneo del canal alfa + fórmulas de `width`/`left`/
+`top` en %) queda documentado en el historial de esta conversación por si hay que repetirlo para
+un logo/imagen nuevo.
+
+### 2026-08-22 (parte 8) — Animación del drawer de navegación arreglada de raíz (no solo maquillada),
+gifs de capítulo recortados a su contenido real, nombres de nodo superpuestos en filas de 3,
+puntitos de jefe con tope de 9, atajos de texto a voz sin equivalente táctil convertidos a botones,
+y guía de teclado "[O] Repetir / [P] Volver al capítulo" solo en desktop
+Typecheck ✅ (`tsc --noEmit`) tras cada tanda · `ng serve` reconstruyó sin errores · verificado en
+navegador logueado con la cuenta real (`angapicar@gmail.com`, plan Básico) a 375px.
+
+**La animación de apertura/cierre del drawer de navegación seguía sin animar en 14 de los 15
+módulos/rutas, a pesar de que una sesión anterior "ya la había arreglado".** Esa sesión previa
+cambió `styles.css` (global) de `display:none/block` a `opacity`/`visibility` con transición,
+asumiendo que ningún componente tenía su propia regla local para `.mobile-overlay` — pero SÍ la
+tenían: los 15 archivos con `.mobile-header` (dashboard, ensayos-list, mini-ensayo-setup, y los 7
+de la familia Ruta + mente-veloz/career-finder/nem-calculator/recursos) traían cada uno su propia
+`.mobile-overlay { display: none; ... }` / `.mobile-overlay.open { display: block; }` local,
+copiada de antes de ese fix. Como el `display` no lo toca el `opacity`/`visibility` global, esa
+regla local seguía mandando: el drawer quedaba `display:none` (invisible, sin poder animar) hasta
+que la clase `.open` lo volvía `display:block` de golpe — la apertura se veía más o menos bien
+(el navegador arranca la transición de opacity apenas el elemento se vuelve renderizable), pero el
+**cierre** cortaba en seco, porque `display:none` se aplica instantáneo al sacar la clase, antes de
+que la transición de opacity/left tuviera chance de jugar. Se borraron las 2 líneas muertas
+(`display:none`/`display:block`) de los 14 archivos que las tenían (`mini-ensayo-review.component.ts`
+ya estaba limpio, no tenía la regla local). El resto de propiedades que esas reglas locales traían
+(background, blur, z-index) ya estaban 100% pisadas por el `!important` global de todos modos, así
+que no se perdió nada al borrarlas.
+
+**Gifs de capítulo, primera vuelta de recorte (superada por la parte 9, ver arriba): el `.webp` de
+cada materia trae 15-35% de relleno transparente alrededor del pulpo, medido escaneando el canal
+alfa con un `<canvas>` en el propio navegador.** Antes solo se agrandaba el contenedor
+(`.splash-mascot-area`), lo que estiraba ese aire muerto junto con el personaje real y agrandaba la
+tarjeta del capítulo sin necesidad. Se probó primero un recorte "cover" (ajustado al 100% del
+recuadro real, cero margen) — funcionaba matemáticamente (verificado con `getBoundingClientRect`:
+el contenido llena el recuadro de punta a punta) pero terminó viéndose demasiado grande/zoomeado
+para el usuario, corregido en la parte 9 con el margen del 30%.
+
+**Nombres de nodo superpuestos en filas de 3 (ej. "Modo Ráfaga: Historia/Ciencias/Cotidiano" en el
+capítulo 1 de Competencia Lectora).** El `max-width` normal de `.node-title` (190px desktop /
+150px ≤480px, fijado en una sesión anterior) asume que cada nodo tiene bastante espacio alrededor
+— cierto en la mayoría de la ruta (nodos en fila de 1), falso en las filas de 3 nodos muy juntos
+(`getBranchGap(3)` da un gap base de apenas 108px, escalado hasta 0.4x en móvil angosto: ~43px de
+separación real). Con 190/150px de ancho posible por título, centrado sobre cada nodo, los 3
+títulos se pisaban entre sí. Se agregó `[class.node-title-branch]="item.nodes!.length > 2"` al
+`<div class="node-title">` y una regla `.node-title.node-title-branch` angosta (84px ≤900px, 72px
+≤480px) con `-webkit-line-clamp: 2` (máximo 2 líneas, trunca con "…" si no alcanza) en los 6
+`materia-*-path.component.ts`. Verificado en vivo: 0px de superposición, ~35px de aire entre
+títulos vecinos (antes se pisaban visualmente).
+
+**Puntitos de un nivel jefe con muchas preguntas (10-15) empujaban el botón "⚔️ Atacar" fuera de
+pantalla.** `.dot-indicators` no tenía límite: un `<span class="dot">` por pregunta, sin
+`overflow`/`flex-shrink`, así que con 15 preguntas simplemente crecía hasta empujar el botón del
+`.bottom-bar` (que es `justify-content: space-between`) fuera del viewport. Se agregó un signal
+computado `visibleDotIndices` (ventana de máximo 9 puntitos, centrada en la pregunta actual,
+clampeada a los bordes del arreglo) en `seccion-test.component.ts` y `seccion-test-math.component.ts`
+— el resto de las preguntas sigue navegable con Anterior/Continuar/tocar un puntito visible, solo
+deja de tener un punto dedicado. Verificado con el jefe real de Competencia Lectora cap. 1
+(`sec-1-23-boss`, 15 preguntas): 9 puntitos renderizados, botón "Atacar" completo dentro del
+viewport de 375px.
+
+**Guía de teclado "[O] Repetir" / "[P] Volver al capítulo" en la pantalla de resultados
+(`seccion-test-review.component.ts`) aparecía también en móvil, donde un atajo de teclado no
+significa nada** (y los botones a los que acompaña ya son tocables). Ocultada con `.btn-hint {
+display: none }` dentro del `@media (max-width: 600px)` ya existente del archivo.
+
+**Atajos de texto a voz sin equivalente táctil, convertidos a botones (primera vuelta — el ícono
+play/stop y la eliminación del desplegable llegaron en la parte 9).** El panel de biología/física
+durante la lección (`.a11y-mini-panel`, `seccion-test.component.ts`) y las guías de descripción de
+biología/física (`seccion-biologia-detail.component.ts`, `seccion-fisica-detail.component.ts`)
+mostraban únicamente texto tipo `[P] Leer Pregunta` — un recordatorio del atajo de teclado, sin
+ningún `(click)` ni forma de tocarlo en el teléfono. Reutilizando los mismos métodos que ya usaba
+el otro panel (con botones) de estas mismas pantallas (`readQuestion()`, `readOptions()`,
+`readGuide()`, `readContext()`, `readTips()`, `stopReading()`), se cambiaron los `<span>` por
+`<button>` con `(click)`. Los atajos `[1-4] Elegir A-D` / `[Espacio] Comprobar` se dejaron como
+texto informativo en esta vuelta (ya tienen equivalente táctil en pantalla) — en la parte 9 se
+terminaron quitando del todo.
+
+### 2026-08-22 (parte 7) — Home: espacio vacío sobre las píldoras eliminado (bottom-align del hero
+era la causa real, no solo el padding), hover de "Iniciar Sesión"/"Crear Cuenta" igualado al de
+Precios/Comenzar Gratis; en todos los navbars móviles: animación del logo flotante corregida para
+que sea simétrica respecto al centro (antes solo subía, nunca bajaba del reposo), botón hamburguesa
+y equis de cerrar unificados al estilo del módulo Inicio (dashboard)
+Typecheck ✅ (`tsc --noEmit`) tras cada tanda · verificado en navegador logueado con la cuenta real
+(`angapicar@gmail.com`) en escritorio (1440px) y móvil (375px).
+
+**"Elimina el espacio vacío entre el navbar y las píldoras, que queden simétricas con el borde de
+la tarjeta animada de la derecha" — la causa real no era solo el `padding-top` del hero.**
+`.hero-grid` tenía `align-items: end` (columnas alineadas al fondo): como la columna izquierda
+(título+píldoras+CTAs) mide menos que la columna derecha (la tarjeta demo animada), quedaba
+empujada hacia abajo por la diferencia de alturas — medido con `getBoundingClientRect`: 83.7px de
+diferencia entre el top de las píldoras y el top de la tarjeta, un desplazamiento que **ningún**
+ajuste de `padding-top` podía corregir por sí solo (mueve las dos columnas por igual, no cambia la
+diferencia relativa entre ellas). Cambiado a `align-items: start` (ambas columnas arrancan a la
+misma altura) + `padding-top` del hero reducido de `9rem` a `7.5rem`. Verificado:
+`badgesTop === rightCardTop` exacto (antes 83.7px de diferencia), gap navbar→píldoras de ~19px
+(antes ~139px). Efecto secundario aceptado a propósito: la tarjeta derecha ahora termina 84px más
+abajo que la columna izquierda (antes terminaban parejas) — no se buscó compensar, es el
+comportamiento esperado de quitar el bottom-align.
+
+**Hover de "Iniciar Sesión"/"Crear Cuenta" del navbar, igualado a los botones que el usuario dijo
+que le gustaban.** "Iniciar Sesión" (`.btn-ghost`) tenía un hover propio (tinte de fondo); se le
+agregó el mismo mecanismo que ya usa "Precios" en `.nav-links a` — cambio de color + un subrayado
+que crece desde el centro (`::after` con `width: 0 → calc(100% - 2rem)`), escopado a
+`.nav-actions .btn-ghost` para no afectar el botón equivalente del menú móvil. "Crear Cuenta"
+(`.navbar .btn-primary`) tenía un hover propio de "elevación + resplandor morado"
+(`translateY(-2px)` + `box-shadow` difuso); se reemplazó por el mismo hover "presionado" que ya
+trae el `.btn-primary` global (y por lo tanto "Comenzar Gratis", que no tiene ningún override
+propio): fondo más oscuro, sombra que se achica de 4px a 2px, el botón baja 2px. Verificado
+inspeccionando las reglas CSS compiladas en el navegador (no solo el código fuente): ambas
+coinciden exactamente con sus referencias.
+
+**Animación del logo flotante en el navbar móvil fijo, asimétrica respecto al centro real —
+"se mueve de arriba hacia abajo pero no está centrado verticalmente".** La animación compartida
+`floatLogo` (`0%,100% translateY(0)` → `50% translateY(-6px)`) solo sube desde el reposo y vuelve,
+nunca baja — sobre un logo centrado con precisión mediante `.mobile-logo-link` (position:absolute,
+top:50%), ese recorrido asimétrico hacía que el logo pasara más tiempo por encima del centro real
+que exactamente en él, leyéndose como "no centrado". Se creó una keyframe nueva y separada,
+`floatLogoNav` (`0%,100% translateY(-3px)` → `50% translateY(3px)`, mismo recorrido total de 6px
+pero repartido a ambos lados del reposo), aplicada solo a `.mobile-logo-img` — **sin tocar**
+`floatLogo` en sí, que sigue usando `.sidebar-logo-img` (el logo de escritorio) y no estaba roto.
+Aplicado en los 15 archivos con `.mobile-header`. Verificado forzando el estado Premium/admin por
+JS (la cuenta de prueba es Plan Básico, que no anima el logo a propósito — ver bitácora anterior):
+con la animación en pausa en su fotograma de reposo, el centro vertical de la imagen coincide
+exactamente (`diff: 0px`) con el centro de la fila de 60px del header.
+
+**Botón hamburguesa y equis de cerrar del drawer, desincronizados entre módulos — unificados al
+estilo de `dashboard.component.ts` ("módulo Inicio").** Existían dos variantes previas del botón
+hamburguesa: 7 archivos (mente-veloz, nem-calculator, career-finder, recursos, mini-ensayo-setup,
+mini-ensayo-review, ensayos-list) con una versión de menor contraste (`rgba(255,255,255,0.08)`,
+sin tamaño fijo); los 7 de la familia Ruta con una versión **sin fondo ni borde en absoluto**
+(`background:none; border:none`, sin `border-radius` ni `padding` — el botón "desaparecía"
+visualmente, solo se veían las 3 rayitas flotando). Ninguna coincidía con el chip cuadrado de
+38×38px con fondo/borde sutil que ya usaba dashboard. Igualados los 14 archivos al `.mobile-menu-btn`
+exacto de dashboard (incluyendo el tamaño de las 3 rayitas internas: 18px/4px gap/2px alto en vez
+de 22px/5px/2.5px) y se sacó el override de `min-width:44px` que la familia Ruta tenía para
+compensar el botón invisible/pequeño anterior (ya no hace falta con el tamaño fijo de 38px). La
+equis de cerrar del drawer tenía el mismo problema: 14 archivos con un simple `✕` de texto plano
+sin fondo (`font-size:1.75rem`, sin `border`/`background`) contra el chip redondeado de
+dashboard (34×34px, `rgba(255,255,255,0.1)`, `border-radius:10px`). Igualados los 14 al patrón de
+dashboard. Verificado con `getBoundingClientRect`/`getComputedStyle` en 3 módulos de referencia
+(dashboard, mente-veloz, un archivo de la familia Ruta): 38×38px y 34×34px exactos en los 3, mismo
+`background-color`.
+
+### 2026-08-22 (parte 6) — Contorno dorado + destellos morados en la píldora de descuento del home,
+gifs de capítulo agrandados al doble en móvil (primera vuelta, sin recortar relleno transparente
+todavía), y botón "Expandir" del simulador oculto en móvil (Matemática M1/M2 y Física)
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador logueado con la cuenta real
+(`angapicar@gmail.com`, plan Básico) en escritorio y a 375px.
+
+**Píldora "41% OFF · Descuento en planes Premium" del home:** se le agregó un contorno dorado
+estático (3px, mismo gradiente que `.btn-upgrade-pro`: `#FFE885→#E6A100→#B87E00`) y los destellos
+de la animación que ya tenía (un `repeating-conic-gradient` rotando, de una sesión anterior) se
+recolorearon de dorado a morado de marca (`#855cd6`/`#a78bfa` con núcleo blanco), para que combinen
+con el resto de la paleta en vez de duplicar el dorado de la píldora PRO. El mecanismo de la
+animación no cambió (sigue siendo solo `transform: rotate()` sobre un pseudo-elemento, compositor
+puro, sin repintado por frame) — se verificó que sigue habiendo un único elemento animado en toda
+la página, así que no hay carga de rendimiento nueva.
+
+**Gifs de capítulo (el pulpo que acompaña cada capítulo en la Ruta de Aprendizaje) casi
+invisibles en móvil:** se dobló el tamaño de `.splash-mascot-area` de 108px a 216px en el
+breakpoint `max-width:480px`, en los 6 `materia-*-path.component.ts`. Esta primera vuelta **no
+tocaba el relleno transparente** de cada `.webp` (eso vino recién en las partes 8/9) — simplemente
+agrandaba el recuadro completo, imagen incluida, lo que en sesiones siguientes resultó ser la raíz
+de "la tarjeta del capítulo se estira" (ver partes 8 y 9 para la solución real, con recorte
+calculado desde el canal alfa de cada imagen).
+
+**Botón "↗ Ampliar" del panel de simuladores interactivos (Matemática M1/M2 y Física) no servía
+para nada en móvil:** el cajón de simuladores (`.sim-drawer`) ya mide el 100% del ancho en móvil
+esté "ampliado" o no (`@media max-width:860px` fuerza `width:100vw` en ambos estados), así que el
+botón que alterna entre 400px/800px de ancho no tiene ningún efecto visible ahí. Ocultado con
+`.sim-expand-btn { display: none }` dentro de ese mismo `@media (max-width: 860px)`, en
+`materia-math-path.component.ts` y `materia-fisica-path.component.ts`. El botón de cerrar (✕) del
+cajón sigue funcionando igual.
+
+### 2026-08-22 (parte 5) — El `.dashboard-header` seguía con `max-height` clamada al valor de
+escritorio (título/descripción se desbordaban invisibles en Ensayos PAES y Mente Veloz), píldora
+PRO móvil pasada a dorado+destello reutilizando `.btn-upgrade-pro`, y drawer lateral: logo alineado
+al mismo margen que los ítems del menú, equis más a la izquierda, y padding simétrico
+Typecheck ✅ (`tsc --noEmit`, tras corregir un error propio: comillas invertidas de Markdown dejadas
+sin querer dentro de un comentario CSS en `learning-path.component.ts`, que cerraban el template
+literal de `styles:[...]` antes de tiempo) · `ng serve` reconstruyó sin errores · verificado en
+navegador logueado con la cuenta real (`angapicar@gmail.com`, plan Básico) a 375px en Ensayos PAES,
+Mente Veloz y su drawer lateral.
+
+**Root cause real de "Ensayo PAES y Mente Veloz siguen sin título/descripción" (la parte 2/3 solo
+había resuelto que el header no quedara tapado por la barra fija, no que tuviera espacio propio
+para crecer):** `.dashboard-header` tiene una regla GLOBAL en `styles.css`, sin ningún media query,
+que fija `height`/`max-height: var(--header-height) !important` — una variable calculada por JS
+pensada para compensar el zoom de escritorio (~110-124px). Ninguno de los overrides móviles de
+sesiones anteriores tocaba `max-height` (solo `padding`/`min-height`/a veces `height:auto`), así que
+ese techo seguía activo en Plan Básico — donde el título + una descripción de 2 líneas + el padding
+extra de 116px (para no tapar la fila de la píldora PRO) necesitan bastante más de 110px. Con
+`overflow:visible`, el contenido no se recortaba: se DESBORDABA por debajo del borde inferior del
+header, cayendo encima de la tarjeta blanca de `.dashboard-body` — ahí el texto gris claro sobre
+fondo blanco se volvía prácticamente invisible, dando la sensación de "no tiene título ni
+descripción" cuando en realidad sí estaban en el DOM, solo ilegibles. Agregado `max-height: none
+!important` (junto a `height: auto !important` donde faltaba) a la regla móvil de `.dashboard-header`
+en los 15 archivos — en los 7 de la familia Ruta, que no tenían ninguna regla propia para
+`.dashboard-header`, se agregó una nueva. Verificado en vivo: en Ensayos PAES el header pasó de
+`height:124px` (clamado, contenido desbordado) a `height:212.8px` (real, todo el contenido cabe
+dentro de la caja); en Mente Veloz a 112.7px — ambos casos con `max-height:none` confirmado por
+`getComputedStyle`.
+
+**Píldora "Mejorar a PRO" del navbar móvil (parte 3), dorada + destello como en escritorio:** en vez
+de reinventar el gradiente morado que le había puesto, se le agregó la clase compartida
+`btn-upgrade-pro` (la misma que ya usa este botón en el header de escritorio) junto a la propia
+`mobile-pro-pill` — así hereda gratis, sin duplicar CSS, el gradiente dorado
+(`#FFE885→#E6A100→#B87E00`), el pulso de brillo `goldGlowUpgrade` y el barrido de luz `::after`
+(`shimmerUpgrade`) que ya existían GLOBALES en `styles.css` con `!important`. `.mobile-pro-pill`
+quedó reducida a una sola línea (`width:190px; max-width:100%`) — lo único que `.btn-upgrade-pro` no
+fija, para que el ancho siga igualando al del logo. Aplicado en los 15 archivos. Verificado con
+`getComputedStyle`: `backgroundImage` resuelve al gradiente dorado, `animationName:goldGlowUpgrade`
+y el `::after` con `animationName:shimmerUpgrade` — idéntico al botón de escritorio.
+
+**Drawer lateral (menú deslizante): logo centrado ≠ alineado con los ítems del menú.** El pedido
+anterior de "logo centrado" (parte 4) quedó reemplazado por uno más específico: alinear el logo al
+MISMO margen izquierdo que usan los textos de "Inicio", "Ruta de Aprendizaje", etc. Medido primero
+cuál es ese margen real (`.nav-item { padding: 0.9rem 1.1rem }`, o sea 17.6px desde el borde
+izquierdo del drawer) en vez de adivinarlo. Cambiado `justify-content:center` → `flex-start` y el
+padding-left del header de `1rem` a `1.1rem` (17.6px), para que el logo arranque exactamente donde
+arranca el texto de los ítems — verificado con `getBoundingClientRect`: `logoLeft:17.59px` vs
+`navItemPaddingLeft:17.6px`, prácticamente idéntico. La ✕ (que ya vivía en una esquina absoluta,
+independiente del logo) se corrió más a la izquierda (`right: 0.75rem → 1.25rem`) para no quedar
+pegada al borde. De paso, el padding vertical del header se emparejó: tenía `0.75rem` arriba y
+`0.6rem` abajo (asimétrico); ahora los dos en `0.75rem` — confirmado `paddingTop === paddingBottom
+=== 12px`. Aplicado en los 15 archivos (14 con el mismo patrón + la variante de `dashboard.component.ts`,
+que usa `.mobile-close-btn` en vez del botón "✕" plano).
+
+**Píldora de descuento del home: de "5 luces chicas, un ventilador" a "2 luces grandes, opuestas":**
+el usuario aclaró que le gusta el mecanismo de la parte 4 pero quiere solo 2 destellos (no 5),
+cada uno completando toda la vuelta, en lados opuestos de la píldora, y más grandes/vistosos.
+Cambiado el período del `repeating-conic-gradient` de 72° (5 repeticiones) a 180° (2 repeticiones,
+automáticamente opuestas entre sí en los 360°) y ensanchado el arco visible de ~26° a ~70° de cada
+período de 180° (39%, contra el ~36% anterior, pero ahora concentrado en solo 2 luces en vez de 5,
+así que cada una ocupa mucho más espacio visual real). Verificado con `getComputedStyle`: el
+`repeating-conic-gradient` resuelve con los 9 stops correctos (0°/55°/72°/82°/90°/98°/108°/125°/180°).
+
+### 2026-08-22 (parte 4) — Píldora del home reescrita sin mask-composite (se veía como un
+ventilador girando), logo del navbar fijo desalineado con la hamburguesa en Plan Básico, y el
+logo del drawer móvil descubierto como una imagen 500×500 con ~85% de relleno transparente
+Typecheck ✅ (`tsc --noEmit`) · `ng serve` reconstruyó sin errores · verificado en navegador logueado
+con la cuenta real (`angapicar@gmail.com`, plan Básico) a 375px en Dashboard y Mente Veloz.
+
+**"La animación de la píldora parece un ventilador":** el enfoque de la parte 2/3 (repeating-conic-
+gradient + `mask-composite: exclude`) dependía de que el navegador recortara el gradiente a un
+anillo delgado sobre el borde. En el navegador real del usuario ese recorte no se aplicó — se vio el
+CÍRCULO COMPLETO del conic-gradient girando (de ahí el aspecto de aspas de ventilador/pinwheel, que
+es exactamente cómo luce un conic-gradient sin la máscara). `mask-composite` con la sintaxis
+doble-mask + `-webkit-mask-composite:xor` es notoriamente poco fiable entre navegadores. Reescrito
+sin ninguna máscara: `.hero-offer-badge` ahora es un contenedor exterior con `padding:2px` (el grosor
+del anillo) y `overflow:hidden`; el `::before` (el conic-gradient rotando) ocupa esos 2px + todo el
+área interior; y el contenido real se movió a un nuevo `.hero-offer-badge-inner` con fondo sólido
+opaco, que — al vivir dentro del `padding:2px` del contenedor por simple flexbox, sin ninguna
+posición absoluta — tapa todo excepto ese anillo de 2px alrededor, donde se ve pasar la luz. Cero
+dependencia de `mask-composite`; solo `overflow:hidden` + un `z-index`, soportado en cualquier
+navegador. Se pisó un bug de paso: la media query de `@media(max-width:640px)` traía el padding/
+font-size del contenido pegados a `.hero-offer-badge` (el selector viejo, de un solo div) — al mover
+el contenido a `.hero-offer-badge-inner` había que mover también esas reglas, si no el padding de
+2px del anillo quedaba sobrescrito por el padding de contenido en móvil. Verificado con
+`getBoundingClientRect`: anillo de exactamente 2px parejo en los 4 lados alrededor del contenido.
+
+**Logo del navbar fijo más abajo que la hamburguesa/el avatar, solo en Plan Básico:** `.mobile-logo-
+link` se centra con `position:absolute; top:50%` — pero relativo a `.mobile-header` completo, que en
+Plan Básico mide 104px (60px + la fila de la píldora PRO de la parte 3) en vez de 60px. `top:50%` de
+104px cae en el centro de TODO el header (más abajo que el centro de la fila de arriba, donde están
+la hamburguesa y el avatar). Arreglado con un solo `position: relative;` en `.mobile-header-top` (la
+fila de 60px) en los 15 archivos — así el logo absoluto se centra respecto a esa fila, no al header
+completo. Para Premium/admin (header de una sola fila, sin la píldora) esto no cambia nada: la fila
+ya medía 60px = todo el header, cero regresión ahí — confirmado con `getBoundingClientRect`
+(hamburguesa, logo y avatar los 3 en `centerY:30` exacto). De paso, también se pidió que el logo NO
+flote (la animación `floatLogo`) mientras esté la fila de la píldora — agregado
+`.mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }` en los 15 archivos;
+Premium/admin conserva la animación tal cual estaba.
+
+**El "espacio de arriba y abajo" del logo en el drawer lateral no era un tema de padding CSS — la
+imagen del logo en sí mide 500×500px con la marca real ocupando solo una franja de 81px en el
+centro.** Al pedir "reduce el espacio arriba/abajo del logo" se midió con un canvas (dibujando la
+imagen y escaneando el canal alfa) el bounding-box real del contenido visible dentro del PNG:
+`https://res.cloudinary.com/dqm3syhwr/.../LogoEstudiaUni` (500×500 natural) solo tiene píxeles
+visibles entre `y:204` y `y:285` (81px de 500 = ~16% del alto real; el resto es relleno
+transparente). Con `width:180px; height:auto` (que respeta el 1:1 del lienzo completo), el
+`<img>` se renderiza como una caja de 180×180 — invisible en el navbar FIJO porque ahí el logo usa
+`position:absolute` (la caja de más se sale de flujo sin que nadie lo note), pero en el DRAWER
+(fila flex normal, sin position:absolute) esa caja de 180×180 estiraba el header entero a ~210px de
+alto, la mayor parte aire muerto. Nunca se detectó antes porque visualmente "se veía bien" (el
+contenido real ocupa poco espacio dentro de esa caja) — el bug era de LAYOUT, no de apariencia.
+Corregido en el origen: se generó (y se verificó con el mismo método de canvas, confirmando cero
+recorte del contenido real) un recorte de Cloudinary por URL —
+`c_crop,x_1,y_204,w_489,h_81` para el logo normal y `c_crop,x_10,y_202,w_471,h_86` para
+`LogoEstudiaUniPREMIUM` — aplicado SOLO al `<img>` del drawer lateral en los 15 archivos (no se
+tocó el logo del navbar fijo ni el de otras páginas, que no estaban rotos). Con el recorte, el mismo
+`width:180px;height:auto` ahora da ~180×30px — el tamaño real de una línea de logo. Verificado en
+vivo en 2 módulos: el header del drawer bajó de ~210px a exactamente 60px, el logo quedó centrado
+horizontalmente (`imgCenterX === drawerCenterX`) y la ✕ quedó a 13px del borde derecho del drawer y
+9.6px del borde superior (antes vivía en la misma fila que el logo, empujándolo fuera del centro).
+**Aplica a los 15 archivos.** Si en el futuro se sube un logo nuevo a esas dos URLs de Cloudinary,
+hay que volver a medir el recorte (el método de canvas de esta sesión sirve para eso).
+
+### 2026-08-22 (parte 3) — Navbar móvil de 2 filas con píldora "Mejorar a PRO" solo para Plan Básico
+en los 15 módulos, título de Ensayos PAES/Mini Ensayo tapado detrás de la barra fija, y diagnóstico
+de por qué la animación de la píldora del home nunca se ve
+Typecheck ✅ (`tsc --noEmit`) · `ng serve` reconstruyó sin errores tras cada tanda de cambios ·
+verificado en navegador logueado con la cuenta real (`angapicar@gmail.com`, plan Básico) a 375px en
+Ruta de Aprendizaje, Ensayos PAES, Mini Ensayo, Mente Veloz y Dashboard, y a 1440px para confirmar
+que el desktop no cambió. El estado PRO/admin (logo dorado + sin la fila extra) no se pudo probar
+con una cuenta real premium — se simuló quitando la clase/fila por JS en vivo y se confirmó que el
+header vuelve a 60px y `.main-content` a `padding-top:60px` exactamente como debe, pero **falta
+reverificar con una cuenta PRO o admin real**.
+
+**Pedido:** en el navbar móvil fijo, el botón "PRO ⚡" (que solo existía, apretujado, en el header de
+`dashboard.component.ts`) quedaba visualmente roto junto al avatar. Se pidió: hacer el header más
+alto hacia abajo, con una fila propia para una píldora "Mejorar a PRO" del mismo ancho que el logo
+(190px), **solo para Plan Básico** — para PRO/admin esa fila debe desaparecer del todo (ya sin
+tocar nada, porque el logo dorado ya estaba implementado).
+
+**Diseño:** `.mobile-header` (fijo, `position:fixed`) pasó de una fila de 60px a `flex-direction:
+column` con dos hijos:
+- `.mobile-header-top` (60px, hamburguesa + logo centrado + avatar) — igual que antes.
+- `.mobile-header-pro-row` — nuevo, con `*ngIf="!isProPlan() && !adminService.isAdmin()"`: al no
+  ser PRO/admin, esta fila ni existe en el DOM, así que el header vuelve solo a 60px sin ningún CSS
+  condicional extra. Dentro va `.mobile-pro-pill` (`width:190px`, exactamente el ancho de
+  `.mobile-logo-img` en los 15 archivos — se confirmó por grep antes de hardcodear el valor),
+  centrada con `(click)="paymentService.openPricingModal()"`.
+- El `<div>` raíz de `.mobile-header` lleva `[class.mobile-header-with-pro]="!isProPlan() &&
+  !adminService.isAdmin()"` — la MISMA condición que el `*ngIf`, pero como clase, para poder
+  engancharle un selector CSS de hermano (`~`) que empuje el contenido de la página hacia abajo
+  solo cuando la fila extra existe: `.mobile-header.mobile-header-with-pro ~ .main-content {
+  padding-top: 104px !important; }` (104 = 60 del header base + 44 de la fila nueva), agregado en
+  los mismos breakpoints donde cada archivo ya fijaba `padding-top: 60px`. Sin la clase (PRO/admin),
+  ese selector no coincide con nada y `.main-content` se queda en sus 60px de siempre — cero código
+  condicional adicional, solo la ausencia del elemento en el DOM.
+- **3 archivos son la excepción** (`ensayos-list`, `mini-ensayo-setup`, `mini-ensayo-review`): ahí
+  `.main-content` trae `padding: 0 !important` y el aire para no taparse se reserva directo en
+  `.dashboard-header` (72px, ver el bug de abajo), así que el bump condicional apunta ahí en vez de
+  a `.main-content`: `.mobile-header.mobile-header-with-pro ~ .main-content .dashboard-header {
+  padding-top: 116px !important; }` (72 + 44).
+Aplicado igual en los 15 archivos con `.mobile-header`: `dashboard`, los 7 de Ruta de Aprendizaje
+(`learning-path` + 6 `materia-*-path`), `mente-veloz`, `career-finder`, `nem-calculator`,
+`recursos`, `ensayos-list`, `mini-ensayo-setup`, `mini-ensayo-review`. Verificado con
+`getBoundingClientRect`/`getComputedStyle` en 5 de ellos: header a 104.8px, píldora a 190px de
+ancho centrada exactamente bajo el logo, `.main-content`/`.dashboard-header` con el padding-top
+correcto y el título ya no tapado. A 1440px (desktop) el `.mobile-header` sigue en `display:none` y
+el sidebar de escritorio intacto — sin regresión.
+
+**Bug real encontrado de paso (no inventado por este cambio, pero se topó con él al mover el botón
+PRO):** el "PRO ⚡" original de `dashboard.component.ts` vivía DENTRO de `.mobile-header` (fijo). Al
+diseñar la fila nueva iguales para los 15 archivos, sirvió confirmar que los otros 14 nunca habían
+tenido ningún botón PRO en su barra fija — coherente con que el pedido fuera "agrégalo a todos".
+
+**Root cause real de "en Ensayo PAES y Mini Ensayo no sale el título ni la descripción completa"
+(la parte 2 de hoy solo había resuelto que el título existiera en el DOM, no que se viera):**
+en la parte 2 se cambió `.dashboard-header` de `display:none` a visible en
+`ensayos-list.component.ts`, `mini-ensayo-setup.component.ts` y `mini-ensayo-review.component.ts`,
+pero estos 3 archivos tienen `.main-content { padding: 0 !important }` en sus media queries — **sin
+ningún `padding-top` que reserve los 60px de la barra fija** (a diferencia de los otros 12 archivos,
+que sí lo hacen, ya sea vía su propio CSS o vía el fallback global de `styles.css`). Antes no
+importaba porque `.dashboard-header` no ocupaba espacio (`display:none`); al hacerlo visible, quedó
+renderizando en `y:0`, exactamente detrás de la barra fija (que tiene fondo opaco y
+`z-index:101`) — el título quedaba 100% oculto tras esa barra y solo se alcanzaba a ver la mitad
+inferior del subtítulo, asomando por debajo. Verificado con `getComputedStyle`: el texto SÍ estaba
+ahí (`display:block`, `opacity:1`, `-webkit-text-fill-color:transparent` correcto para el degradado
+morado) — no era un problema de CSS del texto en sí, sino de posición tapada. Corregido dándole a
+`.dashboard-header` un `padding-top:72px` explícito (mismo valor que ya usaba `.dashboard-body` para
+lo mismo) en los 3 archivos, y quitando el `padding-top:72px` que sobraba en `.dashboard-body` (si no,
+quedaban 72+72=144px de aire, el doble de lo necesario, porque ahora es `.dashboard-header` quien
+hace ese trabajo). Verificado en vivo: título a `y:72` (antes invisible), justo debajo de la barra
+fija que termina en `y:60`.
+
+**Diagnóstico de "sigo sin ver una animación en la píldora de descuento del home, van 3 intentos":**
+revisado en vivo con `getComputedStyle`/`getAnimations()` — la animación está bien enganchada
+(`animation-name: offer-glint-spin`, `animation-duration: 4s`, el `repeating-conic-gradient` se
+resuelve con paradas de color válidas). El navegador de pruebas de esta sesión (igual que en las
+anteriores, según bitácoras previas) tiene `prefers-reduced-motion: reduce` activo a nivel de SO, y
+el CSS respeta esa preferencia a propósito (`@media (prefers-reduced-motion: reduce) {
+.hero-offer-badge::before { animation: none; } }`) — forzando la animación vía `!important` en
+consola sí la activa (`animationName`/`playState` pasan a `running`), así que el mecanismo en sí
+funciona. **Hipótesis más probable, no confirmable desde aquí:** el sistema/navegador del usuario
+también tiene alguna preferencia de "reducir movimiento" activada (Windows: Configuración >
+Accesibilidad > Efectos visuales > "Efectos de animación", o una extensión del navegador) — de ser
+así, **ninguna** de las 3 versiones de esta animación (estrellitas orbitando → destello único →
+luces repetidas) se habría visto nunca, sin importar cuántas veces se rediseñe, porque el propio CSS
+la apaga a propósito ahí. Pendiente que el usuario confirme si tiene esa preferencia activada en su
+equipo; si prefiere que la animación se vea siempre (sin importar esa preferencia de accesibilidad),
+hay que quitar deliberadamente ese `@media` guard — no se hizo sin su confirmación porque es una
+elección de accesibilidad, no un bug.
+
+### 2026-08-22 (parte 2) — Título/descripción ausentes en Ensayos PAES y Mini Ensayo, foto de perfil
+duplicada y "cortada" bajo el título en Ruta de Aprendizaje, avatar superpuesto al logo en 3 navbars
+móviles, y la luz de la píldora de descuento del home reescrita a "varias luces" reales
+Typecheck ✅ (`tsc --noEmit`) · `ng serve` reconstruyó sin errores tras cada cambio · verificado en
+navegador logueado con la cuenta real (`angapicar@gmail.com`) a 375px en Ruta de Aprendizaje, Ensayos
+PAES y Mini Ensayo, y a 1440px para confirmar que el desktop no cambió. La animación de la píldora se
+verificó de forma estructural (nombre/duración de la animación, gradiente con paradas válidas, y que
+la regla `@media (prefers-reduced-motion: reduce)` la apaga correctamente) porque el navegador de
+pruebas de esta sesión tiene `prefers-reduced-motion: reduce` activado a nivel de SO — igual que en
+sesiones anteriores, eso impide grabarla en movimiento pero no es un bug.
+
+**Root cause de "en Ruta de Aprendizaje sale una foto de perfil cortada debajo del texto":**
+`.dashboard-header` (el header interno con "¡Hola/Título!" + descripción, dentro de `<main>`, DISTINTO
+de la barra fija `.mobile-header`) también incluye `.welcome-actions` con el ícono de racha, el botón
+PRO, el badge de plan y un segundo avatar de 56px (`.profile-menu-wrap`) — pensado para desktop. En
+móvil, `styles.css` (regla global `@media max-width:1024px`, línea ~1476) solo cambia
+`.dashboard-header` a columna; nunca oculta esos elementos duplicados. Y como la MISMA regla global
+fija `min-height`/`max-height` a `var(--header-height)` con `!important` (puesto para el fix de zoom
+de escritorio de una bitácora anterior) sin que el override móvil los toque, el header queda
+literalmente atascado en una altura fija (110px) — así que cuando el segundo avatar no cabe ahí,
+**se desborda visualmente hacia el contenido de abajo** en vez de expandir la caja, pareciendo "una
+foto cortada debajo del texto". `dashboard.component.ts` ya resuelve esto correctamente desde antes
+(oculta `app-streak-icon`, `.plan-badge`, `.btn-upgrade-pro` y `.profile-menu-wrap` dentro de
+`.welcome-actions` en sus propios media queries) — el resto de módulos con este mismo patrón de
+header nunca copiaron ese fix. Aplicado el mismo `display:none !important` sobre esos 4 selectores
+(scopeado a `.dashboard-header .welcome-actions`, dentro de cada `@media(max-width:768px)` ya
+existente) a los 7 archivos de la familia Ruta de Aprendizaje: `learning-path.component.ts` y los 6
+`materia-*-path.component.ts` (biología, física, historia, math, química, y el genérico
+`materia-path`) — se resincronizaron los 6 duplicados casi idénticos a la vez, como pide la sección 8
+del documento maestro. Verificado en vivo en `/ruta`: `.profile-menu-wrap`/`.plan-badge` ahora
+`display:none`, título y descripción intactos.
+
+**Root cause de "en Ensayo PAES no sale el título/descripción, y en Mini Ensayo tampoco":**
+`ensayos-list.component.ts`, `mini-ensayo-setup.component.ts` y `mini-ensayo-review.component.ts`
+tomaron un atajo distinto y más agresivo para el mismo problema: directamente
+`.dashboard-header { display: none !important; }` en móvil, con el comentario explícito "la barra
+top ya lo reemplaza" — pero la barra fija (`.mobile-header`) nunca tuvo el título/descripción, solo
+logo+avatar, así que ese "reemplazo" en realidad los eliminaba del todo. Corregido en los 3 archivos:
+en vez de `display:none`, el header ahora queda visible en una fila en columna (título arriba, sin
+altura mínima forzada) y solo se ocultan los 4 elementos duplicados de `.welcome-actions` (mismo
+selector que en la familia Ruta). Verificado en vivo: "Ensayos PAES" / "Realiza ensayos completos..."
+y "Mini Ensayos Personalizados" / "Practica a tu medida..." ya se ven en el navbar móvil de sus
+páginas.
+
+**Root cause de "la foto de perfil debe estar a la derecha" (se veía pegada a la hamburguesa, tapando
+el logo):** estos mismos 3 archivos, más `mini-ensayo-review.component.ts`, tenían el botón de perfil
+correctamente puesto en el HTML del `.mobile-header` (a diferencia del bug de la parte 1 de hoy, que
+era foto ausente) pero a su regla `.mobile-header` le faltaba `justify-content: space-between` — sin
+eso, como el logo se centra con `position:absolute` (no ocupa espacio en el flujo), la hamburguesa y
+el botón de perfil (los dos únicos elementos en el flujo flex) quedaban pegados uno junto al otro en
+el lado izquierdo por el `justify-content` por defecto, superpuestos visualmente al logo centrado en
+vez de ir cada uno a un extremo. Agregado `justify-content: space-between` en
+`ensayos-list.component.ts`, `mini-ensayo-setup.component.ts` y `mini-ensayo-review.component.ts`
+(las 11 páginas restantes de las 15 con `.mobile-header` ya lo tenían). Verificado con
+`getBoundingClientRect` en los 3: `logoCenterX === headerCenterX` (logo centrado) y el botón de
+perfil ahora cae en el extremo derecho (ej. x:303-359 en un viewport de 375px), sin superponerse.
+
+**Píldora de descuento del home ("Descuento en planes Premium · POR TIEMPO LIMITADO"):** el efecto de
+la parte 4 de la bitácora del 21-08 (un único destello de ~65° de arco recorriendo el borde) se
+sintió como "un brillo", no como "unas luces" — el usuario pidió explícitamente varias luces
+recorriendo el contorno. Reescrito `.hero-offer-badge::before` en `home.component.ts`: de un
+`conic-gradient` con una sola banda de luz a un `repeating-conic-gradient` con un período de 72°
+(5 tramos de luz idénticos repartidos uniformemente en los 360°, cada uno con núcleo blanco
+`#ffffff` y halo dorado `#fde68a`/`rgba(254,215,145,.85)` a los lados, sobre fondo transparente),
+enmascarado igual que antes a un anillo delgado sobre el borde de la píldora y rotado en bucle
+(`offer-glint-spin`, ahora 4s en vez de 5.5s, para que el recorrido de 5 luces no se sienta lento).
+Mismo mecanismo de `prefers-reduced-motion:reduce` (se congela, no se quita) sin tocar. Aplica a
+escritorio y a teléfono por igual porque es la misma regla sin scope de media query — confirmado que
+en ambos tamaños el badge sigue siendo una sola línea (border-radius:999px real, no una franja
+multilínea) para que el anillo de luces se vea como una píldora limpia y no un blob irregular.
+
+### 2026-08-22 (parte 1) — Navbar móvil: foto de perfil faltante en 4 de los 15 módulos con sidebar
+Typecheck ✅ (`tsc --noEmit`) · build de desarrollo ✅ (`ng serve`, un error de plantilla detectado y
+corregido, ver abajo) · verificado en navegador logueado con la cuenta real (`angapicar@gmail.com`)
+a 375px en los 4 módulos tocados, y a 1440px para confirmar que el desktop no cambió.
+
+**El pedido:** comparar el navbar móvil superior de todos los módulos contra el de referencia
+(Inicio/Dashboard: hamburguesa + logo centrado + foto de perfil a la derecha) y emparejar los que
+estuvieran incompletos. `grep` de `class="mobile-header"` confirmó 15 archivos con este patrón; de
+esos, 11 ya tenían los 3 elementos completos (`dashboard`, los 7 de `learning-path`/`materia-*-path`,
+los 2 de `mini-ensayos`, `ensayos-list`). Los otros 4 —
+`mente-veloz.component.ts`, `career-finder.component.ts`, `nem-calculator.component.ts` y
+`recursos.component.ts` — tenían exactamente el bug de la captura del usuario: hamburguesa + logo,
+pero en vez del botón de perfil había un `<div style="width:44px"></div>` de relleno (un espaciador
+puesto ahí a propósito para simetría visual, pero sin el `<button class="profile-trigger">` real).
+El nombre del módulo + su descripción (`.header-greeting` + `.subtitle` dentro de `.dashboard-header`,
+en el `<main>`, no en el `.mobile-header` fijo) ya estaban presentes en los 4 — eso nunca fue el
+problema, tal como aclaró el usuario con la captura de Mente Veloz.
+
+**Fix:** en los 4 archivos, se reemplazó el `<div style="width:44px"></div>` por el mismo patrón de
+botón de perfil que ya usan los 11 módulos correctos (copiado literal de
+`materia-biologia-path.component.ts`): `<button class="profile-trigger" (click)="showProfileModal =
+true">` con `profile-avatar-wrap` + `<img>` con el `photoURL` real de `firestoreService.profileSignal()`
+y fallback a la inicial (`profileInitial()`) si no hay foto. También se agregó
+`justify-content: space-between` a la regla `.mobile-header` de los 4 (los 11 módulos correctos ya
+la tenían) — sin eso, el nuevo botón habría quedado pegado a la hamburguesa en vez de irse a la
+derecha, ya que el logo usa `position: absolute` para centrarse y no reserva espacio en el flujo flex.
+
+**Bug propio, encontrado por el build (no por typecheck) y corregido en la misma sesión:** al copiar
+el `(click)` de `career-finder.component.ts` se pegó por error la variante de `nem-calculator`
+(`showProfileModal = true; profileScrollTarget = ''`) — `career-finder` no tiene ningún campo
+`profileScrollTarget` (ese solo existe en `nem-calculator`, para hacer scroll a una sección concreta
+del modal de perfil). `tsc --noEmit` no lo detectó porque es un error de *type-checking de plantillas*
+Angular, no de TypeScript puro; lo agarró el compilador AOT de `ng serve` (`NG9: Property
+'profileScrollTarget' does not exist on type 'CareerFinderComponent'`). Corregido a
+`(click)="showProfileModal = true"` simple, igual que en `nem-calculator`/`recursos`/`mente-veloz`.
+
+Verificado en vivo en los 4 módulos (medido con `getBoundingClientRect` en consola, no solo
+visualmente): a 375px, `logoCenterX === headerCenterX` en los 4 (logo centrado en todo el navbar,
+no solo en el hueco entre botones — mismo criterio ya usado en la parte 6 de la bitácora anterior),
+el botón de perfil aparece a la derecha con la foto real del usuario (`avatar_3.png`), y al hacer
+clic abre `<app-profile-modal>` correctamente. A 1440px el `.mobile-header` vuelve a `display: none`
+y el sidebar de escritorio (`display: flex`) queda intacto — cero regresión ahí.
+
+### 2026-08-21 (parte 6) — Logo del navbar móvil más grande y centrado de verdad en los 15 módulos, reconstrucción del header de Ruta de Aprendizaje (le faltaba el avatar y el cierre), y el hueco vacío bajo el saludo del dashboard
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador logueado con la cuenta real
+(`angapicar@gmail.com`) a 375px en dashboard y en Ruta de Aprendizaje, y a 1920px/1100px para
+confirmar que el sidebar de escritorio y el fix de zoom de la parte 4 seguían intactos.
+
+**Logo del header móvil: de "centrado dentro del hueco que sobra entre los botones" a
+"centrado de verdad en todo el navbar", y más grande, en los 15 módulos.**
+El link del logo usaba `flex:1; display:flex; justify-content:center` — eso solo centra el logo
+dentro del espacio que queda ENTRE el botón de hamburguesa y lo que haya a la derecha (avatar,
+badge PRO, etc.), así que en cualquier módulo donde esos dos lados no pesan lo mismo (ej.
+dashboard, con botón PRO + badge + avatar a la derecha vs. solo la hamburguesa a la izquierda) el
+logo terminaba visualmente corrido hacia la izquierda del centro real del navbar. Cambiado a
+`position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);` sobre el propio
+`.mobile-header` (que ya es `position: fixed`, así que no hizo falta tocar nada más) — así el logo
+queda centrado respecto a TODO el ancho del navbar sin importar cuánto pese cada lado. De paso se
+subió de 160px a 190px en el header y de 150px a 180px en el drawer (el usuario pidió "más grande").
+Verificado en vivo en dashboard: `logoCenterX === headerCenterX` exacto (antes estaba corrido).
+Este cambio de tamaño/centrado se aplicó a los 15 archivos con `.mobile-header` sin excepción,
+incluidos `mini-ensayos/mini-ensayo-setup.component.ts` y `mini-ensayo-review.component.ts` — los
+2 que en la parte 5 quedaron marcados como "ya usaban el logo real" (no necesitaban el cambio de
+texto→imagen) pero que igual usaban el `flex:1` viejo para centrar, así que también se les tocó
+el link del logo y el tamaño ahí. Con los 6 de la parte 5 + los 7 de esta parte (más abajo) + estos
+2, quedan los 15 contados.
+
+**Ruta de Aprendizaje (7 archivos): el navbar móvil no tenía ni el logo bien puesto, ni el avatar de
+perfil, ni cierre en el drawer — le faltaban piezas enteras, no era solo un tema de tamaño.**
+Al comparar contra el diseño de referencia (Mini Ensayos) aparecieron dos problemas reales, no solo
+estéticos, en `learning-path.component.ts` y los 6 componentes `materia-*-path.component.ts`
+(`materia-path`, `materia-quimica-path`, `materia-math-path`, `materia-historia-path`,
+`materia-fisica-path`, `materia-biologia-path` — duplicados casi idénticos entre sí, ver sección 8
+del documento maestro):
+- El header móvil solo tenía el botón de hamburguesa (una "☰" suelta, no el ícono de 3 líneas que
+  usa el resto de la app) y el logo — **sin ningún botón de perfil a la derecha**, y sin
+  `justify-content: space-between` en el contenedor. Se agregó el botón de perfil (mismo patrón
+  `firestoreService.profileSignal()?.photoURL` / `profileInitial()` que ya usaba el sidebar de
+  escritorio de estos mismos archivos, así que no hizo falta agregar nada al `.ts`) y el
+  `justify-content: space-between`.
+- El drawer (`.mobile-menu`) **no tenía ninguna fila de encabezado**: iba directo al `<nav>`, sin
+  logo ni botón de cierre — igual que el problema que ya se había encontrado y arreglado en
+  `recursos`/`mente-veloz`/`career-finder`/`nem-calculator` en la parte 5. Se agregó la misma fila
+  (logo de 180px + botón ✕ arriba a la derecha) a los 7 archivos.
+Verificado en vivo en `/ruta`: antes no había avatar en el header ni forma de cerrar el drawer salvo
+tocar el fondo; ahora el header tiene hamburguesa + logo grande centrado + avatar, y el drawer abre
+con logo + ✕ arriba a la derecha, igual que Mini Ensayos.
+
+**Dashboard: el hueco vacío entre "¡Hola, X!" y la tarjeta blanca de abajo, en teléfono.**
+Root cause: en la parte 4 de esta bitácora se había cambiado `.dashboard-header` de `height: 110px`
+a `min-height: 110px` (para el fix de zoom de escritorio, que sigue intacto y sin tocar). Ese
+`min-height` vive en la regla BASE del componente, y los `@media (max-width: 768px/1024px)` que
+achican el header para teléfono solo pisaban `height: auto`, nunca `min-height` — así que el mínimo
+de 110px seguía obligando al header a medir por lo menos eso incluso en un teléfono, donde el
+saludo real ocupa mucho menos, dejando un espacio muerto abajo. Se agregó `min-height: 0 !important`
+a esos dos breakpoints móviles (sin tocar la regla base de escritorio). Verificado en vivo: el alto
+del header pasó de 110px a 47.9px (el alto real de su contenido) a 375px de ancho, y a 1100px de
+ancho (rango de zoom de escritorio de la parte 4) el `min-height` calculado siguió siendo el mismo
+de antes — cero regresión ahí.
+
+**Confirmado, sin necesidad de cambios: la lógica de logo dorado (PRO/admin) vs. logo normal
+(Básico) ya era correcta en los 15 archivos.** Los 6 módulos arreglados en la parte 5 y los 7
+reconstruidos en esta parte usan exactamente el mismo `[src]="(isProPlan() || adminService.isAdmin())
+? '.../LogoEstudiaUniPREMIUM' : '.../LogoEstudiaUni'"` que ya traían los módulos de referencia — se
+copió literal, no se inventó una lógica nueva. Verificado con la cuenta de prueba (plan Básico): en
+todos los módulos probados el logo resuelto fue siempre la variante normal (`LogoEstudiaUni`, sin
+"PREMIUM"), nunca la dorada — consistente con no ser ni PRO ni admin.
+
+### 2026-08-21 (parte 5) — Logo real en el header/drawer móvil de 6 módulos, animación de apertura/cierre del drawer a nivel global, y banner cortado en Encuentra tu Carrera
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador logueado con la cuenta real
+(`angapicar@gmail.com`), a 375px, en los 8 módulos con sidebar/mobile-header (dashboard, ensayos,
+recursos, calculadora NEM, mente veloz, encuentra tu carrera) y a 1920px para confirmar que el
+desktop no cambió.
+
+**Logo de texto en vez del logo real, en 6 de los 15 módulos que tienen sidebar propio.**
+`grep` de `class="mobile-logo-img"` (el patrón correcto, con la animación `floatLogo` de subir y
+bajar) contra los 15 archivos que tienen `.mobile-header` mostró que 9 ya lo usaban bien
+(`materia-*-path`, `learning-path`, `mini-ensayos/*`) y 6 no: `dashboard`, `ensayos-list`,
+`recursos`, `nem-calculator`, `mente-veloz`, `career-finder` — todos mostraban un `<span
+class="text-gradient">EstudiaUni</span>` de texto en vez de la imagen real, tanto en el header móvil
+de arriba como en el drawer lateral. Se reemplazó por el mismo `<img [src]="(isProPlan() ||
+adminService.isAdmin()) ? '.../LogoEstudiaUniPREMIUM' : '.../LogoEstudiaUni'" class="mobile-logo-img">`
+que ya usa el sidebar de escritorio en todos ellos (variante Pro/Básico según plan), en los dos
+sitios. La clase `.mobile-logo-img` y el `@keyframes floatLogo` ya existían en los 6 archivos (se
+verificó antes de tocar nada) — el bug era solo de template, nunca de CSS faltante.
+Al revisar el drawer de cada uno aparecieron en realidad **dos patrones distintos**: `dashboard` y
+`ensayos-list` ya traían una fila de encabezado propia dentro de `.mobile-menu` (logo + botón ✕
+arriba a la derecha, con `justify-content: space-between`) — solo hacía falta cambiar el texto por
+la imagen. `recursos`, `nem-calculator`, `mente-veloz` y `career-finder` en cambio **no tenían
+ninguna fila de encabezado en el drawer**: el `<nav class="sidebar-nav">` con los links empezaba de
+inmediato y el único modo de cerrar era tocar el fondo oscuro. Se les agregó la misma fila de
+encabezado (logo de 150px + botón ✕ arriba a la derecha) que ya tenían los otros dos, para que las
+6 quedaran idénticas entre sí y con un cierre explícito además del backdrop.
+
+**La animación de apertura/cierre del drawer no se podía arreglar por componente — vivía en un
+bloque global con `!important` que ya ganaba sobre cualquier CSS local.**
+Antes de tocar el CSS de cada componente se encontró que `styles.css` (línea ~372, dentro de un
+bloque llamado "CRITICAL... Ensures EstudiaUni scales flawlessly") define `.mobile-overlay` y
+`.mobile-overlay .mobile-menu` de forma **global y sin scope de componente**, con `!important` en
+casi todas las propiedades — incluida `display: none/block !important` para el overlay. Cualquier
+`.mobile-overlay { ... }` puesto dentro de los estilos de un componente Angular solo gana esa pelea
+si también usa `!important` (algunos lo hacían, otros no — inconsistente y en la práctica sin
+efecto real en ninguno de los dos casos, porque `display` no es una propiedad animable: pasar de
+`none` a `block` no tiene punto intermedio que transicionar). Por eso mismo cualquier intento de
+agregar una transición **dentro de un componente** habría sido inútil sin tocar antes este bloque
+global. La solución fue cambiar, solo en `styles.css`, el toggle de `display:none/block` por
+`opacity`/`visibility` (que sí se pueden transicionar) con `transition: opacity .28s ease, visibility
+.28s ease`, dejando intacto el `transition: left .3s` que `.mobile-menu` ya tenía (ese sí funcionaba
+para la apertura, pero nunca se alcanzaba a ver en el cierre porque el overlay desaparecía de golpe
+con `display:none` antes de que la transición de `left` pudiera jugar). Con este cambio, un solo
+edit en `styles.css` arregla la animación de entrada **y** salida en los 15 módulos a la vez, sin
+tocar ninguno de los 15 archivos individualmente. Respeta `prefers-reduced-motion: reduce`.
+Verificado en vivo: al abrir el drawer, `overlay.classList.contains('open')` pasa a `opacity:1;
+visibility:visible` (antes solo alternaba `display`); al cerrar, ambos vuelven a su estado oculto.
+El navegador de pruebas tenía `prefers-reduced-motion: reduce` a nivel de SO (igual que en sesiones
+anteriores), así que ahí la transición queda en `none` — comportamiento correcto, no un bug; se
+confirmó el valor real (`opacity 0.28s, visibility 0.28s`) forzando la media query a un lado para la
+prueba.
+
+**Encuentra tu Carrera: el botón "Abrir 🐙" / "Mejorar a PRO" del banner de Foco se cortaba en
+móvil.** `.ai-promo-banner` era una fila flex sin `flex-wrap`, con un ícono circular de 60px fijo +
+un título en `white-space: nowrap` + el botón, todo peleando por el mismo ancho — en un teléfono no
+alcanzaba el espacio y el botón terminaba recortado contra el borde de la pantalla. Se agregó, solo
+dentro del `@media (max-width: 768px)` ya existente, `flex-wrap: wrap` al banner y
+`flex: 1 1 100%` a `.ai-promo-content`, para que el ícono+texto ocupen su propia fila completa y el
+botón caiga a una fila propia debajo, a `width: 100%`. Verificado en vivo a 375px: el botón
+("🔒 Mejorar a PRO" para este plan Básico) ahora mide 309px de ancho dentro del viewport de 375px,
+sin desbordar en absoluto (antes se salía del borde derecho).
+
+### 2026-08-21 (parte 4) — Rediseño del destello de la oferta, atajos de teclado ocultos en móvil, y navegador/imagen del ensayo en móvil
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador logueado con la cuenta real
+(`angapicar@gmail.com`) contra Firestore real, incluyendo un ensayo asistido real de principio a fin.
+
+**Rediseño del efecto de la parte 3: de "2 estrellitas orbitando" a "un destello deslizándose por
+el contorno de la píldora".** El feedback fue directo: no quería un dibujo de estrella dando vueltas
+en un círculo pequeño junto al badge, sino un brillo/destello real recorriendo el borde de la
+píldora en sentido horario, sutil, sin saturar. Se sacó por completo el markup anterior (2 `<span>`
+con SVG de estrella de 4 puntas + sus `@keyframes` de órbita) y se reemplazó por la técnica estándar
+de "anillo de degradado animado" hecha 100% en CSS, sin ningún elemento nuevo en el template:
+un `::before` en `.hero-offer-badge` con `conic-gradient` (transparente en casi todo el círculo,
+con un arco angosto y brillante ~295°-360°) recortado a un anillo de 2px mediante
+`mask`/`-webkit-mask` + `mask-composite: exclude` (dos capas: `content-box` vs. el cuadro completo,
+la diferencia entre ambas es exactamente el grosor del `padding` del pseudo-elemento), rotado con
+`transform: rotate(360deg)` vía `@keyframes` a 5.5s por vuelta — lento y discreto a propósito.
+`rotate()` con ángulos positivos gira en sentido horario de forma nativa, así que no hizo falta
+ningún truco adicional para la dirección. Respeta `prefers-reduced-motion: reduce` (se congela en
+vez de seguir girando). Verificado en el navegador de pruebas (que tenía `prefers-reduced-motion:
+reduce` activado a nivel de SO, por lo que ahí la animación se ve congelada — comportamiento
+correcto) que el `conic-gradient`, el `mask-composite` y el `@keyframes` están bien formados y
+escalados correctamente por Angular.
+
+**Configuración: la sección "Atajos de Teclado (Navegabilidad)" ya no aparece en móvil.**
+No tiene sentido en una pantalla táctil sin teclado físico. Se le agregó la clase
+`keyboard-shortcuts-section` a ese `.section-block` en `settings-modal.component.ts` y se ocultó
+(`display:none`) dentro del `@media(max-width:720px)` que el propio componente ya traía (mismo
+breakpoint que usa el resto del modal). Verificado en vivo abriendo el modal real a 375px (oculta) y
+a 1920px (visible).
+
+**Ensayo (modo teléfono): el navegador de preguntas se cierra solo al elegir una pregunta, y la
+tarjeta de la pregunta se agranda un poco para que la imagen se vea mejor.**
+En `ensayo-runner.component.ts`:
+- `goToQuestion(index)` ahora cierra el navegador automáticamente cuando `window.innerWidth <= 900`
+  (mismo umbral "móvil" que ya usaba el resto del componente para el overlay de pantalla completa
+  del navegador y del chat de Foco) — antes había que cerrarlo a mano con la `✕` después de saltar a
+  la pregunta elegida. En desktop (`> 900px`, donde el navegador es un panel fijo, no un overlay) el
+  comportamiento no cambia: se probó explícitamente que ahí sigue abierto tras elegir una pregunta.
+- Casi todas las preguntas del banco son imágenes escaneadas completas (el "enunciado" de texto es
+  solo un placeholder, no se renderiza ningún texto real de pregunta en este componente — se
+  verificó que no existe ninguna referencia a un campo de texto de la pregunta en el template), así
+  que agrandar "la ventana de la pregunta" beneficia directamente a la imagen. Se redujo un poco el
+  padding en el `@media (max-width: 900px)`: `.exam-body` de `0.75rem` a `0.5rem` y `.question-card`
+  de `1rem` a `0.75rem`, más un pequeño "sangrado" extra específico de `.question-stem`
+  (`margin: 0 -0.5rem`) para que la imagen gane aún más ancho que el resto de la tarjeta. Medido en
+  vivo a 375px de ancho: la imagen pasó de ~319px a 347px (~9% más grande), sin overflow horizontal
+  en ningún caso — un cambio modesto ("un poco más grande"), no un rediseño a todo lo ancho.
+
+### 2026-08-21 (parte 3) — Sparkles en la oferta del home, iconos SVG en la Guía Rápida, y auditoría de Mini Ensayo / Mente Veloz contra el pool de preguntas
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador **logueado con una cuenta real**
+(`angapicar@gmail.com`, provista por el usuario para esta sesión) contra Firestore real, no mocks.
+
+**Home: 2 brillitos naranjas orbitando el badge "Descuento en planes Premium · POR TIEMPO LIMITADO".**
+Dos SVG de destello (sparkle de 4 puntas, no emoji — coherente con la convención del proyecto),
+anclados arriba y abajo del centro del badge (`.offer-sparkle-anchor-top/bottom`), cada uno con su
+propia animación `@keyframes` en órbita circular (técnica estándar rotate→translate→counter-rotate
+para que el ícono no gire sobre sí mismo mientras da la vuelta) con `animation-delay` opuesto entre
+ambos para que no giren en fase. Respeta `prefers-reduced-motion: reduce` (se congelan, no
+desaparecen). Verificado en vivo: al forzar los sparkles a ángulos fijos distintos (0° y 90°) se
+confirmó que cambian de posición según el ángulo, es decir que el mecanismo de órbita funciona;
+el navegador de pruebas tenía `prefers-reduced-motion: reduce` activado a nivel de SO, por lo que
+la animación en sí no se pudo grabar en movimiento ahí (comportamiento correcto, no un bug).
+
+**Dashboard: los 8 emojis de la "Guía Rápida" (botón flotante + modal) reemplazados por SVG.**
+Mismo motivo que los íconos de contraseña de la parte 2 — convención ya establecida de no usar
+emojis nuevos en la UI. `.help-card-icon` ya tenía `color: var(--accent-primary)` puesto de antes
+(pensado para un ícono con `currentColor`, no para el emoji que había), así que los 8 quedan de un
+morado consistente en vez de los colores dispares que cada emoji traía de la fuente del sistema.
+Verificado en vivo abriendo el modal real: 0 emojis restantes, 8 `<svg>` renderizados.
+
+**Auditoría de Mini Ensayo / Mente Veloz contra `pool_preguntas`: ambos ya funcionan como se pidió,
+no se encontró bug ni se tocó código.** El pedido original describía un problema que, tras probarlo
+en vivo, resultó ser una confusión entre dos capturas de pantalla — vale la pena dejarlo anotado por
+si vuelve a surgir la duda:
+- La captura de "temas" (Cinemática Básica, Fenómenos Ondulatorios, etc. con "X pregs" cada uno) es
+  la pantalla real de **Mini Ensayo** (`mini-ensayo-setup.component.ts`) para Física — no es Mente
+  Veloz. Verificado en código (`MiniEnsayoService.generateSession()`) y en vivo: filtra
+  `pool_preguntas` por `materiaId` **y** por el/los `tema` marcados. Prueba end-to-end real: se
+  seleccionó únicamente el tema "Práctica: Ondas y Sonido" (marcado con "2 pregs" en la UI) y se
+  inspeccionó la sesión generada en `localStorage` — dio exactamente 2 preguntas, ambas
+  `materiaId: ciencias-fisica` y ambas `tema: "🎯 Práctica: Ondas y Sonido"`, cero fugas de otros
+  temas o materias.
+- La captura del pulpo con "Ondas · Mecánica · Tierra · Electricidad" y "4 Capítulos · 64 Lecciones"
+  **no es de ningún minijuego** — es la tarjeta de la materia Física en el índice de la **Ruta de
+  Aprendizaje** (`learning-path.component.ts`), que muestra cuántos capítulos/lecciones tiene esa
+  materia en el contenido de la ruta (algo completamente aparte del pool de preguntas del panel
+  admin). De ahí la confusión de que "Mente Veloz agarra todos los niveles de física": esa pantalla
+  nunca fue Mente Veloz.
+- **Mente Veloz** (`mente-veloz.component.ts`) no tiene ningún concepto de capítulo/tema en su
+  código (se verificó que no hay ninguna referencia a "capitulo"/"tema" en el archivo): solo deja
+  elegir materias (`isMateriaSelected`) y arma el mazo con `poolPreguntas().filter(q =>
+  isMateriaSelected(q.materiaId))`, sin restringir por tema — exactamente lo que el usuario aclaró
+  que debía pasar ("no necesita filtrar por tema... agarra preguntas de todo tipo o capítulo pero de
+  las materias seleccionadas"). Verificado en vivo con la cuenta de prueba (plan Básico): con
+  Competencia Lectora + Matemática M1 marcadas, la UI mostró "22 preguntas disponibles en 2
+  materias"; se confirmó contra la caché real de `pool_preguntas` en `localStorage` que
+  `competencia-lectora` tiene 20 preguntas repartidas en 3 temas distintos y `matematicas-m1` tiene 2
+  en 2 temas — 22 en total, cero filtrado por tema.
+- Dato de contexto encontrado de paso: el pool de física ya tiene 93 preguntas repartidas en 59
+  `tema` distintos — con nombres de tema bastante finos/parecidos entre sí (ver la lista larga y algo
+  repetitiva que se ve en el selector de Mini Ensayo). Es contenido cargado por el admin, no un bug
+  de agrupación del código — si se quiere una lista de temas más prolija habría que limpiar/agrupar
+  los valores de `tema` desde el panel admin, no cambiar la lógica de filtrado.
+
+### 2026-08-21 (parte 2) — Iconos de contraseña a SVG, link roto en footer "Recursos" y deformación del dashboard con zoom del navegador
+Typecheck ✅ (`tsc --noEmit`) · verificado con dev server real: login/register en navegador, links de
+footer contra las URLs reales de DEMRE/beneficios estudiantiles, y el CSS del dashboard con una
+réplica aislada (ver detalle abajo, no se pudo probar `/dashboard` en vivo porque exige una cuenta
+autenticada y no había credenciales a mano).
+
+**Emojis 👁️/🙈 del toggle de contraseña reemplazados por SVG.**
+Afectaba a `/login` y a los dos campos de `/register` (contraseña y confirmar contraseña) — mismo
+patrón en los tres. Coherente con la convención ya establecida en el proyecto (sección 8: "Nada de
+emojis nuevos en la UI", commit `080f8f8a`) que este toggle se había quedado sin migrar. Nuevo
+componente reutilizable `shared/components/password-visibility-icon.component.ts`
+(`<app-password-visibility-icon [passwordVisible]="showPassword">`) con los iconos estándar
+"eye" / "eye-off" (trazo `currentColor`, hereda el color del botón). Se agregó también
+`[attr.aria-label]` dinámico ("Mostrar contraseña" / "Ocultar contraseña") a los 3 botones, que antes
+no tenían accesibilidad para lectores de pantalla.
+
+**Link roto en el footer, sección "Recursos": `https://demre.cl/universidades/` → 404 real.**
+Se verificaron los 4 links de esa columna contra las URLs reales (no solo se asumió que estaban
+bien): Portal Oficial DEMRE, Temarios Oficiales y Beneficios Estudiantiles funcionan y llevan a
+contenido correcto. "Guía de Universidades" apuntaba a una URL que DEMRE ya no sirve (404 confirmado
+en el sitio real). Corregido a
+`https://demre.cl/paes/universidades-participantes/universidades-sistema-acceso` — la página real de
+DEMRE con el listado de universidades del Sistema de Acceso y sus sitios/perfiles, que es lo que el
+texto del link promete.
+
+**Dashboard deformado a 125%–150% de zoom del navegador (no en 100% ni en móvil real).**
+Root cause: el zoom del navegador reduce el ancho de viewport efectivo en píxeles CSS (a diferencia
+de la propiedad CSS `zoom`, que solo escala visualmente sin achicar `window.innerWidth` — se
+comprobó la diferencia en vivo antes de diagnosticar). En un monitor típico (1366–1920px de ancho
+físico), 125–150% de zoom cae en un rango de ~900–1550px de ancho efectivo que queda **arriba** del
+breakpoint móvil del dashboard (`@media max-width: 1024px`, donde el sidebar se oculta y aparece el
+header móvil) pero muy por debajo de los ~1600–1920px para los que el header y los widgets del
+dashboard estaban diseñados. En ese rango intermedio no hay ningún ajuste: `.dashboard-header` tenía
+`height: 110px` fijo (no `min-height`), `.header-greeting` un `font-size: 2.4rem` fijo, y
+`.welcome-widgets-row .kpis-row-sidebar-top` tenía `width: 420px` con **`flex-shrink: 0` forzado**
+(se prohibía expresamente que se achicara) dentro de una fila sin `flex-wrap`. Resultado verificado
+con una réplica aislada del HTML/CSS real (antes/después, sin poder loguearse a `/dashboard`): a
+1000px de ancho efectivo, la versión original desbordaba el viewport en ~55–95px
+(`.welcome-actions` y `.kpis-row-sidebar-top` saliéndose de la pantalla) — eso es la "ventana
+deformada" que se ve con el navegador con zoom.
+Arreglado en `dashboard.component.ts` (solo agregando propiedades, sin tocar ninguna regla dentro de
+los `@media` de 1024px/768px que ya estaban verificados y funcionando):
+- `.dashboard-header`: `height` → `min-height: 110px` + `flex-wrap: wrap` (si no entra en una fila,
+  pasa a dos en vez de desbordar).
+- `.header-greeting`: `font-size: 2.4rem` fijo → `clamp(1.6rem, 1.5vw + 0.6rem, 2.4rem)` — se
+  calculó para que en pantallas anchas (≥1920px efectivos) el resultado sea matemáticamente
+  idéntico a 2.4rem (verificado: sigue dando 38.4px a 1920px de ancho) y solo empiece a achicarse
+  cuando el espacio realmente escasea.
+- `.welcome-widgets-row`: se agregó `flex-wrap: wrap`; `.kpis-row-sidebar-top` pasó de
+  `flex-shrink: 0; width: 420px` a `width: 420px; max-width: 100%` (ya no se prohíbe achicarse).
+- `.countdown-row` y `.kpi-card`: `height` fijo → `min-height` (mismo espíritu, evita que el texto
+  se recorte si alguna vez necesita más de una línea).
+Verificado con la réplica aislada: a 1920px de ancho, antes y después dan exactamente los mismos
+110px de alto y 38.4px de fuente (cero regresión visual en desktop normal); a 1000px de ancho, la
+versión corregida ya no desborda ningún elemento fuera del viewport y la fila del saludo se apila
+correctamente arriba de los botones/badge en vez de superponerse. Como estos cambios son puramente
+aditivos (agregan `flex-wrap`/`max-width`/`min-height`, que solo actúan cuando el contenido
+realmente no entra) y no tocan ninguna regla existente dentro de los `@media` de 1024px/768px, el
+comportamiento móvil ya verificado en bitácoras anteriores queda intacto.
+**Pendiente:** no se pudo verificar este fix contra el `/dashboard` real (requiere sesión
+autenticada); si se agrega en el futuro un harness de desarrollo tipo `/dev/ruta` para vistas
+protegidas por `authGuard`, convendría reverificar ahí. Tampoco se revisaron `.metrics-section` /
+`.activity-section` / `.kpis-row` (grids de `fr` más abajo en la página) más allá de blindar
+`.kpi-card` con `min-height` — los grids en sí no deberían desbordar (las columnas `fr` se achican
+proporcionalmente), pero no se descarta que algún contenido interno se vea apretado en ese mismo
+rango de zoom.
+
+### 2026-08-21 — Home: video "Mira cómo funciona" no auto-reproducía + consentimiento legal ausente en registro
+Typecheck ✅ (`tsc --noEmit`) · verificado en navegador contra dev server real (no mocks).
+
+**Bug: el video de la sección "Mira cómo funciona" no entraba en bucle automático al hacer scroll,
+solo si el usuario cambiaba de pestaña (2 o 3) y volvía a la 1.**
+Root cause encontrado inspeccionando el `<video>` en vivo: aunque el template tenía el atributo
+plano `muted` (sin binding), la propiedad JS viva `video.muted` valía `false` en runtime. Angular
+crea el elemento vía `createElement`/`setAttribute` (no parseando HTML crudo), y ese camino no
+inicializa la propiedad IDL `.muted` a partir del atributo de contenido — solo el parser HTML nativo
+del navegador hace esa inicialización. Con `.muted === false`, la política de autoplay de Chrome
+rechaza en silencio el `video.play()` que dispara el `IntersectionObserver` al entrar en viewport
+(la promesa rechazada caía en un `.catch(() => {})` mudo); en cambio, el `play()` de
+`selectDemoTab()` sí funcionaba porque corría inmediatamente después de un click real (gesto de
+usuario reciente, dentro de la ventana de "user activation" transitoria de Chrome).
+Arreglado en `home.component.ts` (los 3 `<video>` de "Mira cómo funciona", ~línea 713-753):
+cambiado el atributo plano `muted` por el binding de propiedad `[muted]="true"` en los tres videos,
+y además se fuerza `video.muted = true` justo antes de cada `.play()` (en el `IntersectionObserver`
+y en `selectDemoTab()`) como refuerzo. Verificado en navegador: `video.muted` es `true` desde el
+primer render y `video.play()` ya no requiere gesto de usuario.
+El resto del mecanismo de performance ya estaba bien pensado y no se tocó: `preload="none"` (no
+descarga los 3 videos de entrada), un solo `<video>` en el DOM a la vez (`*ngIf` por pestaña, no los
+3 simultáneos) y el propio `IntersectionObserver` pausando el video fuera de viewport.
+
+**Hallazgo legal: el flujo de registro no pedía aceptar Términos/Privacidad.**
+Los links "Términos de Servicio" / "Política de Privacidad" solo existían en el footer del home
+(`home.component.ts`) — el formulario de `/register` (ambos caminos: email/password y
+"Continuar con Google") no mostraba ni enlazaba a ninguno de los dos documentos, y creaba la cuenta
+sin capturar ningún consentimiento explícito. El propio texto de los Términos dice "al crear una
+cuenta... aceptas quedar vinculado" (aceptación por uso/browsewrap), lo cual es más débil que un
+checkbox explícito y no deja registro de que el usuario los vio. Revisado también el contenido legal
+en sí (Ley 19.628, Ley 19.496, Ley 17.336, cláusula de reembolsos, IA/Foco, ARCO, menores,
+transferencia internacional de datos) — está bien escrito y no se encontraron afirmaciones falsas o
+contradictorias con lo que hace la plataforma realmente (Flow no recibe comprobantes de transferencia
+como archivo, Cloudinary no procesa datos personales de usuarios, solo assets subidos por admins).
+Se agregó un checkbox obligatorio "He leído y acepto los Términos de Servicio y la Política de
+Privacidad" en `register.component.ts/html`, que abre el mismo modal legal y bloquea tanto el botón
+de "Crear Cuenta" como "Continuar con Google" hasta marcarlo (más una validación equivalente en
+`onSubmit()`/`registerWithGoogle()` por si el `disabled` del botón se bordea). Bug encontrado durante
+esta implementación: como el checkbox y los links viven dentro del mismo `<label>`, un click en
+"Términos de Servicio" también marcaba el checkbox por el comportamiento nativo de `<label>` (el click
+en cualquier hijo, incluido un `<a>`, burbujea y activa el control asociado) — se corrigió con
+`$event.stopPropagation()` en los links, así que abrir el texto para leerlo ya no cuenta como
+aceptación implícita.
+
+**Refactor de reutilización:** el modal legal (Términos + Privacidad, ~90 líneas de texto) vivía
+duplicado por definición en `home.component.ts` — para poder usarlo también en `/register` sin copiar
+el bloque (el propio CLAUDE.md ya advierte sobre este patrón de duplicación con el caso de la sidebar
+del panel admin), se extrajo a un componente standalone reutilizable:
+`shared/components/legal-modal.component.ts` (`<app-legal-modal [type]="'terms'|'privacy'|null" (close)="...">`).
+`home.component.ts` y `register.component.ts` lo importan; el texto legal ahora vive en un solo lugar.
+**Pendiente, no implementado:** replicar el mismo checkbox de consentimiento en el flujo de login con
+Google si en algún momento login también crea cuentas nuevas silenciosamente (hoy `registerWithGoogle()`
+es el único punto de creación de cuenta vía Google, y ya quedó cubierto).
 
 ### 2026-08-20 — Panel Admin: auditoría de seguridad, sidebar unificado y módulo Usuarios
 Backend typecheck ✅ · build frontend (AOT) ✅ en cada paso · verificado en navegador contra

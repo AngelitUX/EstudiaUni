@@ -97,17 +97,18 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       </aside>
 
       <!-- MOBILE HEADER -->
-      <div class="mobile-header">
-        <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Abrir menu">
-          <span style="display:flex;flex-direction:column;gap:4px;width:18px">
-            <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
-            <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
-            <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
-          </span>
-        </button>
-        <span class="text-gradient mobile-logo-text" [class.pro-logo]="isProPlan()">EstudiaUni</span>
-        <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0">
-          <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-upgrade-pro" style="font-size:0.72rem;padding:0.3rem 0.65rem" (click)="paymentService.openPricingModal()">PRO ⚡</button>
+      <div class="mobile-header" [class.mobile-header-with-pro]="!isProPlan() && !adminService.isAdmin()">
+        <div class="mobile-header-top">
+          <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Abrir menu">
+            <span style="display:flex;flex-direction:column;gap:4px;width:18px">
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+              <span style="display:block;height:2px;background:#fff;border-radius:2px"></span>
+            </span>
+          </button>
+          <a routerLink="/dashboard" class="mobile-logo-link">
+            <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" class="mobile-logo-img" />
+          </a>
           <button class="profile-trigger" (click)="openProfileModal('')" style="background:none;border:none;cursor:pointer;padding:0">
             <span class="profile-avatar-wrap">
               <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarMobile" [src]="firestoreService.profileSignal()?.photoURL" alt="Foto" class="profile-avatar" style="width:32px;height:32px" [class.avatar-preset]="(firestoreService.profileSignal()?.photoURL || '').includes('assets/images/avatars/')"/>
@@ -115,14 +116,17 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </span>
           </button>
         </div>
+        <div class="mobile-header-pro-row" *ngIf="!isProPlan() && !adminService.isAdmin()">
+          <button class="btn-upgrade-pro mobile-pro-pill" (click)="paymentService.openPricingModal()">Mejorar a PRO ⚡</button>
+        </div>
       </div>
       <div class="mobile-overlay" [class.open]="mobileMenuOpen" (click)="mobileMenuOpen = false">
         <div class="mobile-menu" (click)="$event.stopPropagation()">
-          <div class="mobile-menu-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.12);">
+          <div class="mobile-menu-header" style="position: relative; display: flex; justify-content: flex-start; align-items: center; padding: 0.75rem 1rem 0.75rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.12);">
             <a routerLink="/dashboard" (click)="mobileMenuOpen = false" style="text-decoration:none;">
-              <span class="text-gradient" [class.pro-logo]="isProPlan()" style="font-size: 1.4rem; font-weight: 900; font-family: var(--font-heading);">EstudiaUni</span>
+              <img [src]="(isProPlan() || adminService.isAdmin()) ? 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_10,y_202,w_471,h_86/v1/imagenes/branding/LogoEstudiaUniPREMIUM' : 'https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto,c_crop,x_1,y_204,w_489,h_81/v1/imagenes/branding/LogoEstudiaUni'" alt="EstudiaUni" style="width: 180px; height: auto;" />
             </a>
-            <button class="mobile-close-btn" (click)="mobileMenuOpen = false" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+            <button class="mobile-close-btn" (click)="mobileMenuOpen = false" style="position: absolute; top: 0.75rem; right: 1.25rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
             <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false">
@@ -614,22 +618,27 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
     <!-- FLOATING HELP BUTTON -->
     <button class="help-fab" (click)="showHelpModal = true" title="Guía del Dashboard">
-      💡
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
     </button>
 
     <!-- HELP EXPLANATION MODAL -->
     <div class="modal-overlay" *ngIf="showHelpModal" (click)="showHelpModal = false">
       <div class="modal-container glass help-modal-container animate-scale-up" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>💡 Guía Rápida del Dashboard</h2>
+          <h2>
+            <svg class="help-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+            Guía Rápida del Dashboard
+          </h2>
           <button class="close-btn" (click)="showHelpModal = false">✕</button>
         </div>
         <div class="modal-body help-modal-body">
           <p class="help-intro-text">Aquí tienes una explicación de cada sección para que aproveches al máximo EstudiaUni:</p>
-          
+
           <div class="help-sections-grid">
             <div class="help-section-card">
-              <div class="help-card-icon">⚡</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Recomendación de la IA</h4>
                 <p>Análisis de tu nivel para sugerirte qué estudiar o repasar hoy mismo.</p>
@@ -637,7 +646,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
 
             <div class="help-section-card">
-              <div class="help-card-icon">🎯</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Meta PAES</h4>
                 <p>Compara tu promedio proyectado con el puntaje meta de la carrera que quieres.</p>
@@ -645,7 +656,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
 
             <div class="help-section-card">
-              <div class="help-card-icon">📊</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Dominio por Tema</h4>
                 <p>Muestra tu progreso y porcentaje de dominio en cada materia evaluada.</p>
@@ -653,7 +666,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
 
             <div class="help-section-card">
-              <div class="help-card-icon">🏆</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Récord de Puntaje</h4>
                 <p>Tu puntaje PAES proyectado más alto y el cambio respecto a tu ensayo anterior. Además, te muestra el puntaje más reciente y el más alto para cada materia individual.</p>
@@ -661,7 +676,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
 
             <div class="help-section-card">
-              <div class="help-card-icon">🔥</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Rachas de Estudio</h4>
                 <p>Días seguidos de estudio (Racha normal) y de lecciones en todas las materias (Súper Racha).</p>
@@ -669,15 +686,19 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
 
             <div class="help-section-card">
-              <div class="help-card-icon">⏱️</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Horas Semanales</h4>
                 <p>Registro del tiempo dedicado a lecciones, ensayos y mente veloz esta semana.</p>
               </div>
             </div>
-            
+
             <div class="help-section-card">
-              <div class="help-card-icon">🛠️</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Herramientas</h4>
                 <p>Calculadora NEM, Encuentra tu Carrera y Recursos Adicionales en el menú lateral.</p>
@@ -685,7 +706,9 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
             </div>
 
             <div class="help-section-card">
-              <div class="help-card-icon">👤</div>
+              <div class="help-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
               <div class="help-card-info">
                 <h4>Tu Perfil</h4>
                 <p>Configura tu meta de puntaje y carrera para que la IA personalice tu ruta.</p>
@@ -701,8 +724,19 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    /* Simétrica alrededor del centro real del logo (a diferencia de floatLogo, que solo sube
+       y vuelve, nunca baja del reposo) — en el navbar móvil fijo el logo está centrado con
+       precisión (.mobile-logo-link) dentro de una fila de 60px, así que un flotado asimétrico
+       se notaba como "no centrado verticalmente": pasaba más tiempo arriba del centro que
+       exactamente en él. Mismo recorrido total (6px) que floatLogo, solo que repartido a ambos
+       lados del reposo. */
+    @keyframes floatLogoNav { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
     .sidebar-logo-img { width: 230px; height: auto; object-fit: contain; margin: 28px auto 0 auto; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2)); animation: floatLogo 3.5s ease-in-out infinite; }
-    .mobile-logo-img { width: 160px; height: auto; object-fit: contain; margin: 12px auto 0 auto; animation: floatLogo 3.5s ease-in-out infinite; }
+    .mobile-logo-img { width: 190px; height: auto; object-fit: contain; margin: 0; animation: floatLogoNav 3.5s ease-in-out infinite; }
+    /* Truly centers on the whole header regardless of how wide the hamburger button or the
+       right-side actions happen to be (flex:1 centering only centers within the leftover
+       space between them, which drifts off-center whenever those two sides are uneven). */
+    .mobile-logo-link { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-decoration: none; line-height: 0; z-index: 1; }
     .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-color); color: var(--text-primary); }
     .text-gradient { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
@@ -819,12 +853,26 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
     .btn-danger { background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239,68,68,0.25) !important; }
 
     /* MOBILE */
-    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #0F1018; border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 0.85rem; align-items: center; justify-content: space-between; z-index: 101; gap: 0.5rem; box-sizing: border-box; }
+    /* .mobile-header ahora es de 1 o 2 filas: .mobile-header-top (hamburguesa+logo+avatar,
+       siempre 60px) + .mobile-header-pro-row (solo Plan Básico, oculto vía *ngIf para PRO/admin
+       -> la fila desaparece del DOM y el header vuelve a medir 60px sin necesidad de CSS extra). */
+    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: #0F1018; border-bottom: 1px solid rgba(255,255,255,0.12); z-index: 101; box-sizing: border-box; }
+    /* position:relative para que .mobile-logo-link (position:absolute; top:50%) se centre
+       respecto a ESTA fila de 60px, no respecto a todo .mobile-header — que en Plan Básico
+       mide 104px (con la fila de la píldora PRO debajo) y dejaba el logo más abajo que la
+       hamburguesa/el avatar. En Premium/admin (header de 60px, sin fila extra) esto no cambia
+       nada visualmente: ambos altos coinciden. */
+    .mobile-header-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 0.85rem; gap: 0.5rem; box-sizing: border-box; width: 100%; }
+    /* Plan Básico: el logo no flota (la animación quedaba rara junto a la píldora fija de abajo). */
+    .mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }
+    .mobile-header-pro-row { display: flex; justify-content: center; padding: 0 0.85rem 0.55rem; box-sizing: border-box; width: 100%; }
+    /* El color/brillo/destello dorado ya los aporta la clase compartida .btn-upgrade-pro
+       (gold-glow + shimmer, la misma que usa este botón en su versión de escritorio) — acá
+       solo se fija el ancho para que iguale al del logo. */
+    .mobile-pro-pill { width: 190px; max-width: 100%; }
     .mobile-logo-text { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 900; flex: 1; text-align: center; margin: 0 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mobile-menu-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; box-sizing: border-box; }
     .mobile-menu-btn:hover { background: rgba(255,255,255,0.2); }
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; }
-    .mobile-overlay.open { display: block !important; }
     .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; max-width: 82vw; height: 100vh; background: #0F1018; padding: 1.25rem 1rem; overflow-y: auto; box-shadow: 6px 0 30px rgba(0,0,0,0.7); border-right: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; box-sizing: border-box; z-index: 10000; }
 
     /* MAIN */
@@ -832,18 +880,24 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
     /* HEADER */
     .dashboard-header {
-      height: 110px;
+      min-height: 110px;
       background: #0F1018;
       border-bottom: 1px solid rgba(255,255,255,0.15);
       display: flex;
+      flex-wrap: wrap;
+      row-gap: 0.5rem;
       justify-content: space-between;
       align-items: center;
-      padding: 0 2.5rem;
+      padding: 0.75rem 2.5rem;
       box-sizing: border-box;
     }
     .header-greeting {
       font-family: var(--font-heading);
-      font-size: 2.4rem;
+      /* Resolves to the original fixed 2.4rem on typical/large desktop screens (>=1920px
+         effective width) and only shrinks below that once horizontal space gets tight —
+         e.g. at 125-150% browser zoom, which shrinks the effective CSS px viewport without
+         triggering the <=1024px mobile-header breakpoint below. */
+      font-size: clamp(1.6rem, 1.5vw + 0.6rem, 2.4rem);
       font-weight: 800;
       color: #ffffff;
       margin: 0;
@@ -878,11 +932,13 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      row-gap: 1rem;
       gap: 1.5rem;
     }
     .welcome-widgets-row .kpis-row-sidebar-top {
-      flex-shrink: 0;
       width: 420px;
+      max-width: 100%;
     }
     .welcome-date {
       color: var(--text-secondary);
@@ -905,7 +961,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       border: 2px solid var(--glass-border) !important;
       margin-top: 0;
       line-height: 1;
-      height: 62px;
+      min-height: 62px;
       box-sizing: border-box;
     }
     .countdown-label { font-size: 0.82rem; font-weight: 700; color: #4b5563; margin: 0; line-height: 1; }
@@ -1474,7 +1530,7 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
 
     /* KPIS ROW */
     .kpis-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
-    .kpi-card { display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 1rem; border-radius: 12px; transition: all 0.2s; height: 62px; box-sizing: border-box; border: 2px solid var(--glass-border) !important; }
+    .kpi-card { display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 1rem; border-radius: 12px; transition: all 0.2s; min-height: 62px; box-sizing: border-box; border: 2px solid var(--glass-border) !important; }
     .kpi-card:hover { transform: translateY(-2px); border-color: rgba(133,92,214,0.4) !important; }
     .kpi-icon { font-size: 1.2rem; width: 34px; height: 34px; border-radius: 8px; background: rgba(133,92,214,0.08); display: flex; align-items: center; justify-content: center; }
     .kpi-icon-img { width: 22px; height: 22px; object-fit: contain; }
@@ -1645,6 +1701,10 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 999;
     }
+    .help-fab svg { width: 22px; height: 22px; }
+    .modal-header h2 { display: flex; align-items: center; gap: 0.6rem; }
+    .help-title-icon { width: 1.4rem; height: 1.4rem; flex-shrink: 0; color: var(--accent-primary); }
+    .help-card-icon svg { width: 20px; height: 20px; }
     .help-fab:hover {
       transform: scale(1.1) rotate(15deg);
       box-shadow: 0 8px 25px rgba(133, 92, 214, 0.6);
@@ -1827,8 +1887,13 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       aside.sidebar, .sidebar { display: none !important; }
       .mobile-header { display: flex !important; }
       .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding-top: 60px !important; box-sizing: border-box !important; }
+      /* Plan Básico: el header fijo mide 104px (60px + la fila de la píldora PRO) en vez
+         de 60px -> el contenido necesita ese mismo extra de aire arriba para no quedar tapado. */
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
       .dashboard-header {
         height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
         padding: 0.5rem 1rem 0.25rem !important;
         flex-direction: row !important;
         align-items: center !important;
@@ -1881,8 +1946,13 @@ import { StreakIconComponent } from '../../shared/components/streak-icon.compone
       aside.sidebar, .sidebar { display: none !important; }
       .mobile-header { display: flex !important; }
       .main-content { margin-left: 0 !important; max-width: 100vw !important; width: 100% !important; padding-top: 60px !important; box-sizing: border-box !important; }
+      /* Plan Básico: el header fijo mide 104px (60px + la fila de la píldora PRO) en vez
+         de 60px -> el contenido necesita ese mismo extra de aire arriba para no quedar tapado. */
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
       .dashboard-header {
         height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
         padding: 0.5rem 1rem 0.25rem !important;
         flex-direction: row !important;
         align-items: center !important;
