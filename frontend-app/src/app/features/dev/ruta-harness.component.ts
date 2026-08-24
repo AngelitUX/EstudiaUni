@@ -6,6 +6,7 @@ import { Firestore } from '@angular/fire/firestore';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { AdminService } from '../admin/services/admin.service';
 import { PaesContentService } from '../learning-path/services/paes-content.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 import { LearningAccessService } from '../learning-path/services/learning-access.service';
 
 /**

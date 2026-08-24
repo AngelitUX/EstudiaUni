@@ -236,10 +236,6 @@ type ExamMode = 'real' | 'asistido';
               <span style="font-size: 0.85rem; font-weight: 800; color: #7c3aed;">→</span>
             </button>
 
-            <!-- DEV SIMULATE TIME BUTTON (hidden in production builds) -->
-            <button *ngIf="!isProduction" class="dev-simulate-btn animate-fade-in" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; border-radius: 99px; padding: 0.45rem 0.85rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; margin-left: auto;" title="Boton de prueba para simular el paso de 50h">
-              🧪 [DEV] Simular paso de tiempo (+50h)
-            </button>
           </div>
 
           <!-- PRUEBAS -->
@@ -484,9 +480,6 @@ type ExamMode = 'real' | 'asistido';
           </button>
           <button (click)="showCooldownModal = false" style="background: transparent; color: #64748b; border: 1.5px solid #cbd5e1; padding: 0.75rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
             Entendido
-          </button>
-          <button *ngIf="!isProduction" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.65rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; margin-top: 0.5rem;">
-            🧪 [DEV] Simular paso de tiempo (Saltar Cooldown 48h)
           </button>
         </div>
       </div>

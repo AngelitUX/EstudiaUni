@@ -24,6 +24,7 @@ import m1QuestionsData from '../../../assets/m1-preguntas-db.json';
 // @ts-ignore
 import m1InviernoQuestionsData from '../../../assets/m1-invierno-preguntas-db.json';
 import { environment } from '../../../environments/environment';
+import { readSessionCache, writeSessionCache } from '../utils/session-cache';
 
 export interface UserProfile {
   uid: string;
@@ -348,10 +349,33 @@ export class FirestoreService {
     }
   }
 
+  /** Vigencia de la caché del catálogo de ensayos. Lo edita un admin y cambia poco. */
+  private static readonly ENSAYOS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora
+  private static readonly ENSAYOS_CACHE_KEY = 'ensayos_catalogo_cache';
+
+  /**
+   * Catálogo de ensayos activos.
+   *
+   * Antes releía la colección entera CADA vez que se abría la pantalla de
+   * Ensayos: con ~30 ensayos, un alumno que entra y sale tres veces gastaba 90
+   * lecturas para ver siempre lo mismo. Ahora se cachea en sessionStorage.
+   */
   getEnsayos(subjectFilter?: string): Observable<Ensayo[]> {
+    const cached = this.readSessionCache<Ensayo[]>(
+      FirestoreService.ENSAYOS_CACHE_KEY,
+      FirestoreService.ENSAYOS_CACHE_TTL_MS,
+    );
+    if (cached && cached.length > 0) return of(cached);
+
     const q = query(collection(this.firestore, 'ensayos'), where('isActive', '==', true));
     return from(getDocs(q)).pipe(
-      map(snap => snap.docs.map(d => ({ id: d.id, ...d.data() } as Ensayo)))
+      map(snap => {
+        const lista = snap.docs.map(d => ({ id: d.id, ...d.data() } as Ensayo));
+        if (lista.length > 0) {
+          this.writeSessionCache(FirestoreService.ENSAYOS_CACHE_KEY, lista);
+        }
+        return lista;
+      })
     );
   }
 
@@ -463,7 +487,81 @@ export class FirestoreService {
     }
   }
 
-  async saveAnswer(intentoId: string, preguntaId: string, selectedAnswer: string, isCorrect: boolean): Promise<void> {
+  // ─── Guardado de respuestas agrupado ───
+  //
+  // Antes cada respuesta disparaba su propia transacción: un ensayo de 70
+  // preguntas costaba 70 lecturas + 70 escrituras. Con 200 alumnos rindiendo un
+  // ensayo al día eso son 14.000 escrituras, el 70% de la cuota diaria gratuita
+  // de Firestore solo en esto.
+  //
+  // Ahora las respuestas se acumulan y se vuelcan juntas cada pocos segundos en
+  // UNA sola transacción. Estas escrituras intermedias solo sirven de red de
+  // seguridad ante una caída del navegador: al entregar, finishIntento()
+  // reconstruye el array completo desde el estado local del componente. Lo único
+  // que se arriesga es lo respondido en los últimos segundos antes de un cierre
+  // abrupto, a cambio de dividir el coste de escritura por ~5.
+  private static readonly ANSWER_FLUSH_DELAY_MS = 4000;
+  private pendingAnswers = new Map<string, Map<string, { preguntaId: string; selectedAnswer: string; isCorrect: boolean }>>();
+  private flushTimers = new Map<string, any>();
+
+  /**
+   * Vuelca a Firestore todas las respuestas pendientes de un intento en una
+   * sola transacción. Es idempotente y no lanza.
+   */
+  async flushPendingAnswers(intentoId: string): Promise<void> {
+    const timer = this.flushTimers.get(intentoId);
+    if (timer) {
+      clearTimeout(timer);
+      this.flushTimers.delete(intentoId);
+    }
+
+    const pendientes = this.pendingAnswers.get(intentoId);
+    if (!pendientes || pendientes.size === 0) return;
+
+    // Se vacía ANTES de escribir: si la escritura falla, no reintentamos en
+    // bucle (finishIntento reconstruye igualmente el array al entregar).
+    const lote = [...pendientes.values()];
+    this.pendingAnswers.delete(intentoId);
+
+    const ref = doc(this.firestore, 'intentos', intentoId);
+    try {
+      await runTransaction(this.firestore, async (transaction) => {
+        const snap = await transaction.get(ref);
+        if (!snap.exists()) return;
+        const answers = [...(snap.data()['answers'] || [])];
+        for (const item of lote) {
+          const idx = answers.findIndex((a: { preguntaId: string }) => a.preguntaId === item.preguntaId);
+          if (idx >= 0) answers[idx] = item;
+          else answers.push(item);
+        }
+        transaction.update(ref, { answers });
+      });
+    } catch {
+      // Mismo criterio que antes: un fallo transitorio aquí no es fatal.
+    }
+  }
+
+  /**
+   * Registra una respuesta y programa el volcado. No escribe de inmediato:
+   * ver la nota de arriba sobre el coste.
+   */
+  saveAnswer(intentoId: string, preguntaId: string, selectedAnswer: string, isCorrect: boolean): void {
+    if (!this.pendingAnswers.has(intentoId)) {
+      this.pendingAnswers.set(intentoId, new Map());
+    }
+    // El Map por preguntaId colapsa los cambios de opinión: si el alumno cambia
+    // tres veces su respuesta antes del volcado, solo se escribe la última.
+    this.pendingAnswers.get(intentoId)!.set(preguntaId, { preguntaId, selectedAnswer, isCorrect });
+
+    if (this.flushTimers.has(intentoId)) return; // ya hay un volcado programado
+    const timer = setTimeout(() => {
+      void this.flushPendingAnswers(intentoId);
+    }, FirestoreService.ANSWER_FLUSH_DELAY_MS);
+    this.flushTimers.set(intentoId, timer);
+  }
+
+  /** @deprecated Implementación anterior: una transacción por respuesta. */
+  private async saveAnswerImmediate(intentoId: string, preguntaId: string, selectedAnswer: string, isCorrect: boolean): Promise<void> {
     // Runs as a transaction on purpose: selectOption() in the exam runner
     // fires this without awaiting it, so answering two questions in quick
     // succession can easily have both calls' getDoc() read the same
@@ -496,6 +594,10 @@ export class FirestoreService {
     finalAnswers: { [preguntaId: string]: string } = {},
     questionsList: any[] = []
   ): Promise<number> {
+    // Volcar lo pendiente antes de leer, para no perder respuestas recientes
+    // si esta entrega no trae questionsList (en ese caso se usa lo que haya
+    // guardado en el documento).
+    await this.flushPendingAnswers(intentoId);
     const ref = doc(this.firestore, 'intentos', intentoId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return 0;
@@ -582,6 +684,8 @@ export class FirestoreService {
    * bypass the limit by quitting before submitting.
    */
   async abandonIntento(intentoId: string): Promise<void> {
+    // Al salir del ensayo conservamos lo respondido hasta ahora.
+    await this.flushPendingAnswers(intentoId);
     const user = this.auth.currentUser;
     if (!user) return;
 
@@ -653,24 +757,15 @@ export class FirestoreService {
     }
   }
 
+  // Delegan en core/utils/session-cache.ts, que es donde vive la logica y
+  // donde estan sus tests (aqui no se puede instanciar el servicio en un test
+  // sin arrastrar todo AngularFire).
   private readSessionCache<T>(key: string, ttlMs: number): T | null {
-    try {
-      const raw = sessionStorage.getItem(key);
-      if (!raw) return null;
-      const { data, cachedAt } = JSON.parse(raw);
-      if (Date.now() - cachedAt > ttlMs) return null;
-      return data as T;
-    } catch {
-      return null;
-    }
+    return readSessionCache<T>(key, ttlMs);
   }
 
   private writeSessionCache(key: string, data: unknown): void {
-    try {
-      sessionStorage.setItem(key, JSON.stringify({ data, cachedAt: Date.now() }));
-    } catch {
-      // sessionStorage unavailable (private browsing, quota, etc.) — just skip caching
-    }
+    writeSessionCache(key, data);
   }
 
   async seedNews(): Promise<void> {

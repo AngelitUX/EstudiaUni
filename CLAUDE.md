@@ -1802,6 +1802,169 @@ no era la intención dejarlo así.
 decidir todavía entre Cloud Run (mismo proyecto GCP, más natural dado que ya están en Firebase) o
 Railway/Render (deploy más simple, plataforma aparte). Ver bloqueante #1 en sección 11.
 
+### 2026-08-18 — Auditoría del modelo freemium: dónde se aplica cada límite
+**Conclusión: el freemium se aplica en la INTERFAZ, no en los datos.** Un usuario técnico
+puede saltarse casi todos los límites; ninguno de estos fallos afecta a la cuenta de OTRO
+usuario ni permite escalar privilegios — son fugas de negocio, no agujeros de seguridad.
+
+| Límite | Dónde se aplica | ¿Se puede saltar? |
+|---|---|---|
+| Fichas de Foco (5 vs 500) | Backend (`checkFocoTokens` + `consumeFocoToken`) | **No** |
+| Funciones IA solo PRO | Backend (403 `PREMIUM_ONLY_FEATURE`) | **No** |
+| Cooldown 48 h de ensayos | Reglas de Firestore (ventana de tiempo) | Solo omitiendo el campo |
+| Retención de resultados 3 h | Reglas de Firestore | **No** |
+| Autoasignarse plan PRO | Reglas de Firestore | **No** |
+| 1 mini ensayo/día | `localStorage` | **Sí**, borrando el almacenamiento |
+| 3 sesiones/24 h Mente Veloz | `localStorage` | **Sí**, ídem |
+| Materias/tiempos de Mente Veloz | Solo cliente | **Sí** |
+| 1 capítulo/materia en la Ruta | Solo cliente | **Sí** |
+| 1 ensayo/día (`FREE_TIER_LIMITS`) | **En ningún sitio** | — |
+
+**`POST /api/subscriptions/check-credits` existe en el backend y el frontend NUNCA lo llama.**
+Por eso el límite de "1 ensayo/día" y "5 quizzes/día" es código muerto: la única barrera real
+para los ensayos es el cooldown de 48 h. Conectarlo es la forma de convertir esos límites en
+reales, pero requiere el backend desplegado y decidir qué pasa si está caído (recomendación:
+dejar pasar y registrar, para no bloquear a quien paga por un fallo de infraestructura).
+
+**El contenido de pago es legible igualmente.** Aunque se cierren los límites de arriba,
+`lp_capitulos`, `secciones`, `lp_tests`, `preguntas` y `pool_preguntas` permiten lectura a
+cualquier autenticado, así que un usuario gratuito puede leer los capítulos PRO directamente
+desde Firestore. Es la misma raíz que el problema del solucionario: el modelo de negocio no se
+puede cerrar mientras el cliente reciba todo el contenido.
+
+**Corregido:** en `mini-ensayo.service.ts` los admin quedaban fuera del trato PRO (se les
+aplicaba el tope de preguntas del plan gratuito y el límite de 1/día), al revés que en el resto
+de la app y que el backend.
+
+**Detectado y NO corregido (afecta solo a cuentas admin del equipo):** en
+`firestore.service.ts`, `isPro` se calcula como `plan === 'premium'` sin incluir admins, así
+que **a un admin se le retienen los resultados de un ensayo 3 horas**. No se tocó porque
+arreglarlo solo en el cliente rompería el guardado: la regla `isValidFinish` de
+`firestore.rules` calcula `isPro` igual (sin admins) y rechazaría la escritura. Hay que
+cambiar las dos cosas a la vez —regla y cliente— en el mismo despliegue.
+
+### 2026-08-18 — Optimización, seguridad y capacidad para ~200 usuarios
+Typecheck (front y back) ✅ · 43/43 tests ✅ · build producción ✅.
+
+#### 🔴 VULNERABILIDAD: las respuestas correctas son legibles por cualquier usuario
+`firestore.rules` permite `read` a cualquier autenticado sobre `preguntas`,
+`pool_preguntas` y `lp_tests`, y esos documentos **incluyen `correctAnswer` /
+`respuesta_correcta`**. El propio archivo lo reconoce en un comentario.
+
+No hace falta tocar la UI: con la sesión iniciada, un `getDocs(collection(db,'preguntas'))`
+desde la consola —o una llamada REST con el ID token— devuelve **el solucionario completo de
+todos los ensayos**. Son las 2163 preguntas de la ruta más los bancos de ensayos.
+
+Es consecuencia directa de que el frontend corrige las respuestas en el cliente. **No se
+puede arreglar solo con reglas**: si el navegador necesita la clave para corregir, el usuario
+la tiene. La solución real es mover la corrección al backend:
+1. Quitar `correctAnswer` de lo que se sirve al cliente (colección paralela `respuestas/{id}`
+   con `allow read: if false`, o `Sin campo` vía Cloud Function).
+2. Un endpoint `POST /api/attempts/:id/grade` que reciba las marcadas y devuelva el resultado.
+3. Las reglas de `intentos` ya impiden falsificar la fecha; faltaría impedir falsificar `score`.
+> Es un cambio de arquitectura, no un parche. **Decisión del equipo, no lo hice.**
+
+#### Optimizaciones aplicadas
+| Cambio | Antes | Después |
+|---|---|---|
+| Caché de contenido de la ruta | TTL 30 min | **TTL 6 h** (`CONTENT_CACHE_TTL_MS`) |
+| Catálogo de ensayos | releía la colección en cada visita | caché de sesión, 1 h |
+| Recursos adicionales | releía la colección en cada visita | caché de sesión, 1 h (`loadRecursos(true)` la salta tras editar) |
+| Respuestas de ensayo | **1 transacción por respuesta** (70 lecturas + 70 escrituras por ensayo) | agrupadas cada 4 s en una sola transacción → **~15 escrituras** |
+
+`FirestoreService.saveAnswer()` ahora **no devuelve promesa**: acumula y programa el volcado.
+`flushPendingAnswers()` se llama solo al entregar y al abandonar. Un `Map` por `preguntaId`
+colapsa los cambios de opinión. Riesgo asumido: un cierre abrupto del navegador puede perder
+los últimos ≤4 s de respuestas; al entregar no se pierde nada porque `finishIntento()`
+reconstruye el array desde el estado local del componente.
+
+`readSessionCache`/`writeSessionCache` se extrajeron a `core/utils/session-cache.ts` porque
+`FirestoreService` no se puede instanciar en un test sin colgar Karma (AngularFire inicializa
+la persistencia de Auth y se queda esperando). Ahí viven sus 10 tests.
+
+#### 🟠 Limitador de peticiones sin `trust proxy` (corregido)
+`ThrottlerGuard` limita **por IP**, pero `main.ts` no confiaba en `X-Forwarded-For`. Detrás de
+Cloud Run / Render / Railway, Express habría visto la IP del proxy en todas las peticiones y
+**los 200 usuarios habrían compartido un único cupo de 60 req/min**. Añadido
+`app.getHttpAdapter().getInstance().set('trust proxy', 1)`.
+⚠️ Si se pone otro proxy delante (Cloudflare + Cloud Run), hay que subir ese número: confiar
+de menos rompe el límite, confiar de más permite falsificar la IP y saltárselo.
+
+#### Análisis de capacidad — 200 usuarios
+Medido sobre el inventario real (8 materias, 30 capítulos, 401 secciones, 502 tests).
+
+**Lecturas/usuario/día** (tras las optimizaciones): carga de contenido 439 × 1-2 al día,
+catálogo de ensayos ~60, preguntas de un ensayo ~70, secciones abiertas ~10, perfil y
+actividad ~12 → **≈ 600-900**.
+- 200 usuarios ≈ **120.000-180.000 lecturas/día**.
+- **Cuota gratuita (Spark): 50.000/día → se supera con ~60-80 usuarios activos.**
+
+**Escrituras/usuario/día** (tras agrupar): ~25 → 200 usuarios ≈ **5.000/día**, holgado frente
+al límite de 20.000. *Antes del agrupado eran ~14.000/día solo en respuestas de ensayo: el 70%
+de la cuota.*
+
+**Conclusión: hay que pasar a plan Blaze.** El coste es despreciable (~180k lecturas/día ≈
+**US$2-3 al mes**); el problema del plan gratuito no es el dinero sino que **al agotarse la
+cuota los `getDocs` fallan y la app cae al contenido local desfasado**, que es exactamente lo
+que ocurrió durante la auditoría (`RESOURCE_EXHAUSTED`).
+
+**El cuello de botella real NO es Firestore, es el ancho de banda.** El build pesa 310 MB, de
+los cuales 293 MB son imágenes (PNG de materias de 5-7 MB, gifs de Foco de hasta 15 MB, un
+MP4 de 18 MB). Con 200 usuarios y ~20 MB por sesión: **~80 GB/mes**, contra los 10 GB del plan
+gratuito de Hosting y ~US$12/mes en Blaze — cuatro veces el coste de Firestore. Optimizar esas
+imágenes (WebP/AVIF, redimensionar, o servirlas desde Cloudinary como ya se hace con el
+branding) es la palanca de coste y de velocidad más grande que queda, y además es lo que más
+se nota en un móvil con datos.
+
+#### Revisado y correcto (no hacía falta tocar)
+- **XSS:** los 19 usos de `bypassSecurityTrustHtml` reciben contenido escrito por **admins**
+  (contenido de la ruta) o generado por la IA con escapado previo. Lo escrito por usuarios
+  (reportes de bugs) se pinta con interpolación `{{ }}`, que Angular escapa. Sin vía de XSS
+  almacenado encontrada.
+- **Reglas de Firestore:** no hay `match /{document=**}` permisivo; las colecciones de pago e
+  IA (`manual_payments`, `flow_*`, `discount_codes`, `admin_audit_logs`) quedan denegadas por
+  defecto al cliente y solo las toca el Admin SDK.
+- `getPreguntas` ya cacheaba en memoria por sesión.
+
+### 2026-08-18 — Entrenador de estudio con Foco en el Dashboard (PRO)
+Backend typecheck ✅ · 26/26 tests ✅ · build producción ✅ · verificado en navegador a 375 y 1280px.
+
+**Qué es.** En "Inicio", el botón *Hablar con Foco* abre una **conversación** (antes era una
+recomendación de una sola tirada). Foco recibe la ficha real del alumno y le dice qué hacer.
+
+**Backend** — `POST /api/ai/study-coach`, exclusivo PRO:
+- `dto/study-coach.dto.ts` · `prompts/study-coach.prompt.ts` · `AiFeedbackService.studyCoachChat()`
+- **Coste en fichas: 2 el primer turno** (analiza todo el historial: entrada larga + respuesta
+  densa) **y 1 cada seguimiento**. Se apoya en que `consumeFocoToken` ya acepta `amount`.
+- La ficha del alumno se inyecta como **primer mensaje de usuario**, no en el system prompt,
+  para que el modelo la trate como datos del caso y se pueda refrescar en cada turno.
+
+**El prompt cubre dos escenarios, y esto es lo importante:**
+- **A — con datos:** diagnostica citando cifras reales (puntajes, % de avance, racha) y da 2-3
+  acciones priorizadas. Regla dura: si una materia no está en la ficha, no puede afirmar nada
+  sobre ella.
+- **B — sin datos:** tiene PROHIBIDO inventarse un diagnóstico. Dice que aún no tiene datos y
+  entrevista al alumno **una pregunta por mensaje** (disponibilidad → franja horaria → materias
+  → meta) hasta poder armarle un plan semanal concreto.
+- El servidor decide el escenario con `tieneDatosSuficientes()` y se lo indica explícitamente,
+  en vez de dejar que el modelo lo deduzca.
+
+**Frontend** — modal de chat en `dashboard.component.ts`:
+`AiAssistService.studyCoachViaBackend()`, nuevo `PremiumOnlyError`, markdown ligero saneado
+con `DomSanitizer`, chips de preguntas sugeridas, contador de fichas restantes y hoja inferior
+a pantalla completa en móvil. Al reabrir el modal en la misma sesión no se gastan fichas.
+
+> **Sin verificar end-to-end:** el harness usa un Auth falso sin token válido, así que la
+> llamada real (guard de Firebase + comprobación PRO + Gemini) **no se ha probado**. Lo
+> verificado es: el modal abre, es responsive, el gate PRO/gratis funciona en la UI y el
+> camino de error se muestra con elegancia. **Probar con una cuenta PRO real y el backend
+> corriendo.**
+
+**También:** eliminados los botones rojos `🧪 [DEV] Simular paso de tiempo` de `ensayos-list`
+(2) y `ensayo-review` (1). Aparecían por el `fileReplacements` de entorno añadido ese mismo
+día: antes `production` era `true` en desarrollo y los ocultaba. El método
+`FirestoreService.devSimulateTimePass()` sigue existiendo.
+
 ### 2026-08-18 — Tests bajo demanda (−53% lecturas) + cabecera móvil tapada
 Typecheck ✅ · 26/26 tests ✅ · build producción ✅ · medido en navegador a 414 y 1400px.
 

@@ -32,6 +32,44 @@ export class FocoTokensExhaustedError extends Error {
   }
 }
 
+/** El backend rechazó la petición porque la función es exclusiva del Plan PRO. */
+export class PremiumOnlyError extends Error {
+  constructor(serverMessage?: string) {
+    super(serverMessage || 'PREMIUM_ONLY_FEATURE');
+  }
+}
+
+/**
+ * Ficha del alumno que se envía al entrenador de estudio.
+ * Debe mantenerse alineada con `StudyCoachContextDto` del backend.
+ */
+export interface StudyCoachContext {
+  nombre?: string;
+  actividades?: Array<{
+    type: string;
+    title: string;
+    subject?: string;
+    score?: number;
+    totalCorrect?: number;
+    totalQuestions?: number;
+    timestamp: string;
+  }>;
+  ensayos?: Array<{
+    subject: string;
+    score?: number;
+    correctAnswers?: number;
+    totalQuestions?: number;
+  }>;
+  avanceRuta?: Array<{ subject: string; mastery?: number }>;
+  rachaDias?: number;
+  superRachaDias?: number;
+  puntajeMeta?: number;
+  carreraMeta?: string;
+  horarioPreferido?: string;
+  minutosDiariosObjetivo?: number;
+  diasParaPaes?: number;
+}
+
 export interface ReviewChatRequest {
   question: string;
   options: Array<{ id: string; text: string }>;
@@ -131,6 +169,39 @@ export class AiAssistService {
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.error?.code === 'FOCO_TOKENS_EXHAUSTED') {
         throw new FocoTokensExhaustedError(err.error.limit, err.error.message);
+      }
+      throw err;
+    }
+  }
+  /**
+   * Entrenador de estudio del dashboard (POST /api/ai/study-coach).
+   *
+   * Foco recibe la ficha real del alumno (ensayos, avance en la ruta, racha,
+   * Meta PAES) y recomienda que hacer; si no hay historial, lo entrevista para
+   * armarle una rutina. El backend impone el gate PRO y descuenta las fichas:
+   * 2 en el turno de apertura (analisis completo) y 1 en cada seguimiento.
+   *
+   * Lanza FocoTokensExhaustedError cuando se acabaron las fichas del dia, y
+   * PremiumOnlyError cuando el usuario no es PRO.
+   */
+  async studyCoachViaBackend(payload: {
+    history: ChatMessage[];
+    context: StudyCoachContext;
+    isOpening?: boolean;
+  }): Promise<BackendChatResponse> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    try {
+      return await firstValueFrom(
+        this.http.post<BackendChatResponse>(`${baseUrl}/api/ai/study-coach`, payload),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.error?.code === 'FOCO_TOKENS_EXHAUSTED') {
+          throw new FocoTokensExhaustedError(err.error.limit, err.error.message);
+        }
+        if (err.error?.code === 'PREMIUM_ONLY_FEATURE') {
+          throw new PremiumOnlyError(err.error.message);
+        }
       }
       throw err;
     }

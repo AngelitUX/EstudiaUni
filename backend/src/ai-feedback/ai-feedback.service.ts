@@ -21,6 +21,11 @@ import {
 } from './prompts/assist.prompt';
 import { ChatRequestDto } from './dto/chat-message.dto';
 import { CareerChatRequestDto } from './dto/career-chat.dto';
+import { StudyCoachRequestDto } from './dto/study-coach.dto';
+import {
+  STUDY_COACH_SYSTEM_PROMPT,
+  buildStudyCoachContext,
+} from './prompts/study-coach.prompt';
 import { ReviewChatRequestDto } from './dto/review-chat.dto';
 import { RecommendationsRequestDto } from './dto/recommendations.dto';
 
@@ -495,6 +500,61 @@ Alternativa marcada por el estudiante: ${input.userAnswer || 'No respondió (omi
     } catch (error) {
       this.logger.error(`Career chat failed: ${error.message}`);
       throw new InternalServerErrorException('AI career chat failed');
+    }
+  }
+
+  /**
+   * Entrenador de estudio del dashboard: Foco analiza el historial real del
+   * alumno y le arma un plan, o —si todavía no hay historial— lo entrevista
+   * para construirle una rutina.
+   *
+   * La ficha del alumno se inyecta como PRIMER mensaje de usuario, no en el
+   * system prompt, para que el modelo la trate como datos del caso y no como
+   * instrucciones (y para poder refrescarla en cada turno sin reconstruir el
+   * system prompt).
+   */
+  async studyCoachChat(input: StudyCoachRequestDto): Promise<{ reply: string }> {
+    if (!this.genAI) {
+      return {
+        reply: '⚠️ Foco no está disponible en este momento. Intenta de nuevo más tarde.',
+      };
+    }
+
+    try {
+      const model = this.getModel(STUDY_COACH_SYSTEM_PROMPT, {
+        maxOutputTokens: 1600,
+        disableThinking: true,
+      });
+
+      const ficha = buildStudyCoachContext(input.context || {});
+      const historial = this.toGeminiHistory(input.history || []);
+
+      // El último mensaje del usuario se envía aparte; el resto es historial.
+      const ultimo = (input.history || [])[input.history.length - 1];
+      const esDelUsuario = ultimo?.role === 'user';
+      const historialPrevio = esDelUsuario ? historial.slice(0, -1) : historial;
+
+      const chat = model.startChat({
+        history: [
+          { role: 'user', parts: [{ text: ficha }] },
+          {
+            role: 'model',
+            parts: [{ text: 'Ficha recibida. Voy a usar solo estos datos, sin inventar nada.' }],
+          },
+          ...historialPrevio,
+        ],
+      });
+
+      const texto = esDelUsuario
+        ? ultimo.content
+        : 'Preséntate y dame tus recomendaciones según mi ficha.';
+
+      const result = await chat.sendMessage(texto);
+      const reply = result.response.text() || 'No pude generar una respuesta. Intenta de nuevo.';
+      return { reply };
+    } catch (error) {
+      this.logger.error(`Study coach chat failed: ${error.message}`);
+      throw new InternalServerErrorException('AI study coach failed');
     }
   }
 
