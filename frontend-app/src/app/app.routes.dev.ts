@@ -44,4 +44,19 @@ const devRutaHarnessRoute = {
   ],
 };
 
-export const routes: Routes = [...baseRoutes, devRutaHarnessRoute, wildcardRoute];
+// Dashboard ("Inicio") sin login, para revisar el entrenador de estudio.
+const devInicioRoute = {
+  path: 'dev/inicio',
+  data: { title: 'DEV · Inicio', noIndex: true },
+  loadComponent: () =>
+    import('./features/dev/ruta-harness.component').then(m => m.DevRutaHarnessComponent),
+  children: [
+    {
+      path: '',
+      loadComponent: () =>
+        import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    },
+  ],
+};
+
+export const routes: Routes = [...baseRoutes, devRutaHarnessRoute, devInicioRoute, wildcardRoute];

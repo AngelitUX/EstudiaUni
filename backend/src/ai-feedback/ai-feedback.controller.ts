@@ -20,6 +20,7 @@ import { ChatRequestDto } from './dto/chat-message.dto';
 import { CareerChatRequestDto } from './dto/career-chat.dto';
 import { ReviewChatRequestDto } from './dto/review-chat.dto';
 import { RecommendationsRequestDto } from './dto/recommendations.dto';
+import { StudyCoachRequestDto } from './dto/study-coach.dto';
 
 @Controller('ai')
 @UseGuards(FirebaseAuthGuard)
@@ -117,6 +118,57 @@ export class AiFeedbackController {
     const result = await this.aiFeedbackService.careerChat(body);
     await this.subscriptionsService.consumeFocoToken(user.uid);
     return { ...result, remainingTokens: tokenCheck.remaining - 1, limitTokens: tokenCheck.limit };
+  }
+
+  // El primer turno del entrenador de estudio produce el análisis completo del
+  // historial del alumno (mucho contexto de entrada + respuesta larga), así que
+  // cuesta más que un mensaje de seguimiento de la misma conversación.
+  private static readonly STUDY_COACH_OPENING_COST = 2;
+  private static readonly STUDY_COACH_FOLLOWUP_COST = 1;
+
+  /**
+   * Entrenador de estudio del dashboard. Foco lee el historial real del alumno
+   * (ensayos, avance en la ruta, racha, Meta PAES) y le recomienda qué hacer;
+   * si aún no hay historial, lo entrevista para armarle una rutina.
+   *
+   * Exclusivo del Plan PRO, igual que el resto de funciones de IA.
+   */
+  @Post('study-coach')
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  async studyCoach(
+    @CurrentUser() user: CurrentUserData,
+    @Body() body: StudyCoachRequestDto,
+  ) {
+    const status = await this.subscriptionsService.getStatus(user.uid);
+    if (status.tier !== 'premium') {
+      throw new ForbiddenException({
+        code: 'PREMIUM_ONLY_FEATURE',
+        message: 'El entrenador de estudio con IA es exclusivo del Plan PRO.',
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    const cost = body.isOpening
+      ? AiFeedbackController.STUDY_COACH_OPENING_COST
+      : AiFeedbackController.STUDY_COACH_FOLLOWUP_COST;
+
+    const tokenCheck = await this.subscriptionsService.checkFocoTokens(user.uid, cost);
+    if (!tokenCheck.allowed) {
+      throw new ForbiddenException({
+        code: 'FOCO_TOKENS_EXHAUSTED',
+        limit: tokenCheck.limit,
+        message: `Has alcanzado tus ${tokenCheck.limit} fichas diarias de Foco. Se recargarán mañana.`,
+        upgradeUrl: '/pricing',
+      });
+    }
+
+    const result = await this.aiFeedbackService.studyCoachChat(body);
+    await this.subscriptionsService.consumeFocoToken(user.uid, cost);
+    return {
+      ...result,
+      remainingTokens: Math.max(0, tokenCheck.remaining - cost),
+      limitTokens: tokenCheck.limit,
+    };
   }
 
   // The review-explanation chat generates a much longer, denser reply than a

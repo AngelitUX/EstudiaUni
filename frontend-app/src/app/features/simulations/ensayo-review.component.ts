@@ -69,9 +69,6 @@ interface ReviewQuestion {
             <button routerLink="/ensayos" style="background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; padding: 0.85rem 1.5rem; border-radius: 14px; font-weight: 700; font-size: 0.95rem; cursor: pointer;">
               ← Volver a Ensayos PAES
             </button>
-            <button *ngIf="!isProduction" (click)="devResetTimeLimits()" style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.75rem 1rem; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; margin-top: 0.5rem;">
-              🧪 [DEV] Simular paso de tiempo (Liberar Resultados Ahora)
-            </button>
           </div>
         </div>
       </div>

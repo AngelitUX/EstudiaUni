@@ -3,6 +3,7 @@ import { PoolPregunta, MateriaId } from '../../features/learning-path/models/pae
 import { PaesContentService } from '../../features/learning-path/services/paes-content.service';
 import { DashboardService } from './dashboard.service';
 import { FirestoreService } from './firestore.service';
+import { AdminService } from '../../features/admin/services/admin.service';
 
 export const FREE_MINI_ENSAYO_MAX_QUESTIONS = 16;
 
@@ -49,8 +50,14 @@ export class MiniEnsayoService {
   private paesContent = inject(PaesContentService);
   private dashboardSvc = inject(DashboardService);
   private firestoreService = inject(FirestoreService);
+  private adminService = inject(AdminService);
 
   private isProPlan(): boolean {
+    // Los admin reciben trato PRO en toda la app y en el backend
+    // (SubscriptionsService). Aqui quedaban fuera, asi que a una cuenta admin
+    // se le aplicaba el tope de preguntas del plan gratuito y el limite de un
+    // mini ensayo al dia.
+    if (this.adminService.isAdmin() === true) return true;
     return this.firestoreService.profileSignal()?.plan === 'premium';
   }
 

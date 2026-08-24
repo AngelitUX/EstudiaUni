@@ -28,6 +28,19 @@ export const LEARNING_PATH_CACHE_TIME_KEY = 'learning_path_cache_timestamp';
 export const POOL_PREGUNTAS_CACHE_KEY = 'pool_preguntas_cache';
 export const POOL_PREGUNTAS_CACHE_TIME_KEY = 'pool_preguntas_cache_timestamp';
 
+/**
+ * Vigencia de la cache de contenido.
+ *
+ * Estaba en 30 minutos, lo que obligaba a un usuario activo a repetir la carga
+ * completa varias veces en una misma tarde (cientos de lecturas cada vez). El
+ * contenido de la ruta lo edita un admin y cambia muy de vez en cuando, asi que
+ * 6 horas es un intercambio mucho mejor.
+ *
+ * Para ver un cambio de contenido al instante: boton 'Actualizar Datos' del panel
+ * admin (llama a clearCache()) o clearPoolPreguntasCache().
+ */
+export const CONTENT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 horas
+
 const LOCAL_POOL_PREGUNTAS: any[] = [
   // Competencia Lectora
   {
@@ -470,7 +483,7 @@ export class PaesContentService {
   private async doLoadDataFromFirestore() {
     const CACHE_KEY = LEARNING_PATH_CACHE_KEY;
     const cacheTimeKey = LEARNING_PATH_CACHE_TIME_KEY;
-    const cacheTTL = 30 * 60 * 1000; // 30 minutos
+    const cacheTTL = CONTENT_CACHE_TTL_MS;
 
     try {
       // 0. Intentar cargar desde caché
@@ -701,7 +714,7 @@ export class PaesContentService {
     this.poolPreguntasLoadingPromise = (async () => {
       const POOL_CACHE_KEY = POOL_PREGUNTAS_CACHE_KEY;
       const POOL_CACHE_TIME_KEY = POOL_PREGUNTAS_CACHE_TIME_KEY;
-      const cacheTTL = 30 * 60 * 1000; // 30 minutos
+      const cacheTTL = CONTENT_CACHE_TTL_MS;
 
       try {
         const cachedRaw = localStorage.getItem(POOL_CACHE_KEY);

@@ -32,7 +32,32 @@ export class RecursosService {
     this.loadRecursos();
   }
 
-  async loadRecursos() {
+  /** Vigencia de la caché del catálogo de recursos (lo edita un admin). */
+  private static readonly CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora
+  private static readonly CACHE_KEY = 'recursos_adicionales_cache';
+
+  /**
+   * Carga el catálogo de recursos.
+   *
+   * Antes releía la colección completa en cada visita a la pantalla. Ahora se
+   * cachea en sessionStorage; `force` la salta para que el panel admin vea sus
+   * propios cambios al instante.
+   */
+  async loadRecursos(force = false) {
+    if (!force) {
+      try {
+        const raw = sessionStorage.getItem(RecursosService.CACHE_KEY);
+        if (raw) {
+          const { data, cachedAt } = JSON.parse(raw);
+          if (Date.now() - cachedAt < RecursosService.CACHE_TTL_MS && Array.isArray(data) && data.length) {
+            this.recursos.set(data);
+            this.loading.set(false);
+            return;
+          }
+        }
+      } catch { /* caché ilegible: se recarga de Firestore */ }
+    }
+
     this.loading.set(true);
     try {
       const q = query(collection(this.firestore, this.collectionName), orderBy('orden', 'asc'));
@@ -41,7 +66,13 @@ export class RecursosService {
       querySnapshot.forEach((doc) => {
         data.push({ id: doc.id, ...doc.data() } as Recurso);
       });
-      
+
+      if (data.length > 0) {
+        try {
+          sessionStorage.setItem(RecursosService.CACHE_KEY, JSON.stringify({ data, cachedAt: Date.now() }));
+        } catch { /* sin espacio: seguimos sin caché */ }
+      }
+
       // Si no hay recursos en la BD, creamos placeholders solo para visualizar
       if (data.length === 0) {
         this.recursos.set(this.getPlaceholders());
@@ -64,20 +95,20 @@ export class RecursosService {
       fechaCreacion: Timestamp.now()
     };
     await setDoc(docRef, nuevoRecurso);
-    await this.loadRecursos();
+    await this.loadRecursos(true); // force: el admin debe ver su cambio ya
     return docRef.id;
   }
 
   async updateRecurso(id: string, recurso: Partial<Recurso>): Promise<void> {
     const docRef = doc(this.firestore, this.collectionName, id);
     await updateDoc(docRef, recurso);
-    await this.loadRecursos();
+    await this.loadRecursos(true); // force: el admin debe ver su cambio ya
   }
 
   async deleteRecurso(id: string): Promise<void> {
     const docRef = doc(this.firestore, this.collectionName, id);
     await deleteDoc(docRef);
-    await this.loadRecursos();
+    await this.loadRecursos(true); // force: el admin debe ver su cambio ya
   }
 
   private getPlaceholders(): Recurso[] {

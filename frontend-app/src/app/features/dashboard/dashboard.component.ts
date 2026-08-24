@@ -17,6 +17,12 @@ import { ToastService } from '../../core/services/toast.service';
 import { AdminService } from '../admin/services/admin.service';
 import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import {
+  AiAssistService,
+  FocoTokensExhaustedError,
+  PremiumOnlyError,
+} from '../../core/services/ai-assist.service';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
@@ -291,8 +297,8 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
                 <button class="btn-cta-primary btn-hero" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
                    Ir
                 </button>
-                <button *ngIf="isProPlan() || adminService.isAdmin()" class="btn-cta-secondary btn-hero" [disabled]="aiRecoLoading()" (click)="viewAiRecommendations()">
-                  {{ aiRecoLoading() ? '🤖 Pensando...' : '🤖 Ver Recomendaciones IA' }}
+                <button *ngIf="isProPlan() || adminService.isAdmin()" class="btn-cta-secondary btn-hero" [disabled]="coachLoading()" (click)="openStudyCoach()">
+                  {{ coachLoading() ? 'Foco está pensando...' : 'Hablar con Foco' }}
                 </button>
                 <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-cta-secondary btn-hero" (click)="paymentService.openPricingModal()">
                   🔒 Recomendaciones IA (PRO)
@@ -557,6 +563,57 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
     <app-profile-modal *ngIf="showProfileModal" [scrollTarget]="profileScrollTarget" (close)="onProfileModalClose()"></app-profile-modal>
     <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsModalClose()"></app-settings-modal>
     <app-history-modal *ngIf="showHistoryModal" (close)="showHistoryModal = false"></app-history-modal>
+
+    <!-- ─── Entrenador de estudio con Foco (PRO) ─── -->
+    <div class="coach-overlay" *ngIf="showCoachModal()" (click)="closeStudyCoach()">
+      <div class="coach-modal" (click)="$event.stopPropagation()">
+
+        <header class="coach-head">
+          <img src="assets/images/Nuevos VideosEIlustraciones/GifsFocoWEBP/focoComprensionLectora.webp"
+               alt="Foco" class="coach-avatar" width="44" height="44" />
+          <div class="coach-head-text">
+            <h3>Tu entrenador de estudio</h3>
+            <p>Foco revisa tu avance y te dice qué hacer ahora</p>
+          </div>
+          <span class="coach-tokens" *ngIf="coachTokensLeft() !== null" [title]="'Fichas de Foco restantes hoy'">
+            {{ coachTokensLeft() }} fichas
+          </span>
+          <button class="coach-close" type="button" (click)="closeStudyCoach()" aria-label="Cerrar">✕</button>
+        </header>
+
+        <div class="coach-body">
+          <div *ngFor="let m of coachMessages()"
+               class="coach-msg" [class.is-user]="m.role === 'user'">
+            <div class="coach-bubble">
+              <span *ngIf="m.role === 'user'">{{ m.content }}</span>
+              <span *ngIf="m.role === 'assistant'" [innerHTML]="m.html"></span>
+            </div>
+          </div>
+
+          <div class="coach-msg" *ngIf="coachLoading()">
+            <div class="coach-bubble coach-typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <p class="coach-error" *ngIf="coachError()">{{ coachError() }}</p>
+        </div>
+
+        <!-- Atajos: solo antes de que el alumno escriba nada -->
+        <div class="coach-chips" *ngIf="!coachLoading() && coachMessages().length === 1">
+          <button type="button" (click)="coachQuickAsk('Ármame una rutina de estudio semanal.')">Ármame una rutina semanal</button>
+          <button type="button" (click)="coachQuickAsk('¿Cuál es mi materia más débil y cómo la mejoro?')">Mi materia más débil</button>
+          <button type="button" (click)="coachQuickAsk('¿Qué hago hoy? Tengo poco tiempo.')">¿Qué hago hoy?</button>
+        </div>
+
+        <form class="coach-input" (ngSubmit)="sendCoachMessage()">
+          <input type="text" [(ngModel)]="coachInput" name="coachInput"
+                 [disabled]="coachLoading()" autocomplete="off"
+                 placeholder="Escríbele a Foco..." />
+          <button type="submit" [disabled]="coachLoading() || !coachInput.trim()" aria-label="Enviar">→</button>
+        </form>
+      </div>
+    </div>
 
     <!-- CUSTOM LOGOUT CONFIRMATION -->
     <div class="modal-overlay logout-confirm-overlay" *ngIf="showLogoutConfirm" (click)="showLogoutConfirm = false">
@@ -2073,6 +2130,76 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
         grid-template-columns: 1fr;
       }
     }
+
+    /* ── Entrenador de estudio con Foco ── */
+    .coach-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .coach-modal {
+      width: 100%; max-width: 560px; max-height: min(86vh, 720px);
+      display: flex; flex-direction: column;
+      background: #fff; border-radius: 22px; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+    }
+    .coach-head {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.9rem 1rem; background: linear-gradient(135deg, #855cd6, #6b46b8); color: #fff;
+    }
+    .coach-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); flex-shrink: 0; object-fit: cover; }
+    .coach-head-text { flex: 1; min-width: 0; }
+    .coach-head-text h3 { margin: 0; font-family: var(--font-heading); font-size: 1rem; font-weight: 800; color: #fff; }
+    .coach-head-text p { margin: 0; font-size: 0.76rem; opacity: 0.85; }
+    .coach-tokens { font-size: 0.7rem; font-weight: 800; background: rgba(255,255,255,0.18); padding: 0.25rem 0.6rem; border-radius: 99px; white-space: nowrap; }
+    .coach-close { background: transparent; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 0.25rem 0.4rem; min-width: 44px; min-height: 44px; }
+
+    .coach-body { flex: 1; overflow-y: auto; padding: 1rem; background: #f8f9fc; display: flex; flex-direction: column; gap: 0.75rem; }
+    .coach-msg { display: flex; }
+    .coach-msg.is-user { justify-content: flex-end; }
+    .coach-bubble {
+      max-width: 86%; padding: 0.7rem 0.95rem; border-radius: 16px;
+      background: #fff; border: 1px solid var(--section-border);
+      font-size: 0.9rem; line-height: 1.5; color: var(--text-primary);
+      overflow-wrap: anywhere;
+    }
+    .coach-msg.is-user .coach-bubble { background: var(--accent-primary); color: #fff; border-color: transparent; }
+    .coach-bubble ::ng-deep p { margin: 0 0 0.55rem; }
+    .coach-bubble ::ng-deep p:last-child { margin-bottom: 0; }
+    .coach-bubble ::ng-deep ul { margin: 0.4rem 0; padding-left: 1.1rem; }
+    .coach-bubble ::ng-deep li { margin-bottom: 0.25rem; }
+
+    .coach-typing { display: flex; gap: 5px; align-items: center; }
+    .coach-typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-primary); opacity: 0.45; animation: coachBlink 1.2s infinite; }
+    .coach-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .coach-typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes coachBlink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+
+    .coach-error { margin: 0.25rem 0 0; font-size: 0.82rem; color: #b45309; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); padding: 0.6rem 0.75rem; border-radius: 12px; }
+
+    .coach-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0 1rem 0.6rem; background: #f8f9fc; }
+    .coach-chips button {
+      background: #fff; border: 1.5px solid var(--accent-primary); color: var(--accent-primary);
+      border-radius: 99px; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    }
+    .coach-chips button:hover { background: var(--accent-primary); color: #fff; }
+
+    .coach-input { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--section-border); background: #fff; }
+    .coach-input input { flex: 1; min-width: 0; border: 1.5px solid var(--section-border); border-radius: 99px; padding: 0.65rem 1rem; font-size: 0.9rem; font-family: var(--font-body); }
+    .coach-input input:focus { outline: none; border-color: var(--accent-primary); }
+    .coach-input button {
+      flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: var(--accent-primary); color: #fff; font-size: 1.1rem; font-weight: 800; cursor: pointer;
+    }
+    .coach-input button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    @media (max-width: 640px) {
+      .coach-overlay { padding: 0; align-items: flex-end; }
+      .coach-modal { max-width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; }
+      .coach-bubble { max-width: 92%; font-size: 0.86rem; }
+      .coach-head-text p { display: none; }
+    }
+
   `]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
@@ -2090,6 +2217,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
   public miniEnsayoSvc = inject(MiniEnsayoService);
   public paymentService = inject(PaymentService);
+  private aiAssist = inject(AiAssistService);
+  private sanitizer = inject(DomSanitizer);
 
   herramientasExpanded: boolean = true;
 
@@ -2152,6 +2281,148 @@ export class DashboardComponent implements OnInit, OnDestroy {
   aiRecoLoading = signal(false);
   aiRecoText = signal<string | null>(null);
   aiRecoError = signal<string | null>(null);
+
+  // ─────────────────────────────────────────────────────────
+  //  Entrenador de estudio con Foco (exclusivo PRO)
+  // ─────────────────────────────────────────────────────────
+
+  showCoachModal = signal(false);
+  coachMessages = signal<Array<{ role: 'user' | 'assistant'; content: string; html?: SafeHtml }>>([]);
+  coachLoading = signal(false);
+  coachError = signal<string | null>(null);
+  coachTokensLeft = signal<number | null>(null);
+  coachInput = '';
+
+  /** Arma la ficha real del alumno que se le manda a Foco. */
+  private buildCoachContext() {
+    const perfil = this.firestoreService.profileSignal();
+
+    const actividades = this.dashSvc.activities().slice(0, 15).map(a => ({
+      type: a.type,
+      title: a.title,
+      subject: a.subject,
+      score: a.score,
+      totalCorrect: a.totalCorrect,
+      totalQuestions: a.totalQuestions,
+      timestamp: typeof a.timestamp === 'string'
+        ? a.timestamp
+        : (a.timestamp?.toDate?.()?.toISOString?.() ?? String(a.timestamp ?? '')),
+    }));
+
+    const ensayos = this.dashSvc.paesRecords().map(r => ({
+      subject: r.subject,
+      score: r.score,
+      correctAnswers: r.correctAnswers,
+      totalQuestions: r.totalQuestions,
+    }));
+
+    const avanceRuta = this.dashSvc.subjectMasteries().map(m => ({
+      subject: m.subjectId,
+      mastery: m.mastery,
+    }));
+
+    return {
+      nombre: this.userName(),
+      actividades,
+      ensayos,
+      avanceRuta,
+      rachaDias: this.dashSvc.streakDays(),
+      superRachaDias: this.dashSvc.superStreakDays(),
+      puntajeMeta: perfil?.targetScore,
+      carreraMeta: perfil?.targetCareer,
+      horarioPreferido: perfil?.preferredStudyTime,
+      minutosDiariosObjetivo: perfil?.studyGoalMinutesPerDay,
+      diasParaPaes: this.countdown?.days,
+    };
+  }
+
+  /**
+   * Abre la conversación con Foco. El primer turno no lo escribe el usuario:
+   * Foco arranca solo, analizando la ficha (o preguntando por la disponibilidad
+   * si todavía no hay nada que analizar).
+   */
+  async openStudyCoach() {
+    if (!this.isProPlan() && !this.adminService.isAdmin()) {
+      this.paymentService.openPricingModal();
+      return;
+    }
+
+    this.showCoachModal.set(true);
+    this.coachError.set(null);
+
+    // Si ya hubo conversación en esta sesión, la retomamos sin gastar fichas.
+    if (this.coachMessages().length > 0) return;
+
+    await this.askCoach([], true);
+  }
+
+  closeStudyCoach() {
+    this.showCoachModal.set(false);
+  }
+
+  async sendCoachMessage() {
+    const texto = (this.coachInput || '').trim();
+    if (!texto || this.coachLoading()) return;
+
+    this.coachInput = '';
+    const historial = [...this.coachMessages().map(m => ({ role: m.role, content: m.content })),
+                       { role: 'user' as const, content: texto }];
+    this.coachMessages.update(ms => [...ms, { role: 'user', content: texto }]);
+    await this.askCoach(historial, false);
+  }
+
+  /** Pregunta rápida desde los chips sugeridos. */
+  async coachQuickAsk(texto: string) {
+    if (this.coachLoading()) return;
+    this.coachInput = texto;
+    await this.sendCoachMessage();
+  }
+
+  private async askCoach(history: Array<{ role: 'user' | 'assistant'; content: string }>, isOpening: boolean) {
+    this.coachLoading.set(true);
+    this.coachError.set(null);
+    try {
+      const res = await this.aiAssist.studyCoachViaBackend({
+        history,
+        context: this.buildCoachContext(),
+        isOpening,
+      });
+      this.coachMessages.update(ms => [
+        ...ms,
+        { role: 'assistant', content: res.reply, html: this.renderCoachMarkdown(res.reply) },
+      ]);
+      if (typeof res.remainingTokens === 'number') this.coachTokensLeft.set(res.remainingTokens);
+    } catch (err: any) {
+      if (err instanceof FocoTokensExhaustedError) {
+        this.coachError.set(err.message);
+      } else if (err instanceof PremiumOnlyError) {
+        this.coachError.set(err.message);
+        this.showCoachModal.set(false);
+        this.paymentService.openPricingModal();
+      } else {
+        this.coachError.set('Foco no pudo responder ahora. Revisa tu conexión e inténtalo de nuevo.');
+      }
+    } finally {
+      this.coachLoading.set(false);
+      setTimeout(() => {
+        const cont = document.querySelector('.coach-body');
+        if (cont) cont.scrollTop = cont.scrollHeight;
+      }, 60);
+    }
+  }
+
+  /** Markdown ligero (negritas, listas y saltos) para las respuestas de Foco. */
+  private renderCoachMarkdown(texto: string): SafeHtml {
+    const escapado = texto
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const html = escapado
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^[-·*]\s+(.*)$/gm, '<li>$1</li>')
+      .replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>')
+      .replace(/\n{2,}/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+    return this.sanitizer.bypassSecurityTrustHtml(`<p>${html}</p>`);
+  }
 
   async viewAiRecommendations() {
     if (this.aiRecoLoading()) return;

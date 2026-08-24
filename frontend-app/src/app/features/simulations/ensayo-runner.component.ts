@@ -1817,8 +1817,9 @@ export class EnsayoRunnerComponent implements OnInit, OnDestroy, AfterViewChecke
       // Guardar respuesta en Firestore si hay intento activo
       if (this.intentoId) {
         const isCorrect = this.currentQuestion.correctAnswer === optionId;
-        this.firestoreService.saveAnswer(this.intentoId, this.currentQuestion.id, optionId, isCorrect)
-          .catch(() => {}); // Silenciar error si falla
+        // Ya no escribe de inmediato: acumula y vuelca en lote cada pocos
+        // segundos (ver FirestoreService.saveAnswer). No devuelve promesa.
+        this.firestoreService.saveAnswer(this.intentoId, this.currentQuestion.id, optionId, isCorrect);
       }
 
       if (this.isAssisted) {
