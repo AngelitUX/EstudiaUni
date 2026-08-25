@@ -49,6 +49,10 @@ export class FirebaseService implements OnModuleInit {
     return this.app.storage();
   }
 
+  get appCheck(): admin.appCheck.AppCheck {
+    return this.app.appCheck();
+  }
+
   /**
    * Single source of truth for admin status: a user is admin if they have a
    * doc in /admins with active !== false. Used both by AdminGuard (to gate

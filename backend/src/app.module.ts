@@ -13,6 +13,7 @@ import { QuizModule } from './quiz/quiz.module';
 import { LearningPathModule } from './learning-path/learning-path.module';
 import { AiFeedbackModule } from './ai-feedback/ai-feedback.module';
 import { AdminModule } from './admin/admin.module';
+import { AppCheckModule } from './app-check/app-check.module';
 
 @Module({
   imports: [
@@ -48,6 +49,9 @@ import { AdminModule } from './admin/admin.module';
 
     // Admin
     AdminModule,
+
+    // App Check (Cloudflare Turnstile)
+    AppCheckModule,
   ],
   providers: [
     // ThrottlerModule.forRoot() only registers the rate-limit config; it

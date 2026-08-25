@@ -1,6 +1,8 @@
+const apiUrl = 'http://localhost:3000';
+
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000',
+  apiUrl,
   firebase: {
     apiKey: "AIzaSyB3eISSPYcdGYf4l3LvZyADV6dL9l1OW5g",
     authDomain: "estudiauni.firebaseapp.com",
@@ -9,6 +11,14 @@ export const environment = {
     messagingSenderId: "976475724065",
     appId: "1:976475724065:web:586b9c2609d84674158660",
     measurementId: "G-LWHGWMQV8F"
-  }
+  },
+  // App Check (Cloudflare Turnstile provider). El sitekey es público (va en el HTML del
+  // widget), no un secreto — seguro de tener aquí.
+  // El intercambio de token NO pasa por la extensión oficial de Firebase (su Cloud Function
+  // no se puede desplegar hoy: declara el runtime nodejs18, que Google Cloud dio de baja, y
+  // Cloudflare aún no republicó una versión corregida) — en su lugar pasa por un endpoint
+  // propio del backend (ver backend/src/app-check/), que hace exactamente lo mismo.
+  turnstileSiteKey: '0x4AAAAAAEb00X1M9HopFvPf',
+  turnstileTokenExchangeUrl: `${apiUrl}/api/app-check/exchange`
 };
 
