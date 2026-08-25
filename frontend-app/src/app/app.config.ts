@@ -21,6 +21,15 @@ import { provideClientHydration } from '@angular/platform-browser';
 // solución más simple y segura es que el provider entero no exista fuera del navegador.
 const isBrowserRuntime = typeof window !== 'undefined';
 
+// El sitekey de Turnstile está atado a un dominio autorizado en el panel de Cloudflare —
+// nunca va a incluir "localhost" (Cloudflare no lo permite como dominio de un sitio real).
+// En local, CloudflareProviderOptions reintenta sin parar contra un dominio que siempre va a
+// rechazar (Error 110200), y esos reintentos infinitos saturan el hilo principal — bloqueando
+// cosas que no tienen nada que ver, como el propio botón de "Iniciar Sesión". Server-side no
+// aplica: isBrowserRuntime ya es false ahí, así que location.hostname existe siempre que se
+// llegue a evaluar esta línea.
+const isLocalDevHost = isBrowserRuntime && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -42,7 +51,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideFirestore(() => getFirestore(getApp())),
     provideClientHydration(),
-    ...(isBrowserRuntime ? [
+    ...(isBrowserRuntime && !isLocalDevHost ? [
       provideAppCheck(() => {
         const cpo = new CloudflareProviderOptions(
           environment.turnstileTokenExchangeUrl,
