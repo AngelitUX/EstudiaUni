@@ -825,7 +825,7 @@ body .sidebar-sub-items {
   }
 }
 
-body .pro-logo, body .pro-username {
+body .pro-username {
   background: linear-gradient(90deg, #FFE885 0%, #F1C40F 20%, #F39C12 40%, #E67E22 60%, #F39C12 80%, #FFE885 100%) !important;
   background-size: 200% auto !important;
   -webkit-background-clip: text !important;
@@ -837,21 +837,8 @@ body .pro-logo, body .pro-username {
   position: relative !important;
 }
 
-/* Subtly glowing shadow around the PRO elements */
-body .pro-logo {
-  filter: drop-shadow(0 2px 8px rgba(241, 196, 15, 0.35)) !important;
-}
-
 body .pro-username {
   filter: drop-shadow(0 2px 8px rgba(241, 196, 15, 0.25)) !important;
-}
-
-/* Fix sidebar-logo clash when containing pro-logo child */
-body .sidebar-logo:has(.pro-logo) {
-  background: none !important;
-  -webkit-text-fill-color: initial !important;
-  background-clip: initial !important;
-  text-shadow: none !important;
 }
 
 /* ==========================================
@@ -913,12 +900,6 @@ body .sidebar-logo {
   position: relative !important;
   text-decoration: none !important;
   display: inline-block !important;
-}
-body .sidebar-logo:has(.pro-logo) {
-  background: none !important;
-  -webkit-text-fill-color: initial !important;
-  background-clip: initial !important;
-  text-shadow: none !important;
 }
 body .sidebar-nav {
   padding: 1rem 0.75rem !important;

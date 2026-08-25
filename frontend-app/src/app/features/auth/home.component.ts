@@ -1,6 +1,7 @@
-import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit, NgZone, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit, NgZone, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { FirestoreService } from '../../core/services/firestore.service';
@@ -5712,9 +5713,15 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   public firestoreService = inject(FirestoreService);
   private paymentService = inject(PaymentService);
   private zone = inject(NgZone);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
-  isLoggedIn$ = this.authService.isLoggedIn$;
-  user$ = this.authService.user$;
+  // Firebase's live auth-state listener (authState()) needs a real browser session to
+  // resolve — off-browser it's skipped and the marketing page always prerenders in its
+  // logged-out state, which is what a crawler/social-preview bot should see anyway; a real
+  // visitor's actual session takes over the moment client-side hydration runs.
+  isLoggedIn$ = this.isBrowser ? this.authService.isLoggedIn$ : of(false);
+  user$ = this.isBrowser ? this.authService.user$ : of(null);
 
   // Use toSignal for easy access in template and expressions
   isLoggedIn = toSignal(this.isLoggedIn$, { initialValue: false });
@@ -6152,10 +6159,18 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.firestoreService.getUserProfile().subscribe();
-    this.loadFirestoreNews();
-    this.startHeroSimulation();
-    this.startActiveStudentsFluctuation();
+    // Both the profile/news Firestore reads and the hero-simulation/active-students timers
+    // are for a logged-in browser session and decorative live content — neither is part of
+    // the crawlable marketing copy. Skipped entirely during server-side prerendering: a live
+    // Firestore call that stalls (or is unreachable from the build environment) would hang
+    // the whole build instead of failing fast, and the infinite setTimeout/setInterval chain
+    // never lets the render pass reach the "stable" state needed to snapshot the HTML.
+    if (this.isBrowser) {
+      this.firestoreService.getUserProfile().subscribe();
+      this.loadFirestoreNews();
+      this.startHeroSimulation();
+      this.startActiveStudentsFluctuation();
+    }
   }
 
   ngOnDestroy() {
@@ -6200,7 +6215,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       const data = await this.firestoreService.getNews();
       if (data && data.length > 0) {
         this.news = data;
-        requestAnimationFrame(() => this.updateNewsScrollThumb());
+        if (this.isBrowser) requestAnimationFrame(() => this.updateNewsScrollThumb());
       }
     } catch (e) {
       console.error('Error loading news from Firestore:', e);
@@ -6223,6 +6238,11 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   };
 
   ngAfterViewInit() {
+    // Pure DOM/visual wiring (parallax, scroll listeners, video autoplay, IntersectionObserver) —
+    // window/document/IntersectionObserver don't exist during server-side prerendering, and
+    // none of this affects the crawlable content, so it's skipped entirely off-browser.
+    if (!this.isBrowser) return;
+
     requestAnimationFrame(() => {
       this.animationsReady = true;
     });

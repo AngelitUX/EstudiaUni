@@ -100,10 +100,14 @@ export class AdminService {
   async loadPreguntas(): Promise<void> {
     this._loading.set(true);
     try {
-      const snap = await getDocs(
-        query(collection(this.firestore, 'pool_preguntas'), orderBy('createdAt', 'desc'))
-      );
+      // Sin orderBy('createdAt') a propósito: Firestore excluye de un orderBy
+      // cualquier doc sin ese campo, y buena parte del pool (sobre todo física,
+      // sembrada por scripts de backend en vez de este panel) nunca lo tuvo —
+      // esas preguntas desaparecían por completo de la lista aunque existieran
+      // en Firestore. Se ordena en memoria, con las que no tienen createdAt al final.
+      const snap = await getDocs(collection(this.firestore, 'pool_preguntas'));
       const preguntas = snap.docs.map(d => ({ ...d.data(), id: d.id } as PoolPregunta));
+      preguntas.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       this._preguntas.set(preguntas);
     } catch (error) {
       console.error('Error loading pool_preguntas:', error);
@@ -229,6 +233,50 @@ export class AdminService {
     this.paesContent.clearPoolPreguntasCache();
 
     this._preguntas.update(list => list.filter(p => p.id !== id));
+  }
+
+  /**
+   * Elimina muchas preguntas de una vez usando writeBatch (mismo patrón de chunking
+   * que createPreguntasBulk). Cada chunk se confirma atómicamente: si uno falla, los
+   * anteriores ya quedaron borrados, así que el resultado reporta cuántas se
+   * alcanzaron a eliminar en vez de fallar todo o nada para un borrado de cientos.
+   */
+  async deletePreguntasBulk(
+    ids: string[],
+    onProgress?: (deletedCount: number, total: number) => void,
+  ): Promise<{ deletedCount: number; failedFromIndex: number | null; error?: string }> {
+    let deletedCount = 0;
+    const deletedIds: string[] = [];
+
+    for (let start = 0; start < ids.length; start += BULK_IMPORT_CHUNK_SIZE) {
+      const chunk = ids.slice(start, start + BULK_IMPORT_CHUNK_SIZE);
+      const batch = writeBatch(this.firestore);
+      for (const id of chunk) {
+        batch.delete(doc(this.firestore, 'pool_preguntas', id));
+      }
+
+      try {
+        await batch.commit();
+        deletedIds.push(...chunk);
+        deletedCount += chunk.length;
+        onProgress?.(deletedCount, ids.length);
+      } catch (error: any) {
+        if (deletedIds.length > 0) {
+          this.paesContent.clearPoolPreguntasCache();
+          const deletedSet = new Set(deletedIds);
+          this._preguntas.update(list => list.filter(p => !deletedSet.has(p.id)));
+        }
+        return { deletedCount, failedFromIndex: start, error: error.message };
+      }
+    }
+
+    if (deletedIds.length > 0) {
+      this.paesContent.clearPoolPreguntasCache();
+      const deletedSet = new Set(deletedIds);
+      this._preguntas.update(list => list.filter(p => !deletedSet.has(p.id)));
+    }
+
+    return { deletedCount, failedFromIndex: null };
   }
 
   getMateriaLabel(materiaId: string): string {

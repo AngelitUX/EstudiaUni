@@ -63,7 +63,15 @@
               "node_modules/katex/dist/katex.min.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "server": "src/main.server.ts",
+            "prerender": {
+              "discoverRoutes": false,
+              "routesFile": "prerender-routes.txt"
+            },
+            "ssr": {
+              "entry": "server.ts"
+            }
           },
           "configurations": {
             "production": {

@@ -658,7 +658,14 @@ export class PaesContentService {
 
         // Asignar imágenes a las materias si no vienen de Firestore
         materias.forEach(m => {
-          if (!m.imageUrl) {
+          // Ciencias (Biología/Física/Química/Técnico-Profesional): nunca se gestionaron
+          // desde Firestore, así que la imagen local manda siempre — evita que un
+          // imageUrl vacío o roto en el documento de Firestore deje la tarjeta sin imagen.
+          if (m.id === 'ciencias-biologia' || m.slug === 'biologia') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/biologia.avif';
+          else if (m.id === 'ciencias-fisica' || m.slug === 'fisica') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/fisica.avif';
+          else if (m.id === 'ciencias-quimica' || m.slug === 'quimica') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/quimica.avif';
+          else if (m.id === 'ciencias-tp') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/ciencias-tp.avif';
+          else if (!m.imageUrl) {
             if (m.id === 'comp-lectora' || m.slug === 'competencia-lectora') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/comp-lectora.avif';
             else if (m.id === 'mat1' || m.slug === 'matematica-1') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica1.avif';
             else if (m.id === 'mat2' || m.slug === 'matematica-2') m.imageUrl = 'assets/images/Nuevos VideosEIlustraciones/subjectsAVIF/matematica2.avif';

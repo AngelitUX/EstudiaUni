@@ -95,6 +95,47 @@ import { RouterModule } from '@angular/router';
 
           <h4>XII. Contacto</h4>
           <p>Si tienes preguntas sobre esta Política o quieres ejercer tus derechos, contáctanos en contacto.estudiauni&#64;gmail.com o a través de nuestro <a routerLink="/soporte" (click)="close.emit()">Centro de Soporte</a>.</p>
+
+          <h4>XIII. Turnstile de Cloudflare</h4>
+          <p>Para proteger la plataforma de bots y actividad maliciosa usamos <strong>Cloudflare Turnstile</strong>, una herramienta de verificación que no te pide resolver ningún acertijo visual. A continuación reproducimos, en su idioma original, el addendum de privacidad que Cloudflare exige incluir a los sitios que usan este servicio.</p>
+
+          <div class="legal-turnstile-addendum">
+            <p class="legal-updated">Turnstile Privacy Addendum — Last updated: June 18, 2025</p>
+
+            <h4>1. Introduction</h4>
+            <p>Turnstile, developed by Cloudflare, Inc. ("Cloudflare"), is a pro-privacy website security tool that processes minimal Signals (as defined below) solely to protect web properties against malicious activity by distinguishing human users from bots and blocking bot traffic.</p>
+            <p>Cloudflare does not control whether a website chooses to use Turnstile; instead, we make Turnstile available to any website that is looking for a way to detect and block bot traffic.</p>
+
+            <h4>2. Scope of this Addendum</h4>
+            <p>This Turnstile Addendum is supplemental to Cloudflare's main <a href="https://www.cloudflare.com/en-gb/privacypolicy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. It provides additional information specific to your use and interaction with Turnstile. This Addendum also applies to the personal data processed using Cloudflare's Challenge Platform, and any reference to "Turnstile" in this addendum applies equally to the Challenge Platform.</p>
+            <p>The Cloudflare Privacy Policy continues to apply to your use and interaction with Turnstile, except where this Turnstile Addendum provides more specific information. In those cases, the more specific information will apply instead.</p>
+
+            <h4>3. Information We Collect</h4>
+            <p>Cloudflare Turnstile processes a variety of client-side signals ("Signals") such as client IP address, TLS Fingerprint, User-Agent Header and Sitekey and associated origin. Cloudflare does not have the ability to directly identify any individuals from any of the Signals Turnstile collects, including IP addresses.</p>
+
+            <h4>4. How We Use Information We Collect</h4>
+            <p><em>(i) Bot detection and blocking</em></p>
+            <p>Turnstile is a tool to protect web properties by distinguishing human users from bots and blocking any detected bot traffic that could otherwise harm the safety and security of that property.</p>
+            <p>It does so by evaluating the Signals listed above specific to both the website visitor and the website visited. The purpose of collecting these Signals is not to identify, profile or target any individuals but solely to detect and block bots. The Signals collected by Turnstile are strictly necessary for this purpose (i.e. detecting and blocking bots to enable visitors to enjoy a safe and secure experience when visiting websites that have implemented Turnstile).</p>
+            <p>Cloudflare is a data processor of Signals that we process to provide the Turnstile service to our customers, that is, securing our customers' websites. This means that we process Signals for this purpose on behalf of, and pursuant to instructions issued by, our website operator customers (who are the data controllers of any data processed for this purpose). If you have questions, or wish to exercise any data protection rights, regarding Cloudflare's processing of Turnstile data to provide our service, please contact the relevant website operator.</p>
+            <p><em>(ii) Improving Turnstile's bot detection capabilities</em></p>
+            <p>Cloudflare also processes the Signals described in this Privacy Notice to improve Turnstile. This is necessary to refine and improve our bot detection algorithms in order to respond to evolving bot threats, and to maintain the security of the web properties that website visitors choose to visit.</p>
+            <p>Cloudflare is a data controller of Signals that we process to improve Turnstile's bot detection capabilities. This Turnstile Privacy Notice (in conjunction with Cloudflare's main <a href="https://www.cloudflare.com/en-gb/privacypolicy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>) governs our processing of Signals for this purpose.</p>
+
+            <h4>5. Notice to EU and UK Residents</h4>
+            <p>To the extent that the data described in the Turnstile Privacy Notice qualifies as personal data, then:</p>
+            <ul>
+              <li>When processing this personal data as a processor to protect our customers' websites, our customers, as controllers, determine the lawful basis of this processing, and we process this data under their instruction and on their behalf; and</li>
+              <li>When processing this personal data as a controller, we rely on our legitimate interests in improving the effectiveness of Turnstile's bot detection capabilities to process this Turnstile data.</li>
+            </ul>
+
+            <h4>6. Cookies</h4>
+            <p>The Signals collected by Turnstile are strictly necessary for the purpose of detecting and blocking bots to enable visitors to enjoy a safe and secure experience when visiting websites that have implemented Turnstile.</p>
+            <p>For more information about the cookies used by Cloudflare, please check our <a href="https://www.cloudflare.com/en-gb/cookie-policy/" target="_blank" rel="noopener noreferrer">Cookie Policy</a> and our <a href="https://developers.cloudflare.com/turnstile/" target="_blank" rel="noopener noreferrer">Turnstile Developer Docs</a>.</p>
+
+            <h4>Contact for Privacy Concerns</h4>
+            <p>If you have questions or concerns about this Turnstile Privacy Notice or your personal data processed through Turnstile, please contact Cloudflare's Data Protection Officer at <a href="mailto:dpo&#64;cloudflare.com">dpo&#64;cloudflare.com</a>.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -124,6 +165,9 @@ import { RouterModule } from '@angular/router';
     .legal-modal-body h4 { color: var(--text-primary, #111827); margin-top: 1.5rem; margin-bottom: 0.5rem; }
     .legal-modal-body p { color: var(--text-secondary, #4b5563); line-height: 1.6; font-size: 0.95rem; }
     .legal-modal-body p.legal-updated { font-size: 0.8rem; font-weight: 700; color: #855cd6; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 1rem; }
+    .legal-turnstile-addendum { margin-top: 0.5rem; padding: 1rem 1.25rem; border: 1px solid var(--glass-border, rgba(133, 92, 214, 0.15)); border-radius: 12px; background: var(--bg-secondary, #f9fafb); }
+    .legal-turnstile-addendum h4:first-child { margin-top: 0; }
+    .legal-turnstile-addendum ul { color: var(--text-secondary, #4b5563); line-height: 1.6; font-size: 0.95rem; padding-left: 1.25rem; margin: 0.5rem 0; }
     @media (max-width: 480px) {
       .legal-modal-content { width: 95%; padding: 1.25rem; max-height: 85vh; }
       .legal-modal-header .close-btn { width: 44px; height: 44px; font-size: 1.3rem; }

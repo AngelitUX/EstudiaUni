@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AdminService } from './services/admin.service';
@@ -19,13 +19,13 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
           <h3 class="filter-title">Filtrar por Materia</h3>
           <button class="filter-chip"
             [class.active]="adminSvc.filterMateria() === 'all'"
-            (click)="adminSvc.setFilter('all')">
+            (click)="changeMateriaFilter('all')">
             <span class="chip-icon">📚</span> Todas
           </button>
           @for (mat of adminSvc.materiasDisponibles; track mat.id) {
             <button class="filter-chip"
               [class.active]="adminSvc.filterMateria() === mat.id"
-              (click)="adminSvc.setFilter(mat.id)">
+              (click)="changeMateriaFilter(mat.id)">
               <span class="chip-icon">{{ mat.icon }}</span> {{ mat.label }}
             </button>
           }
@@ -56,13 +56,59 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
         <!-- STATS BAR -->
         <div class="stats-bar">
           @for (mat of adminSvc.materiasDisponibles; track mat.id) {
-            <div class="stat-card" [class.active]="adminSvc.filterMateria() === mat.id" (click)="adminSvc.setFilter(mat.id)">
+            <div class="stat-card" [class.active]="adminSvc.filterMateria() === mat.id" (click)="changeMateriaFilter(mat.id)">
               <span class="stat-icon">{{ mat.icon }}</span>
               <span class="stat-count">{{ countByMateria(mat.id) }}</span>
               <span class="stat-label">{{ mat.label }}</span>
             </div>
           }
         </div>
+
+        <!-- TOOLBAR: búsqueda, filtro de tema y modo selección -->
+        @if (!adminSvc.loading() && adminSvc.allPreguntas().length > 0) {
+          <div class="tools-bar">
+            <div class="search-box">
+              <span class="search-icon">🔎</span>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Buscar por enunciado o tema..."
+                [value]="searchQuery()"
+                (input)="onSearchInput($event)">
+              @if (searchQuery()) {
+                <button class="btn-clear-search" title="Limpiar búsqueda" (click)="searchQuery.set('')">×</button>
+              }
+            </div>
+
+            @if (temasDisponibles().length > 0) {
+              <select class="tema-select" [value]="filterTema()" (change)="onTemaFilterChange($event)">
+                <option value="all">Todos los temas</option>
+                @for (tema of temasDisponibles(); track tema) {
+                  <option [value]="tema">{{ tema }}</option>
+                }
+              </select>
+            }
+
+            <button class="btn-selection-toggle" [class.active]="selectionMode()" (click)="toggleSelectionMode()">
+              {{ selectionMode() ? '✕ Salir de selección' : '☑️ Seleccionar varias' }}
+            </button>
+          </div>
+        }
+
+        <!-- BARRA DE ACCIONES MASIVAS -->
+        @if (selectionMode()) {
+          <div class="bulk-bar">
+            <div class="bulk-bar-info">
+              <button class="btn-select-all" (click)="allVisibleSelected() ? deselectAll() : selectAllVisible()">
+                {{ allVisibleSelected() ? '◻️ Deseleccionar todas' : '☑️ Seleccionar las ' + displayedPreguntas().length + ' visibles' }}
+              </button>
+              <span class="bulk-count">{{ selectedCount() }} seleccionada{{ selectedCount() === 1 ? '' : 's' }}</span>
+            </div>
+            <button class="btn-bulk-delete" [disabled]="selectedCount() === 0" (click)="confirmBulkDelete()">
+              🗑️ Eliminar seleccionadas
+            </button>
+          </div>
+        }
 
         <!-- LOADING -->
         @if (adminSvc.loading()) {
@@ -72,8 +118,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
           </div>
         }
 
-        <!-- EMPTY STATE -->
-        @if (!adminSvc.loading() && adminSvc.preguntas().length === 0) {
+        <!-- EMPTY STATE: sin ninguna pregunta en la BD -->
+        @if (!adminSvc.loading() && adminSvc.allPreguntas().length === 0) {
           <div class="empty-state glass-card">
             <div class="empty-icon">📭</div>
             <h3>No hay preguntas aún</h3>
@@ -84,13 +130,30 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
           </div>
         }
 
+        <!-- EMPTY STATE: la búsqueda/filtro no encontró nada -->
+        @if (!adminSvc.loading() && adminSvc.allPreguntas().length > 0 && displayedPreguntas().length === 0) {
+          <div class="empty-state glass-card">
+            <div class="empty-icon">🔍</div>
+            <h3>Sin resultados</h3>
+            <p>Ninguna pregunta coincide con la búsqueda o el filtro de tema actual</p>
+          </div>
+        }
+
         <!-- QUESTION LIST -->
-        @if (!adminSvc.loading() && adminSvc.preguntas().length > 0) {
+        @if (!adminSvc.loading() && displayedPreguntas().length > 0) {
           <div class="question-list">
-            @for (pregunta of adminSvc.preguntas(); track pregunta.id) {
-              <div class="question-card glass-card-simple" [class.image-type]="pregunta.tipo_alternativas === 'imagen'">
+            @for (pregunta of displayedPreguntas(); track pregunta.id) {
+              <div class="question-card glass-card-simple"
+                [class.image-type]="pregunta.tipo_alternativas === 'imagen'"
+                [class.selected-card]="selectionMode() && isSelected(pregunta.id)"
+                (click)="selectionMode() && toggleSelect(pregunta.id)">
                 <div class="card-header">
                   <div class="card-badges">
+                    @if (selectionMode()) {
+                      <input type="checkbox" class="select-checkbox"
+                        [checked]="isSelected(pregunta.id)"
+                        (click)="toggleSelect(pregunta.id, $event)">
+                    }
                     <span class="badge-materia">{{ adminSvc.getMateriaIcon(pregunta.materiaId) }} {{ adminSvc.getMateriaLabel(pregunta.materiaId) }}</span>
                     <span class="badge-tema">{{ pregunta.tema }}</span>
                     @if (pregunta.tipo_alternativas === 'imagen') {
@@ -99,11 +162,16 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
                     @if (pregunta.formula_latex) {
                       <span class="badge-type badge-latex">∑ LaTeX</span>
                     }
+                    @if (!pregunta.createdAt) {
+                      <span class="badge-type badge-warn" title="Sembrada fuera del panel admin, sin fecha de creación">⚠️ Sin fecha</span>
+                    }
                   </div>
-                  <div class="card-actions">
-                    <button class="btn-icon" title="Editar" (click)="editPregunta(pregunta)">✏️</button>
-                    <button class="btn-icon btn-danger" title="Eliminar" (click)="confirmDelete(pregunta)">🗑️</button>
-                  </div>
+                  @if (!selectionMode()) {
+                    <div class="card-actions">
+                      <button class="btn-icon" title="Editar" (click)="editPregunta(pregunta); $event.stopPropagation()">✏️</button>
+                      <button class="btn-icon btn-danger" title="Eliminar" (click)="confirmDelete(pregunta); $event.stopPropagation()">🗑️</button>
+                    </div>
+                  }
                 </div>
 
                 <div class="card-body">
@@ -151,6 +219,36 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
             <button class="btn-cancel" (click)="deleteTarget.set(null)">Cancelar</button>
             <button class="btn-delete" (click)="executeDelete()" [disabled]="deleting()">
               {{ deleting() ? 'Eliminando...' : '🗑️ Eliminar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- BULK DELETE MODAL -->
+    @if (bulkDeleteModalOpen()) {
+      <div class="modal-overlay" (click)="bulkDeleting() ? null : bulkDeleteModalOpen.set(false)">
+        <div class="modal-card glass-modal" (click)="$event.stopPropagation()">
+          <div class="modal-icon">⚠️</div>
+          <h3>¿Eliminar {{ selectedCount() }} pregunta{{ selectedCount() === 1 ? '' : 's' }}?</h3>
+          <div class="bulk-breakdown">
+            @for (item of selectedBreakdown(); track item.materiaId) {
+              <span class="breakdown-chip">{{ adminSvc.getMateriaIcon(item.materiaId) }} {{ adminSvc.getMateriaLabel(item.materiaId) }}: <strong>{{ item.count }}</strong></span>
+            }
+          </div>
+          <p class="modal-warning">Esta acción no se puede deshacer.</p>
+          @if (bulkDeleting()) {
+            <div class="progress-container" style="margin-bottom: 1.5rem;">
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" [style.width.%]="(bulkDeleteProgress().current / bulkDeleteProgress().total) * 100"></div>
+              </div>
+              <p class="progress-text">Eliminando {{ bulkDeleteProgress().current }} de {{ bulkDeleteProgress().total }}...</p>
+            </div>
+          }
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="bulkDeleteModalOpen.set(false)" [disabled]="bulkDeleting()">Cancelar</button>
+            <button class="btn-delete" (click)="executeBulkDelete()" [disabled]="bulkDeleting()">
+              {{ bulkDeleting() ? 'Eliminando...' : '🗑️ Eliminar todas' }}
             </button>
           </div>
         </div>
@@ -399,6 +497,156 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     .stat-count { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin-top: 0.35rem; font-family: var(--font-heading); }
     .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-align: center; margin-top: 0.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
 
+    /* TOOLS BAR: búsqueda, filtro de tema, modo selección */
+    .tools-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .search-box {
+      position: relative;
+      flex: 1 1 260px;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+    }
+    .search-icon {
+      position: absolute;
+      left: 0.9rem;
+      font-size: 0.9rem;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.7rem 2.25rem 0.7rem 2.4rem;
+      border-radius: 12px;
+      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { outline: none; border-color: rgba(133,92,214,0.4); }
+    .btn-clear-search {
+      position: absolute;
+      right: 0.6rem;
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem;
+    }
+    .btn-clear-search:hover { color: #ef4444; }
+    .tema-select {
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      max-width: 240px;
+    }
+    .btn-selection-toggle {
+      padding: 0.7rem 1.1rem;
+      border-radius: 12px;
+      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-selection-toggle:hover { border-color: rgba(133,92,214,0.4); color: var(--accent-primary); }
+    .btn-selection-toggle.active { background: rgba(133,92,214,0.12); border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    /* BULK ACTIONS BAR */
+    .bulk-bar {
+      position: sticky;
+      top: 0.75rem;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 0.85rem 1.25rem;
+      margin-bottom: 1.25rem;
+      background: #1e1b2e;
+      border-radius: 14px;
+      box-shadow: var(--shadow-md);
+    }
+    .bulk-bar-info { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .btn-select-all {
+      padding: 0.5rem 0.9rem;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-select-all:hover { background: rgba(255,255,255,0.16); }
+    .bulk-count { color: rgba(255,255,255,0.85); font-size: 0.85rem; font-weight: 700; }
+    .btn-bulk-delete {
+      padding: 0.6rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-bulk-delete:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(239,68,68,0.4); }
+    .btn-bulk-delete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .select-checkbox {
+      width: 20px; height: 20px;
+      cursor: pointer;
+      accent-color: var(--accent-primary);
+      margin-right: 0.25rem;
+      flex-shrink: 0;
+    }
+    .question-card.selected-card {
+      border-color: var(--accent-primary);
+      background: rgba(133,92,214,0.04);
+      box-shadow: 0 0 0 2px rgba(133,92,214,0.15);
+    }
+    .badge-warn { background: rgba(239,68,68,0.1); color: #dc2626; }
+
+    .bulk-breakdown {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 0 0 1rem;
+    }
+    .breakdown-chip {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      padding: 0.35rem 0.7rem;
+      border-radius: 8px;
+    }
+    .breakdown-chip strong { color: var(--text-primary); }
+
     /* LOADING & SPIN */
     .loading-state {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -624,6 +872,11 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
       .card-actions { align-self: flex-end; }
       .modal-actions { grid-template-columns: 1fr; }
       .glass-modal { padding: 1.5rem; }
+      .tools-bar { flex-direction: column; align-items: stretch; }
+      .search-box, .tema-select, .btn-selection-toggle { max-width: 100%; }
+      .bulk-bar { flex-direction: column; align-items: stretch; top: 0.5rem; }
+      .bulk-bar-info { justify-content: space-between; }
+      .btn-bulk-delete { width: 100%; }
     }
     @media (max-width: 380px) {
       .stats-bar { grid-template-columns: 1fr 1fr; }
@@ -795,6 +1048,126 @@ export class AdminPanelComponent implements OnInit {
   optionKeys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
   deleteTarget = signal<PoolPregunta | null>(null);
   deleting = signal(false);
+
+  // ─── Búsqueda y filtro de tema (además del filtro de materia, que vive en AdminService) ───
+  searchQuery = signal('');
+  filterTema = signal<string>('all');
+
+  temasDisponibles = computed(() => {
+    const materia = this.adminSvc.filterMateria();
+    if (materia === 'all') return [];
+    const set = new Set<string>();
+    for (const p of this.adminSvc.allPreguntas()) {
+      if (p.materiaId === materia && p.tema) set.add(p.tema);
+    }
+    return Array.from(set).sort();
+  });
+
+  displayedPreguntas = computed(() => {
+    let list = this.adminSvc.preguntas(); // ya filtrada por materia
+    const tema = this.filterTema();
+    if (tema !== 'all') list = list.filter(p => p.tema === tema);
+    const q = this.searchQuery().trim().toLowerCase();
+    if (q) {
+      list = list.filter(p =>
+        p.enunciado?.toLowerCase().includes(q) ||
+        p.tema?.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  });
+
+  changeMateriaFilter(materia: MateriaId | 'all') {
+    this.adminSvc.setFilter(materia);
+    this.filterTema.set('all'); // los temas son específicos de cada materia
+  }
+
+  onSearchInput(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  onTemaFilterChange(event: Event) {
+    this.filterTema.set((event.target as HTMLSelectElement).value);
+  }
+
+  // ─── Selección múltiple y borrado en lote ───
+  selectionMode = signal(false);
+  selectedIds = signal<Set<string>>(new Set());
+  selectedCount = computed(() => this.selectedIds().size);
+  bulkDeleteModalOpen = signal(false);
+  bulkDeleting = signal(false);
+  bulkDeleteProgress = signal({ current: 0, total: 0 });
+
+  allVisibleSelected = computed(() => {
+    const visible = this.displayedPreguntas();
+    if (visible.length === 0) return false;
+    const selected = this.selectedIds();
+    return visible.every(p => selected.has(p.id));
+  });
+
+  selectedBreakdown = computed(() => {
+    const selected = this.selectedIds();
+    const all = this.adminSvc.allPreguntas();
+    const counts = new Map<string, number>();
+    for (const p of all) {
+      if (selected.has(p.id)) counts.set(p.materiaId, (counts.get(p.materiaId) || 0) + 1);
+    }
+    return Array.from(counts.entries()).map(([materiaId, count]) => ({ materiaId, count }));
+  });
+
+  toggleSelectionMode() {
+    this.selectionMode.update(v => !v);
+    if (!this.selectionMode()) this.selectedIds.set(new Set());
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedIds().has(id);
+  }
+
+  toggleSelect(id: string, event?: Event) {
+    event?.stopPropagation();
+    this.selectedIds.update(set => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  selectAllVisible() {
+    this.selectedIds.set(new Set(this.displayedPreguntas().map(p => p.id)));
+  }
+
+  deselectAll() {
+    this.selectedIds.set(new Set());
+  }
+
+  confirmBulkDelete() {
+    if (this.selectedCount() === 0) return;
+    this.bulkDeleteModalOpen.set(true);
+  }
+
+  async executeBulkDelete() {
+    const ids = Array.from(this.selectedIds());
+    this.bulkDeleting.set(true);
+    this.bulkDeleteProgress.set({ current: 0, total: ids.length });
+    try {
+      const result = await this.adminSvc.deletePreguntasBulk(ids, (deletedCount, total) => {
+        this.bulkDeleteProgress.set({ current: deletedCount, total });
+      });
+      if (result.failedFromIndex !== null) {
+        alert(
+          `Se eliminaron ${result.deletedCount} de ${ids.length}. Falló: ${result.error}. ` +
+          `Las que ya se borraron no aparecerán más en la lista; vuelve a seleccionar el resto e inténtalo de nuevo.`
+        );
+      }
+      this.selectedIds.set(new Set());
+      this.bulkDeleteModalOpen.set(false);
+    } catch (e: any) {
+      alert('Error al eliminar en lote: ' + e.message);
+    } finally {
+      this.bulkDeleting.set(false);
+    }
+  }
 
   // ─── Bulk JSON Importer State ───
   importModalOpen = signal(false);

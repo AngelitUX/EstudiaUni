@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-22 (parte 16) · Rama en la que se escribió: `MejoraVisuales`
+> Última actualización: 2026-08-25 · Rama en la que se escribió: `CambiosPequeños`
 
 ---
 
@@ -73,6 +73,40 @@ El backend NestJS fue escrito contra un esquema **distinto y hoy no usado** por 
 Por eso los módulos `modules-content`, `questions`, `quiz`, `simulations` y `learning-path` del backend
 están efectivamente **muertos**: nadie los llama desde la app. No los "arregles" ni los borres sin
 decisión explícita del equipo.
+
+### Prerendering (SSG) para SEO — solo 6 rutas públicas (2026-08-25)
+
+La app dejó de ser CSR puro para las páginas que le importan a Google. Con `@angular/ssr`
+(`ng add @angular/ssr`, ver Bitácora 2026-08-25 para el detalle completo), `ng build` genera
+**HTML ya renderizado en tiempo de build** (no un servidor corriendo en producción) para exactamente
+6 rutas, listadas en `frontend-app/prerender-routes.txt`: `/`, `/login`, `/register`, `/verify-email`,
+`/soporte`, `/trabaja-con-nosotros`. El resto de la app (`/dashboard`, `/ruta/*`, `/admin/*`, todo lo
+que necesita sesión) sigue siendo CSR puro — no tiene sentido pre-renderizar contenido que ni Google
+puede ver ni es igual para dos usuarios.
+
+- `angular.json` → `build.options.prerender: { discoverRoutes: false, routesFile: "prerender-routes.txt" }`
+  — **a propósito no usa auto-descubrimiento de rutas**: la mayoría de las rutas reales son privadas
+  o tienen parámetros dinámicos, intentar pre-renderizarlas fallaría o no tendría sentido.
+- El build genera **dos `index.html` distintos**: `browser/index.html` (el HTML ya armado de la ruta
+  `/`) y `browser/index.csr.html` (el cascarón vacío genérico, para cualquier ruta que no esté en la
+  lista de arriba). **`firebase.json` debe apuntar su rewrite catch-all a `index.csr.html`, no a
+  `index.html`** — si apunta al primero, cualquier ruta privada (ej. `/dashboard`) serviría por error
+  el HTML del home en la primera carga. Ya está así de correcto hoy; si alguna vez alguien lo cambia
+  de vuelta a `index.html`, es un bug.
+- Todo componente/servicio que corre en rutas prerenderizadas (hoy: `home.component.ts`, y
+  transitivamente `app.component.ts` porque siempre se ejecuta) tiene que ser SSR-safe: nada de
+  `window`/`document`/`localStorage` sin `isPlatformBrowser(inject(PLATFORM_ID))` de por medio, y
+  ningún `setInterval`/`setTimeout` recursivo sin guardarlo también — Node no tiene esas APIs del
+  navegador, y un timer que nunca termina cuelga el build en vez de fallar limpio. AngularFire tiene
+  el mismo problema con `getAuth()`: su persistencia por defecto intenta tocar `indexedDB`/`window` de
+  forma asíncrona y nunca resuelve en Node — `app.config.ts` usa `initializeAuth(..., { persistence:
+  inMemoryPersistence })` en el servidor para evitarlo (ver Bitácora para el porqué exacto).
+- `SeoService.init()` (ver sección de SEO, si se agrega una en el futuro) es lo que graba el
+  `<title>`/`<meta description>`/`og:*`/`<link rel="canonical">` correctos **dentro del HTML
+  pre-renderizado** de cada una de las 6 rutas — corre tanto en servidor como en navegador a
+  propósito. Si alguna vez el `<title>` de una ruta prerenderizada aparece igual al del home en el
+  HTML crudo (`view-source`), es señal de que algo antes de `seoService.init()` en la cadena de
+  arranque está reventando silenciosamente en el servidor y cortando la ejecución antes de esa línea.
 
 ---
 
@@ -312,6 +346,63 @@ Prompts separados según el momento — **esto es deliberado, no lo unifiques**:
   `dyslexia-font`, `high-contrast`, `font-large`/`font-xlarge`, `spacing-wide`/`spacing-xwide`.
 - **Navegación por teclado** (`keyboard-navigation.service.ts`) y lectura por voz en los tests.
 
+### 7.6 Protección contra bots: Firebase App Check + Cloudflare Turnstile (2026-08-25)
+
+`app.config.ts` inicializa **App Check** con un **Custom Provider** que usa **Cloudflare
+Turnstile** (widget invisible, sin acertijos visuales) como mecanismo de verificación —
+alternativa gratuita a reCAPTCHA Enterprise. Detalle completo en la Bitácora 2026-08-25
+(parte 2); acá solo lo que hay que saber para no romperlo:
+
+- **El "intercambio de token" NO pasa por la extensión oficial de Firebase**
+  (`cloudflare-turnstile-app-check-provider`). Esa extensión despliega su propia Cloud
+  Function, pero la versión publicada en el Extensions Hub todavía declara el runtime
+  `nodejs18` — dado de baja por Google Cloud para despliegues nuevos — así que su
+  instalación falla siempre con `RESOURCE_ERROR / DEPLOYS_NOT_ALLOWED`. No es un error de
+  configuración: es la extensión desactualizada. Mientras Cloudflare no republique una
+  versión corregida, **no reintentar instalarla**.
+- En su lugar, el intercambio ocurre en el propio backend: `backend/src/app-check/` (nuevo
+  módulo) recibe el token de Turnstile, lo verifica contra
+  `https://challenges.cloudflare.com/turnstile/v0/siteverify` con `TURNSTILE_SECRET_KEY`, y
+  si es válido emite un token real de Firebase App Check con
+  `firebaseService.appCheck.createToken()` (Admin SDK, ya inicializado en `FirebaseService`).
+  Sin Cloud Functions, sin Artifact Registry, sin Secret Manager.
+- El endpoint (`POST /api/app-check/exchange`) es a propósito el único en todo el backend
+  **sin ningún guard** — es el mecanismo de verificación en sí mismo, no puede exigir un
+  token de App Check para llegar hasta ahí. Lo protege la verificación contra Cloudflare,
+  no un `@UseGuards`.
+- El formato de respuesta (`{ token, expireTimeMillis }`) no es arbitrario: es el que espera
+  `CloudflareProviderOptions` (paquete `@cloudflare/turnstile-firebase-app-check`, ya
+  instalado en el frontend) — el Admin SDK devuelve `ttlMillis` en vez de
+  `expireTimeMillis`, hay que convertirlo (`Date.now() + ttlMillis`) o el cliente no sabe
+  interpretar el token.
+- **`AppCheckGuard`** (`backend/src/common/guards/app-check.guard.ts`) existe y sigue el
+  mismo patrón que `FirebaseAuthGuard`, pero **no está atado a ningún controlador
+  todavía** — a propósito, hasta que el sitekey real esté puesto y probado de punta a punta
+  (atarlo antes le cortaría el acceso a esos endpoints de inmediato). Sirve para proteger
+  endpoints propios del backend (Foco, suscripciones, admin) — **no** para login/registro/
+  recuperar-contraseña, que van directo del navegador a Firebase Auth y nunca tocan este
+  backend; a esas 3 páginas las protege la aplicación de App Check a nivel de Firebase, sin
+  necesidad de ningún guard propio.
+- **SSR:** `provideAppCheck(...)` en `app.config.ts` solo se registra si
+  `typeof window !== 'undefined'` — ni siquiera se intenta en el servidor. No es solo que
+  `initializeAppCheck()` no sirva en Node: el constructor de `CloudflareProviderOptions` toca
+  `document.body` directamente para inyectar el widget, así que instanciar la clase ya
+  revienta ahí. Nada de lo que se prerenderiza necesita un token de App Check.
+- **Activar/desactivar la protección real** (una vez que todo esté probado) se hace **desde
+  la consola de Firebase, no desde Cloudflare**: Firebase Console → Build → App Check →
+  pestaña "APIs" → cada servicio (Cloud Firestore, Authentication, etc.) tiene su propio
+  interruptor "Sin aplicar" (Supervisión, recoge métricas sin bloquear) / "Aplicar"
+  (bloquea de verdad). Cloudflare solo administra el widget de Turnstile en sí (sitekey,
+  dominio, modo) — no tiene ningún concepto de "aplicar" para servicios de Firebase.
+  Recomendación de Google: dejarlo en "Sin aplicar" al menos una semana mirando la
+  proporción de peticiones verificadas/no verificadas antes de pasar a "Aplicar".
+- **Ojo al copiar sitekeys/secrets**: un sitekey/secret de reCAPTCHA empieza con `6L...`; uno
+  de Turnstile empieza con `0x4AAAAAA...`. Son productos de Google y de Cloudflare
+  respectivamente — no intercambiables. La pantalla de "Apps" de App Check en Firebase
+  Console sugiere reCAPTCHA Enterprise por defecto (con un sitekey `6L...` ya cargado); eso
+  es independiente del Custom Provider que este proyecto usa y no hace falta tocarlo ni
+  registrar nada ahí para que Turnstile funcione.
+
 ---
 
 ## 8. Convenciones de código
@@ -421,6 +512,12 @@ CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET
 FLOW_ENVIRONMENT (sandbox|production) / FLOW_API_KEY / FLOW_SECRET_KEY / FLOW_BASE_URL
 FLOW_PLAN_ID_MONTHLY / FLOW_PLAN_ID_YEARLY
 BACKEND_PUBLIC_URL      # URL HTTPS pública para el webhook de Flow (en dev: ngrok)
+TURNSTILE_SECRET_KEY    # Secret key de Cloudflare Turnstile (empieza con "0x4AAAAAA...").
+                        # La usa AppCheckService (src/app-check/) — ver sección 7.6 y Bitácora
+                        # 2026-08-25 (parte 2). Nunca es la misma clave que un sitekey de
+                        # reCAPTCHA (esas empiezan con "6L...") — son productos distintos.
+FIREBASE_APP_ID         # Opcional: mismo valor que appId en environment.ts del frontend. Si
+                        # se omite, AppCheckService usa el valor real del proyecto como default.
 ```
 
 Falta declarar la variable de la API key de Gemini en `.env.example` (el servicio la lee vía
@@ -474,20 +571,30 @@ Los archivos siguen en disco para el flujo de extracción de contenido; simpleme
 Verificado: build limpio, 0 PDFs en `dist/`, y los 30 JSON de preguntas + imágenes + katex + mocks
 siguen presentes.
 
-⚠️ **Si alguien vuelve a agregar assets pesados o sensibles, revisar esa exclusión.** La carpeta
-gemela `frontend-app/src/pruebasDemre/` (fuera de assets) es la que usa `npm run cropper` y nunca
-se empaquetó.
+⚠️ **Si alguien vuelve a agregar assets pesados o sensibles, revisar esa exclusión.**
+
+> **2026-08-25:** la carpeta gemela `frontend-app/src/pruebasDemre/` (fuera de `assets/`, la que usaba
+> `npm run cropper` y nunca se empaquetó) se **eliminó por completo** — confirmado que ya no hacía
+> falta. El script `"cropper"` también se quitó de `package.json`. `frontend-app/src/assets/pruebasDemre/`
+> (la de este hallazgo, con los PDFs+soluciones, 107 MB) **sigue existiendo** — es una decisión
+> distinta (contenido potencialmente sensible que quizás aún se necesite), no se tocó.
 
 ### 🟡 Deuda técnica
-- **Build de 310 MB**, casi todo `assets/images/` (293 MB): `subjects/*.png` de 5–7 MB cada una,
-  gifs de Foco en WebP de hasta 15 MB, un `.mp4` de 18 MB y las carpetas `L-*-IMAGENES` de
-  comprensión lectora (~150 MB entre todas). **Estas imágenes sí se usan**, así que optimizarlas
-  (redimensionar, comprimir, o servirlas desde Cloudinary como ya se hace con el branding) es un
-  trabajo aparte que cambia lo que se ve — no se tocó.
-- **1182 archivos de `node_modules` versionados en git**, de `pdf-cropper-tool`, duplicados en
-  `src/pruebasDemre/` y `src/assets/pruebasDemre/`. El `.gitignore` nuevo evita que crezca, pero
-  para sacar los ya versionados hace falta correr (afecta a los working copies del equipo):
-  `git rm -r --cached "frontend-app/src/**/pdf-cropper-tool/node_modules"`
+- **Peso de `assets/images/` — reducido de 293 MB a ~85 MB (2026-08-25)**, eliminando lo que
+  resultó ser huérfano (nada en el código lo referenciaba, verificado con `grep` antes de borrar):
+  `subjects/*.png` (42 MB, ya reemplazados por `subjectsAVIF/*.avif`), un `.mp4` de 18 MB sin ningún
+  `<video>` que lo apuntara, y las 6 carpetas `L-*-IMAGENES` de comprensión lectora (149 MB) — estas
+  últimas resultaron ser contenido a medio terminar: hay scripts (`generate-lenguaje.js`,
+  `generate-l-2025.js`) pensados para generar un banco de preguntas de Lectura a partir de esas
+  imágenes, pero el JSON que deberían producir nunca se generó ni se conectó a la app. Lo que queda
+  y **sí se usa** (`GifsFocoWEBP/` 46 MB, `iconosSVG/`+`avatarsSVG/` ~7 MB con SVGs mal exportados
+  — vectorizados automáticamente desde una ilustración en vez de ser vectores reales, por eso pesan
+  cientos de KB en vez de unos pocos) sigue pendiente de optimizar — ver Bitácora 2026-08-25 para las
+  especificaciones exactas de conversión (WebP animado → video, SVG → AVIF).
+- **1182 archivos de `node_modules` versionados en git**, de `pdf-cropper-tool` — antes duplicados en
+  `src/pruebasDemre/` y `src/assets/pruebasDemre/`, ahora solo en el segundo (el primero se eliminó,
+  ver arriba). Para sacar los que quedan (591 archivos) hace falta correr (afecta a los working
+  copies del equipo): `git rm -r --cached "frontend-app/src/assets/pruebasDemre/pdf-cropper-tool/node_modules"`
 - El cache de despliegue `.firebase/*.cache` estaba versionado (uno referencia el `frontend-landing`
   ya inexistente). Ya está en `.gitignore`; falta `git rm -r --cached .firebase` para desindexarlo.
 - `backend/.env` conserva variables `WEBPAY_*` de la pasarela anterior a Flow. Ningún archivo las lee.
@@ -510,6 +617,254 @@ se empaquetó.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-25 (parte 2) — Protección contra bots: Firebase App Check + Cloudflare Turnstile,
+más 3 rutas adicionales sin carga diferida corregidas y limpieza de CSS muerto
+Typecheck y build ✅ en frontend y backend, en cada paso · probado en vivo levantando el backend
+real y pegándole al endpoint nuevo (no solo compilado) · verificado en navegador con la cuenta
+real que el resto de la app sigue funcionando.
+
+**Contexto:** el usuario usa DNS de Cloudflare y quería aprovechar Turnstile (su alternativa
+gratuita a un captcha) para proteger Registro y Recuperar Contraseña — las dos páginas de
+autenticación que hoy hablan directo con Firebase Auth desde el navegador, sin pasar por el
+backend NestJS. Se evaluó Turnstile suelto vs. Firebase App Check con Turnstile como Custom
+Provider, y se optó por App Check: protege TODO el tráfico hacia Firebase (Firestore, Auth,
+Functions) una vez aplicado por servicio, no solo las páginas donde se ponga un widget suelto —
+más apropiado para este proyecto, donde el frontend habla directo con Firestore en casi todo.
+
+**1. La extensión oficial de Firebase para esto está rota — no es un error de configuración.**
+`cloudflare-turnstile-app-check-provider` (Extensions Hub, Made by Cloudflare) despliega su
+propia Cloud Function, pero al instalarla falló con: `RESOURCE_ERROR ... Failed to create 1st
+Gen function ... runtime: Runtime validation errors: [DEPLOYS_NOT_ALLOWED: Runtime nodejs18 is
+decommissioned and no longer allowed]`. Confirmado revisando el `extension.yaml` publicado
+(runtime nodejs18) contra el de la rama `main` en GitHub (ya dice nodejs22) — Cloudflare
+corrigió el código fuente pero no ha republicado una versión nueva al marketplace. Mientras eso
+no pase, **instalar la extensión desde el botón de la consola de Firebase va a fallar siempre.**
+
+**2. Solución: el mismo intercambio de token, pero como un endpoint del propio backend, no
+como una Cloud Function separada.** Nuevo módulo `backend/src/app-check/`
+(`app-check.service.ts` + `app-check.controller.ts`): recibe el token de Turnstile, lo verifica
+contra `https://challenges.cloudflare.com/turnstile/v0/siteverify` con `TURNSTILE_SECRET_KEY`
+(nueva variable de entorno), y si es válido llama a
+`firebaseService.appCheck.createToken(appId, { ttlMillis })` (Admin SDK — se le agregó el
+getter `appCheck` a `FirebaseService`) para emitir un token real de Firebase App Check. Cero
+Cloud Functions, cero Artifact Registry, cero Secret Manager — todo corre en la misma
+instancia de NestJS que ya está desplegada. El endpoint (`POST /api/app-check/exchange`) es a
+propósito el único de todo el backend sin ningún guard: es el mecanismo de verificación en sí
+mismo, todavía no existe ningún token de App Check que exigir para llegar hasta ahí.
+
+Un detalle que habría roto el intercambio en silencio si no se revisa el tipo exacto: el Admin
+SDK devuelve `{ token, ttlMillis }`, pero el cliente (`CloudflareProviderOptions`, paquete
+`@cloudflare/turnstile-firebase-app-check`) espera `{ token, expireTimeMillis }` — hubo que
+convertir explícitamente (`Date.now() + ttlMillis`), si no el cliente no sabe interpretar la
+respuesta aunque el token en sí sea válido.
+
+**3. Frontend: App Check inicializado en `app.config.ts`, pero solo en el navegador.**
+Instalado `@cloudflare/turnstile-firebase-app-check` (más `@types/cloudflare-turnstile` como
+devDependency y agregado a la lista `types` de `tsconfig.app.json` — el paquete de Cloudflare
+publica su `src/index.ts` sin compilar como `"main"`, así que TypeScript lo tipa-chequea
+directo y sin esos tipos no compila). `provideAppCheck(...)` se agrega al array de providers
+con un spread condicionado a `typeof window !== 'undefined'` — ni siquiera se registra el
+provider en el servidor, no basta con envolver el cuerpo de la factory como se hizo con Auth en
+una sesión anterior: el constructor de `CloudflareProviderOptions` toca `document.body`
+directamente (inyecta el widget invisible de Turnstile) apenas se instancia, antes de llegar
+siquiera a `initializeAppCheck()`. Verificado con el build de producción completo: sigue
+prerenderizando las 6 rutas públicas sin ningún `ReferenceError`.
+
+**Pendiente para que quede operativo de punta a punta — no depende de más código, depende de 2
+datos reales:**
+- `turnstileSiteKey` en `environment.ts`/`environment.development.ts` sigue con el valor de
+  relleno `'TU-SITEKEY-DE-TURNSTILE'` — falta el sitekey público real de Turnstile.
+- `TURNSTILE_SECRET_KEY` en `backend/.env` **ya tiene el valor real** (empieza con
+  `0x4AAAAAA...`, formato correcto de Cloudflare). Ojo con esto para el futuro: el primer valor
+  que se intentó pegar acá (`6Lcbkpgt...`) resultó ser el sitekey de **reCAPTCHA Enterprise**
+  de la pantalla "Apps" de App Check en la consola de Firebase, no de Turnstile — son pantallas
+  distintas dentro de la misma consola y es fácil confundirlas. Un sitekey/secret de reCAPTCHA
+  siempre empieza con `6L...`; uno de Turnstile siempre con `0x4AAAAAA...`.
+- Verificado con un token falso que el endpoint SÍ llega hasta Cloudflare de verdad (122 ms de
+  respuesta real contra la API de siteverify, contra 4 ms cuando la clave faltaba y el código
+  cortaba camino antes) y responde `{ "token": "", "expireTimeMillis": 0 }` — el contrato de
+  fallo correcto. No se pudo probar el flujo completo con un token real porque eso requiere el
+  sitekey real resolviendo el widget en un navegador de verdad, que es justo lo que falta.
+- `AppCheckGuard` (`backend/src/common/guards/app-check.guard.ts`) está listo pero
+  deliberadamente no atado a ningún controlador todavía — atarlo antes de terminar de probar el
+  intercambio de token le cortaría el acceso a esos endpoints de inmediato.
+
+**Dónde se activa la protección real cuando todo esté listo:** consola de Firebase → Build →
+App Check → pestaña "APIs" → cada servicio tiene su propio interruptor "Sin aplicar"
+(Supervisión) / "Aplicar". **No se activa desde Cloudflare** — el dashboard de Cloudflare solo
+administra el widget de Turnstile en sí (sitekey, dominio, modo), no tiene ningún concepto de
+"aplicar" para servicios de Firebase. Confirmado en capturas del propio usuario que Cloud
+Firestore ya está en "Supervisión" (0% verificadas / 100% no verificadas — esperado, ya que
+nada usa Turnstile todavía con valores de relleno). Recomendación de Google: mirar esa
+proporción al menos una semana antes de pasar a "Aplicar".
+
+> Las otras 3 rutas sin carga diferida (`/modules`, `/topic/:id`, `/simulation/:id`) y la
+> limpieza de `.pro-logo` en `styles.css` que se hicieron en esta misma sesión ya están
+> documentadas en la entrada de abajo ("SEO técnico..."), no se repiten acá.
+
+### 2026-08-25 — SEO técnico (prerendering de 6 rutas públicas), auditoría real de rendimiento con
+Lighthouse, y una limpieza grande de peso muerto (archivos huérfanos + rutas sin carga diferida)
+Typecheck ✅ en cada tanda de cambios · build de producción ✅ repetido después de cada cambio ·
+verificado en navegador con la cuenta real (`angapicar@gmail.com`) logueada: dashboard, Ruta de
+Aprendizaje con las 7 materias, login/registro — sin errores de consola en ningún caso.
+
+**Motivo del trabajo:** una captura de un checklist de SEO señalaba "View Source vacío (CSR)" como
+hallazgo crítico — confirmado real: `index.html` solo traía `<app-root></app-root>`, así que
+Google/redes sociales veían la página en blanco en su primer pase (antes de que Angular la arme en
+el navegador).
+
+**1. Prerendering (SSG) agregado con `@angular/ssr`, solo para 6 rutas públicas** — ver sección 2
+("Prerendering (SSG) para SEO") para el detalle de arquitectura, acá solo los hallazgos puntuales
+del proceso:
+- `ng add @angular/ssr` + `angular.json` con `prerender: { discoverRoutes: false, routesFile:
+  "prerender-routes.txt" }` (rutas: `/`, `/login`, `/register`, `/verify-email`, `/soporte`,
+  `/trabaja-con-nosotros`).
+- **`home.component.ts` no era SSR-safe**: `ngAfterViewInit()` completo (parallax del mouse, scroll
+  del carrusel de noticias, autoplay de videos, `IntersectionObserver`) y dos timers infinitos
+  arrancados en `ngOnInit()` (`startHeroSimulation()`, `startActiveStudentsFluctuation()`) tocaban
+  `window`/`document` sin guardas — rompía el build o lo colgaba (un `setInterval` que nunca termina
+  no deja que el prerenderer llegue al estado "estable" que espera antes de tomar la foto del HTML).
+  Corregido con `isPlatformBrowser(inject(PLATFORM_ID))` en los 3 puntos, más un cuarto que se había
+  escapado (`requestAnimationFrame` dentro de `loadFirestoreNews()`, no estaba dentro de
+  `ngAfterViewInit` así que la primera guarda no lo cubría). También se gatearon las lecturas de
+  Firestore del propio `ngOnInit` (perfil + noticias): un `await` a Firestore que se cuelga durante
+  el build (red no disponible, o simplemente lento) cuelga el build entero en vez de fallar limpio.
+- **`app.component.ts` tampoco lo era, y esto se llevó dos horas de diagnóstico**: `ngOnInit()`
+  llamaba a `this.keyboardNavService.init()` como primera línea, y esa llamada revienta con
+  `ReferenceError: window is not defined` en el servidor (el servicio hace
+  `window.addEventListener(...)` sin guarda) — como el error no se atrapa, corta la ejecución de
+  `ngOnInit()` ahí mismo, **antes de llegar a la línea siguiente**, que era `this.seoService.init()`.
+  Efecto real: las 5 páginas públicas que no son el home (login, registro, soporte, etc.) tenían el
+  `<title>`/`<meta description>`/`og:*`/`canonical` correctos solo en el navegador (donde sí llega a
+  ejecutar `seoService.init()`), pero el HTML crudo pre-renderizado — lo único que ve un bot que no
+  corre JavaScript — seguía mostrando el título del home en las 5. Corregido reordenando: `seoService
+  .init()` va primero (sin guarda, tiene que correr en servidor y navegador), y todo lo demás
+  (atajos de teclado, scroll-to-top al navegar, clases de accesibilidad en `document.body`) quedó
+  detrás de un `if (!isBrowser) return`. Verificado con `grep` sobre el HTML de cada ruta prerenderizada
+  antes/después: las 5 pasaron de mostrar el título del home a mostrar el suyo propio.
+- **AngularFire (`getAuth()`) tiene el mismo problema por su cuenta**: su persistencia por defecto
+  intenta detectar `indexedDB`/`window` de forma asíncrona, y esa detección nunca resuelve en Node —
+  cuelga el prerender en vez de fallar. Primero se probó `setPersistence(auth, inMemoryPersistence)`
+  después de `getAuth()`, pero el problema es que la detección async ya había arrancado antes de
+  poder cambiarla — seguía colgando. La solución real: en el servidor, crear el Auth con
+  `initializeAuth(getApp(), { persistence: inMemoryPersistence })` directamente (nunca prueba
+  IndexedDB/localStorage), reservando `getAuth()` normal solo para el navegador. Además, `isLoggedIn$`
+  /`user$` de `home.component.ts` (consumidos con `toSignal()`, que se suscribe en el momento de
+  construir el componente, no en `ngOnInit`) se cambiaron a `of(false)`/`of(null)` en el servidor —
+  la página prerenderizada siempre se ve "deslogueada", que es lo correcto para un bot/crawler; un
+  visitante real ve su sesión real apenas hidrata en su navegador.
+- **Bug propio, encontrado en la verificación, no antes de publicarlo:** al configurar el
+  `rewrite` catch-all de `firebase.json`, se dejó apuntando a `/index.html` (el HTML pre-renderizado
+  específico de la ruta `/`) en vez de a `/index.csr.html` (el cascarón genérico que Angular genera
+  para este propósito exacto). Con el error, cualquier URL no reconocida por Firebase Hosting como
+  archivo estático (ej. `/dashboard` cargado directo) habría mostrado por un instante el contenido de
+  marketing del home en vez de la app real, antes de que el router del lado del cliente corrigiera.
+  Corregido antes de reportar el trabajo como terminado — verificado leyendo el contenido real de
+  ambos archivos generados para confirmar cuál es cuál.
+- Se agregó `noIndex: true` a las **51 rutas privadas** de `app.routes.base.ts` (dashboard, toda la
+  Ruta de Aprendizaje, ensayos, admin, etc. — todas las que tienen `canActivate: [authGuard...]`),
+  como segunda capa de defensa: `robots.txt` ya las bloqueaba, pero un bot que no respete ese archivo
+  ahora también se encuentra con `<meta name="robots" content="noindex, nofollow">` en cada una.
+  Verificado con la cuenta real: `/dashboard` manda ese meta tag, las páginas públicas siguen en
+  `index, follow`.
+
+**2. Auditoría de rendimiento — con Lighthouse real, no una estimación.** Corrido contra la build de
+producción real servida en un servidor estático local (no `ng serve`, que nunca refleja el peso real).
+Resultado: **SEO 92/100**, **Rendimiento 51/100 en celular** (55/100 en escritorio) — LCP de **25.9
+segundos** en celular. Hallazgos concretos, no genéricos:
+- El único punto que le resta al SEO: 3 links del navbar del home (`(click)` sin `href`) no son
+  "rastreables" para Google — quedó pendiente, no se tocó.
+- 4.6 MB de peso solo en el home; 739 KB de JavaScript que se descarga sin usarse en esa página.
+- Un solo GIF/animación de Cloudinary pesa 648 KB sin `width`/`height` declarados (causa saltos de
+  layout mientras carga).
+- Hallazgo que contradice lo que se asumía: **no todos los SVG del proyecto son livianos** — 4 íconos
+  (`P_MenteVeloz`, `P_m2`, `P_Logro`, `P_MiniEnsayos`) pesan 140-190 KB cada uno. Investigado a fondo
+  más tarde el mismo día (ver abajo): son ilustraciones foto-realistas vectorizadas automáticamente
+  desde una imagen, no vectores hechos a mano — de ahí el peso.
+
+**3. Limpieza de archivos huérfanos — 209 MB reales del build + 107 MB de repo, verificados con
+`grep` antes de cada borrado, no solo "parece que no se usa":**
+- `assets/images/subjects/*.png` (42 MB, 8 archivos) — cero referencias en el código; ya reemplazados
+  por `subjectsAVIF/*.avif`, que sí está en uso.
+- `assets/images/videosHome/rutaDeAprendizajeTest.mp4` (18 MB) — cero referencias.
+- Las 6 carpetas `assets/images/L-*-IMAGENES` (149 MB, comprensión lectora escaneada) — resultaron
+  ser **contenido a medio terminar**, no reemplazado: hay 2 scripts (`src/generate-lenguaje.js`,
+  `src/generate-l-2025.js`) pensados para generar un banco de preguntas de Lectura a partir de esas
+  imágenes, pero el JSON de salida nunca se generó ni se conectó a la app (entre los bancos de
+  ensayos reales solo existen los prefijos `m1,m2,b,f,h` — nunca uno de lectura). Se decidió borrar
+  igual, a pedido explícito, sabiendo que es contenido pausado y no basura reemplazada.
+- `src/pruebasDemre/` (107 MB, la carpeta gemela **fuera de** `assets/`, la que usaba `npm run
+  cropper`) — eliminada por completo a pedido explícito ("ya no lo vamos a usar"), junto con el
+  script `"cropper"` de `package.json`. **Ojo:** `src/assets/pruebasDemre/` (la de 107 MB con los
+  PDFs+soluciones, hallazgo de seguridad de la sección 11) es una carpeta **distinta** y no se tocó.
+
+**4. Rutas sin carga diferida, corregidas — 9 en total:** `login`, `register`, `ensayos`,
+`ensayo/:id/run`, `ensayo/:id/review`, `modules`, `topic/:moduleId/:topicId`, `simulation/:attemptId`
+pasaron de `component: X` (cargado siempre, en cada visita a cualquier página) a `loadComponent: () =>
+import(...)`. Efecto medido: el bundle inicial bajó de 2.39 MB a 1.98 MB. Se investigó a fondo por
+qué el primer intento (solo Ensayos) no bajó el peso esperado: `EnsayosListComponent` importa
+`DashboardService`, que importa `PaesContentService`, que importa `seed-data.ts`+`seed-historia.ts`
+(850 KB de contenido de la Ruta de Aprendizaje) — arreglar esa sola ruta no alcanzaba.
+
+**Pendiente, evaluado pero NO implementado — riesgo real, no solo "no había tiempo":** un chunk de
+750 KB (`seed-data.ts` + `seed-historia.ts` + `paes-content.service.ts` + `dashboard.service.ts`)
+se sigue precargando en **todas** las páginas, incluido el home. Causa raíz distinta a la de arriba:
+no es un import muerto, es que ~15 rutas distintas de la Ruta de Aprendizaje comparten ese contenido,
+y el propio compilador (esbuild) decide precargarlo de una vez para todo el sitio en vez de dejarlo
+100% bajo demanda. El arreglo correcto — que `paes-content.service.ts` importe `seed-data.ts` con un
+`import()` dinámico dentro del método que realmente necesita el contenido local (solo cuando
+Firestore falla, o para el harness de desarrollo) en vez de con un `import` estático de módulo — es
+un cambio real y no descabellado, pero **no es trivial ni de bajo riesgo**: ese servicio expone datos
+como signals síncronos a ~15 componentes distintos, y volverlos asíncronos obliga a tocar cada
+consumidor. Además hay que volver a probar los 3 escenarios que dependen de este contenido local
+(carga normal con Firestore, el *fallback* cuando Firestore falla — que ya le pasó a este proyecto
+en auditorías anteriores, ver sección 11 — y el harness `/dev/ruta`, que depende 100% de este
+contenido porque corre con Firestore vacío a propósito). No se tocó.
+
+**5. Caché de archivos estáticos, implementada en `firebase.json`:** JS/CSS/fuentes (`.js`, `.css`,
+`.woff`, `.woff2`, `.ttf`) con `Cache-Control: public, max-age=31536000, immutable` — seguro porque
+Angular les pone un hash en el nombre en cada build (`outputHashing: "all"`), así que un archivo con
+ese nombre nunca cambia de contenido. Imágenes/video (`.png,.jpg,.jpeg,.gif,.svg,.webp,.avif,.ico,
+.mp4,.webm`) con `max-age=604800` (7 días) — más conservador porque estos SÍ pueden reemplazarse
+manteniendo el mismo nombre de archivo.
+
+**6. Bug real en `paes-content.service.ts`: a Biología/Física/Química/Técnico-Profesional nunca les
+tocaba imagen.** El código que rellena `imageUrl` cuando Firestore no trae uno (`materias.forEach(m
+=> { if (!m.imageUrl) { if (m.id === 'comp-lectora') ... } })`) solo cubría 4 de las 8 materias
+(Comprensión Lectora, M1, M2, Historia) — nunca se completó para las otras 4. Corregido agregando
+esas 4 ramas, y a propósito **sin** la guarda `if (!m.imageUrl)` para estas (la imagen local siempre
+manda), porque no hay evidencia de que alguna vez se gestionara un `imageUrl` custom para estas 4
+desde Firestore — así se cubre tanto el caso "no viene nada" como "viene algo roto". Verificado con
+la cuenta real: las 3 imágenes cargan (200 OK, tamaño de archivo exacto). **Ojo:** si el usuario
+sigue sin verlas después de este fix, casi seguro es la caché de 6 horas de `localStorage`
+(`learning_path_cache` / `learning_path_cache_timestamp`, ver `CONTENT_CACHE_TTL_MS` en el propio
+servicio) sirviendo datos de antes del fix — hay que borrar esas 2 claves y recargar, no es que el
+fix no funcione.
+
+**7. Limpieza de CSS muerto en `styles.css` — solo lo verificado, no una pasada agresiva.** Se
+comparó cada clase CSS del archivo contra **todo** el código fuente (no solo una página visitada en
+vivo, que da falsos positivos si una clase se usa en una ruta que no se probó). Encontrado y
+eliminado: `.pro-logo` (3 bloques de reglas, incluidos dos `body .sidebar-logo:has(.pro-logo)`
+duplicados palabra por palabra) — cero elementos en toda la app tienen esa clase; el hermano
+`.pro-username` sí se usa (`dashboard.component.ts`) y se dejó intacto. Se revisó también que los 12
+`@keyframes` del archivo y las clases `driver-popover-*`/`driver-active-element` (0 coincidencias en
+el código propio, pero son clases que **driver.js genera en tiempo real**, no muertas) — nada más
+calificó como seguro de borrar sin una herramienta de cobertura real corriendo sobre cada ruta, que
+es un trabajo aparte más grande que esta pasada.
+
+**8. Encontrado y reportado, NO corregido — decisión pendiente del equipo:**
+- `@angular/animations` y `dotenv` en `dependencies`: cero archivos los importan. No afectan lo que
+  descarga un usuario (Angular no empaqueta lo que no se usa), solo inflan `npm install`.
+- `@google/generative-ai` en `dependencies` (no `devDependencies`), pero solo lo usan scripts sueltos
+  (`test-gemini.js`, extractores de PDF) — nunca la app real sirvió por este paquete.
+- `seed-data.backup.ts` (416 KB) y `seed-historia.backup_20260806_1940.ts` (256 KB) — sin ningún
+  import. No afectan el bundle (TypeScript no usado no se compila), solo el tamaño del repo.
+- `.firebase/*.cache` sigue versionado en git (uno de los dos archivos menciona `frontend-landing`,
+  el proyecto que ya no existe) — ya estaba documentado en la sección de deuda técnica, sigue igual.
+- 591 archivos de `node_modules` de `pdf-cropper-tool` siguen versionados dentro de
+  `src/assets/pruebasDemre/` (la mitad de lo documentado en deuda técnica — la otra mitad, en
+  `src/pruebasDemre/`, se fue con el borrado del punto 3).
 
 ### 2026-08-22 (parte 16) — Auditoría de seguridad de Flow, Flow como único método de pago en el
 modal de precios, `planType` persistido en `subscription`, y aviso de renovación con antelación

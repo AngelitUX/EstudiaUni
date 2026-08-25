@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, HostListener, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FirestoreService } from './core/services/firestore.service';
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private keyboardNavService = inject(KeyboardNavigationService);
   private seoService = inject(SeoService);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   @HostListener('document:click', ['$event'])
   onGlobalClick(event: MouseEvent) {
@@ -39,8 +40,17 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.keyboardNavService.init();
+    // seoService.init() must run on both server and browser — it's what bakes the correct
+    // per-route <title>/canonical/og: tags into each prerendered page. Everything else here
+    // (keyboard shortcuts, scroll restoration, body classes for accessibility prefs) only
+    // means something in a real browser tab; on the server, window/document don't exist, and
+    // keyboardNavService.init() used to throw here BEFORE reaching seoService.init() below —
+    // silently skipping the SEO tag update on every prerendered route.
     this.seoService.init();
+
+    if (!this.isBrowser) return;
+
+    this.keyboardNavService.init();
 
     // Scroll to top on navigation change
     this.router.events.pipe(
@@ -63,7 +73,7 @@ export class AppComponent implements OnInit {
         classList.remove('font-large', 'font-xlarge', 'spacing-wide', 'spacing-xwide');
         if (profile.fontSize === 'large') classList.add('font-large');
         else if (profile.fontSize === 'xlarge') classList.add('font-xlarge');
-        
+
         if (profile.textSpacing === 'wide') classList.add('spacing-wide');
         else if (profile.textSpacing === 'xwide') classList.add('spacing-xwide');
       }
