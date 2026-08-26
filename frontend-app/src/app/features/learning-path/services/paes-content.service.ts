@@ -12,8 +12,14 @@ const LOCAL_MATERIAS: Materia[] = [
   { id: 'ciencias', title: 'Ciencias', slug: 'ciencias', icon: '🧬', order: 5, isActive: true }
 ];
 
-import { CAPITULOS } from '../data/seed-data';
-import { HISTORIA_CAPITULOS, HISTORIA_MATERIA } from '../data/seed-historia';
+// ─── Contenido local de la Ruta: se carga con import() DINAMICO ───────────
+// seed-data.ts (426 KB) + seed-historia.ts (428 KB) son el fallback offline y
+// la fuente del harness /dev/ruta. Con un import estatico de modulo, esbuild
+// los metia en un chunk que se PRECARGABA en todas las paginas del sitio —
+// incluido el home, que no tiene nada que ver con la Ruta de Aprendizaje.
+// Con import() dinamico el chunk solo se pide cuando algo lo necesita de
+// verdad: mocks locales, fallback por fallo de Firestore, o el override de
+// capitulos locales. Ver CLAUDE.md (bitacora 2026-08-25, punto pendiente).
 
 // ─── Claves de caché local (localStorage) ───
 // IMPORTANTE: estas claves deben mantenerse ESTABLES entre despliegues.
@@ -378,7 +384,7 @@ export class PaesContentService {
         hist.isActive = true;
         hist.title = 'Historia y Cs. Sociales';
       } else {
-        materias.push(HISTORIA_MATERIA);
+        materias.push((await this.loadSeeds()).HISTORIA_MATERIA);
       }
 
       this._materias.set(materias.sort((a, b) => a.order - b.order));
@@ -388,7 +394,7 @@ export class PaesContentService {
       if (!capitulosRes.ok) throw new Error('capitulos-mock-local.json not found');
       const capitulos = await capitulosRes.json() as Capitulo[];
       const sortedCapitulos = capitulos.sort((a, b) => a.order - b.order);
-      this._capitulos.set(this.syncLocalChapters(sortedCapitulos));
+      this._capitulos.set(await this.syncLocalChapters(sortedCapitulos));
 
       // 3. Set pool preguntas from local hardcoded variable (just in case)
       this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
@@ -413,7 +419,33 @@ export class PaesContentService {
     this.poolPreguntasLoaded = false;
   }
 
-  private syncLocalChapters(capitulosList: Capitulo[]): Capitulo[] {
+  /**
+   * Carga (una sola vez por sesion) los seeds locales de la Ruta.
+   * Coalesce las llamadas concurrentes en la misma promesa, igual que hace
+   * loadDataFromFirestore() con las lecturas de Firestore.
+   */
+  private seedsPromise?: Promise<{
+    CAPITULOS: Capitulo[];
+    HISTORIA_CAPITULOS: Capitulo[];
+    HISTORIA_MATERIA: Materia;
+  }>;
+
+  private loadSeeds() {
+    if (!this.seedsPromise) {
+      this.seedsPromise = Promise.all([
+        import('../data/seed-data'),
+        import('../data/seed-historia'),
+      ]).then(([seedData, seedHistoria]) => ({
+        CAPITULOS: seedData.CAPITULOS,
+        HISTORIA_CAPITULOS: seedHistoria.HISTORIA_CAPITULOS,
+        HISTORIA_MATERIA: seedHistoria.HISTORIA_MATERIA,
+      }));
+    }
+    return this.seedsPromise;
+  }
+
+  private async syncLocalChapters(capitulosList: Capitulo[]): Promise<Capitulo[]> {
+    const { CAPITULOS, HISTORIA_CAPITULOS } = await this.loadSeeds();
     if (!capitulosList) capitulosList = [];
 
     const validHistoriaIds = ['cap-hist-1', 'cap-hist-2', 'cap-hist-3', 'cap-hist-4', 'cap-hist-5'];
@@ -497,7 +529,7 @@ export class PaesContentService {
           if (cached.materias && cached.capitulos) {
 
             this._materias.set(cached.materias);
-            this._capitulos.set(this.syncLocalChapters(cached.capitulos));
+            this._capitulos.set(await this.syncLocalChapters(cached.capitulos));
             this.loading.set(false);
             return;
           }
@@ -584,6 +616,13 @@ export class PaesContentService {
         }
       });
 
+      // Los seeds locales (CAPITULOS / HISTORIA_CAPITULOS) se consultan dentro
+      // del forEach de abajo, que es un callback SINCRONO y por lo tanto no
+      // puede hacer await. Por eso se resuelven aca, antes del bucle: para este
+      // punto ya estamos dentro de la Ruta de Aprendizaje, que es justamente el
+      // unico lugar donde ese contenido hace falta.
+      const { CAPITULOS, HISTORIA_CAPITULOS } = await this.loadSeeds();
+
       // 6. Armar los capítulos
       capitulosSnap.docs.forEach(doc => {
         const capData = doc.data() as any;
@@ -648,7 +687,7 @@ export class PaesContentService {
           hist.isActive = true;
           hist.title = 'Historia y Cs. Sociales';
         } else {
-          materias.push(HISTORIA_MATERIA);
+          materias.push((await this.loadSeeds()).HISTORIA_MATERIA);
         }
         
         const mat1 = materias.find(m => m.id === 'mat1' || m.slug === 'matematica-1');
@@ -679,7 +718,7 @@ export class PaesContentService {
         this.applyHistoriaImageMapping(sortedCapitulos);
         this.enrichHistoriaChapters4And5(sortedCapitulos);
 
-        const syncedCapitulos = this.syncLocalChapters(sortedCapitulos);
+        const syncedCapitulos = await this.syncLocalChapters(sortedCapitulos);
 
         this._materias.set(sortedMaterias);
         this._capitulos.set(syncedCapitulos);
@@ -697,12 +736,12 @@ export class PaesContentService {
           console.warn('[PaesContentService] No se pudo guardar en caché:', cacheError);
         }
       } else {
-        this.loadLocalFallbacks();
+        await this.loadLocalFallbacks();
       }
 
     } catch (error) {
       console.error('Error cargando datos de Firestore (utilizando fallback local offline):', error);
-      this.loadLocalFallbacks();
+      await this.loadLocalFallbacks();
     } finally {
       this.loading.set(false);
     }
@@ -942,7 +981,9 @@ export class PaesContentService {
     });
   }
 
-  private loadLocalFallbacks() {
+  private async loadLocalFallbacks() {
+    const { CAPITULOS, HISTORIA_CAPITULOS } = await this.loadSeeds();
+
     this._materias.set(LOCAL_MATERIAS);
     this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
 
@@ -957,7 +998,7 @@ export class PaesContentService {
 
     this.applyHistoriaImageMapping(capitulos);
     this.enrichHistoriaChapters4And5(capitulos);
-    this._capitulos.set(this.syncLocalChapters(capitulos));
+    this._capitulos.set(await this.syncLocalChapters(capitulos));
   }
 
   // ─── Queries ───

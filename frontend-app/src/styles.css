@@ -1,3 +1,70 @@
+/* ─── Fuentes self-hosteadas (Outfit + Inter) ───────────────────────────────
+   Antes se traían de fonts.googleapis.com con un <link> en index.html (más un
+   @import propio en sort-practice y true-false-practice). Eso obligaba a un
+   DNS + TLS + petición a un tercer origen ANTES de poder pintar texto — en
+   móvil lento son cientos de ms de render bloqueado, y el <link> del index
+   está en el <head>, así que bloquea la primera pintura de todas las páginas.
+
+   Ambas son FUENTES VARIABLES: Google sirve un único .woff2 por familia y
+   subset para todos los pesos (verificado por checksum — los 22 archivos que
+   devuelve la API css2 son en realidad 4). Por eso acá hay un solo @font-face
+   por familia/subset con un RANGO de peso (100 900) en vez de uno por peso.
+
+   Los archivos viven en public/fonts/ (se copian tal cual a la raíz del build),
+   por eso la url() es absoluta: /fonts/*.woff2.
+
+   El navegador elige el archivo por `unicode-range`, así que tener latin-ext
+   no cuesta nada si la página solo usa caracteres latinos básicos: no se
+   descarga. Los rangos son los que publica la propia API de Google.
+
+   OJO CON EL SUFIJO -v1: firebase.json cachea *.woff2 con
+   `max-age=31536000, immutable`, y a diferencia del JS/CSS que genera Angular,
+   estos nombres NO llevan hash de contenido. Si alguna vez se reemplaza una
+   fuente hay que SUBIR EL NUMERO DE VERSION en el nombre del archivo (-v2) y
+   en las 6 referencias (4 aca + 2 <link rel="preload"> en index.html); si se
+   pisa el archivo dejando el mismo nombre, los visitantes recurrentes se
+   quedan con la version vieja hasta un ano, sin forma de invalidarla.
+
+   Si alguna vez hay que actualizar las fuentes, hay que volver a bajar los 4
+   .woff2 desde la API css2 con un User-Agent de navegador moderno (si no,
+   Google devuelve .ttf en vez de .woff2). */
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin-v1.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin-ext-v1.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-v1.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-ext-v1.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
   --bg-color: #f8f9fc;
   --bg-secondary: #f0f2f5;

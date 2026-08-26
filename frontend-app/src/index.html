@@ -28,9 +28,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Fuentes self-hosteadas: los @font-face viven en styles.css y los .woff2 en
+       public/fonts/. Se precargan solo los dos subsets "latin" (los unicos que
+       usa el espanol): sin esto el navegador no descubre la fuente hasta haber
+       descargado y parseado styles.css, lo que retrasa el primer texto. -->
+  <link rel="preload" href="/fonts/outfit-latin-v1.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-latin-v1.woff2" as="font" type="font/woff2" crossorigin>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
