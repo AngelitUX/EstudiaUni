@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-26 · Rama en la que se escribió: `imggifmejoras`
+> Última actualización: 2026-08-26 (parte 2) · Rama en la que se escribió: `DeployandoPagina`
 
 ---
 
@@ -666,6 +666,115 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-26 (parte 2) — Rendimiento del arranque: fuentes self-hosteadas (fuera Google Fonts) y
+el chunk de seeds de 750 KB deja de precargarse en todas las páginas. Bundle inicial del home:
+1.76 MB → 1.10 MB raw (0.49 → 0.30 MB gzip)
+Typecheck ✅ (`tsc --noEmit -p tsconfig.app.json`, código 0) · `ng build --configuration production`
+✅ prerenderizando las 6 rutas · medido con un **A/B real en esta máquina** (se revirtieron los 5
+archivos a HEAD, se reconstruyó, se midió, y se restauraron) — no con una estimación · verificado en
+navegador en pestaña limpia: 0 errores de consola, 0 peticiones a Google Fonts, y el harness
+`/dev/ruta` renderizando sus 91 nodos reales.
+
+**Origen:** una revisión externa señaló 5 puntos (budget de 4MB, zone.js, fuentes por CDN, sitemap,
+slugs). Verificados uno a uno contra el código: el sitemap **ya existía** y está bien
+(`public/sitemap.xml`, 5 URLs públicas, declarado en `robots.txt`), los slugs **ya son limpios**, y
+el budget de 4MB es una alarma de build que no afecta un solo byte de lo que descarga el usuario
+(el inicial real era 1.76 MB, ni cerca del techo). Sobre **zoneless**: es posible pero la API en
+Angular 18 es `provideExperimentalZonelessChangeDetection()` (experimental hasta v20) y este
+código es el peor candidato posible — 0 de 69 componentes usan `OnPush`, 0 usan `ChangeDetectorRef`,
+y hay 127 callbacks asíncronos (96 `setTimeout` + 18 `setInterval` + 13 `addEventListener`) que hoy
+repintan la UI **solo** porque Zone.js parchea esas APIs; sin Zone.js cada uno que no escriba a un
+signal deja de repintar en silencio. Ganancia: `polyfills.js` = 90 kB, esencialmente todo zone.js.
+No se tocó. Las dos cosas que sí valían la pena son las de abajo.
+
+**1. Fuentes Outfit + Inter self-hosteadas.** Antes se traían de `fonts.googleapis.com` con un
+`<link>` en el `<head>` de `index.html` (render-blocking, contra un tercer origen: DNS + TLS +
+petición antes de poder pintar texto), **más un `@import url(...)` propio** dentro de los estilos de
+`sort-practice.component.ts` y `true-false-practice.component.ts` — esos dos disparaban una petición
+extra a Google al montar el componente. Ahora hay 4 `@font-face` al inicio de `styles.css` y los
+`.woff2` viven en `public/fonts/`.
+
+Hallazgo que simplificó mucho el trabajo: **ambas son fuentes variables**. La API `css2` de Google
+devuelve 22 bloques `@font-face` (11 pesos × 2 subsets) pero apuntan a **4 archivos únicos** —
+confirmado por `md5sum`, los 22 descargados daban 4 checksums. Por eso quedó un solo `@font-face`
+por familia/subset con un **rango** de peso (`font-weight: 100 900`) en vez de uno por peso. Total:
+**188 KB en 4 archivos** (`latin` + `latin-ext` de cada familia). El `latin-ext` no cuesta nada en
+runtime: el navegador elige por `unicode-range` y en una página en español no lo descarga —
+verificado en vivo, solo se piden los dos `-latin`.
+
+- Se agregaron `<link rel="preload">` para los dos `latin` en `index.html`: sin eso el navegador no
+  descubre la fuente hasta haber descargado y parseado `styles.css`.
+- **Cambio visual real, a propósito:** antes solo se declaraban Outfit 300-800 e **Inter 400-600**,
+  pero el proyecto usa `font-weight: 700` y `800` **538 veces cada uno** (más 72 `bold`, 63 de `900`)
+  — todo eso se renderizaba con **negrita sintética** sobre Inter 600. Con el rango `100 900` ahora
+  se interpola el eje real de la fuente variable. Verificado midiendo el ancho del mismo texto a
+  400/700/800 (592 / 604 / 609 px: anchos distintos = pesos reales, no faux bold). El texto se ve
+  un poco más limpio y ligeramente menos pesado en negritas. **Si se prefiere el aspecto anterior**,
+  basta cambiar los 4 `font-weight: 100 900` por los pesos exactos que se declaraban antes.
+- **Ojo con el sufijo `-v1` de los nombres de archivo:** `firebase.json` cachea `*.woff2` con
+  `max-age=31536000, immutable`, y estos nombres NO llevan hash de contenido como el JS/CSS que
+  genera Angular. Si algún día se reemplaza una fuente hay que **subir el número de versión** en el
+  nombre y en las 6 referencias (4 en `styles.css` + 2 `preload` en `index.html`); pisar el archivo
+  con el mismo nombre dejaría a los visitantes recurrentes con la versión vieja hasta un año.
+- Para volver a bajar las fuentes hay que usar un **User-Agent de navegador moderno** contra la API
+  `css2`; si no, Google devuelve `.ttf` en vez de `.woff2`.
+
+**2. El chunk de seeds ya no se precarga en todas las páginas** — el pendiente que quedó abierto y
+explícitamente sin hacer en la bitácora del 2026-08-25 ("evaluado pero NO implementado — riesgo
+real"). `paes-content.service.ts` importaba `seed-data.ts` (426 KB) y `seed-historia.ts` (428 KB)
+con `import` estático de módulo, así que esbuild los metía en un chunk que se precargaba
+(`modulepreload`) en **todas** las rutas, incluido el home — que no tiene nada que ver con la Ruta
+de Aprendizaje.
+
+Resultó **bastante menos riesgoso de lo que se temía**, y vale la pena dejar por qué, porque la
+evaluación anterior partía de una premisa equivocada. La bitácora del 25-08 decía que el servicio
+"expone datos como signals síncronos a ~15 componentes, y volverlos asíncronos obliga a tocar cada
+consumidor" — **eso no era necesario**: los signals siguen siendo síncronos y ningún consumidor
+cambió. Lo único que se vuelve asíncrono es la *carga* de los seeds, que ya ocurría dentro de
+funciones `async`. Dos hechos que lo confirman, verificados antes de tocar nada:
+- `grep` en todo el frontend: **esos dos archivos solo los importa `paes-content.service.ts`**,
+  nadie más.
+- Los 3 símbolos (`CAPITULOS`, `HISTORIA_CAPITULOS`, `HISTORIA_MATERIA`) se usaban en 8 sitios, y
+  **todas las cadenas de llamada nacen en funciones ya `async`** (`loadDataFromLocalMocks`,
+  `doLoadDataFromFirestore`).
+
+Implementación: un `loadSeeds()` privado que hace `Promise.all([...])` con los dos `import()`
+dinámicos y cachea la promesa (coalesce de llamadas concurrentes, mismo patrón que ya usa
+`loadDataFromFirestore()`); `syncLocalChapters()` y `loadLocalFallbacks()` pasan a `async`; `await`
+en los 6 call sites.
+
+**El único punto que necesitó cuidado:** dos usos vivían dentro de
+`capitulosSnap.docs.forEach(doc => {...})`, un callback **síncrono** que no puede hacer `await` (el
+typecheck los cazó — no se detectaron en la lectura inicial). Se resolvieron izando el
+`await this.loadSeeds()` **antes** del bucle, dentro de la función `async` que lo contiene. No se
+pierde nada: para cuando se ejecuta ese código ya estamos cargando la Ruta de Aprendizaje, que es
+justamente el único lugar donde ese contenido hace falta.
+
+**Medición (build de producción, home, A/B en la misma máquina):**
+
+| | Antes | Después |
+|---|---|---|
+| Archivos iniciales | 13 | 13 |
+| Peso inicial raw | 1.76 MB | **1.10 MB** |
+| Peso inicial gzip | 0.49 MB | **0.30 MB** |
+| kB de contenido de seeds en los chunks iniciales | **731.9 kB** | **0 kB** |
+
+`seed-data` (359 kB) y `seed-historia` (333 kB) aparecen ahora como lazy chunks con nombre propio en
+la salida del build, y no están en la lista de `modulepreload` del `index.html` prerenderizado.
+
+**Verificación funcional del camino que más importa:** el harness `/dev/ruta` corre con Firestore
+inyectado como objeto vacío a propósito, así que ejercita exactamente `loadLocalFallbacks()` — el
+camino que ahora depende del `import()` dinámico. Renderiza sus **91 nodos** de Competencia Lectora
+(el mismo número que documenta la bitácora del 2026-08-18), con los 2 errores de consola esperados
+del harness. Los otros 2 escenarios que la evaluación anterior pedía reprobar (carga normal contra
+Firestore, y el *fallback* por fallo de Firestore) **no se probaron contra una base real** — este
+entorno no tiene credenciales de Firestore cargadas.
+
+**Pendiente, no tocado:** sigue siendo cierto que el home pesa ~4.6 MB y que el LCP medido en móvil
+era de 25.9 s — lo de esta sesión ataca el JavaScript de arranque, no las imágenes/vídeo, que son la
+parte más grande. Tampoco se tocaron los 3 links del navbar del home sin `href` (lo único que le
+resta puntos al SEO, 92/100).
 
 ### 2026-08-26 — Ajustes visuales en nodos de Matemáticas (M1/M2), títulos oficiales de los 4 ejes de M2 y blindaje de App Check en localhost
 Build de producción ✅ · validado con `pnpm run build` (código 0).

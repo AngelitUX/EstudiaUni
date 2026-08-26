@@ -63,7 +63,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     </div>
   `,
   styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+    /* Inter ya viene self-hosteada desde styles.css (global). Antes habia un
+       @import a fonts.googleapis.com aqui, que disparaba una peticion a un
+       tercer origen al montar este componente. */
 
     .true-false-wrapper {
       max-width: 650px;
