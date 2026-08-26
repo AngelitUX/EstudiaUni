@@ -42,7 +42,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideFirestore(() => getFirestore(getApp())),
     provideClientHydration(),
-    ...(isBrowserRuntime ? [
+    ...(isBrowserRuntime && (environment.production || (typeof location !== 'undefined' && location.hostname !== 'localhost')) ? [
       provideAppCheck(() => {
         const cpo = new CloudflareProviderOptions(
           environment.turnstileTokenExchangeUrl,
