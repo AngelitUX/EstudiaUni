@@ -104,7 +104,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </button>
 
             <div class="step-header">
-              <img class="step-icon-wrap" src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Pro.svg" alt="Plan PRO" />
+              <img class="step-icon-wrap" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Pro.avif" alt="Plan PRO" />
               <h2>¿Para quién es el Plan Pro?</h2>
               <p>Elige si activar el Pro en tu cuenta o regalárselo a alguien más.</p>
             </div>

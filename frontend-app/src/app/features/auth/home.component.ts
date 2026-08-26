@@ -166,21 +166,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <!-- MODERN BENEFITS BAR (Replaces stats) -->
             <div class="hero-benefits-bar">
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Adaptativo"></div>
+                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Adaptativo"></div>
                 <div class="chip-info">
                   <strong>Adaptativo</strong>
                   <span>La IA crea tu plan de estudio</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MenteVeloz.svg" alt="En tiempo real"></div>
+                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="En tiempo real"></div>
                 <div class="chip-info">
                   <strong>En tiempo real</strong>
                   <span>Explicaciones al instante mientras ensayas</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Logro.svg" alt="100% enfocado"></div>
+                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Logro.avif" alt="100% enfocado"></div>
                 <div class="chip-info">
                   <strong>100% enfocado</strong>
                   <span>Solo contenido oficial PAES</span>
@@ -355,7 +355,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="bento-grid">
             <!-- Large Card 1 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_RutaDeAprendizaje.svg" alt="Rutas de Aprendizaje"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
               <h3>Rutas de Aprendizaje</h3>
               <p>Sigue un plan de estudio estructurado y personalizado. Avanza paso a paso dominando cada tema hasta alcanzar tu puntaje ideal.</p>
               <div class="bento-visual">
@@ -380,7 +380,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
             <!-- Large Card 2 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_Lenguaje.svg" alt="Ensayos PAES"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Lenguaje.avif" alt="Ensayos PAES"></div>
               <h3>Ensayos PAES (Reales y Asistidos)</h3>
               <p>Mídete con ensayos oficiales del DEMRE. Practica en modo real con tiempo límite o en modo asistido con apoyo y feedback al instante.</p>
               <div class="bento-visual">
@@ -405,28 +405,28 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             
             <!-- Small Card 1 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_MiniEnsayos.svg" alt="Práctica Adaptativa"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
               <h3>Práctica Adaptativa</h3>
               <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_m2.svg" alt="Visualiza tu Progreso"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_m2.avif" alt="Visualiza tu Progreso"></div>
               <h3>Visualiza tu Progreso</h3>
               <p>Mide tu avance diario e identifica áreas de mejora al instante.</p>
             </div>
             
             <!-- Small Card 3 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_EnncuentraTuCarrera.svg" alt="Explora tu Futuro"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
               <h3>Explora tu Futuro</h3>
               <p>Descubre universidades y carreras según tu ubicación e intereses.</p>
             </div>
 
             <!-- Small Card 4 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_CerrarSesion.svg" alt="Acceso Inmediato"></div>
+              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
               <h3>Acceso Inmediato</h3>
               <p>Comienza gratis hoy. Sin ingresar tarjeta de crédito.</p>
             </div>

@@ -73,10 +73,10 @@ export class InfiniteMasteryService {
       icon: '📊',
       themeColor: '#0ea5e9',
       axes: [
-        { id: 'numeros_avanzados', name: 'Números Avanzados', shortName: 'Números M2', icon: '🔢', color: '#0284c7', topics: ['Logaritmos', 'Matemática Financiera', 'Complejos', 'Reales'], description: 'Logaritmos, matemática financiera e interés compuesto.' },
-        { id: 'algebra_avanzada', name: 'Álgebra y Modelos', shortName: 'Álgebra M2', icon: '📈', color: '#6366f1', topics: ['Inecuaciones', 'Función Exponencial', 'Función Logarítmica', 'Sistemas 3x3'], description: 'Inecuaciones, funciones exponenciales y modelamiento.' },
-        { id: 'geometria_analitica', name: 'Geometría y Trigonometría', shortName: 'Geometría M2', icon: '📐', color: '#d946ef', topics: ['Trigonometría', 'Geometría 3D', 'Homotecia', 'Esferas'], description: 'Razones trigonométricas, cuerpos redondos y homotecia.' },
-        { id: 'probabilidad_inferencial', name: 'Probabilidad y Distribuciones', shortName: 'Probabilidad M2', icon: '🎲', color: '#f59e0b', topics: ['Distribución Normal', 'Probabilidad Condicional', 'Combinatoria', 'Permutaciones'], description: 'Probabilidad condicional, combinatoria y distribución normal.' }
+        { id: 'reales_logaritmos', name: 'Reales y Logaritmos', shortName: 'Reales y Logaritmos', icon: '🔢', color: '#0284c7', topics: ['Reales', 'Logaritmos', 'Matemática Financiera', 'Interés', 'Complejos', 'Conjuntos'], description: 'Números reales, propiedades de logaritmos y matemática financiera.' },
+        { id: 'trigonometria', name: 'Trigonometría', shortName: 'Trigonometría', icon: '📐', color: '#6366f1', topics: ['Trigonometría', 'Razones Trigonométricas', 'Seno', 'Coseno', 'Tangente', 'Triángulos'], description: 'Razones trigonométricas en triángulos rectángulos y problemas aplicados.' },
+        { id: 'circunferencia', name: 'Circunferencia', shortName: 'Circunferencia', icon: '📏', color: '#d946ef', topics: ['Circunferencia', 'Círculo', 'Geometría 3D', 'Homotecia', 'Esferas', 'Ángulos en la Circunferencia'], description: 'Propiedades de la circunferencia, arcos, sectores y cuerpos geométricos.' },
+        { id: 'dispersion_modelos', name: 'Dispersión y Modelos', shortName: 'Dispersión y Modelos', icon: '🎲', color: '#f59e0b', topics: ['Dispersión', 'Modelos', 'Distribución Normal', 'Probabilidad Condicional', 'Combinatoria', 'Permutaciones', 'Varianza', 'Desviación'], description: 'Medidas de dispersión, modelos probabilísticos y distribución normal.' }
       ]
     },
     'comp-lectora': {

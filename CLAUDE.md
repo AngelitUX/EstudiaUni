@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-25 · Rama en la que se escribió: `CambiosPequeños`
+> Última actualización: 2026-08-26 · Rama en la que se escribió: `imggifmejoras`
 
 ---
 
@@ -667,6 +667,38 @@ siguen presentes.
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
 
+### 2026-08-26 — Ajustes visuales en nodos de Matemáticas (M1/M2), títulos oficiales de los 4 ejes de M2 y blindaje de App Check en localhost
+Build de producción ✅ · validado con `pnpm run build` (código 0).
+
+**1. Ajustes visuales y encuadre de nodos en Matemática (`materia-math-path.component.ts`):**
+- **Nodos completados (`.text-completed`):** Se ancló la tarjeta a `top: 58px`, acoplándose al tercio inferior del círculo del nodo (72px) para que la estrella central (`★`) y el badge de verificación (`✓`) queden 100% visibles y sin obstrucciones.
+- **Nodos no completados / bloqueados / activos:** Se posicionó el texto a `top: 78px` para que se ubique de forma limpia debajo del círculo sin rozar la base del nodo.
+- **Corrección del texto entrecortado y desborde de la tarjeta:** Se eliminó la propiedad conflictiva `[style.bottom]` del template HTML que forzaba una altura fija de ~40px (lo que provocaba que la 3ra línea de texto se saliera por debajo del recuadro blanco). Con `height: auto`, `overflow: visible`, `line-height: 1.35` y `padding: 6px 14px 8px 14px`, la cápsula ahora encierra dinámicamente todo el texto respetando los caracteres con trazo descendente (**p**, **q**, **g**, **j**, **y**) sin recortarlos, tanto en desktop como en resoluciones móviles.
+
+**2. Ejes temáticos oficiales de Matemática M2:**
+- Se actualizaron los 4 ejes temáticos oficiales en `infinite-mastery.service.ts` y `materia-math-path.component.ts`:
+  1. `Reales y Logaritmos`
+  2. `Trigonometría`
+  3. `Circunferencia`
+  4. `Dispersión y Modelos`
+- Se removió la descripción de los banners de capítulo de M2 en `getChapterDisplayDesc()`, dejando únicamente el título visible de forma limpia.
+
+**3. App Check en entorno local:**
+- En `app.config.ts` se acondicionó `provideAppCheck` para que no bloquee con 403 en `localhost` durante pruebas locales cuando el backend de Turnstile no está enlazado.
+
+### 2026-08-25 (parte 7) — Optimización masiva de assets multimedia: GIFs animados de Foco a WebM (VP9 transparente) y migración de Avatares e Íconos SVG a AVIF
+Build de producción ✅ · prerendering de 6 rutas públicas ✅ · verificado con `pnpm run build`.
+
+**Reducción masiva de peso del sitio (de ~279 MB a solo ~5.1 MB, un ahorro total de más de 273 MB):**
+1. **Animaciones de Foco (WebP/GIF a WebM VP9 con canal alfa):**
+   - Los 6 GIFs/WebPs animados de Foco (`focoBiologia`, `focoComprensionLectora`, `focoFisica`, `focoHistoria`, `focoMatematica`, `focoQuimica`), que pesaban entre 2.7 MB y 15.6 MB cada uno (con los GIFs originales sumando más de 272 MB), se convirtieron a videos **WebM (VP9 yuva420p transparente, 440×440 px)** pesando en conjunto solo **4.62 MB** (reducción del 98.3%).
+   - Se reemplazaron las etiquetas `<img>` por `<video autoplay loop muted playsinline class="splash-mascot">` en los 6 componentes de ruta (`materia-biologia-path`, `materia-fisica-path`, `materia-historia-path`, `materia-math-path`, `materia-quimica-path`, `materia-path`) y en `dashboard.component.ts` (avatar del coach Foco).
+2. **Avatares de perfil (SVG a AVIF):**
+   - Los 10 avatares de usuario en `avatarsSVG/` (2.53 MB en total, con `avatar_10.svg` pesando 1.55 MB por vectorización compleja) se migraron a `avatarAVIF/` pesando en total **139 KB** (reducción del 94.5%).
+   - Se actualizaron las referencias en `profile-modal.component.ts` y `profile-settings.component.ts`.
+3. **Íconos de materias y herramientas (SVG a AVIF):**
+   - Los 23 íconos del sistema (`P_Biologia`, `P_m1`, `P_m2`, etc.) en `iconosSVG/` (4.56 MB, con `P_Biologia.svg` en 2.23 MB) se migraron a `IconosAVIF/` pesando solo **351 KB** en conjunto (reducción del 92.3%).
+   - Se actualizó el consumo en 20 componentes y templates mediante el script `backend/scratch/update_assets_to_avif.js`.
 ### 2026-08-25 (parte 3) — Flow sandbox configurado y probado por primera vez de punta a punta
 (2 bugs reales corregidos), transferencia bancaria manual restaurada con comprobante subido por
 el usuario, y panel admin: aprobar con duración explícita + eliminar registros resueltos
