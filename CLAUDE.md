@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-25 · Rama en la que se escribió: `imggifmejoras`
+> Última actualización: 2026-08-26 · Rama en la que se escribió: `imggifmejoras`
 
 ---
 
@@ -617,6 +617,25 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-26 — Ajustes visuales en nodos de Matemáticas (M1/M2), títulos oficiales de los 4 ejes de M2 y blindaje de App Check en localhost
+Build de producción ✅ · validado con `pnpm run build` (código 0).
+
+**1. Ajustes visuales y encuadre de nodos en Matemática (`materia-math-path.component.ts`):**
+- **Nodos completados (`.text-completed`):** Se ancló la tarjeta a `top: 58px`, acoplándose al tercio inferior del círculo del nodo (72px) para que la estrella central (`★`) y el badge de verificación (`✓`) queden 100% visibles y sin obstrucciones.
+- **Nodos no completados / bloqueados / activos:** Se posicionó el texto a `top: 78px` para que se ubique de forma limpia debajo del círculo sin rozar la base del nodo.
+- **Corrección del texto entrecortado y desborde de la tarjeta:** Se eliminó la propiedad conflictiva `[style.bottom]` del template HTML que forzaba una altura fija de ~40px (lo que provocaba que la 3ra línea de texto se saliera por debajo del recuadro blanco). Con `height: auto`, `overflow: visible`, `line-height: 1.35` y `padding: 6px 14px 8px 14px`, la cápsula ahora encierra dinámicamente todo el texto respetando los caracteres con trazo descendente (**p**, **q**, **g**, **j**, **y**) sin recortarlos, tanto en desktop como en resoluciones móviles.
+
+**2. Ejes temáticos oficiales de Matemática M2:**
+- Se actualizaron los 4 ejes temáticos oficiales en `infinite-mastery.service.ts` y `materia-math-path.component.ts`:
+  1. `Reales y Logaritmos`
+  2. `Trigonometría`
+  3. `Circunferencia`
+  4. `Dispersión y Modelos`
+- Se removió la descripción de los banners de capítulo de M2 en `getChapterDisplayDesc()`, dejando únicamente el título visible de forma limpia.
+
+**3. App Check en entorno local:**
+- En `app.config.ts` se acondicionó `provideAppCheck` para que no bloquee con 403 en `localhost` durante pruebas locales cuando el backend de Turnstile no está enlazado.
 
 ### 2026-08-25 (parte 3) — Optimización masiva de assets multimedia: GIFs animados de Foco a WebM (VP9 transparente) y migración de Avatares e Íconos SVG a AVIF
 Build de producción ✅ · prerendering de 6 rutas públicas ✅ · verificado con `pnpm run build`.
