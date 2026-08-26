@@ -948,10 +948,9 @@ bajo impacto; corregido ahora al pedirse una garantía más estricta.** `isValid
 que exige 3h de retención de resultados de ensayo para Plan Básico) calculaba "es Pro" sin
 comparar `endDate`. Un usuario recién vencido podía ver sus resultados antes de las 3h. Corregido
 agregando la misma comparación de fecha (`endDate == null || (endDate is timestamp && endDate >
-request.time)`), mismo patrón ya usado en la regla vecina para `finishedAt`. **Pendiente:** este
-cambio vive en el archivo de reglas pero **no se desplegó** — hace falta `npm run deploy:firestore`
-para que tome efecto en producción. No se corrió porque desplegar reglas de seguridad afecta la
-base de datos real de inmediato para todos; avisar antes de correrlo.
+request.time)`), mismo patrón ya usado en la regla vecina para `finishedAt`. **Desplegado a
+producción el mismo día — ver parte 6, que además encontró y cerró un segundo hueco más grave en
+la misma función mientras se verificaba este despliegue en vivo.**
 
 **`PremiumGuard`** (`backend/src/common/guards/premium.guard.ts`) tiene el mismo hueco (sin
 `endDate`) pero sigue confirmado sin usar en ningún controlador — no se tocó, cero impacto real
@@ -984,6 +983,64 @@ dada en el chat, no en código:
 4. Sugerido, no implementado: si en el futuro esto se vuelve frecuente, una colección
    `refund_requests` simple con estado (pendiente/aprobado/rechazado) sería el siguiente paso
    natural — pero no es necesario para lanzar.
+
+### 2026-08-25 (parte 6) — 🔴 Desplegado el fix de `firestore.rules` de la parte 5, y verificándolo
+en vivo (no solo con `--dry-run`) apareció un segundo hueco preexistente, más grave: cualquier
+usuario Plan Básico —vencido o no, nunca hizo falta ser ex-Premium— podía saltarse por completo la
+retención de 3h con una escritura directa a Firestore. Cerrado y redesplegado el mismo día
+Verificado con el SDK de **cliente** de Firebase (no Admin SDK, que se salta las reglas) autenticado
+como el usuario de prueba real, escribiendo directo a `intentos` para ejercer la regla tal como la
+ejercería un usuario real o alguien con la consola del navegador abierta — 4 escenarios, los 4 con
+el resultado esperado, más un `--dry-run` antes de cada uno de los dos despliegues.
+
+**Contexto:** al pedir "aplica esa regla del firestore, sin romper nada", en vez de solo correr
+`npm run deploy:firestore` y confiar en el `--dry-run` de sintaxis de la parte 5 (que solo prueba
+que compila, no que la lógica hace lo que debe), se probó la regla ya desplegada contra un
+escenario real: cuenta con `endDate` de ayer y `subscription.tier` todavía en `'premium'` (sin
+autocorregir) — el mismo escenario exacto de la parte 5 — intentando terminar un ensayo sin mandar
+`resultsAvailableAt` en absoluto.
+
+**Resultado inesperado: se permitió.** La función `isValidFinish()` ya traía, desde antes de
+cualquier cambio de esta sesión, esta línea:
+```
+let availabilityOk = isPro || !('resultsAvailableAt' in request.resource.data) || (...)
+```
+El problema es el segundo término: `!('resultsAvailableAt' in request.resource.data)` — si el
+campo simplemente **no viene** en la escritura, la regla lo daba por válido igual, sin importar si
+el usuario es Pro o no. Es decir, el campo nunca fue realmente obligatorio para un usuario Free,
+solo "si lo mandas, tiene que ser correcto" — pero mandarlo era opcional. **Esto es anterior a
+cualquier cambio de esta sesión** (no lo introdujo el fix de la parte 5, solo se descubrió al
+probarlo en serio) — cualquier usuario Plan Básico, sin necesidad de haber sido Premium nunca,
+podía abrir la consola del navegador, tomar la instancia de Firestore que la propia página ya
+tiene cargada, y terminar su intento mandando `finishedAt` pero omitiendo `resultsAvailableAt` —
+viendo sus resultados al instante en vez de esperar las 3h.
+
+**Antes de corregirlo a lo bruto, se revisó qué código legítimo de la app depende de terminar SIN
+ese campo — y sí hay uno real:** `FirestoreService.abandonIntento()` marca `status: 'abandoned'`
+sin `resultsAvailableAt` a propósito (un intento abandonado no tiene resultados que mostrar, no
+aplica ningún retraso). Una corrección que exigiera el campo siempre habría roto el flujo de
+abandonar un ensayo para cualquier usuario Free — el escenario exacto de "romper algo" que se
+pidió evitar.
+
+**Corrección real:** el campo pasa a ser obligatorio (no solo validado-si-presente) únicamente
+cuando `status == 'completed'`:
+```
+let availabilityOk = isPro || request.resource.data.status != 'completed' || (
+  'resultsAvailableAt' in request.resource.data && ...
+);
+```
+Verificado con las 4 escrituras reales antes de dar por bueno el redespliegue:
+1. `completed` sin `resultsAvailableAt` (el hueco) → **rechazado** ✅
+2. `completed` con `resultsAvailableAt` = ahora mismo (saltarse el retraso) → **rechazado** ✅
+   (esto ya lo bloqueaba la regla original, se confirmó que seguía bloqueado)
+3. `completed` con `resultsAvailableAt` correcto (+3h) → **permitido** ✅ (el camino real de un
+   usuario Free terminando su ensayo normalmente)
+4. `abandoned` sin `resultsAvailableAt` → **permitido** ✅ (el flujo real de `abandonIntento()`
+   sigue funcionando exactamente igual)
+
+También se reconfirmó el camino Pro (cuenta con `endDate` real restaurado, terminar sin
+`resultsAvailableAt`) — sigue permitido, sin regresión. Documentos de prueba en `intentos/` y el
+`endDate` de prueba de la cuenta quedaron limpiados/restaurados al terminar.
 
 ### 2026-08-25 (parte 2) — Protección contra bots: Firebase App Check + Cloudflare Turnstile,
 más 3 rutas adicionales sin carga diferida corregidas y limpieza de CSS muerto

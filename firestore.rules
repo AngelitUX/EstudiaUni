@@ -139,7 +139,17 @@ service cloud.firestore {
           finishedAt <= request.time + duration.value(2, 'm') &&
           finishedAt >= request.time - duration.value(10, 'm');
 
-        let availabilityOk = isPro || !('resultsAvailableAt' in request.resource.data) || (
+        // `abandonIntento()` (firestore.service.ts) legitimately finishes with
+        // status 'abandoned' and never sets `resultsAvailableAt` at all — there
+        // are no results to reveal for an abandoned attempt, so this only
+        // requires (and validates) the field for a real 'completed' finish.
+        // Found live-testing the fix above: the previous
+        // `!('resultsAvailableAt' in request.resource.data)` escape hatch made
+        // the field OPTIONAL instead of conditionally required, so ANY
+        // Free-tier user — expired or not — could already skip the whole 3h
+        // delay just by omitting it from their own direct Firestore write.
+        let availabilityOk = isPro || request.resource.data.status != 'completed' || (
+          'resultsAvailableAt' in request.resource.data &&
           request.resource.data.resultsAvailableAt is timestamp &&
           request.resource.data.resultsAvailableAt >= finishedAt + duration.value(3, 'h') - duration.value(2, 'm')
         );
