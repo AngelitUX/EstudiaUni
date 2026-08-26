@@ -870,16 +870,16 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
 
   avatarOptions = [
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_1.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_2.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_3.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_4.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_5.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_6.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_7.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_8.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_9.svg',
-    'assets/images/Nuevos VideosEIlustraciones/avatarsSVG/avatar_10.svg'
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_1.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_2.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_3.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_4.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_5.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_6.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_7.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_8.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_9.avif',
+    'assets/images/Nuevos VideosEIlustraciones/avatarAVIF/avatar_10.avif'
   ];
 
   selectAvatar(avatar: string): void {

@@ -147,7 +147,7 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
           </div>
           <div class="action-bar">
             <button class="btn-report" (click)="showReportBugModal = true">
-              <img src="assets/images/Nuevos VideosEIlustraciones/iconosSVG/P_ReportarBug.svg" alt="Reportar un problema" class="report-bug-icon"/>
+              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_ReportarBug.avif" alt="Reportar un problema" class="report-bug-icon"/>
             </button>
             <button class="primary" [class.dirty]="isDirty()" [class.shake]="shakeSaveButton" (click)="saveSettings()" [disabled]="saving || loading || !isDirty()">{{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
           </div>

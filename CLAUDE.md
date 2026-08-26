@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-25 · Rama en la que se escribió: `CambiosPequeños`
+> Última actualización: 2026-08-25 · Rama en la que se escribió: `imggifmejoras`
 
 ---
 
@@ -617,6 +617,20 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-25 (parte 3) — Optimización masiva de assets multimedia: GIFs animados de Foco a WebM (VP9 transparente) y migración de Avatares e Íconos SVG a AVIF
+Build de producción ✅ · prerendering de 6 rutas públicas ✅ · verificado con `pnpm run build`.
+
+**Reducción masiva de peso del sitio (de ~279 MB a solo ~5.1 MB, un ahorro total de más de 273 MB):**
+1. **Animaciones de Foco (WebP/GIF a WebM VP9 con canal alfa):**
+   - Los 6 GIFs/WebPs animados de Foco (`focoBiologia`, `focoComprensionLectora`, `focoFisica`, `focoHistoria`, `focoMatematica`, `focoQuimica`), que pesaban entre 2.7 MB y 15.6 MB cada uno (con los GIFs originales sumando más de 272 MB), se convirtieron a videos **WebM (VP9 yuva420p transparente, 440×440 px)** pesando en conjunto solo **4.62 MB** (reducción del 98.3%).
+   - Se reemplazaron las etiquetas `<img>` por `<video autoplay loop muted playsinline class="splash-mascot">` en los 6 componentes de ruta (`materia-biologia-path`, `materia-fisica-path`, `materia-historia-path`, `materia-math-path`, `materia-quimica-path`, `materia-path`) y en `dashboard.component.ts` (avatar del coach Foco).
+2. **Avatares de perfil (SVG a AVIF):**
+   - Los 10 avatares de usuario en `avatarsSVG/` (2.53 MB en total, con `avatar_10.svg` pesando 1.55 MB por vectorización compleja) se migraron a `avatarAVIF/` pesando en total **139 KB** (reducción del 94.5%).
+   - Se actualizaron las referencias en `profile-modal.component.ts` y `profile-settings.component.ts`.
+3. **Íconos de materias y herramientas (SVG a AVIF):**
+   - Los 23 íconos del sistema (`P_Biologia`, `P_m1`, `P_m2`, etc.) en `iconosSVG/` (4.56 MB, con `P_Biologia.svg` en 2.23 MB) se migraron a `IconosAVIF/` pesando solo **351 KB** en conjunto (reducción del 92.3%).
+   - Se actualizó el consumo en 20 componentes y templates mediante el script `backend/scratch/update_assets_to_avif.js`.
 
 ### 2026-08-25 (parte 2) — Protección contra bots: Firebase App Check + Cloudflare Turnstile,
 más 3 rutas adicionales sin carga diferida corregidas y limpieza de CSS muerto
