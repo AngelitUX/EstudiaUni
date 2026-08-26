@@ -75,6 +75,9 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
                 <td class="font-mono">
                   {{ tx.subscriptionId || tx.transferNumber || tx.id }}
                   <span *ngIf="tx.bankName" class="bank-tag">({{ tx.bankName }})</span>
+                  <button *ngIf="tx.hasReceipt" class="btn-view-receipt" [disabled]="loadingReceiptFor() === tx.id" (click)="viewReceipt(tx.id)">
+                    {{ loadingReceiptFor() === tx.id ? '⏳ Cargando...' : '🧾 Ver comprobante' }}
+                  </button>
                 </td>
                 <td class="amount-cell">$ {{ formatPrice(tx.amount) }}</td>
                 <td>
@@ -95,10 +98,14 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
                 </td>
                 <td>
                   <div class="action-btn-row" *ngIf="tx.type === 'transfer' && tx.status === 'pending_approval'">
-                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id)" title="Aprobar Transferencia y dar PRO">🟢 Aprobar</button>
+                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id, 'monthly')" title="Otorgar 1 mes de Plan PRO">📅 1 Mes</button>
+                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id, 'yearly')" title="Otorgar 1 año de Plan PRO">🗓️ 1 Año</button>
                     <button class="btn-reject-sm" (click)="rejectTransfer(tx.id)" title="Rechazar Comprobante">🔴 Rechazar</button>
                   </div>
-                  <span *ngIf="tx.status !== 'pending_approval'" class="done-text">---</span>
+                  <button *ngIf="tx.type === 'transfer' && (tx.status === 'approved' || tx.status === 'rejected')" class="btn-delete-sm" (click)="deleteTransferRecord(tx.id)" title="Eliminar registro y liberar espacio del comprobante">
+                    🗑️ Eliminar Registro
+                  </button>
+                  <span *ngIf="tx.type === 'flow' || (tx.type === 'transfer' && tx.status !== 'pending_approval' && tx.status !== 'approved' && tx.status !== 'rejected')" class="done-text">---</span>
                 </td>
               </tr>
               <tr *ngIf="filteredTransactions().length === 0">
@@ -148,6 +155,14 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
           </div>
         </div>
 
+        <!-- LIGHTBOX: COMPROBANTE DE TRANSFERENCIA -->
+        <div class="modal-overlay" *ngIf="viewingReceipt()" (click)="closeReceiptView()">
+          <div class="receipt-lightbox" (click)="$event.stopPropagation()">
+            <button class="btn-close" (click)="closeReceiptView()">×</button>
+            <img [src]="viewingReceipt()" alt="Comprobante de transferencia" />
+          </div>
+        </div>
+
       </main>
     </div>
   `,
@@ -180,6 +195,11 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
     .amount-cell { font-weight: 800; color: #059669; }
     .date-cell { color: var(--text-muted); font-size: 0.82rem; }
     .bank-tag { font-size: 0.78rem; color: var(--text-muted); font-weight: normal; }
+    .btn-view-receipt { display: block; margin-top: 0.35rem; border: none; background: none; color: var(--accent-primary); font-weight: 700; font-size: 0.78rem; cursor: pointer; padding: 0; text-decoration: underline; }
+    .btn-view-receipt[disabled] { opacity: 0.6; cursor: wait; text-decoration: none; }
+    .receipt-lightbox { position: relative; max-width: min(90vw, 700px); max-height: 90vh; }
+    .receipt-lightbox img { display: block; max-width: 100%; max-height: 90vh; border-radius: 16px; box-shadow: var(--shadow-lg); }
+    .receipt-lightbox .btn-close { position: absolute; top: -0.75rem; right: -0.75rem; background: #fff; border: 2px solid var(--glass-border); border-radius: 50%; width: 34px; height: 34px; box-shadow: var(--shadow-sm); }
 
     .badge-type { padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.78rem; }
     .badge-type.flow { background: rgba(59,130,246,0.1); color: #2563eb; }
@@ -193,9 +213,11 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
     .status-chip.pending_approval { background: rgba(245,158,11,0.15); color: #b45309; }
     .status-chip.failed, .status-chip.rejected { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
-    .action-btn-row { display: flex; gap: 0.5rem; }
-    .btn-approve-sm { padding: 0.35rem 0.75rem; border-radius: 8px; border: none; background: #10b981; color: #fff; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
-    .btn-reject-sm { padding: 0.35rem 0.75rem; border-radius: 8px; border: none; background: #ef4444; color: #fff; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+    .action-btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-approve-sm { padding: 0.35rem 0.75rem; border-radius: 8px; border: none; background: #10b981; color: #fff; font-weight: 700; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+    .btn-reject-sm { padding: 0.35rem 0.75rem; border-radius: 8px; border: none; background: #ef4444; color: #fff; font-weight: 700; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+    .btn-delete-sm { padding: 0.35rem 0.75rem; border-radius: 8px; border: 1.5px solid var(--glass-border); background: #fff; color: var(--text-muted); font-weight: 700; font-size: 0.78rem; cursor: pointer; white-space: nowrap; }
+    .btn-delete-sm:hover { border-color: #ef4444; color: #ef4444; }
     .done-text { color: var(--text-muted); font-size: 0.8rem; }
 
     .empty-table-cell { text-align: center; padding: 3rem; color: var(--text-muted); }
@@ -251,6 +273,10 @@ export class AdminSubscriptionsComponent implements OnInit {
   grantDurationMonths = 1;
   grantReason = '';
 
+  // Receipt lightbox
+  viewingReceipt = signal<string | null>(null);
+  loadingReceiptFor = signal<string | null>(null);
+
   ngOnInit() {
     this.loadData();
   }
@@ -267,6 +293,24 @@ export class AdminSubscriptionsComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  viewReceipt(transferId: string) {
+    this.loadingReceiptFor.set(transferId);
+    this.paymentService.getTransferReceipt(transferId).subscribe({
+      next: (res) => {
+        this.viewingReceipt.set(res.receiptUrl);
+        this.loadingReceiptFor.set(null);
+      },
+      error: (err) => {
+        this.loadingReceiptFor.set(null);
+        alert('Error al cargar el comprobante: ' + (err.error?.message || err.message));
+      }
+    });
+  }
+
+  closeReceiptView() {
+    this.viewingReceipt.set(null);
   }
 
   countPendingTransfers(): number {
@@ -305,15 +349,28 @@ export class AdminSubscriptionsComponent implements OnInit {
     }
   }
 
-  approveTransfer(transferId: string) {
-    if (!confirm('¿Confirmas aprobar esta transferencia y otorgar el Plan PRO al estudiante?')) return;
-    this.paymentService.adminApproveTransfer({ transferId, action: 'approve' }).subscribe({
+  approveTransfer(transferId: string, planType: 'monthly' | 'yearly') {
+    const label = planType === 'yearly' ? '1 año' : '1 mes';
+    if (!confirm(`¿Confirmas otorgar ${label} de Plan PRO por esta transferencia?`)) return;
+    this.paymentService.adminApproveTransfer({ transferId, action: 'approve', planType }).subscribe({
       next: (res) => {
         this.actionMsg.set(res.message);
         this.loadData();
         setTimeout(() => this.actionMsg.set(''), 5000);
       },
       error: (err) => alert('Error al aprobar: ' + (err.error?.message || err.message))
+    });
+  }
+
+  deleteTransferRecord(transferId: string) {
+    if (!confirm('¿Eliminar este registro y su comprobante permanentemente? Esta acción no se puede deshacer.')) return;
+    this.paymentService.adminDeleteTransferRecord(transferId).subscribe({
+      next: (res) => {
+        this.actionMsg.set(res.message);
+        this.loadData();
+        setTimeout(() => this.actionMsg.set(''), 5000);
+      },
+      error: (err) => alert('Error al eliminar: ' + (err.error?.message || err.message))
     });
   }
 

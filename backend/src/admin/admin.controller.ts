@@ -18,6 +18,7 @@ import {
   ExtendSubscriptionDto,
   RevokeSubscriptionDto,
   ApproveTransferDto,
+  DeleteTransferDto,
 } from '../subscriptions/dto/manual-payment.dto';
 import {
   UpsertModuleDto,
@@ -133,6 +134,21 @@ export class AdminController {
       dto.action,
       user.uid,
       dto.rejectionReason,
+      dto.planType,
     );
+  }
+
+  @Post('subscriptions/transfer/delete')
+  @HttpCode(HttpStatus.OK)
+  async deleteTransferRecord(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: DeleteTransferDto,
+  ) {
+    return this.subscriptionsService.deleteTransferRecord(dto.transferId, user.uid);
+  }
+
+  @Get('subscriptions/transfer/:transferId/receipt')
+  async getTransferReceipt(@Param('transferId') transferId: string) {
+    return this.subscriptionsService.getTransferReceipt(transferId);
   }
 }

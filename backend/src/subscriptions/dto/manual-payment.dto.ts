@@ -85,7 +85,20 @@ export class ApproveTransferDto {
   @IsNotEmpty()
   action: 'approve' | 'reject';
 
+  // Required when action is 'approve' — the admin picks the duration to
+  // grant explicitly (1 month / 1 year) instead of trusting whatever
+  // planType the student originally picked on the transfer form.
+  @IsEnum(['monthly', 'yearly'])
+  @IsOptional()
+  planType?: 'monthly' | 'yearly';
+
   @IsString()
   @IsOptional()
   rejectionReason?: string;
+}
+
+export class DeleteTransferDto {
+  @IsString()
+  @IsNotEmpty()
+  transferId: string;
 }

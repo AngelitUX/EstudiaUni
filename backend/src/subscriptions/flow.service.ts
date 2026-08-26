@@ -334,7 +334,11 @@ export class FlowService {
 
     try {
       const status = await this.request<any>('GET', '/customer/getRegisterStatus', { token });
-      const registered = status.status === 1 || String(status.status).toUpperCase() === 'SUCCESS';
+      // Flow returns `status` as the STRING "1" on success, not the number 1
+      // (confirmed against a real sandbox response) — a strict `=== 1` never
+      // matches, so every registration looked "rejected" even when the card
+      // was actually inscribed.
+      const registered = String(status.status) === '1' || String(status.status).toUpperCase() === 'SUCCESS';
 
       if (!registered) {
         await this.markRegistrationTerminal(regRef, 'rejected');
