@@ -1,4 +1,6 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
 import { FlowService } from './flow.service';
 
 // Intentionally NOT behind FirebaseAuthGuard: Flow's servers call this
@@ -8,7 +10,10 @@ import { FlowService } from './flow.service';
 // parameters typed with a decorated class, so this bypasses it safely.
 @Controller('subscriptions/flow')
 export class FlowWebhookController {
-  constructor(private readonly flowService: FlowService) {}
+  constructor(
+    private readonly flowService: FlowService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
@@ -17,5 +22,22 @@ export class FlowWebhookController {
     // Flow expects a fast 200 to consider the webhook delivered; anything else
     // triggers retries. Errors are already logged inside handleRecurringWebhook.
     return { ok: true };
+  }
+
+  /**
+   * Bridge for the `url_return` Flow uses after card registration. Per Flow's
+   * own docs, this is ALWAYS a POST with `token` in the body — never a GET
+   * with a query string, no matter how many of their examples suggest
+   * otherwise. A static Angular route can't read a POST body once the
+   * browser has navigated there (confirmed in practice: Angular's dev server
+   * and any plain static host both have nothing to hand the SPA), so Flow
+   * can't point straight at `/pago-resultado`. This reads the token
+   * server-side instead and 302s the browser to the SPA with it as a query
+   * param, which `pago-resultado.component.ts` already knows how to read.
+   */
+  @Post('return')
+  returnFromRegistration(@Body('token') token: string, @Res() res: Response) {
+    const frontendUrl = this.configService.get<string>('FRONTEND_APP_URL', 'http://localhost:4200');
+    res.redirect(302, `${frontendUrl}/pago-resultado?token=${encodeURIComponent(token || '')}`);
   }
 }

@@ -29,6 +29,32 @@ export class SubscriptionsService {
   constructor(private readonly firebaseService: FirebaseService) {}
 
   /**
+   * The one correct way to compute "is this user currently Premium" —
+   * checks tier/plan AND that `endDate` (if present) hasn't already passed.
+   * getStatus(), checkFocoTokens() and checkSimulationCooldown() used to
+   * each duplicate an ad-hoc version of this check that skipped the
+   * `endDate` comparison entirely — a subscription whose period had already
+   * ended, but whose `subscription.tier` hadn't been flipped back to 'free'
+   * yet (that only happens as a side effect of checkCredits(), which some
+   * users might never trigger — e.g. someone who only ever chats with Foco
+   * and never starts a quiz/ensayo), stayed "Premium" for those three checks
+   * indefinitely: unlimited real Gemini AI tokens via checkFocoTokens() and
+   * no 48h ensayo cooldown via checkSimulationCooldown(), both real cost/
+   * business-limit exposure, not just a display glitch.
+   */
+  private async isPremiumEffective(uid: string, userData: any): Promise<boolean> {
+    const sub = userData?.subscription;
+    let isPremium = sub?.tier === 'premium' || userData?.plan === 'premium';
+    if (isPremium && sub?.endDate) {
+      const endDate = typeof sub.endDate.toDate === 'function' ? sub.endDate.toDate() : new Date(sub.endDate);
+      if (endDate < new Date()) {
+        isPremium = false;
+      }
+    }
+    return isPremium || (await this.firebaseService.isAdmin(uid));
+  }
+
+  /**
    * Get current subscription status and remaining daily credits.
    */
   async getStatus(uid: string) {
@@ -60,7 +86,7 @@ export class SubscriptionsService {
     }
 
     const subscription = userData.subscription || { tier: userData.plan || 'free', status: 'active' };
-    const isPremium = subscription.tier === 'premium' || userData.plan === 'premium' || (await this.firebaseService.isAdmin(uid));
+    const isPremium = await this.isPremiumEffective(uid, userData);
     const dailyCredits = await this.getResetCredits(uid, userData);
     const focoLimit = isPremium ? PRO_TIER_LIMITS.focoTokens : FREE_TIER_LIMITS.focoTokens;
     const focoUsed = dailyCredits.focoTokensUsedToday || 0;
@@ -101,7 +127,7 @@ export class SubscriptionsService {
       if (userDoc.exists) userData = userDoc.data();
     } catch (e) {}
 
-    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium' || (await this.firebaseService.isAdmin(uid));
+    const isPremium = await this.isPremiumEffective(uid, userData);
     const limit = isPremium ? PRO_TIER_LIMITS.focoTokens : FREE_TIER_LIMITS.focoTokens;
     const dailyCredits = await this.getResetCredits(uid, userData || {});
     const used = dailyCredits.focoTokensUsedToday || 0;
@@ -149,7 +175,7 @@ export class SubscriptionsService {
       if (userDoc.exists) userData = userDoc.data();
     } catch (e) {}
 
-    const isPremium = userData?.subscription?.tier === 'premium' || userData?.plan === 'premium' || (await this.firebaseService.isAdmin(uid));
+    const isPremium = await this.isPremiumEffective(uid, userData);
     if (isPremium) {
       return { inCooldown: false, secondsRemaining: 0 };
     }
@@ -716,7 +742,13 @@ export class SubscriptionsService {
           amount: d.amount,
           planType: d.planType || 'monthly',
           status: d.status,
-          receiptUrl: d.receiptUrl,
+          // The actual image is NOT sent here on purpose — with up to 100
+          // records per load, each carrying a ~100-250KB base64 receipt,
+          // this list would ship several MB on every panel open/refresh
+          // even for transfers resolved months ago. Just a boolean; the
+          // real `receiptUrl` is fetched on demand via getTransferReceipt()
+          // only when an admin actually clicks "Ver comprobante".
+          hasReceipt: !!d.receiptUrl,
           createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt,
         });
       });
@@ -736,7 +768,7 @@ export class SubscriptionsService {
   /**
    * ADMIN: Approve or Reject a manual bank transfer request.
    */
-  async approveTransfer(transferId: string, action: 'approve' | 'reject', adminUid: string, rejectionReason?: string) {
+  async approveTransfer(transferId: string, action: 'approve' | 'reject', adminUid: string, rejectionReason?: string, planType?: 'monthly' | 'yearly') {
     let transfer = this.inMemoryTransfers.get(transferId);
 
     try {
@@ -761,20 +793,25 @@ export class SubscriptionsService {
     }
 
     if (action === 'approve') {
+      // The admin's chosen duration wins over whatever the student picked on
+      // the transfer form — that field is just their stated intent, not
+      // verified by anything, so the grant should reflect what the admin
+      // actually decided to give after checking the receipt.
+      const grantedPlanType = planType || transfer.planType || 'monthly';
       transfer.status = 'approved';
       const recipientUid = transfer.recipientUid || transfer.payerUid;
-      await this.activateSubscription(recipientUid, transfer.planType || 'monthly', { provider: 'transfer' });
+      await this.activateSubscription(recipientUid, grantedPlanType, { provider: 'transfer' });
 
       try {
         await this.firebaseService.firestore
           .collection('manual_payments')
           .doc(transferId)
-          .update({ status: 'approved', approvedBy: adminUid, updatedAt: new Date() });
+          .update({ status: 'approved', approvedBy: adminUid, grantedPlanType, updatedAt: new Date() });
       } catch (e) {}
 
-      await this.logAdminAction('APPROVE_TRANSFER', adminUid, recipientUid, { transferId, amount: transfer.amount, planType: transfer.planType });
+      await this.logAdminAction('APPROVE_TRANSFER', adminUid, recipientUid, { transferId, amount: transfer.amount, planType: grantedPlanType });
 
-      return { success: true, message: 'Transferencia aprobada y Plan Pro activado con éxito.' };
+      return { success: true, message: `Transferencia aprobada — Plan Pro ${grantedPlanType === 'yearly' ? 'anual' : 'mensual'} activado con éxito.` };
     } else {
       transfer.status = 'rejected';
       transfer.rejectionReason = rejectionReason || 'Comprobante inválido';
@@ -790,6 +827,49 @@ export class SubscriptionsService {
 
       return { success: true, message: 'Transferencia rechazada.' };
     }
+  }
+
+  /**
+   * Permanently deletes a resolved transfer record — mainly to reclaim the
+   * space its base64 `receiptUrl` image takes in Firestore once it no
+   * longer matters (the decision is already made and reflected on the
+   * user's subscription). Only allowed for records already approved or
+   * rejected: a pending one still needs its receipt to be reviewable.
+   */
+  async deleteTransferRecord(transferId: string, adminUid: string) {
+    const docRef = this.firebaseService.firestore.collection('manual_payments').doc(transferId);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException('Comprobante de transferencia no encontrado');
+    }
+
+    const transfer = doc.data()!;
+    if (transfer.status !== 'approved' && transfer.status !== 'rejected') {
+      throw new BadRequestException('Solo se pueden eliminar registros ya aprobados o rechazados.');
+    }
+
+    await docRef.delete();
+    this.inMemoryTransfers.delete(transferId);
+
+    await this.logAdminAction('DELETE_TRANSFER_RECORD', adminUid, transfer.recipientUid || transfer.payerUid, { transferId, previousStatus: transfer.status });
+
+    return { success: true, message: 'Registro eliminado.' };
+  }
+
+  /**
+   * Fetches a single transfer's receipt image on demand — kept out of
+   * getAllTransactions()'s list payload for the reason noted there.
+   */
+  async getTransferReceipt(transferId: string): Promise<{ receiptUrl: string }> {
+    const doc = await this.firebaseService.firestore.collection('manual_payments').doc(transferId).get();
+    if (!doc.exists) {
+      throw new NotFoundException('Comprobante de transferencia no encontrado');
+    }
+    const receiptUrl = doc.data()?.receiptUrl;
+    if (!receiptUrl) {
+      throw new NotFoundException('Esta transferencia no tiene comprobante adjunto.');
+    }
+    return { receiptUrl };
   }
 
   private async logAdminAction(action: string, adminUid: string, targetUid: string, extra: Record<string, any> = {}) {
@@ -831,6 +911,7 @@ export class SubscriptionsService {
 
       await userRef.update({
         'subscription.cancelAtPeriodEnd': true,
+        'subscription.status': 'cancelled',
         updatedAt: new Date(),
       });
     } catch (e) {
