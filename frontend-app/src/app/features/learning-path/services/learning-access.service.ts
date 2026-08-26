@@ -34,8 +34,15 @@ export class LearningAccessService {
    */
   readonly isPro = computed(() => {
     const profile = this.firestoreService.profileSignal();
-    const isPremium =
-      profile?.plan === 'premium' || profile?.subscription?.tier === 'premium';
+    // `profile.plan` is the one already corrected for expiry by
+    // FirestoreService.normalizeProfile() (it falls back to the raw
+    // `subscription.tier` itself when not expired, so nothing is lost by
+    // reading only this field). ORing in the raw `subscription.tier` here
+    // too — as this used to — defeated that correction: a cancelled or
+    // expired user whose stale `tier` hadn't been self-healed yet (that only
+    // happens as a side effect of starting a quiz/ensayo) would still read
+    // as Pro here and keep every "Ruta de Aprendizaje" chapter unlocked.
+    const isPremium = profile?.plan === 'premium';
     return isPremium || this.adminService.isAdmin() === true;
   });
 

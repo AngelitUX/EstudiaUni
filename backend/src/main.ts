@@ -2,12 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // bodyParser disabled here on purpose so the two lines below can raise the
+  // limit — Express's default is 100kb, too small for the base64 receipt
+  // image the manual-transfer form sends as `receiptUrl` (a compressed
+  // screenshot easily clears that even at low quality).
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false });
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ extended: true, limit: '5mb' }));
 
   const configService = app.get(ConfigService);
 

@@ -511,7 +511,11 @@ OPENAI_API_KEY          # declarado pero NO usado — el proveedor real es Gemin
 CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET
 FLOW_ENVIRONMENT (sandbox|production) / FLOW_API_KEY / FLOW_SECRET_KEY / FLOW_BASE_URL
 FLOW_PLAN_ID_MONTHLY / FLOW_PLAN_ID_YEARLY
-BACKEND_PUBLIC_URL      # URL HTTPS pública para el webhook de Flow (en dev: ngrok)
+BACKEND_PUBLIC_URL      # URL HTTPS pública para el webhook Y el retorno de registro de Flow (en
+                        # dev: un túnel — ver "Probar Flow en local" más abajo. Se recomienda
+                        # `cloudflared` sobre `ngrok`: varios antivirus ponen en cuarentena el
+                        # binario de ngrok como falso positivo, porque malware real también lo usa
+                        # para túneles C2 — ver Bitácora 2026-08-25 parte 3)
 TURNSTILE_SECRET_KEY    # Secret key de Cloudflare Turnstile (empieza con "0x4AAAAAA...").
                         # La usa AppCheckService (src/app-check/) — ver sección 7.6 y Bitácora
                         # 2026-08-25 (parte 2). Nunca es la misma clave que un sitekey de
@@ -526,6 +530,47 @@ Falta declarar la variable de la API key de Gemini en `.env.example` (el servici
 Flow **no publica credenciales de sandbox compartidas**: cada comercio crea su cuenta en
 `sandbox.flow.cl` y saca su propio API Key + Secret Key.
 
+### Probar Flow en local (cada desarrollador necesita esto una vez)
+
+`backend/.env` no viaja en git (está en `.gitignore`) — a propósito, nunca hay que forzar su
+inclusión. Por eso, después de un `git pull` con estos cambios, la pasarela sigue fallando con
+"Failed to fetch" o "apiKey not found" hasta que cada quien complete su `.env` local (ambos
+errores diagnosticados en la Bitácora 2026-08-25 parte 3).
+
+**La cuenta de sandbox y el API Key/Secret Key SÍ se pueden compartir entre todo el equipo** —
+es dinero de mentira, no hay ningún riesgo en que varios usen la misma cuenta de prueba. Lo único
+que es genuinamente por-máquina es el túnel (`BACKEND_PUBLIC_URL`), porque apunta al backend
+local de cada quien. Camino recomendado para un equipo:
+
+1. **Una sola persona** crea la cuenta en `sandbox.flow.cl` (Mi Cuenta → API Keys) y comparte
+   `FLOW_API_KEY`/`FLOW_SECRET_KEY` con el resto por un canal privado — Slack/Discord DM, gestor
+   de contraseñas del equipo — **nunca por commit ni por chat público**.
+2. Esa misma persona corre `npm run setup:flow-plans` **una sola vez** contra esa cuenta y
+   comparte los dos `FLOW_PLAN_ID_...` que imprime junto con las claves de arriba. `setup-flow-plans.ts`
+   usa IDs fijos (`pro-mensual` / `pro-anual`, no un ID generado al azar por corrida) — por eso
+   estos valores son igual de compartibles que las claves, cualquiera que corra el script otra vez
+   contra la misma cuenta se encontrará con que esos planes ya existen.
+3. **Cada desarrollador**, individualmente, levanta su propio túnel:
+   ```bash
+   cloudflared tunnel --url http://localhost:3000
+   ```
+   (`winget install --id Cloudflare.cloudflared` si no lo tienes — no ngrok, ver nota de
+   `BACKEND_PUBLIC_URL` arriba) y completa su `backend/.env` con las 4 credenciales compartidas
+   (`FLOW_ENVIRONMENT=sandbox`, `FLOW_API_KEY`, `FLOW_SECRET_KEY`, `FLOW_PLAN_ID_MONTHLY`,
+   `FLOW_PLAN_ID_YEARLY`) más su propia `BACKEND_PUBLIC_URL` (la URL de SU túnel, sin `/` final).
+4. Levantar `npm run dev:backend` y `npm run dev:app` como siempre. Al suscribirse, usar la
+   tarjeta de prueba de Flow: `4051885600446623`, cualquier fecha futura, CVV `123` (si pide un
+   RUT/PIN de banco simulado: `11111111-1` / `123`).
+
+Si alguien prefiere aislar sus pruebas del resto del equipo, nada impide que en vez de esto se
+cree su propia cuenta de sandbox y corra `setup:flow-plans` por su cuenta — son pasos idénticos,
+solo que sin compartir nada con nadie.
+
+Si el túnel de alguien se reinicia, su `BACKEND_PUBLIC_URL` cambia — eso NO afecta a los demás ni
+requiere volver a correr `setup:flow-plans` (el `urlCallback` guardado en el plan solo importa
+para el webhook de cobros recurrentes, no para el ida-y-vuelta del navegador al registrar una
+tarjeta), solo hay que actualizar el `.env` de esa persona.
+
 ---
 
 ## 11. Estado del proyecto y pendientes conocidos
@@ -536,7 +581,9 @@ ensayos PAES en ambos modos, mini ensayos, Mente Veloz, Foco IA en todos sus con
 (preguntas, recursos, bugs, suscripciones, **usuarios** — listar/filtrar/otorgar-extender-revocar Premium,
 2026-08-20), calculadora NEM, buscador de carreras, sistema freemium con
 límites y cooldowns, reglas de Firestore endurecidas, SEO (meta tags dinámicos, canonical, JSON-LD,
-sitemap, robots), accesibilidad, notificaciones, landing con videos.
+sitemap, robots), accesibilidad, notificaciones, landing con videos, **pagos con Flow probados de
+punta a punta en sandbox** (registro de tarjeta → suscripción → Premium activo, 2026-08-25) y
+transferencia bancaria manual con comprobante subido por el usuario.
 
 ### 🔴 Bloqueantes para el primer despliegue
 > **El proyecto está en desarrollo — todavía NO está hosteado ni en producción.** Nada de lo siguiente
@@ -548,8 +595,10 @@ sitemap, robots), accesibilidad, notificaciones, landing con videos.
    con Flow, cupones, transferencias y el admin de suscripciones. Hay que desplegar NestJS
    (Cloud Run / Render / Railway) y apuntar `environment.ts` a esa URL HTTPS, agregarla al
    `enableCors` de `main.ts` y ponerla en `BACKEND_PUBLIC_URL`.
-2. **Flow en sandbox.** Falta pasar `FLOW_ENVIRONMENT=production` con credenciales reales y ejecutar
-   `setup:flow-plans` contra producción.
+2. **Flow en producción.** El sandbox ya se probó de punta a punta con éxito (2026-08-25). Falta
+   pasar `FLOW_ENVIRONMENT=production` con credenciales reales de `www.flow.cl` (no las de
+   sandbox — son cuentas distintas, ver sección 10) y ejecutar `setup:flow-plans` contra
+   producción para generar los planes reales.
 3. **Rotar la API secret de Cloudinary.** Ya se quitó del código (2026-08-18), pero **sigue en el
    historial de git**, así que hay que generar una nueva en
    https://console.cloudinary.com/ (Settings → API Keys) y ponerla en `backend/.env`.
@@ -617,6 +666,324 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-25 (parte 3) — Flow sandbox configurado y probado por primera vez de punta a punta
+(2 bugs reales corregidos), transferencia bancaria manual restaurada con comprobante subido por
+el usuario, y panel admin: aprobar con duración explícita + eliminar registros resueltos
+Typecheck ✅ backend y frontend en cada tanda · `nest build` ✅ · `ng build --configuration
+production` ✅ (prerenderiza las 6 rutas igual que antes) · 43/43 tests unitarios de Angular ✅ ·
+**probado de punta a punta con dinero de prueba real contra `sandbox.flow.cl`** (primera vez que
+esto se prueba en este proyecto, no solo compilado) · lógica de aprobar/rechazar/eliminar
+transferencia y de carga diferida del comprobante verificada ejecutando `SubscriptionsService`
+real contra Firestore (vía `@nestjs/testing`, sin pasar por HTTP) con datos de prueba creados y
+borrados en la misma corrida · barrido de consola sin errores en 8+ páginas del sitio con una
+cuenta real.
+
+**Flow, por primera vez, configurado y probado en sandbox — 2 bugs reales encontrados, ninguno
+de los dos era el problema que parecía a primera vista.** El usuario ya tenía cuenta en
+`sandbox.flow.cl` pero nunca se había completado el flujo real (ver bitácora 2026-08-22 parte 16:
+"Flow... nunca se ha ejecutado contra una cuenta real"). Se completó `backend/.env` con
+`FLOW_API_KEY`/`FLOW_SECRET_KEY`/`BACKEND_PUBLIC_URL` (túnel de Cloudflare, no ngrok — ver más
+abajo por qué) y se corrió `npm run setup:flow-plans` con éxito.
+
+- **Primer error, "apiKey not found" en cualquier endpoint de Flow — no era un typo de la clave,
+  era la cuenta equivocada.** El usuario había copiado el API Key desde `www.flow.cl` (producción)
+  en vez de `sandbox.flow.cl` — son dos cuentas y bases de datos de comercio completamente
+  separadas en Flow, cada una con su propio panel "Mis Datos". Confirmado probando la misma clave
+  contra un endpoint distinto (`/customer/list`) con el mismo resultado exacto, lo que descartó
+  que fuera un problema de la ruta de suscripciones o del código.
+- **Segundo error, ya con las credenciales de sandbox correctas: `Cannot POST /pago-resultado`
+  (404) al volver de registrar la tarjeta.** Causa: la documentación oficial de Flow es explícita
+  en que el `url_return` de `/customer/register` **siempre recibe un POST con `token` en el body,
+  nunca un GET con query string** — algo que el código anterior asumía incorrectamente
+  (`pricing-modal.component.ts` comentaba "Flow's documented redirect pattern: a plain GET").
+  Una ruta de Angular no puede leer el body de un POST una vez que el navegador ya navegó ahí (ni
+  en `ng serve`, ni en un hosting estático real — el problema no es específico de desarrollo).
+  Solución: nuevo endpoint puente en el backend, `POST /api/subscriptions/flow/return`
+  ([flow-webhook.controller.ts](backend/src/subscriptions/flow-webhook.controller.ts) —
+  intencionalmente sin guard, igual que el webhook, porque lo llama el navegador antes de que
+  exista sesión), que lee el `token` del body y hace un 302 al SPA con
+  `?token=...` como query param, que sí puede leer `pago-resultado.component.ts`. El frontend
+  ahora manda `url_return` apuntando a este endpoint del backend en vez de directo al SPA
+  (`pricing-modal.component.ts` `proceedCheckout()`).
+- **Tercer error, el más grave — el registro de tarjeta se completaba en Flow de verdad pero el
+  backend igual decía "No se pudo registrar tu tarjeta".** `FlowService.confirmRegistrationAndSubscribe()`
+  comparaba `status.status === 1` (número) contra la respuesta de
+  `/customer/getRegisterStatus` — pero Flow devuelve ese campo como el **string** `"1"`, no el
+  número `1`, confirmado pegándole directo a la API con el token real de una tarjeta ya inscrita
+  (`{"status":"1","creditCardType":"Visa","last4CardDigits":"6623"}`). La comparación estricta
+  nunca coincidía, así que **toda tarjeta registrada correctamente se marcaba como rechazada** —
+  este bug llevaba ahí desde que se escribió el código (bitácora 2026-08-22 parte 16), nunca se
+  había detectado porque nunca se había probado con un registro real hasta ahora. Corregido a
+  `String(status.status) === '1'`. Tras las 3 correcciones, un ciclo completo (tarjeta de prueba
+  de Flow `4051885600446623` → inscripción en Transbank/Webpay sandbox → confirmación → activación)
+  terminó en "¡Bienvenido a Premium! 🚀" con un `subscriptionId` real de Flow.
+- **Nota sobre la herramienta de túnel:** se recomendó `cloudflared` (Cloudflare Tunnel) en vez de
+  `ngrok` porque el antivirus del usuario puso en cuarentena el binario de ngrok (falso positivo
+  conocido: ngrok también lo usa malware real para C2, así que varios antivirus lo detectan de
+  forma genérica). `cloudflared tunnel --url http://localhost:3000` no requiere cuenta y encaja
+  con que el proyecto ya usa Cloudflare para Turnstile.
+
+**Transferencia bancaria manual, de vuelta en el modal de precios — se había quitado por completo
+el 2026-08-22 (parte 16) porque nunca pudo probarse Flow.** El usuario pidió reactivarla, pero
+con un cambio real respecto a como estaba antes: ahora exige **subir una foto/captura del
+comprobante**, no solo escribir el N° de transferencia a mano. La imagen se comprime en el propio
+navegador (mismo patrón que ya usa la foto de perfil: `canvas.toDataURL('image/webp', 0.75)`,
+recorte a 1000px de ancho máx.) y se manda como texto base64 en el campo `receiptUrl` del body —
+sin ningún servicio de subida nuevo (ni Cloudinary, ni Firebase Storage). El botón "Notificar
+Transferencia" ahora exige banco + N° de comprobante + la imagen, antes se podía enviar sin
+ninguna evidencia. Como una imagen base64 comprimida (~100-250 KB típico) supera el límite por
+defecto de Express para el body JSON (100 KB), se subió el límite a 5 MB en
+[main.ts](backend/src/main.ts) (`bodyParser: false` + `express.json({limit:'5mb'})` manual —
+necesario desactivar el parser por defecto de Nest primero, si no corre ADEMÁS del nuevo con el
+límite viejo ganando la carrera). Nada del backend de transferencias estaba roto — solo faltaba
+la UI, que se restauró completa (pestañas Flow/Transferencia, datos bancarios con placeholders,
+igual que antes de quitarse) desde el diff del commit que la eliminó.
+
+**Panel admin (`/admin/suscripciones`) — 3 cambios, a pedido explícito tras ver la primera
+versión funcionando:**
+1. **"Aprobar/Rechazar" → "Otorgar 1 Mes / Otorgar 1 Año / Rechazar".** Antes, aprobar una
+   transferencia le daba al usuario el `planType` que ÉL había marcado al llenar el formulario
+   (mensual o anual) — un campo de solo texto, sin ninguna verificación real detrás. Ahora el
+   admin elige la duración explícitamente al aprobar, y esa elección es la que se otorga
+   (`SubscriptionsService.approveTransfer()` recibe `planType` como parámetro nuevo y le gana al
+   valor guardado en el propio registro de transferencia). El monto que el usuario dice haber
+   transferido sigue siendo solo texto informativo — nada automático lo valida contra lo
+   efectivamente depositado; sigue siendo responsabilidad del admin revisar el comprobante antes
+   de otorgar.
+2. **Botón "🗑️ Eliminar Registro"** — aparece solo cuando `status` es `approved` o `rejected`
+   (nunca en pendientes; el backend lo rechaza explícitamente aunque se le pida vía API
+   directamente, no solo lo oculta la UI). Borra el documento completo de `manual_payments`,
+   comprobante incluido. Ver el punto siguiente sobre por qué esto importa.
+3. **El comprobante ya NO viaja en la lista del panel — se pide solo al hacer clic en "Ver
+   comprobante".** `SubscriptionsService.getAllTransactions()` traía hasta 100 registros de
+   `manual_payments` completos en cada carga/actualización del panel, cada uno con su
+   `receiptUrl` en base64 (~100-250 KB) — es decir, potencialmente varios MB transferidos solo
+   para pintar una tabla, incluyendo comprobantes de transferencias resueltas hace meses que ya
+   nadie necesita ver. Ahora la lista solo manda un booleano (`hasReceipt`), y un nuevo endpoint
+   `GET /api/admin/subscriptions/transfer/:transferId/receipt` trae la imagen real solo cuando el
+   admin efectivamente hace clic en "🧾 Ver comprobante" (con un estado "⏳ Cargando..." mientras
+   llega). Esto es justo lo que hace que el botón "Eliminar Registro" valga la pena: sin la carga
+   diferida, un comprobante sin borrar seguía pesando en cada carga del panel aunque nadie lo
+   mirara nunca más.
+
+**Sobre el costo/espacio de los comprobantes (para que quede documentado, se preguntó
+explícitamente):** el costo de almacenamiento en sí en Firestore es marginal incluso con miles de
+comprobantes acumulados (centavos de dólar al mes) — el problema real nunca fue el costo en
+dólares, sino el peso de la respuesta de `getAllTransactions()` creciendo sin límite con el tiempo
+si nadie borra los registros resueltos. Los puntos 2 y 3 de arriba juntos resuelven esto: la carga
+diferida evita que un comprobante sin borrar pese en cada visita al panel, y "Eliminar Registro"
+permite sacarlo de la base del todo una vez que ya no hace falta.
+
+**Hallazgo del sistema, no relacionado con este trabajo — no corregido, no bloqueante:**
+`ng build --configuration development` falla con `File '@cloudflare/turnstile-firebase-app-check/src/index.ts'
+is missing from the TypeScript compilation` — confirmado que **ya fallaba así antes de este
+trabajo** (reproducido con `git stash` sobre la rama sin tocar). `ng build --configuration
+production` (la que realmente importa para desplegar) sí termina bien y sigue prerenderizando las
+6 rutas — así que esto no bloquea nada real, es una rareza de cómo esa configuración de desarrollo
+en particular resuelve el paquete de Cloudflare (que se instala sin compilar, ver bitácora
+2026-08-25 parte 2). `ng serve` (el flujo real de desarrollo local, usado en todas las pruebas de
+esta sesión) tampoco lo sufre. Queda anotado por si en el futuro alguien intenta correr
+`ng build --configuration development` y se encuentra con esto — no es su culpa ni algo nuevo.
+
+**Pendiente, no de código — coordinación de equipo:** cada desarrollador necesita su PROPIA cuenta
+en `sandbox.flow.cl` (Flow no comparte credenciales de sandbox entre comercios) y su propio túnel
+público corriendo para que `BACKEND_PUBLIC_URL` sea alcanzable — ver la sección de este documento
+sobre cómo levantar el entorno de pagos localmente. `FLOW_PLAN_ID_MONTHLY`/`FLOW_PLAN_ID_YEARLY`
+se generan una vez por cuenta de Flow con `npm run setup:flow-plans`, no se comparten entre
+desarrolladores (cada cuenta sandbox tiene los suyos).
+
+### 2026-08-25 (parte 4) — 🔴 Bug crítico real de facturación: "Cancelar Plan" no cancelaba nada
+en Flow — el usuario seguía siendo cobrado indefinidamente. Corregido y verificado contra Flow
+sandbox real, más un segundo bug relacionado (expiración de Plan PRO ignorada en la Ruta de
+Aprendizaje)
+Typecheck ✅ backend y frontend · `nest build` ✅ · 43/43 tests ✅ · **verificado contra la API
+real de Flow, no solo leyendo el código**: se ejecutó la cancelación real sobre la suscripción de
+prueba activa (`sus_y8ac54b6e9`, creada en la parte 3) y se confirmó con `GET /subscription/get`
+que Flow devolvió `next_invoice_date: null` y `cancel_at` con la fecha real — Flow efectivamente
+dejó de tener programado un próximo cobro. También se simuló el vencimiento de membresía
+(retrasando `endDate` a ayer en el doc de prueba, con reversión inmediata después) para confirmar
+en vivo que el acceso a la Ruta de Aprendizaje se bloquea correctamente pasada la fecha.
+
+**El usuario pidió, antes de hacer commit de los cambios de Flow, que se le asegurara
+explícitamente: (1) que es una suscripción real que cobra automáticamente cada mes/año a la
+tarjeta registrada, y (2) que el botón "Cancelar Plan" del perfil realmente cancela — acceso
+hasta el fin del período pagado, y bloqueo real de las funciones PRO después.** Se auditó todo el
+camino de ambas preguntas en vez de asumir que "ya estaba probado" — y la pregunta 2 destapó un
+bug real, no cosmético.
+
+**Pregunta 1 — confirmado que SÍ es cobro recurrente real e indefinido, hasta que se cancele
+explícitamente.** `setup-flow-plans.ts` nunca envía `periods_number` a `/plans/create` (no existe
+ese parámetro en el código, confirmado por grep en todo el repo) — la documentación de Flow dice
+"si el plan TIENE vencimiento, ingrese aquí el número de períodos", lo que implica que omitirlo
+significa que el plan NO tiene vencimiento fijo. Confirmado además de forma indirecta y concluyente
+con datos reales: antes de cancelar la suscripción de prueba, `GET /subscription/get` mostraba un
+`next_invoice_date` con el próximo cobro programado — es decir, Flow ya tenía agendado seguir
+cobrando el mes siguiente, sin que nadie configurara nada para eso. `/subscription/create`
+(`flow.service.ts` `startCardRegistration`) tampoco manda ningún parámetro que limite la cantidad
+de cobros. Conclusión: mientras no se cancele, Flow cobra la tarjeta registrada cada ciclo
+(mensual o anual) indefinidamente — tal como se espera de una suscripción real.
+
+**Pregunta 2 — el botón "Cancelar Plan" NUNCA había funcionado de verdad, desde que se implementó
+Flow.** Encontrado auditando el camino completo, no solo el backend (que sí estaba bien hecho):
+
+- `profile-modal.component.ts` `executeCancelSubscription()` llamaba a
+  `firestoreService.cancelSubscription()` — un método que hace **una escritura directa del
+  cliente a Firestore**, poniendo únicamente `subscription.status: 'cancelled'`. Nunca toca
+  `cancelAtPeriodEnd`, y **nunca llama a ningún endpoint del backend**. Grep en todo el frontend
+  confirmó cero referencias a `/subscriptions/cancel`, `flowSubscriptionId` o
+  `cancelFlowSubscription` fuera del propio backend.
+- El endpoint correcto ya existía y estaba bien implementado desde antes:
+  `POST /api/subscriptions/cancel` → `SubscriptionsService.cancel()` (pone
+  `subscription.cancelAtPeriodEnd: true`) → si hay `flowSubscriptionId`, el controlador llama a
+  `FlowService.cancelFlowSubscription()` → `POST /subscription/cancel` en la API real de Flow.
+  **Absolutamente nada de este camino se ejecutaba nunca**, porque el frontend jamás lo invocaba.
+- **Efecto real para un usuario que cancelaba antes de este fix:** veía el toast "Mantendrás el
+  acceso Premium hasta el fin de tu período pagado" y creía haber cancelado — pero Flow seguía
+  cobrando su tarjeta cada ciclo, para siempre, sin ninguna forma de detenerlo desde la app. Peor
+  aún: cada cobro exitoso llega por el webhook a `extendSubscriptionPeriod()`
+  (`subscriptions.service.ts`), que solo se salta la renovación si `cancelAtPeriodEnd === true`
+  (nunca se ponía) — así que además de seguir cobrando, **cada cobro seguía extendiendo el
+  `endDate` local**, por lo que ni siquiera "cancelado" en el sentido de "no perder el acceso
+  antes de tiempo" era cierto: nunca se acercaba a expirar.
+- **Corregido:** nuevo método `PaymentService.cancelSubscription()` (frontend) que sí llama a
+  `POST /api/subscriptions/cancel`; `executeCancelSubscription()` ahora lo usa y refleja
+  `cancelAtPeriodEnd`/`status` localmente tras la respuesta. Se agregó `'subscription.status':
+  'cancelled'` a la escritura del backend en `SubscriptionsService.cancel()` (antes solo ponía
+  `cancelAtPeriodEnd`) para que `isSubscriptionCancelled()` en el perfil (que lee `status`) siga
+  funcionando igual que antes. Se borró el método muerto `FirestoreService.cancelSubscription()`
+  (el de la escritura directa) — no queda ningún otro llamador.
+- **Verificado con la suscripción real de prueba de la parte 3**: tras ejecutar la cancelación,
+  `GET /subscription/get` contra Flow mostró `subscription_end`/`cancel_at` con la fecha/hora real
+  de la cancelación y **`next_invoice_date: null`** — la prueba concreta de que Flow ya no tiene
+  ningún cobro futuro programado para esa tarjeta. En Firestore, `endDate` quedó intacto (el
+  usuario mantiene acceso hasta esa fecha) y `cancelAtPeriodEnd`/`status` quedaron correctos.
+
+**Segundo bug encontrado en la misma auditoría, relacionado pero independiente — la Ruta de
+Aprendizaje no bloqueaba a un usuario ya vencido.**
+`LearningAccessService.isPro()` (`learning-path/services/learning-access.service.ts`) calculaba
+`isPremium` con `profile?.plan === 'premium' || profile?.subscription?.tier === 'premium'`. El
+campo `profile.plan` ya viene corregido por vencimiento desde
+`FirestoreService.normalizeProfile()` (compara `endDate` contra la fecha actual y fuerza `'free'`
+si ya pasó) — pero el OR volvía a meter el campo crudo `subscription.tier`, que **nadie corrige
+en el cliente** y en el backend solo se corrige como efecto secundario de `checkCredits()` (se
+dispara solo al iniciar un quiz o ensayo, no al navegar la Ruta). **Efecto real:** un usuario
+cuya membresía ya venció, pero que nunca inició un ensayo/quiz después de vencer, seguía viendo
+**todos los capítulos de pago de la Ruta de Aprendizaje desbloqueados indefinidamente** — el
+resto de la app (dashboard, `isProPlan()`) ya mostraba correctamente "Básico" porque esos sí leen
+solo `.plan`, así que era una inconsistencia visible: dashboard decía Básico, la Ruta seguía
+completa. Corregido quitando el OR — `isPro()` ahora solo lee `profile.plan` (que ya contempla el
+fallback a `subscription.tier` internamente, así que no se pierde nada, solo se elimina la vía
+que se saltaba la corrección por vencimiento). Verificado en vivo retrasando `endDate` de la
+cuenta de prueba a ayer: antes del fix `isPro()` habría dado `true`; después del fix,
+`allowedChapterIds('comp-lectora')` devolvió solo 1 capítulo (el límite gratuito), confirmando
+el bloqueo real.
+
+**Hallazgo menor, reportado pero NO corregido en esta sesión — bajo impacto, no es de dinero ni
+de acceso a contenido pago:** `firestore.rules` (`isValidFinish()`, la regla que exige 3 h de
+retención de resultados para Plan Básico) y `backend/src/common/guards/premium.guard.ts` calculan
+"es Pro" igual que el bug de arriba (`tier`/`plan` sin comparar `endDate`) — mismo tipo de hueco,
+pero de impacto menor: en el peor caso, un usuario recién vencido (que aún no disparó el
+autocorrección de `checkCredits()`) podría ver sus resultados de ensayo antes de las 3 h en vez
+de esperar el retraso del plan gratuito. `PremiumGuard` está confirmado sin usar en ningún
+controlador (grep en todo `backend/src`), así que ese en particular no tiene impacto real hoy.
+Ninguno de los dos afecta dinero ni el acceso a contenido de pago (ruta, ensayos) — decisión de
+no tocar reglas de seguridad de Firestore sin que el equipo lo pida explícitamente, dado que
+requiere `npm run deploy:firestore` para tomar efecto.
+
+### 2026-08-25 (parte 5) — Auditoría exhaustiva de "vencimiento de Premium" en TODO el sistema (no
+solo la Ruta de Aprendizaje): 3 bugs reales más encontrados y corregidos en el backend + 1 en
+`firestore.rules`, alerta clara agregada al pago por transferencia, recomendación de reembolsos
+(sin implementar, a pedido)
+Typecheck ✅ · `nest build` ✅ · **verificado ejecutando `SubscriptionsService` real contra un
+usuario de prueba con `endDate` vencido y `subscription.tier` sin autocorregir** (el escenario
+exacto del bug: cancelado o vencido, pero que nunca disparó el autocorrección de
+`checkCredits()`) · verificado en navegador que la alerta nueva se ve en el paso de transferencia.
+
+**Contexto: el usuario, después del fix de "Cancelar Plan" de la parte 4, pidió una garantía más
+fuerte — no solo que el botón cancele en Flow, sino que TODAS las limitantes de la app
+efectivamente vuelvan a aparecer cuando vence el período.** Se hizo un grep exhaustivo de cada
+lugar del frontend y del backend que calcula "¿es este usuario Premium?", clasificando cada uno
+según si compara `endDate` contra la fecha actual o confía ciegamente en `subscription.tier`.
+
+**Frontend: limpio.** Los ~25 lugares que hacen esta comprobación en el frontend
+(`dashboard.component.ts`, `ensayos-list.component.ts`, `recursos.component.ts`,
+`mente-veloz.component.ts`, `career-finder.component.ts`, `nem-calculator.component.ts`,
+`mini-ensayo-*.component.ts`, `profile-modal.component.ts`, `pricing-modal.component.ts`, etc.)
+usan casi todos `profile?.plan === 'premium'` — el campo que `FirestoreService.normalizeProfile()`
+ya corrige por vencimiento. La única excepción real era `LearningAccessService.isPro()`, corregida
+en la parte 4.
+
+**Backend: 3 bugs reales más, mismo patrón exacto que el de la Ruta de Aprendizaje, pero con más
+impacto porque gatillan gasto real de la API de Gemini y saltan límites de negocio reales — no
+solo un glitch de UI.** `SubscriptionsService` calculaba "es Premium" de forma repetida e
+inconsistente en 4 métodos distintos; solo `checkCredits()` comparaba `endDate`, los otros 3 no:
+- **`checkFocoTokens()`** — la función que autoriza CADA llamada real a Gemini a través de Foco
+  (6 endpoints en `ai-feedback.controller.ts`: chat en ensayo, revisión post-entrega, orientación
+  vocacional, análisis, etc.). Sin el chequeo de `endDate`, un usuario cuya membresía venció pero
+  cuyo `subscription.tier` seguía sin autocorregirse (eso solo pasa como efecto secundario de
+  `checkCredits()`, disparado al iniciar un ensayo/quiz — alguien que solo chatea con Foco sin
+  rendir nunca un ensayo podría no autocorregirse jamás) seguía teniendo **500 fichas de Foco al
+  día en vez de 5** — costo real de API pagado por el negocio, no solo una función de más.
+- **`checkSimulationCooldown()`** — el cooldown de 48h entre ensayos del Plan Básico. Mismo hueco:
+  un usuario vencido-pero-no-autocorregido podía rendir ensayos ilimitados sin esperar el
+  cooldown, indefinidamente.
+- **`getStatus()`** (`GET /api/subscriptions/status`) — mismo hueco en el endpoint que informa el
+  estado de la suscripción. Confirmado que el frontend actual no lo llama nunca (por eso este no
+  se había notado en el uso normal de la app), pero sigue siendo un endpoint real, protegido solo
+  por `FirebaseAuthGuard`, alcanzable por cualquier usuario autenticado con una petición directa.
+
+  **Corrección:** se extrajo un método privado único, `isPremiumEffective(uid, userData)`, que
+  hace la comparación de `tier`/`plan` **y** `endDate` correctamente en un solo lugar, y los 3
+  métodos ahora lo usan en vez de repetir su propia versión incompleta del cálculo (`checkCredits()`
+  no se tocó — ya estaba bien, y además hace la escritura de autocorrección a Firestore que los
+  otros 3 no necesitan hacer). Verificado creando un usuario de prueba con `subscription.tier:
+  'premium'` pero `endDate` de ayer (exactamente el escenario que se saltaba antes): tras el fix,
+  `checkFocoTokens()` devuelve el límite de 5 (antes 500), `checkSimulationCooldown()` aplica el
+  cooldown de 48h real, y `getStatus()` devuelve `tier: 'free'` con límites numéricos en vez de
+  `'unlimited'`.
+
+**`firestore.rules` — mismo hueco, encontrado en la parte 4 pero sin corregir entonces por ser de
+bajo impacto; corregido ahora al pedirse una garantía más estricta.** `isValidFinish()` (la regla
+que exige 3h de retención de resultados de ensayo para Plan Básico) calculaba "es Pro" sin
+comparar `endDate`. Un usuario recién vencido podía ver sus resultados antes de las 3h. Corregido
+agregando la misma comparación de fecha (`endDate == null || (endDate is timestamp && endDate >
+request.time)`), mismo patrón ya usado en la regla vecina para `finishedAt`. **Pendiente:** este
+cambio vive en el archivo de reglas pero **no se desplegó** — hace falta `npm run deploy:firestore`
+para que tome efecto en producción. No se corrió porque desplegar reglas de seguridad afecta la
+base de datos real de inmediato para todos; avisar antes de correrlo.
+
+**`PremiumGuard`** (`backend/src/common/guards/premium.guard.ts`) tiene el mismo hueco (sin
+`endDate`) pero sigue confirmado sin usar en ningún controlador — no se tocó, cero impacto real
+mientras siga así.
+
+**Alerta agregada al paso de transferencia bancaria en el modal de precios**
+(`pricing-modal.component.ts`), a pedido explícito: una caja ⚠️ entre los datos bancarios y el
+formulario, con 3 puntos — la activación no es inmediata (revisión manual, puede tardar horas),
+esto NO es una suscripción (pago único, no se cobra de nuevo solo), y al terminar el período
+todas las funciones PRO se bloquean hasta la próxima transferencia manual. El tercer punto ahora
+es una promesa que el sistema realmente cumple (gracias a los fixes de esta parte y de la parte
+4) — antes de estos fixes habría sido una promesa falsa para el caso específico de "nunca inicia
+un ensayo/quiz tras vencer".
+
+**Reembolsos — recomendación dada, nada implementado (a pedido explícito).** El Términos de
+Servicio (`legal-modal.component.ts`, sección VI) ya declara la política correcta y suficiente
+para no necesitar automatizar nada todavía: sin reembolso proporcional por tiempo no usado, salvo
+que la ley chilena exija lo contrario (derecho a retracto en compras a distancia). Recomendación
+dada en el chat, no en código:
+1. **No hace falta un sistema de autoservicio.** Para el volumen actual, tratar cada solicitud de
+   reembolso como excepción manual vía soporte es lo estándar incluso en SaaS mucho más grandes —
+   evita además construir una superficie que se preste para abuso de la política.
+2. **La mitad de "revocar acceso" ya existe:** `SubscriptionsService.manualRevoke()` y el botón
+   correspondiente en `/admin/usuarios` — nada nuevo que construir ahí.
+3. **La mitad de "devolver el dinero"** depende del método: Flow tiene un endpoint real,
+   `POST /refund/create` (con `/refund/getStatus` y `/refund/cancel`), que acepta un `amount`
+   explícito (reembolso parcial o total) — usable desde el panel de Flow directamente sin escribir
+   código, o integrarlo más adelante si el volumen de solicitudes lo justifica. Para transferencia
+   manual, la devolución sería otra transferencia bancaria manual del propio equipo.
+4. Sugerido, no implementado: si en el futuro esto se vuelve frecuente, una colección
+   `refund_requests` simple con estado (pendiente/aprobado/rechazado) sería el siguiente paso
+   natural — pero no es necesario para lanzar.
 
 ### 2026-08-25 (parte 2) — Protección contra bots: Firebase App Check + Cloudflare Turnstile,
 más 3 rutas adicionales sin carga diferida corregidas y limpieza de CSS muerto

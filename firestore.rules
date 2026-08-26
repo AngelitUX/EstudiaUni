@@ -123,8 +123,16 @@ service cloud.firestore {
       // liberación de resultados (retención de 3h para Plan Básico).
       function isValidFinish() {
         let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-        let isPro = userDoc.get('plan', 'free') == 'premium' ||
-          userDoc.get('subscription', {}).get('tier', 'free') == 'premium';
+        let sub = userDoc.get('subscription', {});
+        // A lapsed/cancelled subscription only gets its `tier` flipped back
+        // to 'free' as a side effect of SubscriptionsService.checkCredits()
+        // (starting a quiz/ensayo) — some users might not trigger that for a
+        // while, so this can't trust `tier` alone or a Free user past their
+        // paid endDate could skip the 3h results-retention delay below.
+        let tierIsPremium = userDoc.get('plan', 'free') == 'premium' || sub.get('tier', 'free') == 'premium';
+        let endDate = sub.get('endDate', null);
+        let notExpired = endDate == null || (endDate is timestamp && endDate > request.time);
+        let isPro = tierIsPremium && notExpired;
         let finishedAt = request.resource.data.finishedAt;
 
         let finishedAtOk = finishedAt is timestamp &&

@@ -27,6 +27,17 @@ export interface CouponValidationResponse {
   finalAmount?: number;
 }
 
+export interface ManualTransferData {
+  planType: 'monthly' | 'yearly';
+  bankName: string;
+  transferNumber: string;
+  amount: number;
+  payerEmail?: string;
+  targetUid?: string;
+  receiptUrl?: string;
+  couponCode?: string;
+}
+
 export interface TransactionRecord {
   id: string;
   type: 'flow' | 'transfer';
@@ -39,7 +50,10 @@ export interface TransactionRecord {
   amount: number;
   planType: 'monthly' | 'yearly';
   status: 'pending' | 'paid' | 'failed' | 'rejected' | 'pending_approval' | 'approved';
-  receiptUrl?: string;
+  // The list endpoint only sends this boolean, never the image itself — see
+  // getAllTransactions() in subscriptions.service.ts. Fetch the real image
+  // on demand with getTransferReceipt() only when actually viewing it.
+  hasReceipt?: boolean;
   createdAt: string | Date;
 }
 
@@ -101,13 +115,31 @@ export class PaymentService {
     return this.http.post<FlowSubscriptionResult>(url, { token });
   }
 
+  /**
+   * Cancels the current subscription. Unlike the old direct-Firestore write
+   * this replaced, this actually reaches Flow: the backend sets
+   * `cancelAtPeriodEnd` (so the next renewal webhook won't extend `endDate`)
+   * AND calls Flow's `/subscription/cancel` to stop the card from being
+   * charged again — see subscriptions.controller.ts `cancel()`. Access is
+   * kept until the already-paid `endDate`, same as before.
+   */
+  cancelSubscription(): Observable<{ success: boolean; message: string; endDate?: string | Date | null; flowSubscriptionId?: string | null }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string; endDate?: string | Date | null; flowSubscriptionId?: string | null }>(`${baseUrl}/api/subscriptions/cancel`, {});
+  }
+
+  /**
+   * Submit a manual bank transfer report. Lands in `manual_payments` with
+   * status `pending_approval` for an admin to approve/reject from
+   * /admin/suscripciones — see subscriptions.service.ts `submitManualTransfer`.
+   */
+  submitManualTransfer(data: ManualTransferData): Observable<{ success: boolean; message: string; transferId: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    const url = `${baseUrl}/api/subscriptions/transfer/submit`;
+    return this.http.post<{ success: boolean; message: string; transferId: string }>(url, data);
+  }
+
   // ── ADMIN PAYMENT ENDPOINTS ──
-  // NOTE: there is intentionally no customer-facing "submit manual transfer"
-  // method here anymore — the pricing modal only offers Flow now (see
-  // pricing-modal.component.ts). The backend endpoint (POST
-  // /subscriptions/transfer/submit) and the admin approval flow below are
-  // kept as-is for the historical/admin-initiated transfer records that
-  // already exist in `manual_payments`.
 
   getAdminTransactions(): Observable<TransactionRecord[]> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
@@ -129,8 +161,18 @@ export class PaymentService {
     return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/revoke`, data);
   }
 
-  adminApproveTransfer(data: { transferId: string; action: 'approve' | 'reject'; rejectionReason?: string }): Observable<{ success: boolean; message: string }> {
+  adminApproveTransfer(data: { transferId: string; action: 'approve' | 'reject'; planType?: 'monthly' | 'yearly'; rejectionReason?: string }): Observable<{ success: boolean; message: string }> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/transfer/approve`, data);
+  }
+
+  adminDeleteTransferRecord(transferId: string): Observable<{ success: boolean; message: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/admin/subscriptions/transfer/delete`, { transferId });
+  }
+
+  getTransferReceipt(transferId: string): Observable<{ receiptUrl: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.get<{ receiptUrl: string }>(`${baseUrl}/api/admin/subscriptions/transfer/${transferId}/receipt`);
   }
 }

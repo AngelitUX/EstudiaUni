@@ -846,23 +846,6 @@ export class FirestoreService {
     return [];
   }
 
-  async cancelSubscription(): Promise<void> {
-    const user = this.auth.currentUser;
-    if (!user) throw new Error('No auth');
-    const docRef = doc(this.firestore, 'users', user.uid);
-    await updateDoc(docRef, {
-      'subscription.status': 'cancelled'
-    });
-    this.cachedProfile$ = null;
-    const current = this.profileSignal();
-    if (current?.subscription) {
-      this.profileSignal.set({
-        ...current,
-        subscription: { ...current.subscription, status: 'cancelled' }
-      });
-    }
-  }
-
   async submitBugReport(report: any): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) throw new Error('No auth');

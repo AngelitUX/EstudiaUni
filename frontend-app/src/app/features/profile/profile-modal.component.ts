@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { updateProfile } from 'firebase/auth';
 import { FirestoreService } from '../../core/services/firestore.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AdminService } from '../admin/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -634,6 +635,7 @@ import { CareerService, Career } from '../../core/services/career.service';
 })
 export class ProfileModalComponent implements OnInit {
   public readonly firestoreService = inject(FirestoreService);
+  private readonly paymentService = inject(PaymentService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(Auth);
   private readonly authService = inject(AuthService);
@@ -899,15 +901,27 @@ export class ProfileModalComponent implements OnInit {
     }, 1000);
   }
 
-  async executeCancelSubscription() {
+  executeCancelSubscription() {
     this.showCancelSubStep2 = false;
     if (this.cancelCountdownInterval) clearInterval(this.cancelCountdownInterval);
-    try {
-      await this.firestoreService.cancelSubscription();
-      this.toast.info('Tu suscripción ha sido cancelada. Mantendrás el acceso Premium hasta el fin de tu período pagado.');
-    } catch {
-      this.toast.error('No se pudo cancelar la suscripción. Contacta a soporte.');
-    }
+    this.paymentService.cancelSubscription().subscribe({
+      next: (res) => {
+        // Reflect the two fields the backend actually changed — cancelAtPeriodEnd
+        // is what stops the next Flow renewal from extending endDate, status is
+        // just what isSubscriptionCancelled() reads for the "already cancelled" UI.
+        const current = this.firestoreService.profileSignal();
+        if (current?.subscription) {
+          this.firestoreService.profileSignal.set({
+            ...current,
+            subscription: { ...current.subscription, status: 'cancelled', cancelAtPeriodEnd: true }
+          });
+        }
+        this.toast.info(res.message || 'Tu suscripción ha sido cancelada. Mantendrás el acceso Premium hasta el fin de tu período pagado.');
+      },
+      error: () => {
+        this.toast.error('No se pudo cancelar la suscripción. Contacta a soporte.');
+      }
+    });
   }
 
   logout() {
