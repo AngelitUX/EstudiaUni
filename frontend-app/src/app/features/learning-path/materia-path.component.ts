@@ -2949,17 +2949,17 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
       const sortedSecciones = this.hasTreeLayout()
         ? [...cap.secciones]
-            .filter(sec => !(sec as any).isSlideGuide)
-            .sort((a, b) => {
-              const lA = a.level !== undefined ? a.level : 1000;
-              const lB = b.level !== undefined ? b.level : 1000;
-              if (lA !== lB) return lA - lB;
+          .filter(sec => !(sec as any).isSlideGuide)
+          .sort((a, b) => {
+            const lA = a.level !== undefined ? a.level : 1000;
+            const lB = b.level !== undefined ? b.level : 1000;
+            if (lA !== lB) return lA - lB;
 
-              // If same level, sort by subcapitulo to maintain consistent columns
-              const subA = (a as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
-              const subB = (b as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
-              return subA.localeCompare(subB);
-            })
+            // If same level, sort by subcapitulo to maintain consistent columns
+            const subA = (a as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
+            const subB = (b as any).tags?.find((t: string) => t.startsWith('subcapitulo:')) || '';
+            return subA.localeCompare(subB);
+          })
         : [...cap.secciones].sort((a, b) => (a.order || 0) - (b.order || 0));
 
       sortedSecciones.forEach((sec) => {
@@ -3157,7 +3157,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     this.showLogoutConfirm = true;
   }
 
-  
+
   // ═══ CALORIMETRY SIMULATOR ═══
   drawCalorimetry() {
     this.calTeq = (this.calMass1 * this.calTemp1 + this.calMass2 * this.calTemp2) / (this.calMass1 + this.calMass2);
@@ -3167,30 +3167,30 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     }
     const canvas = this.calorimetryCanvasRef.nativeElement;
     const ctx = canvas.getContext('2d');
-    if(!ctx) return;
-    
+    if (!ctx) return;
+
     const rect = canvas.getBoundingClientRect();
     if (canvas.width !== rect.width * 2) {
       canvas.width = rect.width * 2;
       canvas.height = rect.height * 2;
       ctx.scale(2, 2);
     }
-    
-    const w = rect.width || canvas.width/2 || 600;
-    const h = rect.height || canvas.height/2 || 300;
-    
+
+    const w = rect.width || canvas.width / 2 || 600;
+    const h = rect.height || canvas.height / 2 || 300;
+
     ctx.clearRect(0, 0, w, h);
-    
+
     const drawBeaker = (x: number, y: number, width: number, height: number, mass: number, temp: number, label: string) => {
-      const r = Math.min(255, Math.max(0, (temp/100) * 255));
-      const b = Math.min(255, Math.max(0, 255 - (temp/100) * 255));
+      const r = Math.min(255, Math.max(0, (temp / 100) * 255));
+      const b = Math.min(255, Math.max(0, 255 - (temp / 100) * 255));
       const color = `rgba(${r}, 50, ${b}, 0.8)`;
-      
+
       const fillHeight = (mass / 500) * (height - 20) + 10;
-      
+
       ctx.fillStyle = color;
       ctx.fillRect(x + 5, y + height - fillHeight - 5, width - 10, fillHeight);
-      
+
       ctx.strokeStyle = 'rgba(255,255,255,0.8)';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -3199,30 +3199,30 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
       ctx.lineTo(x + width, y + height);
       ctx.lineTo(x + width, y);
       ctx.stroke();
-      
+
       ctx.fillStyle = '#fff';
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${mass}g a ${temp}°C`, x + width/2, y + height + 20);
-      ctx.fillText(label, x + width/2, y - 10);
+      ctx.fillText(`${mass}g a ${temp}°C`, x + width / 2, y + height + 20);
+      ctx.fillText(label, x + width / 2, y - 10);
     };
-    
-    drawBeaker(w*0.1, h*0.2, 80, 100, this.calMass1, this.calTemp1, "Sustancia 1");
-    drawBeaker(w*0.75, h*0.2, 80, 100, this.calMass2, this.calTemp2, "Sustancia 2");
-    
-    drawBeaker(w*0.35, h*0.4, 150, 150, this.calMass1 + this.calMass2, this.calTeq, "Mezcla (Equilibrio)");
-    
+
+    drawBeaker(w * 0.1, h * 0.2, 80, 100, this.calMass1, this.calTemp1, "Sustancia 1");
+    drawBeaker(w * 0.75, h * 0.2, 80, 100, this.calMass2, this.calTemp2, "Sustancia 2");
+
+    drawBeaker(w * 0.35, h * 0.4, 150, 150, this.calMass1 + this.calMass2, this.calTeq, "Mezcla (Equilibrio)");
+
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
     ctx.beginPath();
-    ctx.moveTo(w*0.1 + 40, h*0.2 + 130);
-    ctx.lineTo(w*0.35 + 30, h*0.4 + 20);
+    ctx.moveTo(w * 0.1 + 40, h * 0.2 + 130);
+    ctx.lineTo(w * 0.35 + 30, h * 0.4 + 20);
     ctx.stroke();
-    
+
     ctx.beginPath();
-    ctx.moveTo(w*0.75 + 40, h*0.2 + 130);
-    ctx.lineTo(w*0.35 + 120, h*0.4 + 20);
+    ctx.moveTo(w * 0.75 + 40, h * 0.2 + 130);
+    ctx.lineTo(w * 0.35 + 120, h * 0.4 + 20);
     ctx.stroke();
     ctx.setLineDash([]);
   }
@@ -3230,13 +3230,13 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
   // ═══ OPTICS SIMULATOR ═══
   getOpticsDi() {
     if (this.optDist === this.optFocal) return 9999;
-    return 1 / (1/this.optFocal - 1/this.optDist);
+    return 1 / (1 / this.optFocal - 1 / this.optDist);
   }
-  
+
   getOpticsM() {
     return -this.getOpticsDi() / this.optDist;
   }
-  
+
   getOpticsHi() {
     return this.getOpticsM() * this.optHeight;
   }
@@ -3248,22 +3248,22 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     }
     const canvas = this.opticsCanvasRef.nativeElement;
     const ctx = canvas.getContext('2d');
-    if(!ctx) return;
-    
+    if (!ctx) return;
+
     const rect = canvas.getBoundingClientRect();
     if (canvas.width !== rect.width * 2) {
       canvas.width = rect.width * 2;
       canvas.height = rect.height * 2;
       ctx.scale(2, 2);
     }
-    
-    const w = rect.width || canvas.width/2 || 600;
-    const h = rect.height || canvas.height/2 || 300;
+
+    const w = rect.width || canvas.width / 2 || 600;
+    const h = rect.height || canvas.height / 2 || 300;
     const cy = h / 2;
     const cx = w / 2;
-    
+
     ctx.clearRect(0, 0, w, h);
-    
+
     ctx.strokeStyle = 'rgba(255,255,255,0.3)';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
@@ -3272,7 +3272,7 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     ctx.lineTo(w, cy);
     ctx.stroke();
     ctx.setLineDash([]);
-    
+
     ctx.strokeStyle = '#00e5ff';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -3283,20 +3283,20 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     ctx.moveTo(cx - 10, cy - 90); ctx.lineTo(cx, cy - 100); ctx.lineTo(cx + 10, cy - 90);
     ctx.moveTo(cx - 10, cy + 90); ctx.lineTo(cx, cy + 100); ctx.lineTo(cx + 10, cy + 90);
     ctx.stroke();
-    
+
     const pxToCm = 1.5;
     const fpX = this.optFocal * pxToCm;
     ctx.fillStyle = '#ff3b30';
-    ctx.beginPath(); ctx.arc(cx - fpX, cy, 4, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + fpX, cy, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - fpX, cy, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + fpX, cy, 4, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff';
     ctx.font = '12px sans-serif';
     ctx.fillText("F", cx - fpX - 5, cy + 15);
     ctx.fillText("F'", cx + fpX - 5, cy + 15);
-    
+
     const doX = cx - (this.optDist * pxToCm);
     const hoY = cy - (this.optHeight * pxToCm);
-    
+
     const drawArrow = (x: number, yEnd: number, color: string, label: string) => {
       ctx.strokeStyle = color;
       ctx.lineWidth = 4;
@@ -3313,14 +3313,14 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
       ctx.fill();
       ctx.fillText(label, x + 10, yEnd + 10 * dir);
     };
-    
+
     drawArrow(doX, hoY, '#ffc800', 'Obj');
-    
+
     const di = this.getOpticsDi();
     const hi = this.getOpticsHi();
     const diX = cx + (di * pxToCm);
     const hiY = cy - (hi * pxToCm);
-    
+
     ctx.strokeStyle = 'rgba(255, 200, 0, 0.4)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -3329,23 +3329,23 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     if (di > 0 && di < 9999) {
       ctx.lineTo(diX, hiY);
     } else {
-      ctx.lineTo(cx + fpX*2, cy - (hoY - cy));
+      ctx.lineTo(cx + fpX * 2, cy - (hoY - cy));
     }
     ctx.stroke();
-    
+
     ctx.beginPath();
     ctx.moveTo(doX, hoY);
     if (di > 0 && di < 9999) {
       ctx.lineTo(diX, hiY);
     } else {
-      ctx.lineTo(cx + (cx-doX), cy + (cy-hoY));
+      ctx.lineTo(cx + (cx - doX), cy + (cy - hoY));
     }
     ctx.stroke();
-    
+
     if (di > 0 && di < 9999) {
       drawArrow(diX, hiY, '#00ff66', 'Img');
     } else if (di < 0) {
-      ctx.setLineDash([5,5]);
+      ctx.setLineDash([5, 5]);
       ctx.beginPath();
       ctx.moveTo(cx, hoY);
       ctx.lineTo(diX, hiY);
@@ -3384,16 +3384,16 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
 
   animateFaraday = () => {
     if (!this.faraRunning) return;
-    
+
     const canvas = this.faradayCanvasRef?.nativeElement;
     const w = canvas ? canvas.getBoundingClientRect().width : 600;
     const coilX = w / 2;
     const margin = 50;
-    
+
     const prevFlux = this.faraFlux;
-    
+
     this.faraMagnetX += this.faraSpeed * this.faraMagnetDir * 2;
-    
+
     if (this.faraMagnetX > w - margin) {
       this.faraMagnetX = w - margin;
       this.faraMagnetDir = -1;
@@ -3401,13 +3401,13 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
       this.faraMagnetX = margin;
       this.faraMagnetDir = 1;
     }
-    
+
     const distance = Math.abs(this.faraMagnetX - coilX);
     const B = 100 * Math.exp(-(distance * distance) / 10000);
     this.faraFlux = B * this.faraArea;
-    
+
     this.faraEmf = -this.faraN * (this.faraFlux - prevFlux);
-    
+
     this.drawFaraday();
     this.faraAnimReq = requestAnimationFrame(this.animateFaraday);
   };
@@ -3419,88 +3419,88 @@ export class MateriaPathComponent implements AfterViewInit, OnDestroy {
     }
     const canvas = this.faradayCanvasRef.nativeElement;
     const ctx = canvas.getContext('2d');
-    if(!ctx) return;
-    
+    if (!ctx) return;
+
     const rect = canvas.getBoundingClientRect();
     if (canvas.width !== rect.width * 2) {
       canvas.width = rect.width * 2;
       canvas.height = rect.height * 2;
       ctx.scale(2, 2);
     }
-    
-    const w = rect.width || canvas.width/2 || 600;
-    const h = rect.height || canvas.height/2 || 300;
+
+    const w = rect.width || canvas.width / 2 || 600;
+    const h = rect.height || canvas.height / 2 || 300;
     const cy = h / 2;
     const cx = w / 2;
-    
+
     ctx.clearRect(0, 0, w, h);
-    
+
     if (!this.faraRunning && this.faraMagnetX === 0) {
-       this.faraMagnetX = w * 0.2;
+      this.faraMagnetX = w * 0.2;
     }
-    
+
     ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(cx, cy - 80, 40, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy - 80, 40, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#555'; ctx.lineWidth = 4; ctx.stroke();
-    
+
     ctx.strokeStyle = '#ff3b30';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(cx, cy - 60);
     const angle = (this.faraEmf / 50) * (Math.PI / 4);
-    const clampedAngle = Math.max(-Math.PI/2, Math.min(Math.PI/2, angle));
+    const clampedAngle = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, angle));
     ctx.lineTo(cx + Math.sin(clampedAngle) * 35, cy - 60 - Math.cos(clampedAngle) * 35);
     ctx.stroke();
-    
+
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(cx - 20, cy - 50); ctx.lineTo(cx - 40, cy); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(cx + 20, cy - 50); ctx.lineTo(cx + 40, cy); ctx.stroke();
-    
+
     ctx.strokeStyle = '#ffc800';
     ctx.lineWidth = 4;
     for (let i = 0; i < this.faraN; i++) {
-        ctx.beginPath();
-        const offsetX = cx - (this.faraN * 5) + (i * 10);
-        const radiusY = 30 + (this.faraArea);
-        ctx.ellipse(offsetX, cy, 15, radiusY, 0, 0, Math.PI*2);
-        ctx.stroke();
+      ctx.beginPath();
+      const offsetX = cx - (this.faraN * 5) + (i * 10);
+      const radiusY = 30 + (this.faraArea);
+      ctx.ellipse(offsetX, cy, 15, radiusY, 0, 0, Math.PI * 2);
+      ctx.stroke();
     }
-    
+
     const magW = 60;
     const magH = 30;
     ctx.fillStyle = '#ff3b30';
-    ctx.fillRect(this.faraMagnetX - magW/2, cy - magH/2, magW/2, magH);
+    ctx.fillRect(this.faraMagnetX - magW / 2, cy - magH / 2, magW / 2, magH);
     ctx.fillStyle = '#00e5ff';
-    ctx.fillRect(this.faraMagnetX, cy - magH/2, magW/2, magH);
+    ctx.fillRect(this.faraMagnetX, cy - magH / 2, magW / 2, magH);
     ctx.fillStyle = '#fff';
     ctx.font = '14px sans-serif';
-    ctx.fillText('N', this.faraMagnetX - magW/4 - 5, cy + 5);
-    ctx.fillText('S', this.faraMagnetX + magW/4 - 5, cy + 5);
-    
+    ctx.fillText('N', this.faraMagnetX - magW / 4 - 5, cy + 5);
+    ctx.fillText('S', this.faraMagnetX + magW / 4 - 5, cy + 5);
+
     ctx.strokeStyle = 'rgba(255, 59, 48, 0.5)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(this.faraMagnetX - magW/2, cy);
+    ctx.moveTo(this.faraMagnetX - magW / 2, cy);
     ctx.lineTo(this.faraMagnetX - magW, cy);
     ctx.stroke();
-    
+
     if (Math.abs(this.faraEmf) > 0.1) {
-       ctx.fillStyle = '#00ff66';
-       ctx.font = 'bold 20px sans-serif';
-       ctx.fillText(`ε = ${this.faraEmf.toFixed(1)} V`, cx - 30, cy + 70);
-       
-       ctx.strokeStyle = '#00ff66';
-       ctx.lineWidth = 3;
-       ctx.beginPath();
-       if (this.faraEmf > 0) {
-           ctx.moveTo(cx - 30, cy + 30); ctx.lineTo(cx - 10, cy + 30);
-           ctx.lineTo(cx - 15, cy + 25);
-       } else {
-           ctx.moveTo(cx + 30, cy + 30); ctx.lineTo(cx + 10, cy + 30);
-           ctx.lineTo(cx + 15, cy + 25);
-       }
-       ctx.stroke();
+      ctx.fillStyle = '#00ff66';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText(`ε = ${this.faraEmf.toFixed(1)} V`, cx - 30, cy + 70);
+
+      ctx.strokeStyle = '#00ff66';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      if (this.faraEmf > 0) {
+        ctx.moveTo(cx - 30, cy + 30); ctx.lineTo(cx - 10, cy + 30);
+        ctx.lineTo(cx - 15, cy + 25);
+      } else {
+        ctx.moveTo(cx + 30, cy + 30); ctx.lineTo(cx + 10, cy + 30);
+        ctx.lineTo(cx + 15, cy + 25);
+      }
+      ctx.stroke();
     }
   }
 

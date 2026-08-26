@@ -2757,7 +2757,7 @@ export class MateriaBiologiaPathComponent implements AfterViewInit, OnDestroy {
     if (item.nodes!.length === 1) return 'none';
     // For 2 nodes (double branch): always symmetric, no zigzag
     if (item.nodes!.length === 2) {
-      
+
       return `none`;
     }
     const zig = this.getAccordionZigzag(item.rowIndex!);

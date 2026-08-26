@@ -238,8 +238,8 @@ type PathItem = {
                       <span class="splash-badge" [class.badge-completed]="getChapterProgress(item.capituloId).pct === 100">
                         Capítulo {{ getChapterNum(item.capituloId) }} <span *ngIf="getChapterProgress(item.capituloId).pct === 100">✓</span>
                       </span>
-                      <h2 class="splash-title">{{ item.title }}</h2>
-                      <p class="splash-desc" *ngIf="item.capituloId === 'cap-localizar'">Identifica y extrae información explícita del texto. Domina sinónimos, paráfrasis y la técnica de escaneo.</p>
+                      <h2 class="splash-title">{{ getChapterDisplayTitle(item) }}</h2>
+                      <p class="splash-desc" *ngIf="getChapterDisplayDesc(item)">{{ getChapterDisplayDesc(item) }}</p>
                       <div class="splash-stats">
                         <div class="ss"><span class="ss-icon">📚</span> {{ getChapterNodeCount(item.capituloId) }} Lecciones</div>
                         <div class="ss" *ngIf="getChapterWeight(item.capituloId)"><span class="ss-icon">📊</span> {{ getChapterWeight(item.capituloId) }}</div>
@@ -398,8 +398,7 @@ type PathItem = {
                         [class.title-boss]="node.isBoss && !node.isCrown"
                         [class.title-crown]="node.isCrown"
                         [class.title-practice]="!node.isBoss && !node.isCrown && isPracticeNode(node)"
-                        [class.node-title-branch]="item.nodes!.length > 2"
-                        [style.bottom]="(hasTreeLayout() && node.title.length > 25) ? '-60px' : (node.status === 'active' ? '-36px' : '-32px')">
+                        [class.node-title-branch]="item.nodes!.length > 2">
                         {{ node.isPremiumLocked ? '???' : node.title }}
                       </div>
                     </div>
@@ -1613,17 +1612,21 @@ type PathItem = {
     /* NODE FLOATING TITLE (BOTTOM) */
     .node-title { 
       position: absolute; 
+      top: 78px;
       left: 50%; 
       transform: translateX(-50%); 
       font-family: var(--font-heading); 
-      font-size: 0.95rem; 
+      font-size: 0.88rem; 
       font-weight: 800; 
       color: var(--text-secondary); 
-      white-space: nowrap;
+      white-space: normal;
       text-align: center;
       pointer-events: none; 
       transition: all 0.2s; 
       text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); 
+      line-height: 1.35;
+      z-index: 4;
+      box-sizing: border-box;
     }
     .node-title.historia-title {
       font-size: 0.9rem;
@@ -1631,17 +1634,21 @@ type PathItem = {
       width: 150px;
       max-width: 150px;
       text-align: center;
-      line-height: 1.2;
+      line-height: 1.3;
     }
     .text-completed { 
+      top: 58px;
       color: #3d8c00; 
       background: rgba(255, 255, 255, 0.95); 
-      padding: 4px 10px; 
-      border-radius: 12px; 
+      padding: 6px 14px 8px 14px; 
+      border-radius: 14px; 
       border: 1.5px solid rgba(88, 204, 2, 0.4); 
       box-shadow: 0 4px 12px rgba(88, 204, 2, 0.15); 
       text-shadow: none;
       z-index: 5;
+      height: auto;
+      max-height: none;
+      overflow: visible;
     }
     .text-active { color: var(--accent-primary); }
     
@@ -5085,6 +5092,27 @@ export class MateriaMathPathComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.router.navigate(['/ruta', this.materiaId(), capId]);
+  }
+
+  getChapterDisplayTitle(item: any): string {
+    if (this.materiaId() === 'mat2') {
+      const idx = this.getChapterNum(item.capituloId) - 1;
+      const m2Titles = [
+        'Reales y Logaritmos',
+        'Trigonometría',
+        'Circunferencia',
+        'Dispersión y Modelos'
+      ];
+      if (idx >= 0 && idx < m2Titles.length) return m2Titles[idx];
+    }
+    return item.title || '';
+  }
+
+  getChapterDisplayDesc(item: any): string {
+    if (item?.capituloId === 'cap-localizar') {
+      return 'Identifica y extrae información explícita del texto. Domina sinónimos, paráfrasis y la técnica de escaneo.';
+    }
+    return '';
   }
 
   getChapterNum(capId: string): number {
