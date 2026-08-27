@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-26 (parte 4) · Rama en la que se escribió: `master`
+> Última actualización: 2026-08-26 (parte 5) · Rama en la que se escribió: `master`
 
 ---
 
@@ -588,22 +588,21 @@ transferencia bancaria manual con comprobante subido por el usuario.
 ### 🔴 Bloqueantes para el primer despliegue
 > **El FRONTEND ya está en producción en `https://estudiauni.cl`** (Firebase Hosting, target `app`).
 > Se despliega con `actualizar.bat` en la raíz del repo — ver Bitácora 2026-08-26 (parte 3).
-> **El BACKEND NestJS sigue sin desplegar en ningún lado**, y eso es lo que hace que el punto 1 de
-> abajo sea el bloqueante real: en el sitio publicado no funciona nada que pase por el backend
-> (Foco, análisis IA, pagos Flow, cupones, transferencias, panel de suscripciones).
+> **El BACKEND NestJS también está en producción** desde el 2026-08-26 (parte 5): corre en Cloud
+> Run y se despliega con `desplegar-backend.bat`. Firebase Hosting enruta `/api/**` hacia él, así
+> que responde en el mismo dominio. Lo que queda abajo ya no son bloqueantes de infraestructura,
+> sino cabos sueltos de configuración.
 
-1. **`environment.ts` (el de producción) apunta a `apiUrl: 'http://localhost:3000'`.**
-   > **Estado 2026-08-26 (parte 4):** el backend ya está PREPARADO para Cloud Run (Dockerfile
-   > verificado, `desplegar-backend.bat`, generación de variables de entorno). Solo faltan dos cosas
-   > que dependen del dueño de la cuenta: **activar el plan Blaze** e **instalar `gcloud`**. Después,
-   > el rewrite `/api/**` de `firebase.json` deja el backend en el mismo dominio y este bloqueante
-   > desaparece. Ver Bitácora 2026-08-26 (parte 4).
+1. ~~`environment.ts` apunta a localhost~~ — **RESUELTO el 2026-08-26 (parte 5).**
+   El backend NestJS corre en **Cloud Run** (servicio `estudiauni-api`, región
+   `southamerica-west1`) y `firebase.json` enruta `/api/**` hacia él, así que vive en el mismo
+   dominio: `https://estudiauni.cl/api/...`. `apiUrl` ya apunta ahí. Verificado en producción:
+   las rutas del backend responden 401 a través del dominio y no queda ninguna petición a localhost.
+   Se despliega con `desplegar-backend.bat`. Ver Bitácora 2026-08-26 (parte 5).
+   > 🟡 Queda un cabo suelto: `TURNSTILE_SECRET_KEY` no está en `backend/.env`, así que el
+   > intercambio de token de App Check devuelve un token vacío. No bloquea nada mientras App Check
+   > siga en "Supervisión" — pero rompería el sitio entero si alguien lo pasa a "Aplicar".
 
-   Si se despliega
-   así, en la web publicada fallará todo lo que pasa por el backend: chat con Foco, análisis IA, pagos
-   con Flow, cupones, transferencias y el admin de suscripciones. Hay que desplegar NestJS
-   (Cloud Run / Render / Railway) y apuntar `environment.ts` a esa URL HTTPS, agregarla al
-   `enableCors` de `main.ts` y ponerla en `BACKEND_PUBLIC_URL`.
 2. **Flow en producción.** El sandbox ya se probó de punta a punta con éxito (2026-08-25). Falta
    pasar `FLOW_ENVIRONMENT=production` con credenciales reales de `www.flow.cl` (no las de
    sandbox — son cuentas distintas, ver sección 10) y ejecutar `setup:flow-plans` contra
@@ -675,6 +674,89 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-26 (parte 5) — 🟢 BLOQUEANTE #1 RESUELTO: el backend está desplegado en Cloud Run y el
+sitio ya habla con él. `apiUrl` deja de apuntar a localhost por primera vez
+Typecheck ✅ · `ng build --configuration production` ✅ con las 6 rutas prerenderizadas · **backend
+desplegado y verificado en vivo** (logs de arranque reales, no solo "deploy complete") · frontend
+publicado y verificado a través del dominio.
+
+**El backend NestJS corre en Cloud Run.** Servicio `estudiauni-api`, región `southamerica-west1`
+(Santiago — donde están los usuarios; la latencia contra EE.UU. se nota en el chat con Foco).
+URL directa: `https://estudiauni-api-976475724065.southamerica-west1.run.app`.
+
+Se hizo con `desplegar-backend.bat` (creado en la parte 4). Detalles del proceso real:
+- Antes del despliegue se habilitaron a mano las APIs `run`, `cloudbuild` y `artifactregistry`. Si no
+  se hace, gcloud lo pregunta **a mitad del despliegue** y un script desatendido se queda colgado.
+- Cloud Build **usó el Dockerfile** del repo (lo dice en su salida), no los buildpacks genéricos.
+- gcloud preguntó además si crear el repositorio de Artifact Registry. Se le añadió `--quiet` al
+  comando del `.bat` para que esto no vuelva a pasar.
+- **No hace falta Docker en la máquina del desarrollador.** `--source` sube el código y lo construye
+  en la infraestructura de Google. El Dockerfile es la receta que lee Cloud Build, no algo que se
+  ejecute en local. (Duda razonable que surgió y conviene dejar por escrito.)
+
+**Verificación del arranque real, no solo del despliegue.** Los logs de Cloud Run muestran:
+- `Firebase initialized with cert credentials for project: estudiauni` — es decir, **la clave PEM
+  sobrevivió intacta** el viaje `.env` → YAML → variable de entorno de Cloud Run. Justo el bug que
+  se cazó y corrigió en la parte 4; de no haberse arreglado, el servidor habría arrancado sin poder
+  hablar con Firebase.
+- `EstudiaUni API escuchando en el puerto 8080` — Cloud Run inyectó su `PORT` y la app lo tomó.
+- **No** aparece el aviso `Gemini API key not configured`, así que Foco tiene su clave.
+
+**Conectado al sitio — los dos cambios que faltaban:**
+1. `firebase.json`: nuevo rewrite `/api/**` → servicio de Cloud Run, **colocado ANTES** del comodín
+   `**`. El orden es lo único delicado: Firebase evalúa de arriba abajo y se queda con la primera
+   coincidencia, así que con el comodín primero se tragaría también `/api/**`.
+2. `environment.ts`: `apiUrl` pasa de `http://localhost:3000` a **`https://estudiauni.cl`**.
+   > ⚠️ **No poner `''` para decir "mismo origen".** El frontend hace
+   > `environment.apiUrl || 'http://localhost:3000'` en **22 sitios** y la cadena vacía es *falsy*:
+   > caería al localhost en producción. Tiene que ser el dominio completo.
+
+Con esto el backend vive en `estudiauni.cl/api/...`: **mismo origen**, así que no hay CORS de por
+medio ni una URL de backend aparte que se pueda escribir mal.
+
+**Verificado en producción, a través del dominio (no contra la URL de Cloud Run):**
+
+| Prueba | Resultado |
+|---|---|
+| `estudiauni.cl/api/subscriptions/status` | **401** con el JSON de error del backend |
+| `/api/ai/chat`, `/api/ai/analyze-attempt`, `/api/ai/study-coach` | **401** (existen y exigen sesión; serían 404 si el rewrite no llegara) |
+| `/`, `/dashboard` | 200, sitio intacto |
+| Peticiones a `localhost` desde el navegador | **0** |
+| `localhost:3000` en el bundle | solo los 18 respaldos `apiUrl \|\| localhost`, ya inalcanzables |
+
+`/soporte` devuelve 301 → `/soporte/` → 200 con su `<title>` correcto: es la redirección de barra
+final estándar de Firebase Hosting, ya ocurría antes de este cambio. No es una regresión.
+
+**🟡 Pendiente que quedó al descubierto: `TURNSTILE_SECRET_KEY` no está en `backend/.env`.**
+La consola del sitio publicado muestra errores repetidos `TurnstileError 600010`. Hay dos cosas
+distintas mezcladas ahí y conviene no confundirlas:
+- El **widget** de Turnstile falla en el navegador con `600010` (fallo genérico del desafío). En la
+  URL de vista previa el error era `110200` ("dominio no autorizado"), lo que confirma que
+  `estudiauni.cl` **sí** está registrado en Cloudflare.
+- Aunque el widget resolviera, el **intercambio de token no puede funcionar**: se comprobó
+  `POST estudiauni.cl/api/app-check/exchange` con un token falso y devuelve
+  `{"token":"","expireTimeMillis":0}` — el contrato de fallo documentado, porque el backend no tiene
+  `TURNSTILE_SECRET_KEY`. La variable está en `.env.example` pero **sin valor en el `.env` real**.
+
+  **Para cerrarlo:** poner la secret key de Turnstile (empieza con `0x4AAAAAA...`, se saca del panel
+  de Cloudflare) en `backend/.env` y volver a ejecutar `desplegar-backend.bat`. No bloquea nada hoy:
+  App Check sigue en "Supervisión", no en "Aplicar" — verificado con una lectura REST directa a
+  Firestore que devuelve 200. **Si alguien lo pasa a "Aplicar" antes de arreglar esto, el sitio
+  dejaría de funcionar para todos.**
+
+**Sin verificar, y hace falta una cuenta real:** que Foco *responda de verdad*. Lo comprobado es que
+las rutas existen y rechazan correctamente a quien no manda token (401). El camino completo —usuario
+con sesión → token de Firebase → guard → Gemini → respuesta— **no se pudo probar**, porque requiere
+iniciar sesión con una cuenta real en el navegador. Es lo primero que conviene probar a mano.
+
+**Costos, para que quede anotado:** el servicio va con `--min-instances 0`, así que se apaga solo
+cuando nadie lo usa y no cobra tiempo ocioso (a cambio, la primera petición tras un rato tarda unos
+segundos en despertar), `--max-instances 3` y 512 MiB. Para una beta, Cloud Run y Cloud Build caen
+de sobra dentro de la capa gratuita. Los dos costos que sí crecen con el uso son **la API de Gemini**
+(cada mensaje a Foco) y **Artifact Registry**, que acumula una imagen por despliegue (0,5 GB gratis;
+conviene borrar imágenes viejas o poner una política de limpieza). Recomendado: configurar una
+**alerta de presupuesto** en Google Cloud — Blaze no tiene tope por defecto.
 
 ### 2026-08-26 (parte 4) — Backend preparado para Cloud Run: Dockerfile verificado, arranque
 endurecido para contenedor, y `desplegar-backend.bat`. Falta activar Blaze e instalar gcloud

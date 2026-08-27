@@ -162,7 +162,12 @@ REM  --allow-unauthenticated: el servicio tiene que ser alcanzable desde el
 REM  navegador de cualquier visitante. La autenticacion real la hace la propia
 REM  app con el token de Firebase en cada peticion (FirebaseAuthGuard), no el
 REM  control de acceso de Google Cloud.
+REM  --quiet: que gcloud no haga preguntas a mitad del proceso (por ejemplo,
+REM  "creo el repositorio de Artifact Registry?"). Ya hay una confirmacion
+REM  propia mas arriba; una pregunta extra aqui solo consigue que el script se
+REM  quede colgado esperando si se ejecuta de forma desatendida.
 call "!GCLOUD!" run deploy %SERVICIO% ^
+    --quiet ^
     --source backend ^
     --project %PROYECTO% ^
     --region %REGION% ^

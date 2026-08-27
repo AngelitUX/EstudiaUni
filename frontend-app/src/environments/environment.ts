@@ -1,4 +1,11 @@
-const apiUrl = 'http://localhost:3000';
+// El backend NestJS corre en Cloud Run (servicio "estudiauni-api", region
+// southamerica-west1) y Firebase Hosting enruta /api/** hacia el, por lo que
+// vive en el MISMO dominio que el sitio: sin CORS y sin una URL aparte.
+//
+// No poner '' para decir "mismo origen": el frontend hace
+// `environment.apiUrl || 'http://localhost:3000'` en 22 sitios y la cadena
+// vacia es falsy, asi que caeria al localhost. Tiene que ser el dominio.
+const apiUrl = 'https://estudiauni.cl';
 
 export const environment = {
   production: true,

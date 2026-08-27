@@ -13,6 +13,13 @@
     ],
     "rewrites": [
       {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "estudiauni-api",
+          "region": "southamerica-west1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.csr.html"
       }
