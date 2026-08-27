@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { mensajeErrorGoogle } from '../../../core/utils/auth-error';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -107,7 +108,7 @@ export class LoginComponent {
         this.router.navigate(['/dashboard']);
       }
     } catch (e: any) {
-      this.error = 'Error al iniciar sesión con Google.';
+      this.error = mensajeErrorGoogle(e);
     } finally {
       this.loading = false;
     }

@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { mensajeErrorGoogle } from '../../../core/utils/auth-error';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -232,7 +233,7 @@ export class RegisterComponent {
       await this.authService.loginWithGoogle();
       this.router.navigate(['/dashboard']);
     } catch (e: any) {
-      this.error = 'Error al registrarse con Google.';
+      this.error = mensajeErrorGoogle(e);
     } finally {
       this.loading = false;
     }
