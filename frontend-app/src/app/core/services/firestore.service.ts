@@ -243,18 +243,6 @@ export class FirestoreService {
     }
   }
 
-  async markTutorialAsSeen(uid: string): Promise<void> {
-    try {
-      await setDoc(doc(this.firestore, 'users', uid), { hasSeenTutorial: true }, { merge: true });
-      const current = this.profileSignal();
-      if (current && current.uid === uid) {
-        this.profileSignal.set({ ...current, hasSeenTutorial: true });
-      }
-    } catch (e) {
-      console.error('Error marking tutorial as seen:', e);
-    }
-  }
-
   async findUidByEmail(email: string): Promise<string | null> {
     try {
       const usersRef = collection(this.firestore, 'users');

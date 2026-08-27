@@ -23,8 +23,6 @@ import {
   FocoTokensExhaustedError,
   PremiumOnlyError,
 } from '../../core/services/ai-assist.service';
-import { driver } from 'driver.js';
-import 'driver.js/dist/driver.css';
 
 import { StreakIconComponent } from '../../shared/components/streak-icon.component';
 import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.component';
@@ -545,21 +543,6 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
 
     <!-- MODALS -->
     
-    <!-- TUTORIAL MODAL -->
-    <div class="modal-overlay animate-fade-in" *ngIf="showTutorialModal" style="display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);">
-      <div class="modal-container glass-card" style="max-width: 450px; text-align: center; padding: 2.5rem; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 24px; color: white;" (click)="$event.stopPropagation()">
-        <div class="modal-icon" style="font-size: 3.5rem; margin-bottom: 1rem; animation: icon-bounce 2s infinite ease-in-out;">🎉</div>
-        <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem; color: #fff; background: linear-gradient(135deg, #fff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">¡Bienvenido a EstudiaUni!</h2>
-        <p style="color: #cbd5e1; margin-bottom: 2rem; line-height: 1.6; font-size: 0.95rem;">
-          ¿Te gustaría hacer un recorrido rápido para conocer cómo funciona tu nueva plataforma de estudio?
-        </p>
-        <div style="display: flex; gap: 0.75rem; flex-direction: column;">
-          <button class="btn-primary" style="padding: 0.8rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: none; font-weight: 700; color: white;" (click)="startTutorial()">🚀 Sí, iniciar recorrido</button>
-          <button class="btn-secondary" style="padding: 0.8rem; font-size: 0.9rem; background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; border-radius: 12px; transition: all 0.2s;" (click)="skipTutorial()">Omitir por ahora</button>
-        </div>
-      </div>
-    </div>
-
     <app-profile-modal *ngIf="showProfileModal" [scrollTarget]="profileScrollTarget" (close)="onProfileModalClose()"></app-profile-modal>
     <app-settings-modal *ngIf="showSettingsModal" (close)="onSettingsModalClose()"></app-settings-modal>
     <app-history-modal *ngIf="showHistoryModal" (close)="showHistoryModal = false"></app-history-modal>
@@ -2246,9 +2229,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   savingMetaPaesMaterias = false;
   showLogoutConfirm = false;
   showHelpModal = false;
-  showTutorialModal = false;
-
-  driverObj: any;
   currentDate = (() => {
     const formatted = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
@@ -2584,7 +2564,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const savedVal = localStorage.getItem('herramientasExpanded');
     this.herramientasExpanded = isToolRoute ? true : (savedVal !== 'false');
 
-    const localSeen = localStorage.getItem('estudiauni_tutorial_seen');
     this.firestoreService.getUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
@@ -2595,184 +2574,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
               notificationsEnabled: true,
             });
           }
-          if (!profile.hasSeenTutorial && !localSeen) {
-            setTimeout(() => this.startTutorial(), 500);
-          } else {
-            this.showTutorialModal = false;
-          }
         }
       }
     });
     this.checkPendingCheckout();
     this.startCountdown();
     this.startAutoPlay();
-  }
-
-  async skipTutorial() {
-    this.showTutorialModal = false;
-    localStorage.setItem('estudiauni_tutorial_seen', 'true');
-    const p = this.firestoreService.profileSignal();
-    if (p && p.uid) {
-      await this.firestoreService.markTutorialAsSeen(p.uid);
-    }
-  }
-
-  /** Matches the CSS breakpoint where the desktop .sidebar is hidden and .mobile-header takes over. */
-  private isMobileViewport(): boolean {
-    return window.innerWidth < 1024;
-  }
-
-  private buildTutorialSteps(mobile: boolean): any[] {
-    const isPro = this.isProPlan() || this.adminService.isAdmin();
-    const navScope = mobile ? '.mobile-menu' : '.sidebar';
-    const side = mobile ? 'bottom' : 'right';
-
-    const steps: any[] = [
-      {
-        popover: {
-          title: '👋 ¡Bienvenido a tu Dashboard!',
-          description: 'El corazón de EstudiaUni. Aquí encontrarás el resumen de tu progreso, rachas de estudio y el tiempo que falta para la PAES.'
-        }
-      },
-      {
-        element: '.help-fab',
-        popover: {
-          title: '💡 Información del Dashboard',
-          description: 'Si haces clic en este botón, podrás ver una guía rápida que te explica para qué sirve cada sección.',
-          side: mobile ? 'top' : 'left',
-          align: 'start'
-        }
-      },
-      {
-        element: `${navScope} .nav-item[routerLink="/dashboard"]`,
-        popover: {
-          title: '🏠 Inicio',
-          description: 'Siempre puedes volver aquí para ver tus estadísticas y recomendaciones guiadas por nuestra Inteligencia Artificial.',
-          side, align: 'start'
-        }
-      },
-      {
-        element: `${navScope} .nav-item[routerLink="/ruta"]`,
-        popover: {
-          title: '🗺️ Ruta de Aprendizaje',
-          description: 'Un camino estructurado paso a paso con clases, videos y guías teóricas personalizadas para dominar cada materia desde cero.',
-          side, align: 'start'
-        }
-      },
-      {
-        element: `${navScope} .nav-item[routerLink="/ensayos"]`,
-        popover: {
-          title: '📚 Ensayos PAES',
-          description: 'Rinde simulacros completos bajo condiciones reales. Analizaremos tu puntaje y te diremos exactamente qué temas necesitas reforzar.',
-          side, align: 'start'
-        }
-      },
-      {
-        element: `${navScope} .nav-item[routerLink="/mini-ensayo"]`,
-        popover: {
-          title: '🎯 Mini Ensayos',
-          description: '¿Tienes poco tiempo? Practica con ensayos cortos enfocados en ejes temáticos específicos.',
-          side, align: 'start'
-        }
-      },
-      {
-        element: `${navScope} .nav-item[routerLink="/mente-veloz"]`,
-        popover: {
-          title: '⚡ Mente Veloz',
-          description: 'Desafíos dinámicos de respuestas rápidas para agilizar tu mente, mejorar tu velocidad de cálculo y comprensión lectora.',
-          side, align: 'start'
-        }
-      },
-      {
-        element: `${navScope} .sidebar-sub-items`,
-        popover: {
-          title: '🛠️ Herramientas Extra',
-          description: 'Un set de utilidades clave: Explora carreras universitarias, calcula tu puntaje NEM y accede a recursos adicionales de estudio en un solo lugar.',
-          side, align: 'start'
-        }
-      }
-    ];
-
-    if (!mobile) {
-      steps.push({
-        element: '.profile-menu-wrap',
-        popover: {
-          title: '👤 Tu Perfil',
-          description: 'Desde aquí puedes actualizar tus metas de puntaje, cambiar tu avatar y ver tu historial de ensayos.',
-          side: 'bottom',
-          align: 'end'
-        }
-      });
-    }
-
-    // Only exists in the DOM for Free users — skip for PRO/admin so the last step doesn't target a missing element
-    if (!isPro) {
-      steps.push({
-        element: `${navScope} .sidebar-promo-card`,
-        popover: {
-          title: '🚀 Desbloquea tu potencial PRO',
-          description: 'Pásate a Premium para acceder a ensayos ilimitados, explicaciones paso a paso con Inteligencia Artificial, simulacros personalizados y mucho más. ¡Haz que tu puntaje despegue!',
-          side, align: 'start'
-        }
-      });
-    }
-
-    return steps;
-  }
-
-  async startTutorial() {
-    this.showTutorialModal = false;
-    localStorage.setItem('estudiauni_tutorial_seen', 'true');
-    const p = this.firestoreService.profileSignal();
-    if (p && p.uid) {
-      await this.firestoreService.markTutorialAsSeen(p.uid);
-    }
-
-    // Expandimos las herramientas para que driver.js las pueda ver sin tener que animarlas a mitad del tour
-    this.herramientasExpanded = true;
-    localStorage.setItem('herramientasExpanded', 'true');
-
-    const mobile = this.isMobileViewport();
-    if (mobile) {
-      // Open the slide-out menu up front so every nav step below is actually visible on screen
-      this.mobileMenuOpen = true;
-    }
-
-    this.driverObj = driver({
-      showProgress: true,
-      animate: true,
-      allowClose: false,
-      nextBtnText: 'Siguiente',
-      prevBtnText: 'Atrás',
-      doneBtnText: '¡Comenzar!',
-      onHighlightStarted: (element: any) => {
-        if (element && element.classList && element.classList.contains('help-fab')) {
-          element.style.pointerEvents = 'none';
-        }
-        const sidebar = document.querySelector(mobile ? '.mobile-menu' : '.sidebar');
-        if (sidebar && element && sidebar.contains(element)) {
-          sidebar.scrollTo({
-            top: (element as HTMLElement).offsetTop - 150,
-            behavior: 'smooth'
-          });
-        }
-      },
-      onDeselected: (element: any) => {
-        if (element && element.classList && element.classList.contains('help-fab')) {
-          element.style.pointerEvents = 'auto';
-        }
-      },
-      onDestroyStarted: () => {
-        this.mobileMenuOpen = false;
-        this.driverObj.destroy();
-      },
-      steps: this.buildTutorialSteps(mobile)
-    });
-
-    // Ejecutar con un pequeño delay para asegurar renderizado (y que el menú móvil ya esté abierto/animado)
-    setTimeout(() => {
-      this.driverObj.drive();
-    }, mobile ? 350 : 200);
   }
 
   ngOnDestroy() {
