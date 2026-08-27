@@ -1,0 +1,38 @@
+# Lo que NUNCA debe entrar en la imagen del contenedor.
+
+# Secretos. Esto es lo mas importante de este archivo: las claves de Firebase,
+# Gemini y Flow se pasan como variables de entorno de Cloud Run, no dentro de
+# la imagen. Una imagen es solo un archivo: quien pueda descargarla las ve.
+.env
+.env.*
+!.env.example
+*firebase-admin-key*.json
+*service-account*.json
+
+# Se reinstalan dentro del contenedor (y las de Windows no sirven en Linux).
+node_modules
+
+# La compilacion se hace dentro del contenedor.
+dist
+
+# Scripts sueltos de siembra/mantenimiento: se ejecutan a mano desde un equipo
+# de desarrollo, no forman parte del servidor que atiende peticiones.
+#
+# OJO: NO excluir src/scripts/. Aunque son scripts, el tsconfig compila todo
+# src/**, y src/upload-quimica.ts importa ./scripts/cloudinary.config — sin esa
+# carpeta el `npm run build` de la etapa 1 falla. `scratch` si se puede excluir:
+# el propio tsconfig ya lo excluye y nada en src lo importa.
+scratch
+tools-*.js
+
+# Ruido de desarrollo
+.git
+.gitignore
+.vscode
+.idea
+*.log
+npm-debug.log*
+coverage
+test
+*.spec.ts
+README.md

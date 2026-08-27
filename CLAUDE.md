@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-26 (parte 3) · Rama en la que se escribió: `master`
+> Última actualización: 2026-08-26 (parte 4) · Rama en la que se escribió: `master`
 
 ---
 
@@ -592,7 +592,14 @@ transferencia bancaria manual con comprobante subido por el usuario.
 > abajo sea el bloqueante real: en el sitio publicado no funciona nada que pase por el backend
 > (Foco, análisis IA, pagos Flow, cupones, transferencias, panel de suscripciones).
 
-1. **`environment.ts` (el de producción) apunta a `apiUrl: 'http://localhost:3000'`.** Si se despliega
+1. **`environment.ts` (el de producción) apunta a `apiUrl: 'http://localhost:3000'`.**
+   > **Estado 2026-08-26 (parte 4):** el backend ya está PREPARADO para Cloud Run (Dockerfile
+   > verificado, `desplegar-backend.bat`, generación de variables de entorno). Solo faltan dos cosas
+   > que dependen del dueño de la cuenta: **activar el plan Blaze** e **instalar `gcloud`**. Después,
+   > el rewrite `/api/**` de `firebase.json` deja el backend en el mismo dominio y este bloqueante
+   > desaparece. Ver Bitácora 2026-08-26 (parte 4).
+
+   Si se despliega
    así, en la web publicada fallará todo lo que pasa por el backend: chat con Foco, análisis IA, pagos
    con Flow, cupones, transferencias y el admin de suscripciones. Hay que desplegar NestJS
    (Cloud Run / Render / Railway) y apuntar `environment.ts` a esa URL HTTPS, agregarla al
@@ -668,6 +675,107 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-26 (parte 4) — Backend preparado para Cloud Run: Dockerfile verificado, arranque
+endurecido para contenedor, y `desplegar-backend.bat`. Falta activar Blaze e instalar gcloud
+`nest build` ✅ · **etapa de compilación del Dockerfile verificada de verdad**, no solo escrita:
+se reprodujo el contexto exacto que vería Docker (aplicando `.dockerignore`) en una carpeta limpia,
+con `npm ci` + `npm run build` + arranque real con `npm ci --omit=dev`. Pendientes reales al final.
+
+**Contexto:** los pagos (Flow) quedan fuera de esta tanda a pedido explícito — los ve otra persona.
+Esto cubre lo demás: dejar el backend listo para desplegar.
+
+**Decisión: Cloud Run, no Cloud Functions ni Render.** Razones concretas, no preferencia:
+- Es el encaje natural para un NestJS de toda la vida: corre `node dist/main.js` sin reescribir nada.
+  Cloud Functions obligaría a envolver el Express de Nest en un `onRequest` y sufre *cold starts*
+  visibles justo en lo más interactivo (el chat con Foco).
+- **Firebase Hosting puede enrutar `/api/**` directo al servicio de Cloud Run** con un `rewrite` en
+  `firebase.json`. Eso deja el backend en `estudiauni.cl/api/...`: mismo origen, sin CORS, y sin una
+  URL de backend que se pueda escribir mal — que es exactamente el bloqueante #1 de la sección 11.
+- Mismo proyecto de Google que Firebase: una sola cuenta, una sola factura.
+- Render/Railway son más simples de configurar pero sus planes gratuitos duermen el servidor
+  (30-60 s para despertar) y añaden otra plataforma que mantener.
+
+**Nuevo: `backend/Dockerfile`** — dos etapas. La primera instala todo (incluidas devDependencies:
+el CLI de Nest y TypeScript) y compila; la segunda instala solo producción y copia el `dist`.
+Medido: `node_modules` pasa de **407 MB a 114 MB** entre una etapa y otra.
+- `CMD ["node", "dist/main.js"]` y **no** `npm start`: npm se queda como proceso intermedio y no
+  reenvía `SIGTERM` al proceso de Node, así que Cloud Run acabaría matando el contenedor a la fuerza
+  en cada reinicio en vez de dejarlo cerrar ordenadamente.
+- **Verificado end-to-end sin Docker instalado**, reproduciendo el contexto a mano: `npm ci` ✅,
+  `npm run build` ✅ (`dist/main.js` generado), y —lo que de verdad importaba— **arranque real con
+  solo dependencias de producción**: la app levanta, registra todos los módulos y mapea todas las
+  rutas, sin ningún `MODULE_NOT_FOUND`. Si algo del runtime hubiera importado una devDependency,
+  habría reventado en Cloud Run y no antes.
+
+**Nuevo: `backend/.dockerignore`.** Lo más importante que hace es **excluir `.env`**: una imagen de
+contenedor es solo un archivo, y quien pueda descargarla vería las claves. Los secretos van como
+variables de entorno de Cloud Run.
+> ⚠️ **No excluir `src/scripts/`**, aunque sean scripts. El `tsconfig` compila todo `src/**` y
+> `src/upload-quimica.ts` importa `./scripts/cloudinary.config`; sin esa carpeta el `npm run build`
+> de la etapa 1 falla. Se descubrió al verificar el build, no al escribirlo. `scratch` sí se excluye
+> (el propio tsconfig ya lo excluye y nada en `src` lo importa).
+
+**`backend/src/main.ts`, dos cambios para contenedor:**
+- `app.listen(port, '0.0.0.0')` explícito. Dentro de un contenedor, un proceso atado solo a la
+  interfaz por defecto no es alcanzable desde fuera y Cloud Run lo da por caído aunque esté vivo.
+  `PORT` ya se leía bien (Cloud Run inyecta 8080; en local se cae al 3000 de siempre).
+- **CORS acepta varios orígenes separados por coma** en `FRONTEND_APP_URL`
+  (`https://estudiauni.cl,https://estudiauni.web.app`). Antes solo cabía uno y el sitio se sirve
+  desde dos dominios. Nota: a través del rewrite `/api/**` la petición es del mismo origen y CORS ni
+  siquiera entra en juego — esto importa al llamar la URL de Cloud Run directamente, por ejemplo
+  para probar antes de montar el rewrite.
+
+**Nuevo: `desplegar-backend.bat`** (raíz del repo), con el mismo patrón que `actualizar.bat`:
+comprobaciones previas (Node, gcloud, sesión de gcloud, `backend/.env`, Dockerfile), aviso explícito
+de que **requiere plan Blaze** y de que la primera construcción tarda 5-10 min, confirmación escrita
+(`SI`), y al terminar imprime los 3 pasos que faltan para conectarlo al sitio. Despliega a la región
+**`southamerica-west1` (Santiago)**: es donde están los usuarios y la latencia contra un servidor en
+EE.UU. se nota en el chat con Foco. Va con `--allow-unauthenticated` a propósito — el servicio tiene
+que ser alcanzable desde el navegador de cualquier visitante; la autenticación real la hace la app
+con el token de Firebase en cada petición (`FirebaseAuthGuard`), no el control de acceso de Google.
+
+**Nuevo: `backend/scripts-deploy/generar-env-yaml.js`** — convierte `backend/.env` en el YAML que
+espera `gcloud run deploy --env-vars-file`. Hace falta un archivo y no `--set-env-vars` porque
+`FIREBASE_PRIVATE_KEY` es una clave PEM multilínea, y pasarla por línea de comandos en Windows es
+una fuente inagotable de errores de comillas.
+
+> 🔴 **Bug real encontrado al verificarlo, que habría roto Firebase Admin en producción.** La primera
+> versión traía un parser de `.env` hecho a mano. En el `.env` la clave está en UNA sola línea con
+> `\n` **literales** (barra + n), y `dotenv` los convierte en saltos reales al leer; el parser propio
+> los copiaba tal cual y encima el escapado les añadía otra barra. Resultado medido: la clave llegaba
+> con **1732 caracteres en 1 línea** en vez de **1704 en 29**, sin el `-----END PRIVATE KEY-----`.
+> Firebase Admin la habría rechazado. Se arregló usando **el mismo `dotenv` que usa el backend** en
+> vez de un parser propio: así el servidor y el script interpretan el archivo idénticamente por
+> construcción, no por coincidencia. Verificado tras el cambio: los 4 valores idénticos byte a byte
+> y la clave con sus 29 líneas, `BEGIN` y `END` correctos.
+>
+> El script omite a propósito `PORT` (lo inyecta Cloud Run; fijarlo rompería el arranque), las
+> `WEBPAY_*` (pasarela anterior a Flow, nadie las lee) y `OPENAI_API_KEY` (declarada sin uso). Nunca
+> imprime valores, solo nombres. El YAML generado está en `.gitignore` y el `.bat` lo borra al
+> terminar, vaya bien o mal.
+
+**Lo que NO se hizo, deliberadamente:** no se tocaron `firebase.json` ni `environment.ts`. El rewrite
+de `/api/**` apunta a un servicio de Cloud Run que **todavía no existe**, y dejarlo puesto haría que
+`firebase deploy` fallara — es decir, rompería la capacidad de publicar el sitio. Se aplican los dos
+juntos justo después del primer despliegue del backend (los pasos exactos los imprime el propio
+`desplegar-backend.bat` al terminar).
+
+**Ojo con `apiUrl`, que es una trampa:** el frontend hace `environment.apiUrl || 'http://localhost:3000'`
+en **22 sitios**. Dejar `apiUrl` como cadena vacía para usar el mismo origen NO funciona: la cadena
+vacía es *falsy* y caería al localhost. Hay que poner la URL completa: `https://estudiauni.cl`.
+
+**Pendiente, y solo lo puede hacer el dueño de la cuenta:**
+1. **Activar el plan Blaze** en la consola de Firebase. Cloud Run no existe en el plan gratuito. No es
+   un gasto que añada esta decisión: la auditoría del 2026-08-18 ya concluyó que hace falta Blaze de
+   todos modos, porque con ~200 usuarios se superan las 50.000 lecturas diarias de Firestore del plan
+   gratuito. Cloud Run tiene capa gratuita amplia (2 millones de peticiones/mes); para una beta el
+   costo es prácticamente cero.
+2. **Instalar el SDK de Google Cloud** (`gcloud`) y hacer `gcloud auth login`. No está en esta
+   máquina, así que **el despliegue real no se pudo ejecutar ni probar en esta sesión** — lo que sí
+   está verificado es todo lo que rodea al comando (build, arranque con deps de producción, generación
+   de variables) y las rutas de guarda del `.bat`.
+3. Tras el primer despliegue: aplicar el rewrite + `apiUrl` y publicar con `actualizar.bat`.
 
 ### 2026-08-26 (parte 3) — Primer despliegue a producción desde este setup: `actualizar.bat`, y el
 reporte de errores del navegador que se iba a colar al sitio publicado

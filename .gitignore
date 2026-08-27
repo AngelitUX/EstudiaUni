@@ -30,3 +30,8 @@ debug.txt
 .idea/
 .DS_Store
 Thumbs.db
+
+# Variables de entorno generadas para el despliegue de Cloud Run.
+# CONTIENEN SECRETOS EN CLARO. El script las borra al terminar, pero por si acaso.
+env-cloudrun.yaml
+*.env.yaml

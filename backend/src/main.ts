@@ -35,11 +35,23 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // CORS
+  //
+  // FRONTEND_APP_URL acepta VARIOS origenes separados por coma, por ejemplo:
+  //   FRONTEND_APP_URL=https://estudiauni.cl,https://estudiauni.web.app
+  // Hacia falta porque el sitio se sirve desde mas de un dominio (el propio y
+  // el .web.app que da Firebase Hosting) y antes solo cabia uno.
+  //
+  // Nota: si el frontend llama al backend a traves del rewrite /api/** de
+  // Firebase Hosting, la peticion es del MISMO origen y CORS ni siquiera entra
+  // en juego. Esto importa cuando se llama a la URL de Cloud Run directamente
+  // (por ejemplo al probar antes de montar el rewrite).
+  const origenes = (configService.get<string>('FRONTEND_APP_URL') ?? 'http://localhost:4200')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: [
-      configService.get<string>('FRONTEND_APP_URL', 'http://localhost:4200'),
-      configService.get<string>('FRONTEND_LANDING_URL', 'http://localhost:3001'),
-    ],
+    origin: origenes,
     credentials: true,
   });
 
@@ -61,8 +73,15 @@ async function bootstrap() {
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
 
+  // Cloud Run (y cualquier contenedor) inyecta PORT — normalmente 8080. En
+  // local no existe esa variable y se cae al 3000 de siempre.
   const port = configService.get<number>('PORT', 3000);
-  await app.listen(port);
-  console.log(`🚀 EstudiaUni API running on http://localhost:${port}/api`);
+
+  // Escuchar en 0.0.0.0 explicitamente, no en la interfaz por defecto: dentro
+  // de un contenedor, un proceso atado solo a localhost no es alcanzable desde
+  // fuera, y Cloud Run lo dara por caido aunque el proceso este vivo.
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`EstudiaUni API escuchando en el puerto ${port} (prefijo /api)`);
 }
 bootstrap();
