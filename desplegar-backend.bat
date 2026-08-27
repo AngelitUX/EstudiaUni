@@ -55,26 +55,43 @@ if errorlevel 1 (
 )
 echo   [OK] Node.js
 
+REM  Normalmente basta con "gcloud" porque el instalador lo mete en el PATH.
+REM  Pero si se instalo con esta ventana ya abierta, el PATH de aqui es el de
+REM  ANTES y no lo encuentra, aunque este perfectamente instalado. Por eso, si
+REM  falla, se busca en la ruta habitual antes de dar el error.
+set "GCLOUD=gcloud"
 where gcloud >nul 2>&1
 if errorlevel 1 (
-    echo   [X] No esta instalado el SDK de Google Cloud ^(gcloud^).
-    echo.
-    echo       Descargalo e instalalo desde:
-    echo         https://cloud.google.com/sdk/docs/install
-    echo.
-    echo       Cuando termine, cierra esta ventana, abre una nueva y ejecuta:
-    echo         gcloud auth login
-    echo         gcloud config set project %PROYECTO%
-    echo.
-    echo       Despues vuelve a ejecutar este script.
-    goto :error
+    set "GCALT=%LOCALAPPDATA%\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
+    if exist "!GCALT!" (
+        set "GCLOUD=!GCALT!"
+        echo   [*] gcloud esta instalado pero no en el PATH de esta ventana.
+        echo       Se usara la ruta completa. Para que quede bien, cierra esta
+        echo       ventana y abre una nueva la proxima vez.
+    ) else (
+        echo   [X] No esta instalado el SDK de Google Cloud ^(gcloud^).
+        echo.
+        echo       Instalalo con:   winget install --id Google.CloudSDK
+        echo       o descargalo de: https://cloud.google.com/sdk/docs/install
+        echo.
+        echo       Cuando termine, cierra esta ventana, abre una nueva y ejecuta:
+        echo         gcloud auth login
+        echo.
+        echo       Despues vuelve a ejecutar este script.
+        goto :error
+    )
 )
-echo   [OK] gcloud instalado
+echo   [OK] gcloud disponible
 
-call gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>nul | findstr /R "." >nul
+call "!GCLOUD!" auth list --filter=status:ACTIVE --format="value(account)" 2>nul | findstr /R "." >nul
 if errorlevel 1 (
     echo   [X] No hay ninguna cuenta de Google conectada en gcloud.
-    echo       Ejecuta:  gcloud auth login
+    echo.
+    echo       Ejecuta esto ^(abre el navegador para que inicies sesion^):
+    echo         gcloud auth login
+    echo.
+    echo       Si gcloud no te lo reconoce, usa la ruta completa:
+    echo         "%LOCALAPPDATA%\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd" auth login
     goto :error
 )
 echo   [OK] Sesion de gcloud iniciada
@@ -145,7 +162,7 @@ REM  --allow-unauthenticated: el servicio tiene que ser alcanzable desde el
 REM  navegador de cualquier visitante. La autenticacion real la hace la propia
 REM  app con el token de Firebase en cada peticion (FirebaseAuthGuard), no el
 REM  control de acceso de Google Cloud.
-call gcloud run deploy %SERVICIO% ^
+call "!GCLOUD!" run deploy %SERVICIO% ^
     --source backend ^
     --project %PROYECTO% ^
     --region %REGION% ^
