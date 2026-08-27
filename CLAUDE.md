@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-26 (parte 2) · Rama en la que se escribió: `DeployandoPagina`
+> Última actualización: 2026-08-26 (parte 3) · Rama en la que se escribió: `master`
 
 ---
 
@@ -586,9 +586,11 @@ punta a punta en sandbox** (registro de tarjeta → suscripción → Premium act
 transferencia bancaria manual con comprobante subido por el usuario.
 
 ### 🔴 Bloqueantes para el primer despliegue
-> **El proyecto está en desarrollo — todavía NO está hosteado ni en producción.** Nada de lo siguiente
-> es una falla actual; en local todo funciona con `npm run dev:backend` corriendo. Son los pendientes
-> que hay que resolver **antes** del primer deploy.
+> **El FRONTEND ya está en producción en `https://estudiauni.cl`** (Firebase Hosting, target `app`).
+> Se despliega con `actualizar.bat` en la raíz del repo — ver Bitácora 2026-08-26 (parte 3).
+> **El BACKEND NestJS sigue sin desplegar en ningún lado**, y eso es lo que hace que el punto 1 de
+> abajo sea el bloqueante real: en el sitio publicado no funciona nada que pase por el backend
+> (Foco, análisis IA, pagos Flow, cupones, transferencias, panel de suscripciones).
 
 1. **`environment.ts` (el de producción) apunta a `apiUrl: 'http://localhost:3000'`.** Si se despliega
    así, en la web publicada fallará todo lo que pasa por el backend: chat con Foco, análisis IA, pagos
@@ -666,6 +668,91 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-26 (parte 3) — Primer despliegue a producción desde este setup: `actualizar.bat`, y el
+reporte de errores del navegador que se iba a colar al sitio publicado
+Typecheck ✅ · `ng build --configuration production` ✅ con las 6 rutas prerenderizadas · **desplegado
+a `https://estudiauni.cl` y verificado en vivo** (no solo "deploy complete") · vista previa publicada
+y verificada antes de tocar producción.
+
+**El sitio YA estaba hosteado — este documento decía lo contrario.** Hasta hoy la sección 11 afirmaba
+"el proyecto está en desarrollo, aún NO está hosteado ni en producción". Falso desde hace meses:
+`estudiauni.cl` servía una beta cuyo último release era del **2026-03-30**. Corregido en la sección 11.
+
+**Nuevo: `actualizar.bat` en la raíz del repo.** Script de despliegue de Hosting para Windows, pensado
+para que actualizar el sitio no dependa de recordar comandos. Qué hace y por qué está hecho así:
+- Pregunta primero el modo: **[1] vista previa** (canal `preview` de Firebase Hosting, URL temporal y
+  secreta que caduca en 7 días, no toca el sitio real) o **[2] producción**. La vista previa es el
+  camino recomendado: se revisa ahí y solo entonces se publica.
+- **Dos confirmaciones escritas para producción** (`SI`, y después de compilar, `DESPLEGAR`). La
+  segunda va a propósito DESPUÉS del build, para confirmar sabiendo que el código compila.
+- Comprobaciones previas: Node, firebase-tools (ofrece instalarlo), sesión de Firebase iniciada, rama
+  y último commit, cambios sin commitear, y si `environment.ts` apunta a `localhost`.
+- Si la compilación falla, **aborta sin publicar** y lo dice explícitamente.
+- Verifica que el build generó `index.html` **y** `index.csr.html` — sin el segundo, las rutas
+  privadas se romperían al cargarlas directo (ver sección 2).
+- **A propósito NO toca `firestore.rules` ni el backend.** Solo `--only hosting:app`.
+
+Detalles de `cmd.exe` que costaron 3 bugs y conviene no repetir si alguien lo edita:
+- Las cadenas `if / else if / else` rompen el script entero con "La sintaxis del comando no es
+  correcta". Se usan saltos explícitos (`goto`) en su lugar.
+- `git log --format=%h %s` dentro de un `for /f` choca con las variables del bucle (`%%h`). Se usa
+  `--oneline`.
+- Con `enabledelayedexpansion`, un `!` literal dentro de un `echo` se lo come el parser — y dentro de
+  un bloque `if (...)` ni siquiera `^!` sobrevive (doble pasada de parseo). Los avisos usan `[*]`.
+- Todo el texto va **sin tildes**: cmd.exe las muestra como basura.
+
+**🔴 Bug real encontrado justo antes de publicar: `main.ts` mandaba los errores de cada visitante a
+su propio `localhost`.** `main.ts` instalaba `window.onerror` y `unhandledrejection` apuntando a
+`'http://localhost:3000/log-error'`, **escrito a mano**, sin pasar por `environment.apiUrl` y sin
+ninguna guarda de entorno. En el sitio publicado eso no apunta a ningún servidor nuestro: el navegador
+de **cada visitante** intentaría conectarse a **su propia máquina** en el puerto 3000, fallando en cada
+error, ensuciando la consola y —lo peor— enviando la traza del error a lo que sea que esa persona
+tuviera escuchando en ese puerto. Confirmado en vivo en la vista previa: 3 peticiones reales a
+`http://localhost:3000/log-error`.
+
+Verificado además que **la producción de marzo NO lo traía** (se escaneó el `main.js` publicado), así
+que publicar sin corregirlo habría metido una regresión nueva. Corregido poniendo el bloque tras
+`if (!environment.production)` y usando `environment.apiUrl`. En desarrollo sigue funcionando igual.
+En el build de producción la condición nunca entra — confirmado leyendo el bundle (`production:!0`) y
+después en vivo (0 peticiones a `log-error` en el sitio publicado). El código muerto (~300 bytes) se
+queda dentro del `if` porque esbuild no lo pliega: `environment` viene de un import, no es un literal.
+
+**Desindexado `.firebase/*.cache`.** Ya estaba en `.gitignore` pero seguía versionado (gitignore no
+afecta a lo ya trackeado), y uno de los dos archivos aún referenciaba el `frontend-landing` que no
+existe. Se reescribe en cada `firebase deploy`, así que dejarlo trackeado hacía que el aviso de
+"cambios sin commitear" de `actualizar.bat` saltara **siempre**, volviéndolo ruido que se aprende a
+ignorar — justo lo que no se quiere de una comprobación de seguridad.
+
+**Resultado medido en producción** (`estudiauni.cl`, carga limpia):
+
+| | Beta anterior (2026-03-30) | Ahora |
+|---|---|---|
+| JS descargado en el home | ~490 KB | **296 KB** en 14 archivos |
+| Peticiones a Google Fonts | sí (render-blocking) | **0** (self-hosted) |
+| Peticiones a `localhost:3000/log-error` | no existía el código | **0** |
+
+Enrutamiento verificado en vivo: `/`, `/soporte`, `/trabaja-con-nosotros` y `/login` sirven HTML
+prerenderizado **cada una con su propio `<title>`**; `/dashboard` y `/ruta` sirven el cascarón
+`index.csr.html`. Es decir, el rewrite de `firebase.json` está correcto (ver la advertencia de la
+sección 2 sobre por qué esto importa).
+
+**Turnstile en producción: queda un error 600010 en consola, sin resolver.** En la URL de vista previa
+el error era `110200` ("dominio no autorizado"), esperable porque el canal usa un subdominio aleatorio
+que no está en la lista de Cloudflare. En `estudiauni.cl` ese error desaparece —lo que confirma que el
+dominio real **sí** está registrado— pero sale `600010`, un fallo genérico de resolución del desafío.
+**Hipótesis más probable, no confirmada:** el navegador con el que se verificó es automatizado, que es
+exactamente lo que Turnstile está diseñado para detectar (además se vio un `ERR_BLOCKED_BY_CLIENT`,
+señal de un bloqueador de anuncios activo). **Pendiente: abrir `estudiauni.cl` en un navegador normal
+y mirar la consola** para descartar que sea un problema real. No bloquea nada hoy: se verificó con una
+lectura REST directa que Firestore responde 200, o sea que **App Check sigue en "Supervisión", no en
+"Aplicar"** — si estuviera aplicado, un fallo de Turnstile dejaría el sitio inutilizable.
+
+**Sigue pendiente y ahora importa más:** `environment.ts` apunta `apiUrl` a `http://localhost:3000`,
+así que en el sitio publicado no funciona nada que pase por el backend (Foco, análisis IA, pagos Flow,
+cupones, transferencias, panel de suscripciones, y el intercambio de token de App Check). Ya era así en
+la beta de marzo — no es una regresión — pero con usuarios reales testeando pasa a ser lo primero que
+hay que resolver. Ver bloqueante #1 de la sección 11.
 
 ### 2026-08-26 (parte 2) — Rendimiento del arranque: fuentes self-hosteadas (fuera Google Fonts) y
 el chunk de seeds de 750 KB deja de precargarse en todas las páginas. Bundle inicial del home:
