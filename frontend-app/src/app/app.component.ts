@@ -52,13 +52,37 @@ export class AppComponent implements OnInit {
 
     this.keyboardNavService.init();
 
-    // Scroll to top on navigation change
+    // Scroll to top on navigation change.
+    //
+    // Ojo con el rendimiento: escribir `scrollTop` obliga al navegador a recalcular el layout
+    // de forma SINCRONA. Hacerlo dentro del propio callback de NavigationEnd -- justo cuando
+    // Angular acaba de renderizar la vista nueva y los estilos estan invalidados -- provocaba un
+    // "forced synchronous layout" de 103 ms sobre el DOM de ~940 nodos del home (medido en la
+    // auditoria del 2026-08-27; Lighthouse lo senalaba en main.js como el reflow mas caro).
+    //
+    // Dos cambios lo evitan sin cambiar el comportamiento visible:
+    //  1. La PRIMERA navegacion se omite: en una carga en frio el scroll ya esta arriba, no hay
+    //     nada que restaurar, y es justo la navegacion que cae dentro del camino critico.
+    //  2. El reset se difiere a requestAnimationFrame, para que el navegador haga UN layout
+    //     propio antes de pintar en vez de que nosotros se lo forcemos a mitad de tarea.
+    let esPrimeraNavegacion = true;
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      window.scrollTo(0, 0);
-      document.body.scrollTop = 0;
-      document.documentElement.scrollTop = 0;
+      if (esPrimeraNavegacion) {
+        esPrimeraNavegacion = false;
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      });
+
+      // Los contenedores con scroll propio se resetean aparte: al momento de NavigationEnd la
+      // vista del componente nuevo todavia puede no estar en el DOM, asi que este retardo es
+      // deliberado y se mantiene igual que antes.
       setTimeout(() => {
         const scrollables = document.querySelectorAll('.main-content, .review-container, .question-area, .runner-page, .review-page');
         scrollables.forEach(el => el.scrollTop = 0);

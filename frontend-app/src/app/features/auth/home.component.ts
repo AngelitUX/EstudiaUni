@@ -33,7 +33,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </ng-container>
           <ng-template #loggedInNav>
             <div class="user-profile-nav" (click)="goTo('/dashboard')">
-              <img *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" 
+              <img width="36" height="36" *ngIf="firestoreService.profileSignal()?.photoURL; else avatarFallback" 
                    [src]="firestoreService.profileSignal()?.photoURL" 
                    alt="Profile" class="nav-avatar">
               <ng-template #avatarFallback>
@@ -136,9 +136,9 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
               <!-- COMPACT SOCIAL PROOF ROW (kept for logged-in users too so the hero column keeps the same height/position) -->
               <div class="hero-social-proof">
                 <div class="avatar-stack">
-                  <img src="assets/imagesHome/seccion opiniones/1.jpg" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-                  <img src="assets/imagesHome/seccion opiniones/2.png" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
-                  <img src="assets/imagesHome/seccion opiniones/3.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img width="128" height="128" src="assets/imagesHome/seccion opiniones/1-avatar-v1.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img width="128" height="128" src="assets/imagesHome/seccion opiniones/2-avatar-v1.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
+                  <img width="128" height="128" src="assets/imagesHome/seccion opiniones/3-avatar-v1.webp" alt="Estudiante EstudiaUni" loading="lazy" decoding="async">
                 </div>
                 <div class="proof-text">
                   <div class="star-rating">⭐⭐⭐⭐⭐</div>
@@ -166,21 +166,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <!-- MODERN BENEFITS BAR (Replaces stats) -->
             <div class="hero-benefits-bar">
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Adaptativo"></div>
+                <div class="chip-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Adaptativo"></div>
                 <div class="chip-info">
                   <strong>Adaptativo</strong>
                   <span>La IA crea tu plan de estudio</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="En tiempo real"></div>
+                <div class="chip-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="En tiempo real"></div>
                 <div class="chip-info">
                   <strong>En tiempo real</strong>
                   <span>Explicaciones al instante mientras ensayas</span>
                 </div>
               </div>
               <div class="benefit-chip">
-                <div class="chip-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Logro.avif" alt="100% enfocado"></div>
+                <div class="chip-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Logro.avif" alt="100% enfocado"></div>
                 <div class="chip-info">
                   <strong>100% enfocado</strong>
                   <span>Solo contenido oficial PAES</span>
@@ -355,7 +355,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="bento-grid">
             <!-- Large Card 1 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
+              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
               <h3>Rutas de Aprendizaje</h3>
               <p>Sigue un plan de estudio estructurado y personalizado. Avanza paso a paso dominando cada tema hasta alcanzar tu puntaje ideal.</p>
               <div class="bento-visual">
@@ -380,7 +380,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
             <!-- Large Card 2 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Lenguaje.avif" alt="Ensayos PAES"></div>
+              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Lenguaje.avif" alt="Ensayos PAES"></div>
               <h3>Ensayos PAES (Reales y Asistidos)</h3>
               <p>Mídete con ensayos oficiales del DEMRE. Practica en modo real con tiempo límite o en modo asistido con apoyo y feedback al instante.</p>
               <div class="bento-visual">
@@ -405,28 +405,28 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             
             <!-- Small Card 1 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
+              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
               <h3>Práctica Adaptativa</h3>
               <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_m2.avif" alt="Visualiza tu Progreso"></div>
+              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_m2.avif" alt="Visualiza tu Progreso"></div>
               <h3>Visualiza tu Progreso</h3>
               <p>Mide tu avance diario e identifica áreas de mejora al instante.</p>
             </div>
             
             <!-- Small Card 3 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
+              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
               <h3>Explora tu Futuro</h3>
               <p>Descubre universidades y carreras según tu ubicación e intereses.</p>
             </div>
 
             <!-- Small Card 4 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
+              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
               <h3>Acceso Inmediato</h3>
               <p>Comienza gratis hoy. Sin ingresar tarjeta de crédito.</p>
             </div>
@@ -493,7 +493,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   </svg>
                 </div>
 
-                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" loading="lazy" decoding="async">
+                <video src="https://res.cloudinary.com/dqm3syhwr/image/upload/vc_vp9,q_auto,w_520,c_limit/v1/imagenes/branding/gif.webm" aria-label="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" autoplay loop [muted]="true" playsinline width="480" height="480"></video>
               </div>
             </div>
           </div>
@@ -715,12 +715,14 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 0" class="tab-pane fade-in">
               <div class="tab-visual tab-dashboard-wrapper">
                 <video
-                  src="https://res.cloudinary.com/n4hzntja/video/upload/v1786850264/30FPSQuality.mp4"
-                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0/v1786850264/30FPSQuality.jpg"
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_800,c_limit/v1786850264/30FPSQuality.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_800,c_limit/v1786850264/30FPSQuality.jpg"
                   loop
                   [muted]="true"
                   playsinline
                   preload="none"
+                  width="800"
+                  height="450"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -731,12 +733,14 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 1" class="tab-pane fade-in">
               <div class="tab-visual tab-exam-wrapper">
                 <video
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742574/decoraciones/como_funciona/2_ensayos.mp4"
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742574/decoraciones/como_funciona/2_ensayos.gif"
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_800,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.mp4"
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_800,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.jpg"
                   loop
                   [muted]="true"
                   playsinline
                   preload="none"
+                  width="800"
+                  height="450"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -747,12 +751,14 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 2" class="tab-pane fade-in">
               <div class="tab-visual tab-chat-wrapper">
                 <video
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/v1785742576/decoraciones/como_funciona/3_consulta.mp4"
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/f_gif,fl_animated/v1785742576/decoraciones/como_funciona/3_consulta.gif"
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_800,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.mp4"
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_800,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.jpg"
                   loop
                   [muted]="true"
                   playsinline
                   preload="none"
+                  width="800"
+                  height="450"
                   class="real-video-player"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
@@ -866,7 +872,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="testimonial-card testimonial-card-1">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/imagesHome/seccion opiniones/1.jpg" alt="Estudiante Mati" loading="lazy" decoding="async">
+                <img width="128" height="128" src="assets/imagesHome/seccion opiniones/1-avatar-v1.webp" alt="Estudiante Mati" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -894,7 +900,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="testimonial-card featured testimonial-card-2">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/imagesHome/seccion opiniones/2.png" alt="Estudiante ValeRojas" loading="lazy" decoding="async">
+                <img width="128" height="128" src="assets/imagesHome/seccion opiniones/2-avatar-v1.webp" alt="Estudiante ValeRojas" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -920,7 +926,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="testimonial-card testimonial-card-3">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img src="assets/imagesHome/seccion opiniones/3.webp" alt="Estudiante Seba" loading="lazy" decoding="async">
+                <img width="128" height="128" src="assets/imagesHome/seccion opiniones/3-avatar-v1.webp" alt="Estudiante Seba" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
@@ -1203,7 +1209,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div class="news-card glass-card" *ngFor="let item of news">
               <div class="news-header-img">
                 <div class="news-img-skeleton" *ngIf="!item.isLoaded"></div>
-                <img [src]="item.imageUrl" (load)="item.isLoaded = true" [class.loaded]="item.isLoaded" alt="Portada de la noticia" class="news-cover-img" loading="lazy" decoding="async" />
+                <img width="400" height="225" [src]="item.imageUrl" (load)="item.isLoaded = true" [class.loaded]="item.isLoaded" alt="Portada de la noticia" class="news-cover-img" loading="lazy" decoding="async" />
                 <div class="news-img-overlay" [style.background]="item.gradient"></div>
                 <span class="news-badge">{{ item.tag }}</span>
               </div>
@@ -3088,13 +3094,22 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     }
 
     .node-glow {
+      /* Antes esto animaba el atributo 'r' del <circle> (5px -> 11px). 'r' no es una propiedad
+         que el compositor pueda manejar: cada frame obligaba a rehacer layout y repintar en el
+         hilo principal, y Lighthouse lo marcaba como animacion no compuesta (auditoria 2026-08-27,
+         era el ejemplo que citaba explicitamente). Con transform: scale() el efecto visual es el
+         mismo pero corre en la GPU. Los circulos tienen r="8", asi que 5px y 11px equivalen a
+         escalar 0.625 y 1.375.
+         'transform-box: fill-box' es imprescindible aca: sin el, transform-origin se resuelve
+         contra el viewBox del SVG y los circulos se desplazarian en vez de crecer sobre su centro. */
       animation: node-glow-pulse 2s ease-in-out infinite alternate;
+      transform-box: fill-box;
       transform-origin: center;
     }
 
     @keyframes node-glow-pulse {
-      0% { r: 5px; opacity: 0.15; }
-      100% { r: 11px; opacity: 0.45; }
+      0% { transform: scale(0.625); opacity: 0.15; }
+      100% { transform: scale(1.375); opacity: 0.45; }
     }
     .section-title {
       text-align: center;
@@ -5705,6 +5720,77 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       cursor: default;
       opacity: 0.7;
     }
+  
+    /* Animaciones continuas que el compositor NO puede manejar.
+
+       Quedan dos casos en el hero que no se pueden pasar a transform/opacity sin cambiar el
+       diseño: gradientMove anima background-position sobre un texto con background-clip: text
+       (el degradado de la marca) y ai-glitch-* anima clip-path (el efecto glitch sobre "IA").
+       Las dos repintan en el hilo principal en cada frame, para siempre.
+
+       No se reescriben porque son elementos de identidad visual, pero al menos pasan a
+       respetar la preferencia del sistema: quien tenga activado "reducir movimiento" -- muy
+       comun en modo ahorro de bateria y en gama baja, justo los equipos donde mas se nota --
+       deja de pagar ese repintado. El degradado y el texto se siguen viendo, quietos.
+
+       El resto de las animaciones caras del home ya no son un problema: las de las secciones
+       de abajo dejan de correr gracias al content-visibility de mas abajo, y la de los
+       circulos .node-glow se paso a transform: scale() (ver ese bloque). Se paso de 28
+       elementos con animaciones no compuestas a 6. */
+    @media (prefers-reduced-motion: reduce) {
+      .text-gradient,
+      .ai-robotic-text,
+      .ai-robotic-text::before,
+      .ai-robotic-text::after {
+        animation: none !important;
+      }
+    }
+
+    /* ==================================================================
+       RENDIMIENTO: no renderizar lo que esta fuera de pantalla
+       ==================================================================
+       El home mide ~15.000 px de alto contra un viewport de 812 px en telefono: el 93% del
+       documento esta fuera de pantalla en la primera carga. Aun asi el navegador le hacia
+       layout y paint completos y -- lo mas caro -- mantenia corriendo sus animaciones CSS
+       (se midieron 75 animaciones activas a la vez en la auditoria del 2026-08-27, con 28
+       elementos animando propiedades que el compositor no puede manejar).
+
+       content-visibility: auto le permite al navegador saltarse por completo el renderizado
+       de una seccion mientras esta lejos del viewport, y renderizarla al acercarse.
+       contain-intrinsic-size: auto <alto> le da un alto estimado para que la barra de scroll
+       no salte, y el "auto" hace que recuerde el alto real una vez que la midio de verdad.
+
+       Los valores son los altos REALES medidos a 412 px de ancho (el viewport que usa
+       Lighthouse para movil). No necesitan ser exactos -- el "auto" hace que el navegador
+       recuerde el alto real tras el primer render -- pero cuanto mas cerca esten, menos
+       salto de layout hay la primera vez que cada seccion entra en pantalla. Medir a 375 px
+       daba desfases de hasta 168 px y eso costaba CLS.
+
+       Dos decisiones a proposito:
+        - NO se aplica al hero: esta sobre la linea de flotacion, saltarselo no ahorra nada.
+        - Las 9 secciones de abajo ya declaraban overflow: hidden, asi que la contencion de
+          pintado que implica esta propiedad no introduce ningun recorte nuevo.
+    */
+    .features-section,
+    .foco-section,
+    .videos-section,
+    .testimonials-section,
+    .pricing-section,
+    .news-section,
+    .faq-section,
+    .cta-section,
+    .footer {
+      content-visibility: auto;
+    }
+    .features-section     { contain-intrinsic-size: auto 2445px; }
+    .foco-section         { contain-intrinsic-size: auto 1447px; }
+    .videos-section       { contain-intrinsic-size: auto 1089px; }
+    .testimonials-section { contain-intrinsic-size: auto 1611px; }
+    .pricing-section      { contain-intrinsic-size: auto 1483px; }
+    .news-section         { contain-intrinsic-size: auto 967px; }
+    .faq-section          { contain-intrinsic-size: auto 1795px; }
+    .cta-section          { contain-intrinsic-size: auto 695px; }
+    .footer               { contain-intrinsic-size: auto 1139px; }
   `]
 })
 export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
@@ -6167,7 +6253,19 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     // never lets the render pass reach the "stable" state needed to snapshot the HTML.
     if (this.isBrowser) {
       this.firestoreService.getUserProfile().subscribe();
-      this.loadFirestoreNews();
+
+      // Las noticias NO se leen al arrancar. Su seccion esta a ~11.000 px de scroll, asi que la
+      // consulta a Firestore se dispara recien cuando esa seccion se acerca al viewport (ver
+      // ngAfterViewInit). Antes se hacia por tiempo (requestIdleCallback + setTimeout) y eso tenia
+      // dos problemas medidos el 2026-08-27:
+      //   - El visitante que nunca baja hasta ahi -- la enorme mayoria -- pagaba igual el
+      //     handshake de Firestore.
+      //   - Firestore transporta por WebChannel con long-polling: la conexion queda ABIERTA, y
+      //     Lighthouse la contabiliza en la cadena critica con su duracion completa. En 3 corridas
+      //     casi identicas eso hizo saltar la "latencia maxima de ruta critica" entre 3,4 s y
+      //     15,8 s, y el Speed Index entre 5,7 s y 12,1 s. Era la mayor fuente de varianza de la
+      //     medicion, no una diferencia real de codigo.
+      // (el disparador vive en ngAfterViewInit: se carga al acercarse la seccion, no por tiempo)
       this.startHeroSimulation();
       this.startActiveStudentsFluctuation();
     }
@@ -6208,6 +6306,16 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     const minuteVariance = Math.round(Math.sin((now.getMinutes() + now.getSeconds() / 60) * 0.4) * 25);
 
     this.activeStudentsCount = Math.max(120, baseCalculated + minuteVariance);
+  }
+
+  // Un unico punto de entrada con guardia: lo llaman DOS disparadores independientes (el
+  // IntersectionObserver de la seccion y, como respaldo, el barrido por scroll). Si alguno
+  // falla, el otro cubre; si funcionan los dos, la lectura ocurre una sola vez.
+  private noticiasSolicitadas = false;
+  cargarNoticiasSiHaceFalta() {
+    if (this.noticiasSolicitadas) return;
+    this.noticiasSolicitadas = true;
+    this.loadFirestoreNews();
   }
 
   async loadFirestoreNews() {
@@ -6251,7 +6359,12 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       this.newsTrackEl = document.querySelector('.news-track') as HTMLElement;
       this.newsThumbEl = document.querySelector('.news-scroll-thumb') as HTMLElement;
-      this.updateNewsScrollThumb();
+      // NO se mide la barra aca. updateNewsScrollThumb() lee scrollWidth/clientWidth, y esos
+      // elementos viven dentro de .news-section, que tiene content-visibility: auto. Consultar la
+      // geometria de un subarbol saltado OBLIGA al navegador a renderizarlo: anula la optimizacion
+      // y provoca un reflow forzado caro justo en el arranque (Lighthouse lo medio en 219 ms en las
+      // corridas lentas del 2026-08-27, contra 8 ms en las rapidas). Se mide cuando la seccion se
+      // acerca de verdad (ver el observer de noticias mas abajo) y cuando llegan las noticias.
       if (this.newsTrackEl) {
         this.registerGlobalListener(this.newsTrackEl, 'scroll', this.updateNewsScrollThumb, { passive: true });
       }
@@ -6268,9 +6381,17 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
         if (mascotEl) mascotRect = mascotEl.getBoundingClientRect();
       };
 
-      updateRects();
-      this.registerGlobalListener(window, 'resize', updateRects, { passive: true });
-      this.registerGlobalListener(window, 'scroll', updateRects, { passive: true });
+      // Tampoco se mide aca, por el mismo motivo: #foco-tutor es .foco-section, que tambien tiene
+      // content-visibility: auto. El manejador de mousemove de mas abajo ya recalcula solo si los
+      // rects estan en null, asi que la medicion ocurre recien cuando el puntero entra en la
+      // seccion -- momento en el que esa seccion ya se esta renderizando igual.
+      //
+      // Y en scroll/resize se INVALIDAN en vez de recalcularse: antes cada evento de scroll
+      // disparaba dos getBoundingClientRect(), o sea un layout sincrono por evento. Poner null es
+      // gratis y el recalculo perezoso llega solo cuando de verdad hace falta.
+      const invalidarRects = () => { sectionRect = null; mascotRect = null; };
+      this.registerGlobalListener(window, 'resize', invalidarRects, { passive: true });
+      this.registerGlobalListener(window, 'scroll', invalidarRects, { passive: true });
 
       let mouseTicking = false;
       const onMouseMove = (e: MouseEvent) => {
@@ -6397,8 +6518,69 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       });
     }, observerOptions);
 
-    const animatedElements = document.querySelectorAll('.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .hero-stats, .faq-item, .news-card');
+    const SELECTOR_REVELADO = '.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .hero-stats, .faq-item, .news-card';
+    const animatedElements = document.querySelectorAll(SELECTOR_REVELADO);
     animatedElements.forEach(el => observer.observe(el));
+
+    // Red de seguridad del revelado por scroll.
+    //
+    // Las 9 secciones bajo la linea de flotacion usan content-visibility: auto (ver los
+    // estilos de este componente). Mientras una seccion esta lejos del viewport el navegador
+    // se salta su renderizado y sus hijos no tienen caja, asi que el IntersectionObserver de
+    // arriba no puede dispararse para ellos.
+    //
+    // En la practica eso no es problema: el navegador vuelve a renderizar la seccion ANTES de
+    // que entre en pantalla, y ahi el observer dispara con normalidad. Pero si por cualquier
+    // motivo no lo hiciera, estos elementos se quedarian en opacity: 0 PARA SIEMPRE — o sea,
+    // media landing en blanco. Es un modo de fallo demasiado caro para dejarlo al azar.
+    //
+    // Este barrido lo vuelve imposible: en cada scroll (limitado a un frame) revela por pura
+    // geometria cualquier elemento que ya este en pantalla y que el observer aun no haya
+    // marcado. Cuando el observer funciona normal, esto no hace nada: los elementos ya llegan
+    // con is-visible y la comprobacion sale por el primer if.
+    let barridoPendiente = false;
+    const revelarLoQueYaEstaEnPantalla = () => {
+      if (barridoPendiente) return;
+      barridoPendiente = true;
+      requestAnimationFrame(() => {
+        barridoPendiente = false;
+        // Respaldo de las noticias por la misma via geometrica (ver cargarNoticiasSiHaceFalta).
+        const secNoticias = document.querySelector('.news-section');
+        if (secNoticias) {
+          const rn = secNoticias.getBoundingClientRect();
+          if (rn.height > 0 && rn.top < window.innerHeight + 800 && rn.bottom > -800) {
+            this.cargarNoticiasSiHaceFalta();
+          }
+        }
+
+        document.querySelectorAll(SELECTOR_REVELADO).forEach(el => {
+          if (el.classList.contains('is-visible')) return;
+          const r = el.getBoundingClientRect();
+          if (r.height > 0 && r.top < window.innerHeight && r.bottom > 0) {
+            el.classList.add('is-visible');
+          }
+        });
+      });
+    };
+    this.registerGlobalListener(window, 'scroll', revelarLoQueYaEstaEnPantalla, { passive: true });
+
+    // Noticias: se leen de Firestore recien cuando su seccion se acerca (ver el comentario en
+    // ngOnInit sobre por que no se hace al arrancar). El margen de 800 px hace que lleguen ya
+    // cargadas cuando el usuario termina de bajar. Si nunca baja, nunca se consulta.
+    const seccionNoticias = document.querySelector('.news-section');
+    if (seccionNoticias) {
+      const obsNoticias = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          obsNoticias.disconnect();
+          this.cargarNoticiasSiHaceFalta();
+          // Ahora si vale medir: la seccion esta entrando en pantalla, o sea que el navegador la
+          // esta renderizando de todos modos.
+          requestAnimationFrame(() => this.updateNewsScrollThumb());
+        }
+      }, { rootMargin: '800px 0px' });
+      obsNoticias.observe(seccionNoticias);
+    }
 
     // Demo video: only fetch/play while the "Mira cómo funciona" section is in view, like an auto-looping gif.
     // Pausing off-screen avoids wasted bandwidth/CPU on a video the user isn't looking at.
