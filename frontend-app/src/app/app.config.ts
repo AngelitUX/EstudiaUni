@@ -45,13 +45,20 @@ export const appConfig: ApplicationConfig = {
       // probe never resolves, hanging the render instead of erroring. initializeAuth() with
       // an explicit persistence skips the probe entirely; the browser keeps getAuth()'s
       // normal (indexedDB/localStorage) persistence untouched.
+      //
+      // NO cambiar getAuth() por initializeAuth() aqui para evitar que se cargue el iframe de
+      // auth (288 KB) en la landing: se intento el 2026-08-27 y ROMPE el login con Google.
+      // getAuth() registra el browserPopupRedirectResolver por defecto; al quitarlo y pasarlo
+      // explicito a signInWithPopup(), el flujo revienta con "TypeError: Class constructor yu
+      // cannot be invoked without new" — y compila y pasa el typecheck igual, asi que solo se
+      // ve haciendo clic en el boton de verdad. Ver Bitacora 2026-08-27.
       return isPlatformBrowser(inject(PLATFORM_ID))
         ? getAuth(getApp())
         : initializeAuth(getApp(), { persistence: inMemoryPersistence });
     }),
     provideFirestore(() => getFirestore(getApp())),
     provideClientHydration(),
-    ...(isBrowserRuntime && !isLocalDevHost ? [
+    ...(isBrowserRuntime && !isLocalDevHost && environment.appCheckEnabled ? [
       provideAppCheck(() => {
         const cpo = new CloudflareProviderOptions(
           environment.turnstileTokenExchangeUrl,

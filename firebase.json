@@ -34,7 +34,7 @@
       {
         "source": "**/*.@(png|jpg|jpeg|gif|svg|webp|avif|ico|mp4|webm)",
         "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=604800" }
+          { "key": "Cache-Control", "value": "public, max-age=2592000, stale-while-revalidate=604800" }
         ]
       }
     ]

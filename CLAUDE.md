@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-26 (parte 5) · Rama en la que se escribió: `master`
+> Última actualización: 2026-08-27 · Rama en la que se escribió: `master`
 
 ---
 
@@ -383,6 +383,10 @@ alternativa gratuita a reCAPTCHA Enterprise. Detalle completo en la Bitácora 20
   recuperar-contraseña, que van directo del navegador a Firebase Auth y nunca tocan este
   backend; a esas 3 páginas las protege la aplicación de App Check a nivel de Firebase, sin
   necesidad de ningún guard propio.
+- **Interruptor del cliente (2026-08-27):** `provideAppCheck(...)` además solo se registra si
+  `environment.appCheckEnabled` es `true`, y **hoy está en `false`**. Motivo y pasos para
+  reactivarlo: ver la Bitácora del 2026-08-27 y el comentario en `environment.ts`. Mientras esté
+  apagado, el navegador no instancia el widget de Turnstile en absoluto.
 - **SSR:** `provideAppCheck(...)` en `app.config.ts` solo se registra si
   `typeof window !== 'undefined'` — ni siquiera se intenta en el servidor. No es solo que
   `initializeAppCheck()` no sirva en Node: el constructor de `CloudflareProviderOptions` toca
@@ -489,6 +493,22 @@ Ambos componen `app.routes.base.ts`, que tiene las rutas reales y el comodín 40
 > producción. Verificado con `grep` sobre `dist/` — por eso la separación es a nivel de
 > build. Si tocas esto, vuelve a comprobarlo:
 > `grep -rl "DevRutaHarness\|dev/ruta" dist/frontend-app/browser/`
+
+### Servir el build de producción para medirlo (`dist-produccion`)
+
+`ng serve` no refleja las optimizaciones reales (minificación, prerendering, hashing de nombres),
+así que cualquier medición de rendimiento hecha sobre él no vale. Para medir el build de verdad hay
+una configuración en `.claude/launch.json` llamada **`dist-produccion`** (puerto 4320) que sirve
+`frontend-app/dist/frontend-app/browser` con un servidor estático. Primero compilar, después servir:
+
+```bash
+npm run build:app
+```
+
+> ⚠️ Esa config pasa `-c-1` (sin caché) al servidor estático a propósito, para que cada recarga
+> vuelva a pedir todo. Efecto secundario a tener presente: hace que las fuentes aparezcan
+> descargándose dos veces (el `preload` y el `@font-face`) cuando en producción es una sola
+> descarga reusada. No perseguir ese fantasma — ya pasó una vez (Bitácora 2026-08-27).
 
 ### Modo mocks locales (desarrollo sin gastar cuota de Firebase)
 En la consola del navegador:
@@ -600,8 +620,13 @@ transferencia bancaria manual con comprobante subido por el usuario.
    las rutas del backend responden 401 a través del dominio y no queda ninguna petición a localhost.
    Se despliega con `desplegar-backend.bat`. Ver Bitácora 2026-08-26 (parte 5).
    > 🟡 Queda un cabo suelto: `TURNSTILE_SECRET_KEY` no está en `backend/.env`, así que el
-   > intercambio de token de App Check devuelve un token vacío. No bloquea nada mientras App Check
-   > siga en "Supervisión" — pero rompería el sitio entero si alguien lo pasa a "Aplicar".
+   > intercambio de token de App Check devuelve un token vacío. **Desde el 2026-08-27 esto además
+   > tenía un costo de rendimiento real:** el widget de Turnstile interpretaba el token vacío como
+   > fallo y reintentaba sin parar (`TurnstileError 600010`, 14+ por carga), saturando el hilo
+   > principal de cada visitante. Por eso App Check quedó **desactivado en el cliente** tras el flag
+   > `environment.appCheckEnabled`, hoy en `false`. Poner la secret key y volver el flag a `true`
+   > cierra las dos cosas a la vez. Sigue sin bloquear nada mientras App Check esté en
+   > "Supervisión" — pero rompería el sitio entero si alguien lo pasa a "Aplicar" sin resolverlo.
 
 2. **Flow en producción.** El sandbox ya se probó de punta a punta con éxito (2026-08-25). Falta
    pasar `FLOW_ENVIRONMENT=production` con credenciales reales de `www.flow.cl` (no las de
@@ -674,6 +699,547 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-27 (parte 6) — PC 100/100. Movil estable en 64 (antes oscilaba 58-85) y el reflow
+desaparecio del informe. Iconos AVIF optimizados -29%, con una leccion sobre COMO medir calidad
+Typecheck ✅ · `ng build --configuration production` ✅ · los 8 iconos verificados decodificando en
+navegador tras recomprimirlos.
+
+**Escritorio: 100/100.** Vale dejarlo anotado porque cambia como leer el 64 de movil: el sitio es
+rapido; lo que queda es el techo de un dispositivo lento emulado (Moto G Power) con 4G lento.
+
+**Dos señales de que la parte 5 funciono:**
+1. **La seccion "Redistribucion forzada" ya no aparece en el informe.** Antes marcaba 219 ms + 44 ms.
+2. **Las 3 corridas dieron 64, 64 y 64.** Antes el MISMO build oscilaba entre 58 y 85. Que la
+   varianza se colapse encaja con haber quitado un reflow que se amplificaba con la carga de la
+   maquina (8 ms en corridas rapidas, 219 ms en lentas). Ojo: no es prueba concluyente — tambien
+   pudo tocar una infraestructura uniformemente cargada — pero es consistente con el arreglo.
+
+Metricas estables: **FCP 4,7 s · LCP 6,4 s · TBT 0 ms · CLS 0,013 · SI 5,6 s**, cadena critica
+1122 ms.
+
+**Iconos AVIF: 118,2 KB -> 84,3 KB (-29%), reemplazando los originales.** Se hizo con `sharp`
+instalado en un directorio temporal (`npm install --no-save`, sin tocar el `package.json`).
+Parametros finales: **320x320, quality 45, effort 7**.
+
+> **La leccion mas util de esta parte: la medicion de calidad depende del tamaño de referencia, y**
+> **elegirlo mal lleva a la decision equivocada.** Las partes anteriores compararon contra 294 px
+> (147 CSS px del home a 2x) y ahi "300 px q=45" parecia la mejor opcion. Pero al revisar TODOS los
+> componentes que usan estos iconos, el uso mas grande de la app no es 147 px sino **160 px** —o
+> sea 320 device px a 2x—. Midiendo contra esa referencia real, la opcion de 300 px pasa de
+> parecer buena a ser claramente peor, porque el navegador tiene que REESCALAR hacia arriba:
+
+| Opcion | Peso | Diferencia medida a 320 px |
+|---|---|---|
+| 320px q=50 | 96,8 KB (-18%) | 2,07/255 |
+| **320px q=45 (aplicado)** | **84,3 KB (-29%)** | **2,34/255** |
+| 300px q=45 | 78,8 KB (-33%) | **7,73/255** ← se reescala |
+| 320px q=40 | 72,4 KB (-39%) | 2,75/255 |
+
+Se eligio 320 px porque **elimina el reescalado por completo** (coincide exacto con el uso maximo
+real a 2x) y deja la diferencia bajo el 1%. Antes de decidir se verifico que ningun contenedor de
+estos iconos supere ~160 px en ninguno de los 20 componentes que los usan (los valores de 230 px y
+420 px que aparecen al buscar son de logos y avatares, no de estos iconos).
+
+**Se reemplazaron los archivos ORIGINALES, no se crearon variantes.** Motivos: `P_CerrarSesion`
+aparece en 18 archivos y `P_MiniEnsayos`/`P_MenteVeloz`/etc. en 16, casi todos sidebars — o sea que
+el ahorro tambien llega al dashboard y a la Ruta, que son las pantallas que los estudiantes usan a
+diario, no solo la landing. Y evita tocar 20 componentes.
+
+> **Sobre el cache y por que aca SI se puede sobrescribir sin versionar el nombre** (a diferencia de
+> lo que dice `CACHE-ASSETS.md` para las imagenes en general): esa advertencia aplica cuando la
+> imagen CAMBIA de contenido y mostrar la vieja seria incorrecto. Aca es la misma ilustracion, solo
+> que mas liviana: un visitante recurrente con la version vieja en cache simplemente recibe el
+> beneficio hasta 30 dias mas tarde. No hay nada roto mientras tanto.
+
+> **Los originales de 400 px quedaron respaldados fuera del repo**, en el scratchpad de la sesion
+> (`.../scratchpad/iconos-originales/`). Si en algun momento se quiere volver atras o re-generar con
+> otros parametros, estan ahi — pero ojo que el scratchpad es efimero: si se quiere conservarlos a
+> largo plazo, el historial de git ya los tiene.
+
+**Lo unico que Lighthouse sigue marcando con peso real: el SDK de Firestore** (`chunk-24EZH3DU.js`,
+114,5 KiB transferidos, 97,4 KiB sin usar segun Lighthouse) precargado en la landing por el
+`provideFirestore()` de `app.config.ts`. Sigue siendo un cambio arquitectonico, no un ajuste.
+
+### 2026-08-27 (parte 5) — Una corrida de 85 confirma que los cambios funcionan, y la comparacion
+entre corridas destapa un reflow real: leer geometria de secciones con `content-visibility` en el
+arranque las obliga a renderizarse
+Typecheck ✅ · `ng build --configuration production` ✅ · verificado contra el build local.
+
+**Tres corridas seguidas del MISMO build dieron 85, 63 y 63.** La de 85 es la que muestra el estado
+real del sitio cuando la infraestructura de PageSpeed no esta saturada:
+
+| | Corrida 85 | Corridas 63 |
+|---|---|---|
+| FCP | **2,4 s** | 5,0 s |
+| LCP | **3,8 s** | 6,6 s |
+| Speed Index | **2,4 s** | 5,6 s |
+| CLS | **0** | 0,013 |
+| Latencia maxima de ruta critica | 767 ms | 1466 ms |
+| Reflow forzado total | 72 ms | **263 ms** |
+
+**✅ Lo que quedo demostrado: sacar Firestore de la carga (parte 4) funciono.** En las tres corridas
+**Firestore desaparecio por completo de la cadena critica**, que paso de **15.737 ms a 767-1466 ms**.
+Es la mejora mas grande de toda esta serie y ya no depende de la suerte de la corrida.
+
+**Sobre la varianza restante:** comparando las dos corridas, TODOS los tiempos de red se mueven
+juntos (HTML 60 -> 78 ms, iframe.js 661 -> 1258 ms, polyfills 74 -> 240 ms). Eso es la maquina de
+PageSpeed, no el sitio. **No perseguir diferencias de puntaje entre corridas individuales.**
+
+**🔴 Pero dentro de esa varianza habia una señal real y accionable: el reflow forzado se multiplica
+por 27 (8 ms -> 219 ms).** Un reflow que escala asi con la carga de la maquina es un reflow que
+esta haciendo trabajo de verdad. Se localizo en el bundle (`main-*.js:3:43849` y `:3:44655`) y
+resulto ser una **mala interaccion con el `content-visibility` que se agrego en la parte 1**:
+
+`ngAfterViewInit` medía geometria de elementos que viven DENTRO de las secciones diferidas:
+- `updateNewsScrollThumb()` lee `scrollWidth`/`clientWidth` de `.news-track`, dentro de
+  `.news-section`.
+- `updateRects()` hace `getBoundingClientRect()` sobre `#foco-tutor` (que es `.foco-section`) y
+  sobre `.foco-mascot`.
+
+> **La leccion, que vale para cualquier componente futuro: consultar la geometria de un subarbol
+> con `content-visibility: auto` OBLIGA al navegador a renderizarlo.** No es que la medicion sea
+> cara por si sola: es que deshace la optimizacion, fuerza el layout completo de una seccion que se
+> habia saltado a proposito, y encima lo hace en el arranque. Si se agrega `content-visibility` a
+> una seccion, hay que revisar que nadie le pida `getBoundingClientRect`, `scrollWidth`,
+> `offsetHeight` ni similares antes de que entre en pantalla.
+
+**Tres correcciones aplicadas:**
+1. Se quito la medicion de la barra de noticias del arranque; ahora se hace cuando su seccion se
+   acerca (dentro del mismo observer que dispara la carga), momento en que la seccion se esta
+   renderizando igual.
+2. Se quito la medicion inicial de los rects del hero/mascota. El manejador de `mousemove` ya los
+   recalculaba solo si estaban en `null`, asi que la medicion ocurre recien cuando el puntero entra
+   en la seccion.
+3. **El listener de `scroll` ahora INVALIDA los rects en vez de recalcularlos.** Antes cada evento
+   de scroll disparaba dos `getBoundingClientRect()`, o sea un layout sincrono por evento. Poner
+   `null` es gratis y el recalculo perezoso llega cuando hace falta.
+
+**Verificado tras el cambio:** 0 peticiones a Firestore sin hacer scroll, las 9 secciones siguen con
+`content-visibility: auto`, 0 imagenes sin dimensiones, la mascota sigue siendo `<video>`, sin
+errores nuevos de consola.
+
+**Estado de los pendientes:** los 8 iconos AVIF siguen esperando decision del equipo (tabla de
+compromisos en la parte 3). El SDK de Firestore precargado (114,5 KiB, ahora con 97,4 KiB sin usar
+segun Lighthouse) es el mayor peso restante y sigue siendo un cambio arquitectonico. El FCP en una
+maquina descargada es **2,4 s**, no 4,7 -- asi que el "misterio del FCP" de la parte 3 era en buena
+medida la saturacion de la infraestructura de medicion, no un problema del sitio.
+
+### 2026-08-27 (parte 4) — Lección de método: 3 corridas de PageSpeed con el MISMO codigo dieron
+58, 63 y 59. Eliminada la fuente de esa varianza (Firestore) y quitado un preconnect que nunca
+iba a funcionar
+Typecheck ✅ · `ng build --configuration production` ✅ · verificado contra el build local.
+
+**Lo mas importante de esta entrada no es un cambio de codigo, es como leer las mediciones.** Tres
+corridas de PageSpeed sobre codigo practicamente identico (entre la B y la C solo se quito un
+atributo `crossorigin`):
+
+| | A | B | C |
+|---|---|---|---|
+| Puntuacion | 58 | 63 | 59 |
+| Speed Index | 12,1 s | 5,7 s | 9,6 s |
+| Latencia maxima de ruta critica | 15.808 ms | 3.397 ms | 15.737 ms |
+| CLS | 0,055 | 0,013 | 0,055 |
+| FCP | 4,9 s | 4,9 s | 4,7 s |
+| LCP | 6,7 s | 6,5 s | 6,4 s |
+
+Quitar un atributo HTML no mueve el Speed Index de 5,7 a 9,6. **Las corridas A y C tienen cadena
+critica casi identica (15,8 / 15,7 s), las dos dominadas por canales de Firestore; la B tenia solo
+2 entradas de Firestore.** Es varianza de la medicion. Las unicas metricas que mejoran de forma
+monotona en las tres corridas son FCP y LCP — esas son las que conviene seguir.
+
+> **Regla para la proxima vez: correr PageSpeed al menos 3 veces y quedarse con la mediana.** Una
+> sola corrida sobre un dispositivo emulado con throttling no distingue una mejora de 4 puntos del
+> ruido. Y desconfiar de la "latencia maxima de ruta critica" cuando hay conexiones long-polling
+> de por medio: mide la duracion de una conexion abierta, no algo que este bloqueando el render.
+
+**Causa raiz de la varianza, y como se elimino: las noticias ahora se cargan POR SCROLL.** Firestore
+transporta por WebChannel con long-polling; la conexion queda abierta y Lighthouse la contabiliza
+entera en la cadena critica. Que apareciera o no dependia de si la consulta caia dentro de la
+ventana de la traza — y el diferido por tiempo de la parte 2 (`requestIdleCallback` + `setTimeout`)
+la dejaba justo ahi, a los ~2,5 s. Ahora el disparador es la **proximidad de la seccion de
+noticias** (`IntersectionObserver` con `rootMargin: 800px`), que esta a ~11.000 px de scroll.
+Doble beneficio: Lighthouse no hace scroll, asi que Firestore ya no aparece en la auditoria; y el
+visitante real que nunca baja hasta ahi — la enorme mayoria — deja de pagar ese handshake.
+**Verificado: sin hacer scroll, 0 peticiones a `firestore.googleapis.com` a los 8 s.**
+
+> Igual que con el revelado de secciones, lleva **dos disparadores independientes con guardia**
+> (`cargarNoticiasSiHaceFalta()`): el observer y, como respaldo, el barrido geometrico por scroll
+> que ya existia. Si uno falla, el otro cubre; si funcionan los dos, se lee una sola vez.
+
+**🔴 Preconnect a `estudiauni.firebaseapp.com`: ELIMINADO, y no hay que volver a ponerlo.** La
+parte 2 lo agrego y la parte 3 le quito el `crossorigin` creyendo que ese era el problema. **Las dos
+corridas lo reportaron igual como "conexion previa sin usar".** La razon real: Firebase Auth no pide
+`iframe.js` desde el documento principal, lo carga DENTRO de un iframe de ese otro origen, y Chrome
+particiona el pool de conexiones por sitio de nivel superior — la conexion precalentada en el
+documento principal **no es reutilizable dentro de ese iframe**. Lighthouse igual lo sigue
+sugiriendo como candidato con ~310 ms porque su heuristica no modela esa particion. Hay un
+comentario en `index.html` explicandolo para que nadie lo reintente.
+
+**Sigue pendiente y sin cambios:** los 8 iconos AVIF (ver la tabla de compromisos en la parte 3 —
+falta que el equipo elija calidad, no se pueden inspeccionar visualmente desde este entorno), el
+FCP de ~4,7 s (5 hipotesis descartadas, hace falta una traza de DevTools) y el SDK de Firestore
+precargado (114,5 KiB, cambio arquitectonico).
+
+### 2026-08-27 (parte 3) — PageSpeed 58 -> 63. Speed Index de 12,1 s a 5,7 s y la cadena critica
+de 15,8 s a 3,4 s. Preconnect corregido, y medido con herramientas por que los iconos AVIF NO
+valen la pena tocarlos
+Typecheck ✅ · `ng build --configuration production` ✅ · medido contra el canal de vista previa real
+del usuario y contra el build local.
+
+**Segunda corrida de PageSpeed tras la parte 2 — lo que efectivamente se movio:**
+
+| Metrica | Parte 1 | Parte 2 |
+|---|---|---|
+| Puntuacion | 58 | **63** |
+| Speed Index | 12,1 s | **5,7 s** |
+| Latencia maxima de ruta critica | 15.808 ms | **3.397 ms** |
+| CLS | 0,055 | **0,013** |
+| LCP | 6,7 s | 6,5 s |
+| Ahorro pendiente en imagenes | 244 KiB | 105 KiB |
+| Elementos con animaciones no compuestas | 28 | 12 |
+
+**🔴 Bug propio corregido: el `preconnect` de la parte 2 no servia para nada.** Se puso con el
+atributo `crossorigin`, y Lighthouse lo reporto literalmente: *"Conexion previa sin usar. Comprueba
+que el atributo crossorigin se use correctamente"*. `iframe.js` se pide como script/iframe normal,
+**no en modo CORS**, asi que el navegador abria una conexion que despues no reutilizaba. Quitado el
+atributo. Los 320 ms de ahorro de LCP que estima Lighthouse recien deberian aparecer ahora.
+
+**🟡 Los 8 iconos AVIF: NO se tocaron, y ahora hay datos para justificarlo.** Se instalo `sharp` en
+un directorio temporal (con `npm install --no-save`, sin tocar el `package.json` del proyecto) para
+poder re-encodear AVIF de verdad, y se midio el compromiso real:
+
+| Opcion | Peso (8 iconos) | Diferencia visual a 294 px |
+|---|---|---|
+| Original (400 px) | 118,2 KB | — |
+| 300 px q=55 | 103,5 KB (-12%) | 4,45/255 |
+| 300 px q=45 | 78,9 KB (-33%) | 4,96/255 |
+| 300 px q=35 | 58,9 KB (-50%) | 5,41/255 |
+| 400 px q=42 (solo recomprimir) | 89,0 KB (-25%) | 6,87/255 |
+
+Dos cosas que conviene no volver a re-derivar:
+- **Redimensionar rinde mas que recomprimir**: a igual peso, bajar a 300 px degrada menos que
+  quedarse en 400 px y bajar calidad.
+- **El piso de 3,09/255 lo pone el propio resize**, no la compresion (medido con un control a q=90).
+  O sea que de la diferencia total, la calidad solo aporta entre 1,36 y 2,81.
+
+**No se aplico ninguna** porque son ilustraciones de marca y **este entorno no puede tomar capturas**
+(el panel de navegador no compone frames: `screenshot` falla con "the Browser pane is not
+displayed"). Degradar imagenes de marca sin poder mirarlas no es una decision que corresponda tomar
+a ciegas. Queda para que el equipo elija con la tabla de arriba; el script esta descrito aca y se
+reconstruye en minutos.
+
+**Hipotesis descartadas sobre el FCP de 4,9 s (que NO mejoro y sigue siendo el techo).** Se
+verificaron y se cayeron una por una, conviene no repetirlas:
+- Las fuentes ya usan `font-display: swap` (no bloquean el pintado).
+- El `<h1>` del LCP **si** viene en el HTML prerenderizado, y sus estilos **si** estan en el CSS
+  critico en linea (se comprobo regla por regla: `.hero-title`, `.hero-section`, `.hero-grid`...).
+- No hay CSS bloqueante en el `<head>`: la hoja externa usa el truco `media="print" onload`.
+- **No hay errores de hidratacion** en consola (se reviso en el preview real), asi que Angular no
+  esta tirando el DOM prerenderizado para volver a construirlo.
+- Toda la cadena de ancestros del LCP tiene `opacity: 1`, sin animaciones, sin transforms y
+  `visibility: visible` — nada lo oculta.
+
+Lo que queda sin explicar es que pasa entre que el HTML llega (236 ms) y el primer pintado. Para
+avanzar hace falta una traza real del panel de Rendimiento de Chrome DevTools sobre el sitio
+desplegado, con throttling de CPU 4x — no se puede obtener desde este entorno.
+
+**Hallazgo lateral, reportado y NO aplicado: KaTeX viaja en el CSS global de TODAS las paginas.**
+`angular.json` incluye `node_modules/katex/dist/katex.min.css` en el array `styles`, y son **24 KB
+(el 42%) de los 57,5 KB de la hoja global** — mas 20 `@font-face` con `font-display: block`. La
+landing no renderiza una sola formula. La buena noticia es que **no esta en el CSS critico en linea**
+(beasties lo excluyo correctamente), asi que no bloquea el pintado: es ancho de banda de una hoja
+diferida. Sacarlo exigiria cargarlo bajo demanda desde `katex.service.ts`, y como el output de KaTeX
+se inyecta por innerHTML, los estilos con encapsulacion de Angular no le aplicarian — hay que
+pensarlo bien. Riesgo real sobre una feature central (M1/M2) para ganar 24 KB de una hoja no
+bloqueante: no se hizo.
+
+**Confirmado como el mayor peso restante: el SDK de Firestore.** `chunk-24EZH3DU.js` son 461 KB en
+crudo / 114,5 KiB transferidos, **con `modulepreload` en el home** y 80 KiB sin usar. Viene del
+`provideFirestore()` de `app.config.ts`, que es un import estatico: aunque la parte 2 ya difirio la
+*consulta* de noticias, el *SDK* se sigue precargando. Volverlo lazy no es un ajuste, es un cambio
+de arquitectura (todo el proyecto hace `inject(Firestore)`). Es el candidato natural a la proxima
+mejora grande, pero no es trivial.
+
+### 2026-08-27 (parte 2) — Segunda vuelta con PageSpeed REAL en la mano: 58/100, NO_LCP resuelto,
+TBT en 0 ms. Avatares del hero de 143 KB a 9,9 KB, Firestore fuera de la carga, y un descubrimiento:
+los iconos AVIF NO se pueden encoger con las herramientas disponibles
+Typecheck ✅ · `ng build --configuration production` ✅ con las 6 rutas prerenderizadas · medido
+contra el build real servido en local y contra el canal de vista previa del usuario.
+
+**Contexto:** tras la parte 1 el usuario desplego a un canal de vista previa y corrio PageSpeed de
+verdad, que es lo que faltaba para cerrar el circulo. Resultado: **58/100 en movil**, con
+**FCP 4,9 s · LCP 6,7 s · TBT 0 ms · CLS 0,055 · Speed Index 12,1 s**.
+
+**Lo que la parte 1 ya arreglo, confirmado con datos reales:**
+- **`NO_LCP` desaparecio**: ahora LCP mide 6,7 s. El audit ya no falla.
+- **TBT = 0 ms.** El hilo principal dejo de bloquearse. Era el sintoma mas grave del informe
+  original (y lo que arrastraba a los audits de minificacion a mostrar "Error!").
+- El reflow bajo de 103 ms a **43 ms + 17 ms**.
+
+**🔴 El bug de la parte 1 que el despliegue destapo: el login con Google estaba roto.** Ya esta
+revertido y documentado en la entrada anterior. Nota operativa que costo un rato entender: el
+usuario seguia viendo el `TypeError` **despues** de que se corrigiera, porque `firebase.json` cachea
+el `index.html` una hora (`max-age=3600`) y su navegador seguia pidiendo el `main-*.js` viejo. El
+`main-*.js` si tiene hash y se cachea un año, pero el HTML que lo referencia no. **Tras desplegar,
+un Ctrl+Shift+R o esperar una hora.** Verificado en el propio canal de vista previa del usuario: da
+`auth/popup-blocked` (normal en navegador headless) y carga los 3 recursos de auth.
+
+**Avatares de "opiniones": 143 KiB -> 9,9 KiB.** Fue el hallazgo mas rentable de esta vuelta, y
+**solo salio a la luz porque la parte 1 les puso `width`/`height`**: con las dimensiones declaradas,
+Lighthouse pudo comparar tamaño real contra tamaño mostrado y delato lo absurdo — `2.png` pesaba
+82,8 KiB para mostrarse a **51x49 px**, y `1.jpg` era 1280x720 para un circulo de 87x49. Se usan en
+dos sitios (la fila de avatares del hero, sobre la linea de flotacion, y los testimonios), en ambos
+a 32-52 px.
+
+Sin `sharp`, `imagemagick` ni nada parecido en la maquina, se generaron con el **canvas del propio
+navegador**: recorte cuadrado centrado (que es justo lo que hace el `object-fit: cover` de sus
+contenedores circulares) a 128x128 y export a WebP q=0.82. Quedaron en 2,4 / 3,7 / 3,8 KB, con
+sufijo `-v1` en el nombre por la razon de siempre (los assets no llevan hash, ver `CACHE-ASSETS.md`).
+
+> **Truco reutilizable:** para no pasar el base64 por la conversacion, se levanto un receptor HTTP
+> minimo en Node (`/tmp/receptor.cjs`, efimero) y el navegador le hizo POST de los data URL. Sirve
+> para cualquier cosa que haya que generar en el navegador y escribir a disco.
+
+**🟡 Los iconos AVIF NO se pueden mejorar con lo que hay, y el ahorro que promete Lighthouse ahi es
+inalcanzable.** El informe pedia ~104 KiB reduciendo los 8 iconos de 400x400 a los 88-147 px en que
+se muestran. Se probo re-encodearlos a WebP 300x300 con el canvas y el resultado fue **el doble de
+peso en los 8 casos** (ej. `P_MiniEnsayos`: AVIF 400px = 18,5 KB vs WebP 300px = 34,4 KB). AVIF es
+mucho mas eficiente que WebP para estas ilustraciones. **No se tocaron.** Para bajarlos de verdad
+hace falta un encoder AVIF (`sharp`, `avifenc`) que re-encodee a 300x300 manteniendo el formato —
+tarea aparte, requiere instalar herramientas.
+
+**Firestore fuera de la carga inicial.** `ngOnInit` del home llamaba a `loadFirestoreNews()` de
+inmediato, para una seccion que esta a ~10.000 px de scroll; Lighthouse lo mostraba dentro de la
+cadena critica de red (canales `Listen/channel`, con 15.808 ms de latencia maxima de ruta). Ahora se
+dispara con `requestIdleCallback` (`timeout: 3000`). Es seguro: `getNews()` es una lectura unica, no
+un listener, y la seccion tiene su estado por defecto mientras tanto.
+
+> **Lleva un respaldo con `setTimeout(2500)` y un guardia contra doble lectura, y hay una razon
+> medida:** en una pestaña en SEGUNDO PLANO el navegador congela `requestIdleCallback` **y**
+> `requestAnimationFrame` — comprobado en este entorno: de los tres, solo `setTimeout` seguia
+> disparando. Sin el respaldo, quien abriera el sitio con "abrir en pestaña nueva" se quedaria sin
+> noticias hasta enfocarla.
+
+**Preconnect a `estudiauni.firebaseapp.com`.** Lighthouse lo pedia explicitamente con **320 ms de
+ahorro de LCP**: el iframe de auth cae en la cadena critica (~1095 ms) y la conexion TLS arrancaba
+de cero. Como el intento de NO cargar ese iframe rompio el login (ver entrada anterior), adelantar
+la conexion es la mitigacion que si es segura.
+
+**CLS: `contain-intrinsic-size` re-medido a 412 px.** Los valores de la parte 1 se midieron a 375 px
+y Lighthouse usa 412 px (Moto G Power): habia desfases de hasta **168 px** (`.foco-section` declaraba
+1279 y mide 1447). Un valor corto de mas hace que la seccion CREZCA al renderizarse y empuje lo de
+abajo. Corregidos los 8 que no coincidian.
+
+> Honestidad sobre esto: **no se pudo confirmar que el CLS de 0,055 venga de aqui.** Antes era 0, y
+> los `contain-intrinsic-size` son el sospechoso mas razonable entre los cambios de la parte 1, pero
+> Lighthouse no hace scroll y esas secciones estan fuera de pantalla, asi que la explicacion no
+> cierra del todo. Ajustar los valores es correcto igual (el desfase era real y medido). 0,055 sigue
+> dentro del rango "bueno" (<0,1). **Confirmar en la proxima corrida de PageSpeed.**
+
+**Lo que queda pendiente y de donde saldria la proxima mejora grande:**
+1. **FCP de 4,9 s es el techo actual** y **no lo introdujo ninguno de estos cambios** — el informe
+   original ya marcaba 5,3 s. Se descartaron dos hipotesis con evidencia: las fuentes ya usan
+   `font-display: swap`, y el `<h1>` del LCP **si** viene en el HTML prerenderizado, sin CSS
+   bloqueante en el `<head>`. Queda por explicar que ocurre entre que el HTML llega (289 ms) y el
+   primer pintado. Sospecha no verificada: los ~106 KB de CSS critico en linea que hay que parsear
+   antes de pintar, sobre una CPU de gama baja.
+2. **129 KiB de JavaScript sin usar**, 72,2 KiB de ellos en un solo chunk (`chunk-24EZH3DU.js`).
+3. Los 8 iconos AVIF (punto de arriba), que necesitan un encoder AVIF.
+4. `1.jpg`, `2.png` y `3.webp` originales siguen en `src/assets` y por lo tanto se despliegan
+   (143 KB), aunque **ya no los referencia nadie**. Se pueden borrar cuando se confirme que los
+   avatares nuevos se ven bien.
+
+### 2026-08-27 — Rendimiento en movil: verificacion de una auditoria externa (1 hallazgo era falso),
+ejecucion del plan, y 1 optimizacion revertida por romper el login con Google. El home
+referenciaba 107 MB de assets, con un video de 87,8 MB
+Typecheck ✅ · `ng build --configuration production` ✅ con las 6 rutas prerenderizadas · verificado
+contra el build real servido en local (no `ng serve`) y comparado siempre contra produccion como
+linea base, para no atribuirle a un cambio propio lo que ya pasaba antes.
+
+**Origen:** el sitio publicado se sentia muy lento en celular. Se trajo una auditoria de PageSpeed
+con 10 hallazgos. **Antes de tocar nada se verifico uno por uno** — y conviene dejar anotado que no
+todos eran ciertos.
+
+**Lo que era FALSO: "los archivos CSS y JavaScript no estan minificados".** Se descargaron los
+bundles reales de produccion: `main-IDQFTNQW.js` son 270 KB en **3 lineas** con identificadores
+manglados (`Be`, `nn`, `Z`), y el CSS son 58 KB en **1 linea**. Estan perfectamente minificados. El
+`.map` que parecia publicado devolvia 200 pero servia `index.csr.html` — es el comodin de
+`firebase.json`, no un source map. Esos "Error!" del informe (junto a los de TBT y "CSS/JS sin usar")
+son **cascada del fallo NO_LCP**, no hallazgos reales. Util para la proxima vez que llegue un
+informe asi: un audit en "Error!" no es un audit en rojo.
+
+**Lo que SI era cierto, medido en vivo:** profundidad de DOM 14 en `span.donut-val` y 19 hijos en
+`<body>` (coincidencia exacta), 19 de 19 `<img>` sin `width`/`height`, 41 user timings (exacto),
+28 elementos con animaciones no compuestas — incluido el `<circle>` animando `r` que el informe
+citaba, que resulto ser `.node-glow` en el home. El reflow de 103 ms se localizo: es
+`AppComponent.ngOnInit`.
+
+**Lo que la auditoria NO detecto, y era el problema real: el home referencia 107 MB de assets.**
+
+| Asset | Antes | Ahora |
+|---|---|---|
+| `30FPSQuality.mp4` (video del tab 1) | **87,8 MB** | **1,87 MB** |
+| `2_ensayos.gif` usado como POSTER del tab 2 | 7,1 MB | 20 KB |
+| `2_ensayos.mp4` | 5,7 MB | 541 KB |
+| `3_consulta.mp4` | 3,5 MB | 619 KB |
+| `3_consulta.gif` usado como POSTER del tab 3 | 2,1 MB | 28 KB |
+| Mascota de Foco (webp animado) | 646 KB | 113 KB |
+
+El `preload="none"` evitaba que se descargaran en la carga inicial, pero apenas el usuario hacia
+scroll hasta "Mira como funciona", el `IntersectionObserver` reproducia el video y **empezaba a
+bajar 87,8 MB en datos moviles**. Y los tabs 2 y 3 usaban un **GIF animado como `poster`** — una
+imagen de portada de 7,1 MB. Todo se resolvio con transformaciones de Cloudinary por URL
+(`q_auto,vc_auto,w_800,c_limit` para video, `so_0,f_auto,q_auto,w_800,c_limit` para los posters),
+sin resubir un solo archivo. Cada transformacion se **midio descargandola** antes de escribirla en
+el codigo, no se asumio que funcionaria.
+
+**La mascota de Foco paso de `<img>` a `<video>` WebM VP9.** El endpoint de VIDEO de Cloudinary da
+404 sobre ese recurso (es un recurso de tipo imagen), pero el endpoint de IMAGEN si convierte:
+`/image/upload/vc_vp9,q_auto,w_520,c_limit/...gif.webm`. **Conserva el canal alfa** — verificado
+dibujando el video en un `<canvas>` y contando pixeles: 84,6% transparentes. Importa porque la
+mascota va superpuesta al SVG de orbitas del hero; con un MP4 (sin alfa) habria tapado las orbitas
+con un rectangulo opaco. Mismo patron que ya usaban los 6 `materia-*-path.component.ts`.
+
+> 🟡 **Sin verificar: iOS.** Safari decodifica VP9 pero su soporte de alfa en WebM es dudoso. El
+> proyecto ya asumio este riesgo el 2026-08-25 (parte 7) para los 6 gifs de la Ruta, asi que esto no
+> abre una categoria de riesgo nueva — pero **conviene mirar el home en un iPhone real**. Si la
+> mascota sale con fondo negro, la vuelta atras es de una linea: volver al `<img>` con
+> `f_auto,q_auto,w_400,c_limit` (364 KB, sigue siendo mejor que los 646 KB de antes).
+
+Se cambiaron ademas las otras 3 apariciones del mismo gif de 646 KB en pantallas privadas
+(`career-finder` x2, `ensayo-runner` x1) — no afectan la landing, pero si a los estudiantes reales.
+
+**`content-visibility: auto` en las 9 secciones bajo la linea de flotacion.** El home mide ~15.000 px
+de alto contra un viewport de 812 px: el 93% del documento esta fuera de pantalla al cargar, y aun
+asi el navegador le hacia layout, paint y mantenia corriendo sus animaciones. **Efecto medido: de 84
+a 32 animaciones activas.** Cada seccion lleva su `contain-intrinsic-size` con el alto real medido a
+375 px para que la barra de scroll no salte. No se aplico al hero (esta sobre la linea de flotacion,
+no ahorraria nada), y las 9 secciones ya declaraban `overflow: hidden`, asi que la contencion de
+pintado no introduce ningun recorte nuevo.
+
+> **Red de seguridad, y por que hizo falta.** Con `content-visibility`, los hijos de una seccion
+> saltada no tienen caja, asi que el `IntersectionObserver` que reparte la clase `.is-visible` no
+> puede dispararse para ellos. En la practica el navegador re-renderiza la seccion ANTES de que
+> entre en pantalla y el observer alcanza a disparar — pero si no lo hiciera, esos elementos se
+> quedarian en `opacity: 0` **para siempre**, o sea media landing en blanco. Se agrego un barrido
+> por scroll (limitado a un frame con rAF) que revela por geometria cualquier elemento ya visible
+> que el observer no haya marcado. Cuando el observer funciona, no hace nada.
+>
+> **Ojo con como se verifico esto**, porque es una trampa facil: al probar el build local, los
+> elementos aparecian con `0/7 is-visible` y opacidad 0, lo que parecia una regresion grave. **Se
+> midio produccion con el mismo script y dio exactamente lo mismo (0/7)** — o sea que no era el
+> cambio: el panel de navegador de estas sesiones corre el tab en segundo plano
+> (`visibilityState: 'hidden'`), donde `requestAnimationFrame` **no se ejecuta** (comprobado: da
+> `false`) y las transiciones no avanzan. Ejecutando el barrido a mano se revelan los 30 elementos
+> y los 26 con transicion llegan a `opacity: 1`. **Siempre comparar contra produccion antes de dar
+> por rota una medicion en este entorno.**
+
+**Reflow de 103 ms en `app.component.ts`.** El callback de `NavigationEnd` escribia `scrollTop` en
+tres elementos justo cuando Angular acababa de renderizar la vista — escribir `scrollTop` obliga a
+un recalculo de layout SINCRONO, y sobre el DOM de ~940 nodos del home eso costaba 103 ms. Dos
+cambios: la primera navegacion se omite (en carga en frio no hay scroll que restaurar, y es justo
+la que cae en el camino critico) y el resto se difiere a `requestAnimationFrame`. El `setTimeout(50)`
+de los contenedores con scroll propio se dejo igual a proposito: al momento de `NavigationEnd` la
+vista del componente nuevo puede no estar todavia en el DOM.
+
+**Animacion de `r` sobre `<circle>` → `transform: scale()`.** `.node-glow` (4 circulos con `r="8"`)
+animaba `r` de 5px a 11px. Se paso a `scale(0.625)` → `scale(1.375)`, que es exactamente lo mismo
+visualmente pero corre en la GPU. **`transform-box: fill-box` es imprescindible**: sin el,
+`transform-origin` se resuelve contra el `viewBox` del SVG y los circulos se desplazarian en vez de
+crecer sobre su centro. `.flow-pulse-node` animaba `r` tambien pero se confirmo que es CSS muerto
+(cero usuarios en todo el frontend), no se toco.
+
+Quedan 4 animaciones no compuestas sobre la linea de flotacion que **no se reescribieron a
+proposito**: `gradientMove` anima `background-position` sobre texto con `background-clip: text` (el
+degradado de la marca) y `ai-glitch-*` anima `clip-path`. Ninguna de las dos se puede pasar a
+`transform`/`opacity` sin cambiar el diseño. Se les agrego `prefers-reduced-motion: reduce` (antes
+no lo respetaban), que es lo que mas ayuda en gama baja y modo ahorro de bateria. Total: de 28
+elementos con animaciones no compuestas a 6.
+
+**🔴 INTENTADO Y REVERTIDO: diferir el iframe de Firebase Auth (288 KB) fuera de la landing.**
+`getAuth()` registra por defecto el `browserPopupRedirectResolver`, y ese resolver descarga en el
+arranque `estudiauni.firebaseapp.com/__/auth/iframe.js` — **288 KB sin comprimir (94 KB gzip) y**
+**~39 ms de hilo principal** — en TODAS las paginas, incluida la landing publica que ve un visitante
+anonimo que nunca va a iniciar sesion. Lighthouse lo reportaba como el tercero mas caro del sitio.
+
+Se probo cambiar `getAuth()` por `initializeAuth()` sin resolver, pasandoselo explicito a
+`signInWithPopup()`. **Funciona para el rendimiento (se verifico: 0 peticiones a `firebaseapp.com`
+en la carga del home) pero ROMPE el login con Google**, que falla con:
+
+```
+TypeError: Class constructor yu cannot be invoked without 'new'
+```
+
+Se probo tambien importar `browserPopupRedirectResolver` desde `firebase/auth` en vez de
+`@angular/fire/auth` (por si el envoltorio zone-aware de AngularFire era el culpable): **mismo
+error**. Revertido a `getAuth()`; hay un comentario en `app.config.ts` para que nadie lo reintente
+a ciegas.
+
+> **Lo mas importante de este episodio no es el bug, es COMO se escapo.** El cambio pasaba el
+> typecheck, compilaba, prerenderizaba las 6 rutas y no daba ningun error en consola al cargar la
+> pagina de login. **Solo se manifiesta al hacer clic en el boton.** Se detecto porque el usuario
+> desplego a un canal de vista previa y lo probo a mano.
+>
+> El metodo que lo confirmo, util para repetir: hacer clic en el boton **en el build local y en
+> produccion**, y comparar tres cosas — si el boton queda `disabled` (o sea si `loading` se puso
+> en true, prueba de que el handler corrio), que codigo de error se loguea, y si se cargan los
+> recursos de auth (`apis.google.com`, `__/auth/iframe`). Con el codigo roto: boton NO deshabilitado,
+> `TypeError`, cero recursos. Con el codigo bueno: boton deshabilitado, `auth/popup-blocked` (normal
+> en un navegador headless) y los 3 recursos cargados. Un `auth/popup-blocked` ahi es señal de que
+> **todo funciona**; la ausencia total de recursos de auth es la señal de alarma.
+
+> 🟡 **Si alguien quiere recuperar esos 288 KB en el futuro**, el camino no es este. Habria que
+> investigar por que Firebase no acepta el resolver pasado a mano en esta version, o mover el login
+> con Google a `signInWithRedirect`. No vale la pena sin tiempo para probarlo a mano: es el camino
+> de autenticacion, y este proyecto ya lo rompio antes (commit `a4cd04a6`).
+
+**🟡 App Check quedo DESACTIVADO tras un flag nuevo, `environment.appCheckEnabled: false`.** No es
+una decision estetica: `TURNSTILE_SECRET_KEY` sigue sin estar en `backend/.env`, asi que
+`/api/app-check/exchange` devuelve `{token:"", expireTimeMillis:0}`, `CloudflareProviderOptions` lo
+toma como fallo y **reintenta sin parar** — la consola del sitio publicado se llena de
+`TurnstileError 600010` (se contaron 14+ en una sola carga, con peticiones nuevas a Cloudflare cada
+~10 s) y esos reintentos saturan el hilo principal. Es exactamente el sintoma que ya habia obligado
+a excluir `localhost` en `app.config.ts`, ahora ocurriendo en produccion.
+
+> Desactivarlo **no baja la seguridad hoy**: App Check esta en modo "Supervision", no "Aplicar", asi
+> que esos tokens no se validaban igual; lo unico que se dejaba de enviar era un token vacio.
+> **Para reactivarlo:** cargar `TURNSTILE_SECRET_KEY` en `backend/.env`, correr
+> `desplegar-backend.bat`, comprobar que el endpoint devuelve un token no vacio, y poner el flag en
+> `true`. No hace falta ningun otro cambio.
+
+**Cache de imagenes: 7 dias → 30 dias + `stale-while-revalidate=604800`. NO se subio a 1 año**,
+aunque la auditoria lo pedia. Razon en `CACHE-ASSETS.md` (nuevo): `immutable` con un año solo es
+seguro si el nombre del archivo cambia con el contenido, y **nada de `src/assets/` lleva hash** —
+Angular copia esos archivos tal cual. Reemplazar una imagen manteniendo el nombre dejaria a los
+visitantes recurrentes con la version vieja hasta 12 meses. Es el mismo motivo por el que las
+fuentes llevan un `-v1` manual en el nombre (bitacora 2026-08-26 parte 2).
+
+**Falsa alarma que conviene no volver a perseguir:** midiendo el build local parecia que las fuentes
+se descargaban DOS veces (preload + `@font-face`). En produccion son 2 entradas con
+`transferSize: 0`, es decir una sola descarga reusada. El duplicado era artefacto del `-c-1`
+(sin cache) que se le paso al servidor estatico local.
+
+**Nuevo en `.claude/launch.json`: la config `dist-produccion`** (puerto 4320), que sirve
+`frontend-app/dist/frontend-app/browser` con un servidor estatico. Hace falta porque `ng serve` no
+refleja las optimizaciones de produccion (minificacion, prerendering, hashing) y varias de las
+mediciones de esta sesion solo tienen sentido sobre el build real.
+
+**Resumen de lo medido en el build de produccion, home en movil (375 px):**
+
+| | Antes | Ahora |
+|---|---|---|
+| Assets referenciados por el home | 107 MB | **~3,5 MB** |
+| Animaciones activas al cargar | 84 | **32** |
+| Elementos con animaciones no compuestas | 28 | **6** |
+| `<img>` sin `width`/`height` | 19 de 19 | **0** |
+| Reflow sincronico en la carga | 103 ms | **eliminado del camino critico** |
+
+**Sin verificar, y hace falta un dispositivo o cuenta real:** (1) la
+mascota de Foco en iOS, (2) las metricas Core Web Vitals en si — el panel de navegador de estas
+sesiones corre en segundo plano y ahi no se emiten FCP ni LCP, y la API publica de PageSpeed
+respondio 429 (cuota anonima agotada) en los 3 intentos. **Volver a correr PageSpeed a mano despues
+de desplegar** es lo que cerraria el circulo.
 
 ### 2026-08-26 (parte 5) — 🟢 BLOQUEANTE #1 RESUELTO: el backend está desplegado en Cloud Run y el
 sitio ya habla con él. `apiUrl` deja de apuntar a localhost por primera vez

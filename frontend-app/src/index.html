@@ -32,6 +32,13 @@
        public/fonts/. Se precargan solo los dos subsets "latin" (los unicos que
        usa el espanol): sin esto el navegador no descubre la fuente hasta haber
        descargado y parseado styles.css, lo que retrasa el primer texto. -->
+  <!-- NO poner un preconnect a estudiauni.firebaseapp.com. Se probo en dos corridas de
+       Lighthouse (con y sin crossorigin, 2026-08-27) y las dos lo reportaron como "conexion
+       previa sin usar". La razon: Firebase Auth no pide iframe.js desde este documento, lo carga
+       DENTRO de un iframe de ese otro origen, y Chrome particiona el pool de conexiones por sitio
+       de nivel superior -- la conexion precalentada aqui no es reutilizable alli. Lighthouse
+       igual lo sigue sugiriendo como "candidato" con ~310 ms: su heuristica no modela esa
+       particion. Ignorar esa sugerencia. -->
   <link rel="preload" href="/fonts/outfit-latin-v1.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/inter-latin-v1.woff2" as="font" type="font/woff2" crossorigin>
   <script type="application/ld+json">

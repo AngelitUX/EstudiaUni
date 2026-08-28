@@ -179,7 +179,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="ai-promo-banner">
             <div class="ai-promo-content">
               <div style="width: 60px; height: 60px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.15); flex-shrink: 0;">
-                <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" style="width: 100%; height: 100%; object-fit: contain;" alt="Foco" />
+                <video src="https://res.cloudinary.com/dqm3syhwr/image/upload/vc_vp9,q_auto,w_520,c_limit/v1/imagenes/branding/gif.webm" aria-label="Foco" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop [muted]="true" playsinline width="480" height="480"></video>
               </div>
               <div class="ai-promo-text" *ngIf="isProPlan() || adminService.isAdmin()">
                 <strong>¿Dudas vocacionales?</strong>
@@ -402,7 +402,7 @@ import { PaymentService } from '../../core/services/payment.service';
         <div class="ai-header">
           <div class="ai-header-left">
             <div class="ai-avatar">
-              <img src="https://res.cloudinary.com/dqm3syhwr/image/upload/f_auto,q_auto/v1/imagenes/branding/gif" alt="Foco" style="width: 100%; height: 100%; object-fit: contain;">
+              <video src="https://res.cloudinary.com/dqm3syhwr/image/upload/vc_vp9,q_auto,w_520,c_limit/v1/imagenes/branding/gif.webm" aria-label="Foco" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop [muted]="true" playsinline width="480" height="480"></video>
             </div>
             <div>
               <h4 class="ai-title">Foco, tu Pulpo Orientador</h4>
