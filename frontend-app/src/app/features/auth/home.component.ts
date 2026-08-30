@@ -2582,6 +2582,16 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       .hero-strip .chip-icon img { width: 38px; height: 38px; }
       .hero-strip .chip-info strong { font-size: 0.78rem; }
     }
+    /* La franja se agranda en escritorio (>900px): la version base es la de tablet. */
+    @media (min-width: 901px) {
+      .hero-strip { padding: 2.5rem 1.5rem 1.75rem; }
+      .hero-strip-inner { max-width: 1120px; padding: 2rem 2.5rem; gap: 1.4rem; border-radius: 24px; }
+      .hero-strip .hero-benefits-bar { max-width: 960px; gap: 2rem; }
+      .hero-strip .benefit-chip { gap: 0.9rem; }
+      .hero-strip .chip-icon img { width: 66px; height: 66px; }
+      .hero-strip .chip-info strong { font-size: 1.08rem; }
+      .hero-strip .chip-info span { font-size: 0.9rem; line-height: 1.3; }
+    }
     /* ╚══ fin FRANJA POST-HERO (CSS) ══╝ */
 
     /* ===== SOCIAL PROOF ROW (centered above the hero CTA buttons) ===== */
