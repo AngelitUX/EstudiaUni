@@ -77,3 +77,25 @@ console.log(`Generado: ${rutaSalida}`);
 console.log(`  incluidas (${incluidas.length}): ${incluidas.join(', ')}`);
 if (vacias.length) console.log(`  omitidas por estar vacias: ${vacias.join(', ')}`);
 if (excluidas.length) console.log(`  omitidas a proposito: ${excluidas.join(', ')}`);
+
+// `gcloud run deploy --env-vars-file` REEMPLAZA todas las variables del servicio,
+// no las fusiona: cualquier variable que no este aqui DESAPARECE del Cloud Run en
+// funcionamiento. Si falta una que la produccion necesita, Foco / los pagos /
+// Firebase Admin se rompen despues del deploy sin ningun error en el propio deploy.
+const ESPERADAS_EN_PRODUCCION = [
+  'FIREBASE_PROJECT_ID', 'FIREBASE_CLIENT_EMAIL', 'FIREBASE_PRIVATE_KEY',
+  'GEMINI_API_KEY', 'FRONTEND_APP_URL',
+  'FLOW_ENVIRONMENT', 'FLOW_API_KEY', 'FLOW_SECRET_KEY',
+  'FLOW_PLAN_ID_MONTHLY', 'FLOW_PLAN_ID_YEARLY', 'BACKEND_PUBLIC_URL',
+  'TURNSTILE_SECRET_KEY',
+];
+const faltantes = ESPERADAS_EN_PRODUCCION.filter((k) => !incluidas.includes(k));
+if (faltantes.length) {
+  console.log('');
+  console.log('  ⚠️  ATENCION: estas variables se esperan en produccion y NO estan en el .env:');
+  console.log(`      ${faltantes.join(', ')}`);
+  console.log('      El deploy REEMPLAZA todas las variables del servicio; si el Cloud Run');
+  console.log('      actual las tenia, se van a PERDER. Revisa las que tiene hoy con:');
+  console.log('      gcloud run services describe estudiauni-api --region southamerica-west1 \\');
+  console.log('        --format="value(spec.template.spec.containers[0].env)"');
+}

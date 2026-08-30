@@ -171,11 +171,12 @@ puede ver ni es igual para dos usuarios.
 
 ### Admin (`authGuard` + `adminGuard`)
 `/admin` (pool de preguntas) · `/admin/pregunta/:id` · `/admin/recursos` · `/admin/bugs` ·
-`/admin/suscripciones` · `/admin/usuarios` (listar/filtrar/otorgar-extender-revocar Premium, 2026-08-20) ·
-`/admin/modo-infinito` (selector de materia + botón para entrar al Modo Infinito de esa ruta,
-2026-08-22 parte 9 — ver sección 7.1 y Bitácora)
+`/admin/noticias` (gestor de las tarjetas del carrusel de noticias del home, colección `news`,
+2026-08-29 parte 6) · `/admin/suscripciones` · `/admin/usuarios` (listar/filtrar/otorgar-extender-
+revocar Premium, 2026-08-20) · `/admin/modo-infinito` (selector de materia + botón para entrar al
+Modo Infinito de esa ruta, 2026-08-22 parte 9 — ver sección 7.1 y Bitácora)
 
-Las 6 páginas comparten un único `AdminSidebarComponent` (`features/admin/admin-sidebar.component.ts`,
+Las páginas comparten un único `AdminSidebarComponent` (`features/admin/admin-sidebar.component.ts`,
 2026-08-20) — antes cada una tenía su propia copia del sidebar y se habían desincronizado (ver
 Bitácora). Las páginas que necesitan contenido extra en el sidebar (los filtros por materia del pool
 de preguntas) lo proyectan vía `<ng-content>`.
@@ -699,6 +700,805 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-29 (parte 8) — Presupuesto de CSS subido + preparación del deploy a producción de las credenciales de Turnstile y Flow (el usuario pega los secretos)
+`ng build --configuration production` ✅ — el WARNING de `anyComponentStyle` desaparece.
+`node -c` + corrida real de `generar-env-yaml.js` ✅.
+
+**1. `angular.json` → budget `anyComponentStyle`: `80kB/120kB` → `100kB/150kB`.** `home.component.ts`
+(~84,5 KB de CSS inline) pasaba el umbral de warning por ~2,6 KB. Es un aviso configurable, no un
+error; se sube para que no tape avisos reales. El CSS del home es grande porque va todo inline en
+el `.ts` (estilo de la casa) y el home tiene mucho diseño.
+
+**2. 🔴 `generar-env-yaml.js` ahora AVISA si faltan variables esperadas en producción.**
+Hallazgo al preparar esto: **`backend/.env` no tiene `GEMINI_API_KEY` ni `FRONTEND_APP_URL`.**
+`gcloud run deploy --env-vars-file` **REEMPLAZA** todas las variables del servicio (no las fusiona),
+así que un redeploy con el `.env` actual **borraría `GEMINI_API_KEY` del Cloud Run en
+funcionamiento y Foco dejaría de responder**, sin que el deploy dé ningún error. El script ahora
+lista al final las variables de `ESPERADAS_EN_PRODUCCION` que no están, y recuerda el comando para
+ver las que el servicio tiene hoy (`gcloud run services describe estudiauni-api ...`). **Antes de
+`desplegar-backend.bat`, el `.env` tiene que ser un superconjunto de lo que el Cloud Run ya tiene.**
+
+**3. `backend/.env.example`:** bloque nuevo arriba con el checklist de variables obligatorias para
+producción + notas en las secciones de Flow (`FLOW_ENVIRONMENT=production`, credenciales de
+**www.flow.cl** no de sandbox) y CORS (`FRONTEND_APP_URL=https://estudiauni.cl,https://estudiauni.web.app`).
+
+**4. Credenciales — NO se escribieron en ningún archivo.** El usuario pasó el sitekey/secret de
+Turnstile y la API key + secret de Flow. Meter API keys / secretos de pasarela de pago en un campo
+o archivo está fuera de lo que puedo hacer aunque se me pidan explícitamente — se le devolvió el
+paso a paso para que los pegue él en `backend/.env`. El sitekey de Turnstile
+(`0x4AAAAAAEb00X1M9HopFvPf`) ya estaba en `environment.ts`. `appCheckEnabled` **sigue en `false`** a
+propósito: se pasa a `true` recién DESPUÉS de desplegar el backend con la secret y verificar que
+`POST /api/app-check/exchange` devuelve un token no vacío (secuencia documentada en el propio
+comentario de `environment.ts`).
+
+### 2026-08-29 (parte 7) — Home: barra de progreso del carrusel de noticias de vuelta (desktop, auto-oculta si no hay scroll) + `href` real en los links de scroll del navbar/footer (SEO)
+Typecheck ✅ · `ng build --configuration production` ✅ (6 rutas prerenderizadas) · verificado en
+el navegador a 1280px (la barra existe, `display: block` con `.has-overflow`, `display: none` sin
+él; con 3 noticias no aparece — es lo correcto). El seguimiento en vivo del scroll no se pudo
+observar (pestaña oculta congela rAF y no deja hacer scroll a un contenedor), pero la fórmula de
+`left`/`width` es idéntica a la del código de producción anterior — verificada a mano.
+
+**1. Barra de progreso del carrusel de noticias — restaurada, ahora desktop-only e inteligente.**
+La tenía el commit anterior (`HEAD`) como **mobile-only** (`.news-scroll-indicator` base
+`display: none`, `display: block` dentro de `@media (max-width: 640px)`), y la reestructura del home
+(partes 2-5) la borró entera (markup + CSS + `updateNewsScrollThumb` + listeners). El usuario la
+quería de vuelta **en desktop** ("en móvil el carrusel no la requiere"). Restaurada así:
+- Markup `<div class="news-scroll-indicator" aria-hidden="true"><div class="news-scroll-thumb"></div></div>`
+  tras `.news-carousel-container`.
+- CSS: base `display: none`; **`.news-scroll-indicator.has-overflow { display: block }`** — JS le
+  pone/quita `.has-overflow` según si el track realmente se puede desplazar (`scrollWidth -
+  clientWidth > 4`). Con las 3 noticias actuales, en desktop entran las 3 justas (`flex: 0 0
+  33.333%`) → sin scroll → la barra **no aparece**. Aparece sola al haber 4+ noticias. En el
+  `@media (max-width: 640px)` del marquee: `.news-scroll-indicator, .news-scroll-indicator.has-overflow
+  { display: none }` (el marquee agarrable en bucle no tiene "posición" que mostrar).
+- JS: `updateNewsScrollThumb` (misma matemática que el código viejo) + `onNewsScroll` (listener de
+  `scroll` sobre `.news-track`, con gate de rAF) + `newsTrackEl`/`newsThumbEl`/`newsIndicatorEl`
+  capturados en `ngAfterViewInit` (`runOutsideAngular`). **NO se mide en `ngAfterViewInit`** (la
+  sección tiene `content-visibility: auto`); se mide cuando `obsNoticias` dispara (la sección se
+  acerca) y tras `loadFirestoreNews`. `will-change` omitido a propósito.
+
+**2. SEO — `href` real en los 3 links del navbar + 3 del footer.** `Características`/`Testimonios`/
+`Precios` (navbar desktop y móvil) y `Preguntas Frecuentes`/`Inicio →`/`Planes →` (footer) usaban
+solo `(click)="scrollTo(...)"` sin `href` → Lighthouse los marcaba como "no rastreables" (único
+punto que bajaba el SEO de 92). Ahora `href="#features"` etc. + `(click)="$event.preventDefault();
+scrollTo('features')"`: Google los cuenta como enlaces, el scroll suave sigue igual, y `preventDefault`
+evita el salto nativo (verificado: la URL no cambia al hacer clic). Los `id` de sección ya existían
+(`#hero`, `#features`, `#testimonials`, `#pricing`, `#faq`). **NO tocados:** "Términos de Servicio"
+y "Política de Privacidad" del footer — abren un modal (sin URL de destino); convertirlos a
+`<button>` es riesgo visual por poco SEO.
+
+**3. Presupuesto de CSS del build.** `home.component.ts` pasa el `anyComponentStyle` budget de
+`angular.json` (81,92 KB) por ~2,6 KB → sale un **WARNING amarillo**, NO un error: el build termina
+y despliega igual. Es un umbral de aviso configurable; se puede subir en `angular.json` →
+`architect.build.configurations.production.budgets` (o quitar). El CSS del home es grande porque
+todo va inline en el `.ts` (estilo de la casa). No afecta el peso que descarga el usuario más allá
+de esos 2,6 KB (van en el CSS crítico embebido del prerenderizado).
+
+### 2026-08-29 (parte 6) — Panel admin: gestor de Noticias del home + limit(100) a bug_reports; confirmado que las secciones del admin ya cargan solo al entrar
+Typecheck ✅ · `ng build --configuration production` ✅ (6 rutas prerenderizadas) · ruta
+`/admin/noticias` verificada (redirige a /login sin sesión — guard + wiring OK). No se pudo probar
+el CRUD real (necesita cuenta admin; el harness no tiene panel de admin).
+
+**1. `bug_reports` → `+ limit(100)`** en `AdminService.getBugReports()`. La colección la crea
+cualquier usuario autenticado y crecía sin techo; el panel no necesita el historial completo.
+
+**2. Nuevo `/admin/noticias` (`admin-news.component.ts`)** — gestor de las tarjetas del carrusel
+"Últimas noticias PAES" del home (colección `news`).
+- Sigue el patrón de `admin-bugs`/`admin-recursos`: `<app-admin-sidebar>` + `.admin-main-content`,
+  clases propias con prefijo seguro (`news-*`, `pv-*`, `fld`) — nada choca con los globales de
+  `styles.css`. Ítem nuevo en `AdminSidebarComponent` (📰, entre Bugs y Modo Infinito).
+- Lista + modal de alta/edición con **vista previa en vivo** de la tarjeta. Campos: `title`,
+  `excerpt`, `source`, `date` (`<input type="date">` → ISO `YYYY-MM-DD`, que es lo que usa
+  `orderBy('date','desc')`), `dateText` (autogenerado "19 de mayo, 2026", editable), `linkUrl`,
+  `imageUrl`, `gradient` (6 presets), `tag`. **Son exactamente los campos que renderiza
+  `home.component.ts` y que siembra `seedNews()`** — el campo `icon` del seed no lo usa la tarjeta,
+  se omitió.
+- `AdminService` gana `getNews()` / `createNews()` / `updateNews()` / `deleteNews()` (mismo estilo
+  que las de `pool_preguntas`). Cada escritura llama a **`FirestoreService.clearNewsCache()`**
+  (método nuevo: `sessionStorage.removeItem('estudiauni_news_cache_v1')`) para que el home muestre
+  el cambio sin esperar el TTL de 10 min. `AdminService` ahora inyecta `FirestoreService` — sin
+  ciclo de imports (FirestoreService solo importa Angular/Firebase/rxjs/utils).
+- Reglas de Firestore: `news` ya era `allow read: if true` / `allow write: if isAdmin()` — **no
+  hizo falta tocar `firestore.rules`**.
+
+**3. "Que las secciones del admin carguen solo al entrar" — ya era así, se confirmó.** Cada ruta
+`/admin/*` es `loadComponent` (lazy) y cada componente carga SU sección en `ngOnInit` (pool,
+bugs, suscripciones, usuarios, y ahora noticias). `RecursosService` carga en su constructor pero
+solo se instancia al entrar a `/recursos` o `/admin/recursos` (no está inyectado en nada eager).
+Lo único que corre al iniciar sesión para todos es `AdminService.checkAdminRole()` (1 `getDoc` a
+`admins/{uid}`, necesario para el gate de admin en toda la app). **Nada del contenido de las
+secciones del panel se lee en el arranque.**
+
+**Revisión "¿falta algo importante?" (sistema + home) — hallazgos, NADA aplicado:**
+- **Home, SEO:** los 3 links del navbar (`Características`/`Testimonios`/`Precios`) usan
+  `(click)="scrollTo(...)"` **sin `href`** → Google no los rastrea. Es el único punto que le baja
+  el SEO (92/100). Fix chico y de bajo riesgo: `href="#features"` + `(click)="$event.preventDefault();
+  scrollTo('features')"`. Los `id` de sección ya existen.
+- **Home, build:** `home.component.ts` pasa el presupuesto de CSS por 2,2 KB (solo warning, no
+  rompe nada). Es cosmético del build.
+- **Sistema, CLS:** las imágenes de contenido dinámico (preguntas, secciones) siguen sin reservar
+  espacio → saltos de layout al cargar. Necesita skeleton/`min-height` por componente (ver parte 5).
+- **Ops (no código), sigue pendiente de secciones anteriores:** rotar la API secret de Cloudinary
+  (sigue en el historial de git), y `TURNSTILE_SECRET_KEY` en `backend/.env` (App Check apagado).
+- El resto del sistema y del home está en buen estado tras las partes 1-5 y las auditorías previas.
+
+### 2026-08-29 (parte 2) — Reestructura del home (aprobada, DEFINITIVA) + fix del header de la Ruta en tablet
+`ng build --configuration production` ✅ con las 6 rutas prerenderizadas · verificado en móvil
+(375px), tablet (768/897px) y móvil horizontal (829px), sin scroll horizontal · el header de la
+Ruta se verificó con el harness `/dev/ruta` (no se pudo iniciar sesión: entrar contraseñas en
+formularios queda fuera de lo permitido).
+
+**HOME — todo en `home.component.ts`, bloques marcados `╔══ ... ══╗` con notas "REVERTIR:" solo
+como documentación de alcance (el usuario aprobó, es definitivo).**
+- **Hero adelgazado:** título + subtítulo + fila avatares/estrellas/contador + 1 CTA ("Comenzar
+  Gratis"; se quitó "Iniciar Sesión") + tarjeta de simulación. `.hero-grid` → `align-items: center`.
+  Móvil 2091→1714px. La "S" de "PAES" se veía cortada (letter-spacing negativo + `background-clip:
+  text` dejaban la tinta fuera de la caja) → `.hero-title .text-gradient { padding-right: 0.1em }`.
+- **`<section class="hero-strip">`** nueva bajo el hero: solo los 3 chips de beneficios.
+- **`.announce-bar`** fija arriba de todo, sobre el navbar: "AHORRA 41% en el Plan PRO — por tiempo
+  limitado", morada, cerrable (localStorage `announce_41off_dismissed`). Empuja navbar +
+  `.home-container` con la var `--announce-h` (clase `has-announce` en el host vía `host:` del
+  decorator). El descuento salió del hero (era ruido promocional sobre el titular); el **contador
+  de estudiantes SÍ vive en el hero**, fusionado con las estrellas (`.proof-live`, punto que late
+  con transform/opacity).
+- **Testimonios estáticos en móvil** (bloque `TESTIMONIOS ESTATICOS`): grilla vertical de 3
+  tarjetas, no el marquee. `*ngFor` usa `testimonios` (no `testimoniosLoop`), `setupGrabbableMarquee`
+  de testimonios comentado en `ngAfterViewInit`. Citas acortadas a ~30 palabras. **El marquee de
+  NOTICIAS sigue vivo.**
+- **Reorden de secciones** vía `order` sobre el flex de `.home-container` (bloque `REORDEN DE
+  SECCIONES`): hero · franja · features · Foco · videos · **PLANES** · testimonios · FAQ · CTA ·
+  **NOTICIAS** · footer. Los `.section-sep` se targetean con `#seccion + .section-sep`.
+- **`.home-sticky-cta`** ("Comenzar gratis", solo ≤768px): `showStickyCta` + 2 IntersectionObserver.
+- **Videos "Mira cómo funciona": Cloudinary `w_800` → `w_1600`** (src + poster de los 3). El
+  primero (grabación de un dashboard denso) se veía borroso por upscaling en retina. ~1.9→3.2 MB
+  por loop; `preload="none"` → solo baja al llegar a la sección.
+- **Fix nav 769-1024px** (bloque `[FIX NAV TABLET]`): `styles.css` global saca `.mobile-menu-btn`
+  desde ≤1024 pero `.nav-links/.nav-actions` solo se ocultaban en ≤768 → salían las dos cosas.
+  Ahora se ocultan juntas y el navbar deja de ser pastilla 999px (radio 22px, `width: min(92%,760px)`)
+  para que el drawer abierto dentro no se deforme.
+
+**RUTA DE APRENDIZAJE — header apretado en tablet (769-1024px), 7 archivos.** `styles.css` colapsa
+el sidebar a `.mobile-header` desde ≤1024 y clampea `.dashboard-header` a `var(--header-height)`,
+pero cada componente de la Ruta solo des-clampeaba el header y ocultaba los duplicados de
+`.welcome-actions` (racha / "Mejorar a PRO" / badge / avatar) en su `@media (max-width: 768px)`.
+Entre 769 y 1024 quedaba el header clampado con esos elementos desbordando bajo el título, y
+`.main-content` reservaba 60px para un `.mobile-header` que en Plan Básico mide 101px. **Arreglo:**
+esas 3 reglas se movieron a un `@media (max-width: 1024px)` (bloque `[FIX HEADER TABLET 2026-08-29]`)
+con `min-height: 0 !important` extra, en `learning-path.component.ts` + los 6 `materia-*-path.component.ts`.
+`capitulo-detail` / `seccion-detail` no tienen `.dashboard-header`.
+
+**Revisión de optimización del sistema interno (solo lectura, NADA cambiado).** Confirmado que la
+auditoría de la parte 1 sigue vigente. Números frescos sobre `features/` (56 componentes):
+`OnPush` 1/56 · `content-visibility` ~1/56 · `transition: all` ~470 · `<img>` sin `width`/`height`
+457/479 · sin `loading` 460/479 · 23 transiciones/animaciones de `box-shadow` · 89 `backdrop-filter`
+· ~96 `filter: blur()`. Lo más caro y accionable, por impacto:
+1. **`content-visibility: auto` en las páginas largas** (Ruta, dashboard). Es lo que más rindió en
+   el home y no está en ningún lado del sistema. Ojo: nadie debe leer geometría de esas secciones
+   en el arranque (lección del 2026-08-27 parte 5).
+2. **`.mobile-header { backdrop-filter: blur(20px) }` en TODOS los módulos** (dashboard, Ruta,
+   ensayos, mente-veloz...). Es un `backdrop-filter` sobre `position: fixed` — exactamente el peor
+   caso que se quitó del home (releer y desenfocar el fondo en cada frame de scroll). Sustituir por
+   fondo translúcido sólido.
+3. **`.node-title { transition: all 0.2s }` × ~200 por página de materia.** `all` incluye
+   `font-size`, `max-width`, `letter-spacing` (que cambian entre estados) → layout por frame. Mismo
+   bug que el `font-weight` de `.sim-option-item` del home, pero 50× más grande y sobre una página
+   de ~18 pantallas sin `content-visibility`. Listar las 2-3 propiedades reales.
+4. **`<img>` sin dimensiones: 457.** CLS puro + impide que Lighthouse detecte imágenes
+   sobredimensionadas. Barato de arreglar.
+5. **OnPush** en `dashboard` y los `materia-*-path` (los más grandes y de uso diario).
+6. **23 `@keyframes`/transiciones de `box-shadow`** → mover la sombra a un `::after` y animar su
+   `opacity` (como `featured-card-breath` en el home).
+7. Deuda estructural: los 5 `materia-*-path.component.ts` (~176 KB c/u, `materia-math` 248 KB) casi
+   idénticos; el SDK de Firestore (~452 KB) sigue siendo el chunk más grande.
+
+### 2026-08-29 (parte 5) — 3 optimizaciones de bajo riesgo de la app logueada aplicadas + limit(20) al feed de noticias
+Typecheck ✅ · `ng build --configuration production` ✅ (6 rutas prerenderizadas) · el cambio de
+`.node-title` y `pulseRing` verificado en el harness `/dev/ruta/historia` (transición nueva
+`color, background-color, border-color, box-shadow`; `pulseRing` ahora anima **solo opacity +
+transform**, medido con `getAnimations()`).
+
+**Contexto:** de la tabla de riesgo de la parte 4, el usuario pidió aplicar las 3 de riesgo bajo.
+Dos se aplicaron tal cual; la tercera (`<img>` sin `width`/`height`) resultó no ser lo que la
+auditoría sugería (ver abajo). Se añadió una 4ª de tema Firestore.
+
+1. **`.node-title { transition: all }` → props reales** en los 6 `materia-*-path.component.ts`
+   (`materia-path`, `-math`, `-historia`, `-biologia`, `-fisica`, `-quimica`). `all` interpolaba
+   `font-size`/`padding`/`bottom` (que cambian entre estados locked/active/completed) → layout por
+   frame sobre ~200 nodos, sin `content-visibility` de por medio. Ahora
+   `transition: color .2s, background-color .2s, border-color .2s, box-shadow .2s` (todo pintado,
+   sin layout). Lo demás (padding de la "píldora" al completar, los 4px de `bottom` al activarse)
+   ahora salta — imperceptible en 0.2s. **Es el arreglo del `font-weight` de `.sim-option-item`
+   del home ×50 y sobre la página más pesada del sistema.**
+2. **`@keyframes pulseRing` (anillo del nodo activo) → `::after` compositado**, mismos 6 archivos.
+   Antes `animation: pulseRing` animaba `box-shadow: 0 0 0 Npx` (repintado por frame) sobre el nodo
+   activo. Ahora `.node-active::after { border: 3px solid rgba(206,130,255,.5); border-radius: 50%;
+   inset: -1px; animation: pulseRing 3s infinite }` y el keyframe pasa a
+   `{ transform: scale(1)→scale(1.6); opacity: .7→0 }` (GPU). El `box-shadow` estático del nodo
+   (`0 8px 0 #a559d6, 0 0 0 8px rgba(...)`) se conserva. `.duo-node` ya era `position: relative` y
+   sin `overflow:hidden`, así que el pseudo se expande bien.
+   - **NO se convirtieron** los otros ~13 `@keyframes` que animan `box-shadow` del sistema
+     (`profile-glow-pulse` en dashboard, `fireGlow`/`pulseHint` en el runner de tests,
+     `testPulse`/`ctaPulse`/`goldPulse`/`pulse-glow`...). Motivo: cada uno es **un solo elemento
+     pequeño y casi siempre condicional** (un botón, un avatar, una tarjeta que aparece a veces) —
+     el "19" de la auditoría es un conteo de todo el código, no "19 a la vez en una pantalla". El
+     costo por pantalla es 1 elemento repintando su sombra; convertir cada uno es un `::after`
+     a medida (overflow, tamaño, z-index, radio) = 13 riesgos chicos sumados por una ganancia
+     marginal. Queda para una pasada dedicada si algún día se mide que molesta.
+3. **`<img>` sin `width`/`height` — NO se aplicó en masa, y con razón.** Al inspeccionar los ~480
+   `<img>`: ~400 son el **icono de nav del sidebar** (`.nav-icon-img`, AVIF cuadrado 32px fijo por
+   CSS) repetido en ~15 módulos — dentro de un `.nav-item` flex cuya altura la fija el texto, así
+   que **no desplazan nada** (CLS cero); ponerles atributos es puro trabajo sin beneficio medible.
+   Los que **sí** causan CLS son las imágenes de contenido (`.q-image`, `.theory-image`,
+   `.sec-image-large`, `.reading-image`...) — pero su tamaño es **dinámico y desconocido en build**
+   (cada pregunta/sección tiene una imagen distinta, URL de Firestore/Cloudinary); poner un
+   `width`/`height` fijo *empeoraría* el layout (fuerza una relación de aspecto equivocada hasta que
+   carga). La forma correcta ahí es reservar espacio por componente (skeleton / `min-height`), que
+   es trabajo de diseño, no un atributo mecánico. El `.materia-main-img` (que sí tiene tamaño fijo
+   conocido) **ya** trae `width`/`height`. Conclusión: "460 imgs sin dimensiones, barato" era
+   optimista; el subconjunto realmente accionable y seguro es casi vacío.
+4. **`getNews()` (`firestore.service.ts`): `orderBy('date','desc')` → `+ limit(20)`.** Era la única
+   lectura sin `limit()` que crece sin techo con el uso, y su propio comentario dice que es "la
+   consulta de más tráfico de la app" (corre para cada visitante anónimo del landing). El carrusel
+   del home muestra un puñado y los triplica; nada necesita "todas". Ya estaba cacheada 10 min en
+   `sessionStorage`, pero el cache-miss traía la colección entera. Único lector: `home.component.ts`.
+   Sin panel de admin de noticias (se siembran con `seedNews()`), así que 100% seguro.
+
+**Lo que aplicar las 2 de riesgo medio conlleva (NO aplicado — solo informe, ver la respuesta del
+chat de esta fecha y la memoria `sistema-interno-optimizaciones-riesgo`):** `OnPush` exige QA
+manual de cada interacción de dashboard + 6 materia-path (un fallo de CD no da error, solo deja de
+repintar) y `markForCheck()` en cada callback async; `content-visibility: auto` en la Ruta exige
+auditar que ningún observer de progreso ni drawer de simulador lea `getBoundingClientRect`/
+`scrollWidth` de secciones fuera de pantalla en el arranque (trampa del 2026-08-27 p5).
+
+**Estado de las consultas Firestore tras la revisión (lo que queda, por orden de impacto):**
+- `pool_preguntas` se lee **entero** en cache-miss (mini-ensayo + mente-veloz), 6h TTL. Con el
+  catálogo creciendo, cada usuario paga cientos-miles de lecturas cada 6h. Mitigación real: un doc
+  resumen `pool_preguntas_meta` (conteos por materia/tema) para la pantalla de armado, y cargar
+  preguntas reales solo al iniciar sesión con `where('materiaId','in',[...])`. Necesita script de
+  backend que mantenga el resumen — no es un ajuste.
+- `collectionGroup('secciones')` = 401 lecturas en cada carga en frío de la Ruta (6h TTL). Para
+  bajarlo habría que cargar secciones **por materia** al abrir esa materia, no todas de golpe —
+  cambio de arquitectura del `PaesContentService`.
+- `admin.service.ts`: `pool_preguntas` y `bug_reports` sin `limit()` — solo afecta a admins, baja
+  prioridad; un `limit(100)` en `bug_reports` sería prudente.
+- Lo demás está bien: **0 `onSnapshot`/`collectionData` en toda la app** (todo lectura única, sin
+  listeners recargándose), perfil = 1 `getDoc` cacheado en signal, actividad `limit(10)`, intentos
+  recientes `limit(10)`, ensayos/recursos con cache de sesión de 1h.
+
+### 2026-08-29 (parte 3) — Hitbox del logo del navbar móvil tapaba "Mejorar a PRO"; revisión del flujo "regalar PRO"
+`ng build --configuration production` ✅ · verificado con el harness `/dev/inicio?plan=free`.
+
+**Bug: el botón "Mejorar a PRO" (fila bajo el logo, solo Plan Básico) no se podía tocar.** El logo
+del `.mobile-header-top` es un PNG 500×500 con la marca en una franja central, y la regla de
+componente lo pone a `width: 190px; height: auto` → un `<img>` **cuadrado de 190×190** que,
+centrado en la fila de 60px, se extiende ~65px arriba y ~65px abajo, tapando por completo la fila
+de "Mejorar a PRO" — y como `.mobile-logo-link` tiene `z-index`, se comía el clic. **Arreglo**
+(global, `styles.css`, bloque `[FIX HITBOX LOGO NAVBAR MOVIL]`): `.mobile-header-top
+.mobile-logo-img { width: 190px; height: 44px; object-fit: cover; object-position: center 47% }` —
+el `<img>` mide lo que se ve (44px), con `cover` se muestra solo la franja de la marca sin
+recortarla, y el link deja de invadir la fila de abajo. Verificado con `elementFromPoint`: los 3
+puntos a lo ancho de la píldora ahora aciertan el botón, no el logo. Una sola regla arregla los
+~15 módulos (no hace falta tocar cada componente).
+
+**Revisión del flujo "regalar PRO a un amigo" (pricing-modal, no se tocó código).** La mecánica es
+**correcta**: la tarjeta es del que paga (`getOrCreateCustomer(payerUid)`), el amigo recibe PRO
+(`activateSubscription(recipientUid)`), las renovaciones extienden al amigo
+(`flow_subscriptions.uid = recipientUid`), y solo el pagador puede confirmar la vuelta de Flow
+(`if regData.payerUid !== uid throw`). El path de transferencia manual también usa `recipientUid`
+y es grant único (sin recurrencia). **Gaps a resolver si se relanza pagos** (ver memoria
+`gift-pro-flow`): (1) el que paga por Flow **no tiene forma de cancelar** la donación —
+`activateSubscription` solo escribe en el doc del recipiente, así que el pagador queda
+`plan: 'free'` y nunca ve "Cancelar Plan"; el `flowSubscriptionId` vive en el doc del amigo. Como
+las suscripciones Flow son indefinidas, un "regalo" es un compromiso recurrente sin salida para el
+que regala. (2) La UI no avisa que es recurrente. (3) `closeModal()`/`goBack()` no resetean
+`recipientMode` a `'self'`. (4) No se comprueba si el destinatario ya es PRO.
+
+### 2026-08-29 (parte 4) — Los 4 gaps del "regalar PRO" arreglados + panel admin de transferencias-regalo + veredicto de riesgo de las optimizaciones del sistema
+Typecheck backend + frontend ✅ · `ng build --configuration production` ✅ (6 rutas prerenderizadas) ·
+`nest build` ✅ · verificado en el harness `/dev/inicio` forzando los signals del pricing-modal.
+
+**Los 4 gaps de "regalar PRO" (ver parte 3) — corregidos:**
+1. **Cancelar el regalo desde el pagador.** Nuevo `POST /api/subscriptions/gift/cancel`
+   (`CancelGiftDto`) → `SubscriptionsService.cancelGift(payerUid, flowSubscriptionId)`: valida que
+   el sub esté en `users/{payerUid}.giftedSubscriptions` y `status==='active'`; pone
+   `cancelAtPeriodEnd + status:'cancelled'` en el recipiente **solo si
+   `sub.flowSubscriptionId` coincide** (no toca un PRO que el amigo se pagó por otra vía); marca el
+   regalo `cancelled`; el controlador llama después a `flowService.cancelFlowSubscription()`.
+   `confirmRegistrationAndSubscribe` ahora escribe ese mapa `giftedSubscriptions` en el doc del
+   pagador. UI: `profile-modal.component.ts` getter `giftedProSubscriptions()` + sección nueva
+   "Regalos de Plan Pro que pagas" (aparece aunque el pagador sea Básico) con botón "Cancelar
+   regalo" (`cancelGiftedPro`, con `confirm()` y actualización optimista del signal).
+2. **Avisos de recurrencia.** `pricing-modal`: `.gift-recurring-note` (solo método = Flow)
+   "renovación automática… cancélalo desde tu perfil"; y el `<li>` de la caja de transferencia
+   cambia el texto según `recipientMode()` (self / gift → "el Plan Pro de {email} se bloquea…").
+3. **`closeModal()` y `goBack()`** ahora hacen `recipientMode.set('self')`.
+4. **`lookupEmail` usa `firestoreService.findUserForGift(email)`** (nuevo, devuelve `{uid, isPro}`
+   con chequeo de `endDate` vencido); si el amigo ya es PRO → `.feedback-msg.warn` "ya tiene Plan
+   Pro activo. El regalo le sumará el tiempo al final de su período actual".
+
+**Transferencia-regalo en el panel admin.** El backend **ya** activaba en `transfer.recipientUid`
+(`approveTransfer` línea ~818, grant único `provider:'transfer'` sin recurrencia) — eso no cambió.
+Lo que faltaba era que el admin **supiera** que es un regalo: `submitManualTransfer` ahora guarda
+`recipientUid`, `recipientEmail` e `isGift` en `manual_payments`; `getAllTransactions` los devuelve;
+y `admin-subscriptions.component.ts` muestra en la celda de usuario un badge "🎁 Regalo · Paga: X ·
+Para: Y · UID destino: Z" (en vez de solo el pagador), los `title` de los botones "1 Mes / 1 Año"
+dicen a quién se le otorga, y el `confirm()` de `approveTransfer` añade
+"🎁 ES UN REGALO — el Plan PRO se activará en: {email} (paga: {pagador})". El frontend manda
+`targetUid` (de la búsqueda por email) + `targetEmail` tanto en Flow como en transferencia.
+
+**Veredicto de riesgo de las optimizaciones de la app logueada** (pedido explícito, **nada
+aplicado** — detalle completo en memoria `sistema-interno-optimizaciones-riesgo`):
+- **Aplicar sin miedo (riesgo bajo, sin cambio visual malo):** `.node-title { transition: all }` →
+  props reales en los 6 `materia-*-path` (es el bug del `font-weight` de `.sim-option-item` del
+  home ×50, la mejora más rentable de la Ruta); `<img>` sin `width`/`height` (460, mecánico, quita
+  CLS); 19 `@keyframes` que animan `box-shadow` → `opacity` sobre un `::after`.
+- **Aplicar con revisión visual por tandas (cambio estético real):** los 81 `backdrop-filter:
+  blur()` → fondo translúcido sólido — el "vidrio esmerilado" desaparece, perceptible; el
+  `backdrop-filter` del `.mobile-header` interno igual.
+- **NO aplicar sin QA dedicado:** `OnPush` en dashboard/`materia-*-path` (un fallo de CD no da
+  error, solo deja de repintar — el home costó una verificación funcional entera);
+  `content-visibility: auto` en la Ruta/dashboard (trampa del 2026-08-27 p5: nadie puede leer
+  geometría de esas secciones en el arranque, y la Ruta tiene observers de progreso + drawers).
+
+### 2026-08-29 — El FAQ a ~1 fps en movil: causa encontrada y corregida. Fuera los 17
+backdrop-filter y todos los blur en runtime, un reflow forzado POR FRAME de scroll eliminado,
+OnPush, y 314 lineas de CSS muerto. El hallazgo de "gzip" era falso
+Typecheck ✅ · `ng build --configuration production` ✅ con las 6 rutas prerenderizadas ·
+verificado sobre el build REAL servido en local (config `dist-produccion`), no sobre `ng serve`.
+
+**Origen:** el usuario reporto tirones en PC a media pagina (zona del gif de Foco y los videos de
+demostracion) que empeoraban al bajar, y en movil un rendimiento muy peor que en un telefono real
+**caia a ~1 fps en la seccion de Preguntas Frecuentes**.
+
+**🔴 Primero, lo que NO habia que hacer: el consejo de "Compress components with gzip" es un falso
+positivo.** Verificado contra produccion:
+
+```
+curl -s -o /dev/null -D - -H "Accept-Encoding: gzip, deflate, br" https://estudiauni.cl/
+→ Content-Encoding: br
+```
+
+Firebase Hosting ya comprime con **Brotli**, que comprime mejor que gzip, y no es configurable
+desde `firebase.json`. La herramienta que lo reporto probablemente no envio `Accept-Encoding`.
+**No perseguir esto de nuevo.**
+
+**El diagnostico real: no era una sola cosa, era trabajo por frame que nunca se detenia y que se
+ACUMULABA al bajar.** Al llegar al FAQ estaban corriendo a la vez las animaciones del hero (que no
+lleva `content-visibility`, a proposito), el fondo fijo con blur detras de toda la pagina, el blur
+del navbar fijo, las 6 animaciones del SVG del FAQ, y un reflow forzado en cada frame de scroll.
+
+**1. El fondo fijo con blur, detras de los ~15.000 px del documento.** `.dynamic-bg` es
+`position: fixed` y cubre el viewport entero con `z-index: -1`. Dentro tenia 3 `.blob` de 50vw/40vw/
+30vw, cada uno con `filter: blur(90px)` sobre un circulo solido **mas** `morph-blob 20s infinite`.
+O sea: una capa fija, desenfocada en tiempo real y animandose para siempre, **en toda posicion de
+scroll** — sin ningun media query que la apagara en movil. En un viewport de 412 px el radio de
+blur es casi la mitad del ancho del blob. Reemplazado por `radial-gradient` con la misma caida
+suave: visualmente equivalente, **cero costo por frame**. Fuera tambien la animacion, el
+`will-change` y los hacks de promocion (`translateZ`/`backface-visibility`).
+
+**2. `backdrop-filter: blur(20px)` sobre el navbar `position: fixed`.** Es el peor caso conocido en
+GPU movil: obliga a releer y desenfocar lo que hay detras **en cada frame** mientras la pagina
+scrollea, durante todo el recorrido del home. Sustituido por `rgba(255,255,255,0.92)`; como el
+fondo de la pagina es `#fafafa`, la diferencia visual es minima.
+
+> En total se quitaron **los 17 `backdrop-filter`** del archivo (tarjetas de testimonios, precios,
+> noticias, pestañas, burbuja de Foco, insignias del hero...), subiendo la opacidad del fondo para
+> compensar. Ya existia el precedente en el propio archivo: `.tab-content` tenia `backdrop-filter:
+> none` puesto a mano. **Medido en el build final: 0 backdrop-filter y 0 `filter: blur()` en CSS.**
+
+**3. La seccion del FAQ, el ~1 fps.** El SVG decorativo de fondo (`.faq-flow-bg`) traia **6
+animaciones infinitas y ningun media query que las apagara en movil**:
+- 2 nebulosas con `faq-nebula-morph` (transform + opacity, 25 s).
+- 2 orbitas de r=420 y r=540 rotando 80 s / 100 s **con `stroke-dasharray`**: rotar un trazo
+  punteado obliga a re-teselar el path cada frame, y como el SVG se estira con
+  `preserveAspectRatio="none"`, en movil esos circulos son enormes.
+- 2 satelites con `faq-sat-pulse` **bajo `filter="url(#faq-glow-filter)"`**, que es un
+  `feGaussianBlur`. **Ese era el cuello de botella principal: un filtro gaussiano que se
+  re-rasteriza en CADA frame mientras la seccion este en pantalla.**
+
+Se **conserva el dibujo entero** (nebulosas, orbitas, satelites, cruces) y se eliminan solo las
+animaciones y los 4 `will-change`. El `feGaussianBlur` deja de importar en cuanto no se anima: se
+rasteriza una vez y queda cacheado. La seccion se ve igual, solo quieta. **Medido: 0 animaciones
+dentro de `.faq-section`.** Ademas `.faq-item` pasa de `transition: all` a las 3 propiedades reales.
+
+> Si alguna vez se le quiere devolver el movimiento, hay que hacerlo **fuera** del subarbol con
+> filtro y sin animar `stroke-dasharray`.
+
+**4. 🔴 Un reflow forzado POR FRAME de scroll, para siempre.** El barrido de seguridad del revelado
+(`revelarLoQueYaEstaEnPantalla`) hacia, en cada frame y de forma **incondicional**,
+`document.querySelector('.news-section')` + `getBoundingClientRect()`. `.news-section` tiene
+`content-visibility: auto`, y medir la geometria de un subarbol saltado **OBLIGA al navegador a
+renderizarlo** — exactamente lo que advierte el comentario que ya estaba escrito unas lineas mas
+arriba, en `updateNewsScrollThumb`. Encima re-ejecutaba un `querySelectorAll` de 10 selectores
+sobre todo el documento en cada frame. Ahora: la comprobacion de noticias solo corre mientras no se
+hayan pedido, la lista de pendientes se calcula **una vez** y se va vaciando con `filter`, y cuando
+no queda nada por revelar **el barrido se apaga solo**. En una pagina ya recorrida el costo es cero.
+
+**5. Tres listeners de `scroll` en `window` unificados en uno.** Habia tres (`invalidarRects`,
+`onParallaxScroll` y el barrido de revelado), cada uno con su propio gate de rAF. Ahora es **uno**
+con un unico gate. Ademas, el marcado de `.is-scrolling` (`classList` + `clearTimeout` +
+`setTimeout`) corria **antes** del gate, o sea en cada evento crudo de scroll; ahora esta dentro
+del rAF. El scroll horizontal del carrusel de noticias tambien pasa por un gate (antes
+`updateNewsScrollThumb` hacia lectura de layout + escritura de estilo sin ningun throttle).
+
+**6. El `mousemove` en `document` que vivia toda la pagina.** Era para el parallax de la mascota de
+Foco y disparaba con cualquier movimiento del puntero, en cualquier parte del documento, aunque
+`#foco-tutor` estuviera a miles de px. Ahora **no se registra si el dispositivo no tiene puntero
+fino** (todo movil) y solo esta enganchado mientras la seccion de Foco esta cerca del viewport.
+
+**7. La mascota de Foco no se pausaba nunca.** Es un `<video autoplay loop>` que, a diferencia de
+los 3 videos de demo (que si tienen su observer desde antes), seguia decodificando frames durante
+todo el recorrido del home — **es el tiron que se notaba a media pagina en PC**. Ahora lleva
+`preload="metadata"`, sin `autoplay`, y un `IntersectionObserver` que la reproduce y la **pausa** al
+salir de pantalla.
+
+> Detalle que importa: el observer vigila **`.foco-section`, no el `<video>` de dentro**. La seccion
+> es la que lleva `content-visibility`, asi que siempre tiene caja; un elemento dentro de un
+> subarbol saltado no la tiene y el observer no podria dispararse para el. Mismo patron que el
+> observer de los videos de demo, que ya estaba probado en produccion.
+
+**8. `ChangeDetectionStrategy.OnPush`.** El typewriter del hero re-entraba a la zona de Angular cada
+3 caracteres a 32 ms (~10 veces por segundo) y el contador de estudiantes cada 5 s — con CD por
+defecto, **cada una de esas entradas recorria el arbol completo** de una plantilla de ~1400 lineas
+con 8 `*ngFor`. Ahora el componente es OnPush con `markForCheck()` en los 12 puntos de mutacion
+asincrona, el typewriter marca cada 4 caracteres en vez de 3, y el `setInterval` del contador corre
+**fuera de la zona**.
+
+Ademas se agrego `trackBy` a los 8 `*ngFor`, y — esto era un bug silencioso — las 3 filas de
+estrellas usaban `*ngFor="let s of [1,2,3,4,5]"` con el **literal en la plantilla**: un literal de
+array se re-crea con identidad nueva en cada pasada de CD, asi que `ngFor` volvia a diferenciar las
+15 estrellas cada vez. Ahora es una constante de clase.
+
+**9. La simulacion del hero se pausa fuera de pantalla.** El hero no lleva `content-visibility` (a
+proposito, esta sobre la linea de flotacion), asi que su cadena infinita de `setTimeout` + el
+typewriter seguian corriendo con el usuario al final de la pagina. Un `IntersectionObserver` sobre
+`#hero` los pausa y los reanuda.
+
+**10. Fugas cerradas.** Los 3 `IntersectionObserver` **nunca se desconectaban** (ahora hay un array
+`observers` que `ngOnDestroy` limpia), y dos `setTimeout` (`scrollEndTimer` y el de la burbuja de
+Foco) eran variables locales de sus manejadores, o sea imposibles de cancelar: podian dispararse
+contra un componente ya destruido.
+
+**11. 314 lineas de CSS muerto eliminadas.** `.hero-stats`/`.stat-item` (con `stat-float` infinito),
+`.logos-section`/`.logos-track` (con `scroll-logos 30s infinite`), `.video-card`/`.play-icon` y todo
+el bloque de mockups (`.mock-video-player`, `.video-controls-overlay`, timeline...) — **ninguna de
+esas clases existe en la plantilla**, verificado con grep antes de borrar. Se elimino tambien el
+camino muerto de `animateCounters()`/`animateValue()` (un bucle de rAF que solo se disparaba al ver
+`.hero-stats`) y sus 3 propiedades sin ligar.
+
+> Antes de borrar se comprobo que `home.component.ts` usa encapsulacion **Emulated** (la de por
+> defecto): sus estilos no pueden afectar a otros componentes. `.stat-item` y `.mock-video-player`
+> **si** se usan en `learning-path.component.ts` y `recursos.component.ts`, pero son componentes
+> distintos con sus propios estilos encapsulados — las copias del home eran muertas igual.
+>
+> Esto no es solo higiene: al ir en el `styles: []` de un componente **prerenderizado**, beasties
+> embebia ese CSS como critico dentro del `index.html`, o sea que se descargaba en cada visita.
+> **`index.html`: 205.719 → 189.791 bytes (−15,9 KB).**
+
+**12. `firebase.json`: header `Cache-Control` explicito para `**/*.html`** (`max-age=0,
+must-revalidate`). Antes el HTML caia en el default de 1 hora de Firebase, que ya habia causado que
+un despliegue no se viera hasta pasada una hora (bitacora 2026-08-27 parte 2).
+
+**Segunda vuelta (mismo dia): videos, testimonios y precios.** El usuario reporto que esas tres
+zonas seguian laggeando. Resulto ser **exactamente el mismo patron del FAQ**, sin detectar antes:
+
+- **Precios — el filtro mas caro de todo el home.** `pricing-studio-blur` era un `feGaussianBlur`
+  con **`stdDeviation="75"`** (casi 10 veces el del FAQ) y region de filtro 200%x200%, sobre 3
+  circulos de r=300/350/380. Y las nebulosas que lo llevaban tienen transiciones de
+  `opacity`/`transform` de 1,2-1,5 s que se disparan **al pasar el mouse por una tarjeta de plan**
+  (reglas `:has()`) y **al alternar mensual/anual**. Escalar un elemento filtrado obliga a
+  re-rasterizar ese desenfoque enorme en cada frame de la transicion. Ademas `.pricing-orbit`
+  rotaba infinitamente y `.orbit-outer` es un circulo de r=450 **con `stroke-dasharray`**.
+- **Testimonios — el mismo caso.** `glow-blur` (`stdDeviation="30"`) sobre 3 circulos, tambien con
+  transicion de 1,5 s disparada por `:has(...:hover)` de las tarjetas.
+- **Videos — el `<g class="videos-orbit-rotate-container">` rotando 360 grados infinitamente**, y
+  dentro lleva 2 circulos con `stroke-dasharray` (r=200 y r=440) **y 3 circulos con
+  `filter="url(#neon-glow)"`**. Rotar el grupo re-teselaba los trazos punteados y re-rasterizaba
+  el filtro gaussiano en cada frame. A 140 s por vuelta avanza 2,6 grados por segundo: congelarla
+  no se nota y elimina las dos cosas caras de golpe.
+
+**La leccion general, que conviene no volver a re-derivar:** en este proyecto el patron caro se
+repite igual en 4 secciones — *un `feGaussianBlur` (o un `stroke-dasharray`) sobre un elemento que
+ademas se anima o se transiciona*. El filtro por si solo es barato (se rasteriza una vez y queda
+cacheado); lo que lo vuelve carisimo es **moverlo**. Antes de animar/transicionar cualquier cosa,
+comprobar que no este dentro de un subarbol con `filter`.
+
+En los 3 casos el relleno **ya era un `radialGradient` que se desvanece a transparente**, asi que el
+desenfoque encima era en gran parte redundante — el mismo hallazgo que con los blobs del hero. Se
+quitaron los filtros y se compensaron los stops de los gradientes (en precios, ensanchando el radio
+de 35-40% a 50%). **Los hover y el toggle anual se conservan intactos**, pero ahora son
+compositables. Verificado leyendo los valores objetivo con las transiciones desactivadas: en anual
+la nebulosa dorada llega a `opacity: 0.95`, las basicas bajan a `0.12` y las orbitas pasan a dorado
+(`rgba(245,158,11,0.25)`); al volver a mensual, `0` y `0.45`. Las 5 reglas `:has()` de hover siguen
+presentes.
+
+Se quito tambien el `drop-shadow` de `.success-stream` (3 lineas que animan `stroke-dashoffset` de
+forma infinita: el filtro encima obligaba a re-rasterizar cada frame). **El efecto de "estrella
+fugaz" se conserva** — sobre 3 lineas rectas simples la teselacion es trivial; lo caro era el filtro.
+
+**Medido en el build de produccion servido en local:**
+
+Conteos hechos sobre el codigo REAL (comentarios excluidos, si no los propios comentarios nuevos
+inflan las cifras):
+
+| Metrica | Antes | Ahora | Cambio |
+|---|---|---|---|
+| `backdrop-filter: blur()` | 16 | **0** | **−100%** |
+| `filter: blur()` en CSS | 26 | **0** | **−100%** |
+| Radio maximo de blur SVG (`stdDeviation`) | 75 | **8** | **−89%** |
+| Suma de radios de blur SVG | 121 | **16** | **−87%** |
+| Elementos con `filter="url(#..)"` | 14 | **8** | −43% |
+| Animaciones infinitas declaradas | 48 | **36** | −25% |
+| `@keyframes` definidos | 46 | **35** | −24% |
+| `will-change` | 12 | **5** | −58% |
+| `transition: all` | 29 | **23** | −21% |
+| Listeners de `scroll` en `window` | 3 | **1** | −67% |
+| Animaciones infinitas en `.faq-section` | 6 | **0** | **−100%** |
+| Reflow forzado por frame de scroll | 1 (eterno) | **0** | **−100%** |
+| `<img>` sin `loading`/`decoding` | 9 | **0** | −100% |
+| `index.html` prerenderizado | 205.719 B | **189.310 B** | −8,0% |
+
+> ⚠️ **Ninguno de estos numeros es "la mejora de rendimiento en %".** Son las causas eliminadas, no
+> el efecto medido. El efecto real (puntaje de PageSpeed, FCP, LCP, TBT) **solo se puede medir
+> desplegando y corriendo PageSpeed 3 veces con la mediana** — ver el pendiente al final. No
+> convertir esta tabla en una promesa de puntaje.
+
+**Tercera vuelta: el hero, y 53 MB de assets huerfanos.**
+
+**🔴 HALLAZGO GRANDE, NO CORREGIDO (requiere decision del equipo): 53,1 MB de imagenes muertas se
+estan desplegando.** La migracion del 2026-08-25 (parte 7) cambio los gifs de Foco a WebM y los
+iconos/avatares a AVIF, **pero nunca borro las carpetas viejas**. Verificado con grep por nombre de
+carpeta Y por nombre de archivo individual sobre todo el repo:
+
+| Carpeta | Peso | Referencias en codigo | Reemplazada por |
+|---|---|---|---|
+| `GifsFocoWEBP/` | **46 MB** | **0** | `GifsFocoWebM/` (4,5 MB) |
+| `iconosSVG/` | **4,7 MB** | **0** | `IconosAVIF/` (352 KB) |
+| `avatarsSVG/` | **2,4 MB** | **0** | `avatarAVIF/` (160 KB) |
+
+> Las unicas coincidencias de `focoBiologia.webp`/`focoHistoria.webp` estan **dentro de comentarios
+> CSS** de los `materia-*-path.component.ts`, no en codigo. El uso real es `.webm`.
+
+Como `angular.json` copia `src/assets` entero, las 3 carpetas **estan en `dist/` y se publican**:
+`assets/images` pesa 82 MB de los 84 MB de todo `assets/`, y **53,1 MB (el 63%) es peso muerto**.
+No afecta el tiempo de carga del home (nadie las pide), pero si el tamano del repo, el tiempo de
+cada `firebase deploy` y la cuota de almacenamiento de Hosting. **No se borraron en esta sesion**:
+son 53 MB de contenido del proyecto y esa decision es del equipo. El historial de git las conserva
+igual. Para sacarlas: borrar las 3 carpetas de `frontend-app/src/assets/images/Nuevos
+VideosEIlustraciones/` y reconstruir.
+
+**Dos animaciones del hero que forzaban LAYOUT, corregidas:**
+- **`.sim-option-item` tenia `transition: all`** y el estado `.selected` cambia `font-weight: 600`.
+  Al estar dentro de `all`, el navegador **interpola font-weight**, y animar font-weight dispara
+  layout en cada frame — sobre las 4 opciones, en cada ciclo de la simulacion (~cada 9 s), para
+  siempre mientras el hero este a la vista. Ahora la transicion lista solo
+  `border-color`/`background-color`/`color`/`transform`; el font-weight cambia de golpe, lo que es
+  visualmente imperceptible.
+- **La barra de progreso animaba `width`** (`[style.width]` + `transition: width`). Pasada a
+  `transform: scaleX()` sobre un ancho fijo del 100%, con `transform-origin: left` (sin el, creceria
+  desde el centro hacia los dos lados). Verificado: con el ejercicio al 28% la barra renderiza
+  94/335 px = 28,06%.
+
+**Resultado medido en el hero:** muestreando `getAnimations()` durante 10 s, las unicas propiedades
+no compositables que quedan son **colores** (`backgroundColor`, `color`, `border*Color`) — que son
+repintado barato, sin layout. **`width` y `fontWeight` desaparecieron de la lista.**
+
+**Sobre el fondo del hero (rejilla de lineas + simbolos de ciencias), que se pregunto expresamente:**
+ya **no** cuesta rendimiento, pero **si costaba antes de esta sesion**:
+- Los 8 simbolos (`√x`, `∫`, `H₂O`, `E=mc²`, `sin(θ)`, `CO₂`, `F=m·a`, `y=mx+b`) animaban
+  **`filter: blur(3px) -> blur(0)`**, que no se puede componer: 8 elementos repintando en el hilo
+  principal, cada frame, para siempre. Ahora animan **solo `opacity`** (GPU) y su `will-change` bajo
+  de `opacity, filter` a `opacity`. Medido: `filter: none`.
+- Ademas, en **`≤640 px` los 8 estan `display: none`** (regla que ya existia), asi que en telefono
+  su costo es literalmente cero.
+- La **rejilla** (`.hero-grid-overlay`, 1518x1427 px) solo recibe una escritura de `transform` por
+  frame de scroll y no lleva ningun filtro: es trabajo de compositor, barato. Se deja como esta.
+- Lo que si era caro del fondo eran los **2 blobs con `blur(130px)`**, ya corregidos en la primera
+  vuelta de esta misma entrada.
+
+**Cuarta vuelta: borradas las 3 carpetas huerfanas, y fondo ambiental para el resto del home.**
+
+**Las 53,1 MB muertas: BORRADAS** (`git rm -r`, las 39 archivos siguen en el historial de git si
+alguna vez hicieran falta). `GifsFocoWEBP/`, `iconosSVG/` y `avatarsSVG/` fuera. La carpeta
+`Nuevos VideosEIlustraciones/` paso de **60 MB a 6,2 MB**, y `assets/` del build de **84 MB a 31 MB
+(−63%)**.
+
+**Fondo ambiental reutilizable, porque al quitar los desenfoques el resto del home quedo vacio.**
+El hero tenia rejilla + simbolos de materias + parallax, y features su placa de circuito, pero
+`foco-tutor`, `news` y `cta` no tenian ningun fondo propio (o solo un degradado radial). Se agrego
+un bloque compartido — ver "FONDO AMBIENTAL REUTILIZABLE" en los estilos — con 3 piezas, **todas
+elegidas para ser baratas**:
+
+| Pieza | Que es | Costo |
+|---|---|---|
+| `.ambient-grid` | Rejilla de lineas (2 `linear-gradient` repetidos + mascara radial) | CSS puro, **sin animacion**: se pinta una vez y queda cacheado |
+| `.ambient-symbol` | 4 simbolos de materias por seccion (`pH`, `λ = c/f`, `V = IR`, `πr²`...) | Anima **solo `opacity`** (GPU) y esta en `display: none` en ≤640 px |
+| `.ambient-lines` | 2 trazos con `stroke-dashoffset` (misma tecnica que la placa de circuito) | Lineas rectas simples: teselacion trivial |
+
+> ⚠️ **Regla de oro que se respeto y hay que seguir respetando si alguien amplia esto:** nada del
+> fondo nuevo lleva `filter` ni `backdrop-filter`, y **ningun elemento animado vive dentro de un
+> subarbol con filtro**. Ese fue exactamente el patron que hundio el FAQ a ~1 fps. Verificado en el
+> build: **0 elementos con filtro dentro de `.ambient-bg`** y, en toda la pagina, **0 animaciones
+> dentro de un subarbol con `[filter]`**.
+
+Detalles que hubo que resolver: `.cta-section` no tenia `position: relative` ni `overflow: hidden`
+(sin eso el fondo absoluto se anclaria a la seccion anterior y se saldria); y como `.ambient-bg` va
+en `z-index: 0` — un elemento posicionado con z-index 0 crea contexto de apilamiento y se pintaria
+SOBRE el contenido en flujo normal, que no esta posicionado — hubo que subir explicitamente
+`.foco-container`, el contenido de noticias y `.cta-content` a `z-index: 2`.
+
+Verificado: los 3 fondos anclados exactamente a su seccion, 4 simbolos + 2 lineas + rejilla en cada
+una, contenido por encima, **el boton del CTA sigue siendo clickeable** (`elementFromPoint` da el
+boton, no el fondo: `pointer-events: none` funciona), sin overflow horizontal a 412 px, y en movil
+los 12 simbolos nuevos se ocultan igual que los 8 del hero (quedan solo 6 lineas simples).
+
+**Dos animaciones mas del hero que forzaban layout, corregidas** (encontradas al medir que propiedades
+no compositables quedaban): ver los comentarios de `.sim-option-item` y `.sim-progress-bar-fill`.
+
+**Cuadricula en las 10 secciones (no solo en 3).** Tras la vuelta anterior la rejilla existia solo
+en `hero`, `pricing` y las 3 secciones nuevas. Se agrego el layer de solo-rejilla
+(`<div class="ambient-bg"><div class="ambient-grid"></div></div>`) a `features`, `videos`,
+`testimonials`, `faq` y `footer`. **Verificado: 10/10 secciones con cuadricula y 0 con el contenido
+tapado** (comprobado con `elementFromPoint` sobre el primer bloque de contenido de cada una).
+`.footer` necesitaba `position: relative` + `overflow: hidden` y su `.footer-container` subir a
+`z-index: 2`; las otras 4 ya tenian su contenido posicionado en z-index 2/5.
+
+> Las 8 rejillas anadidas: **0 animadas, 0 con filtro, 0 con `will-change`**. Es CSS estatico, se
+> pinta una vez y queda cacheado.
+
+---
+
+**Quinta vuelta: la cuadricula, ahora SI continua, y decoracion animada de vuelta.**
+
+**Por que se veia a parches (la version anterior estaba mal planteada):** habia una `.ambient-grid`
+DENTRO de cada seccion, y encima **dos mascaras apiladas** — `.ambient-bg` desvanecia el 12%
+superior e inferior de CADA seccion, y `.ambient-grid` solo mostraba su centro con una mascara
+radial. Resultado: un ovalo de rejilla en medio de algunas secciones y un hueco en cada frontera.
+
+**Ahora es UNA sola capa continua**, un `::before` sobre `.home-container` que abarca los 15.323 px
+del documento completo. Es mas barata (1 elemento en vez de 8) y no tiene costuras. Se subio la
+opacidad de la linea de **0,055 a 0,13** (2,4x mas visible) y la celda de 60 a 64 px.
+
+Para que se vea a traves de todas las secciones hubo que **pasar a translucidos los fondos opacos**
+que la tapaban: los 4 gradientes de `.videos-section` (base + 3 temas), `.testimonials-section`,
+`.pricing-section` (2 variantes) y `.footer` — el blanco `#ffffff` de los extremos paso a
+`rgba(255,255,255,0.55)`.
+
+> 🔴 **Trampa que costo un rato:** hay **4 reglas `.footer`** en este archivo. Se edito la primera y
+> no paso nada, porque la que gana es la de mas abajo (`background-color: #ffffff`, misma
+> especificidad pero posterior en la hoja). Si alguien cambia el fondo del footer y no ve efecto,
+> es por esto.
+
+**Verificado recorriendo el documento del 5% al 95%: las 10 secciones dejan ver la cuadricula, 0 la
+tapan.**
+
+**Decoracion animada de vuelta, toda compositable.** Para reemplazar el movimiento que se congelo:
+- **Deriva de la cuadricula** (`grid-drift`, 90 s): UNA capa animando `transform`. Puro compositor.
+- **6 particulas ambientales** (`.amb-dot`) dentro del `.dynamic-bg` fijo — 6 elementos para TODA la
+  pagina, no por seccion. Animan solo `transform` + `opacity`, sin `box-shadow` difuso ni blur. En
+  ≤640 px se reducen a 3.
+- **Los satelites del FAQ vuelven a pulsar.** Se les quito el `feGaussianBlur` (que era justamente lo
+  que impedia animarlos) y el resplandor lo da ahora un `radialGradient`. El filtro quedo sin uso y
+  se elimino.
+- **`active-tab-pulse` deja de animar `box-shadow`** — mismo arreglo que `featured-card-breath`:
+  sombra fija en un `::after` y se anima su `opacity`.
+
+> 🔴 **Se INTENTO y se REVIRTIO devolverle el latido a los blobs del hero.** `onScroll()` escribe
+> `style.transform` sobre `.hero-blob-purple` para el parallax, y **una animacion CSS le gana a un
+> estilo inline** (las animaciones estan por encima del autor en la cascada): el parallax habria
+> dejado de verse. Verificado despues del revert: `animationName: none` en los dos blobs.
+
+**Estado final del home, recorriendo todas las secciones:** las unicas propiedades no compositables
+que quedan animandose son `background-position` (el degradado de marca de `.text-gradient`) y
+`clip-path` (el glitch de "IA") — las dos documentadas como identidad visual, las dos ya gateadas por
+`prefers-reduced-motion`. **0 `backdrop-filter`, 0 `filter: blur()`, 0 animaciones dentro de un
+subarbol con filtro.**
+
+#### 🔍 AUDITORIA DEL SISTEMA INTERNO (solo lectura, nada modificado)
+
+Se pidio revisar si la app logueada necesita optimizacion. **No se inicio sesion** (no se ingresan
+contraseñas en formularios); el analisis es estatico sobre los 68 componentes de `features/`.
+
+**La buena noticia: el antipatron que hundio el home NO existe adentro.** Se busco especificamente
+`feGaussianBlur` + un elemento animado dentro del subarbol filtrado, en los 6 `materia-*-path`, el
+dashboard, mente-veloz y recursos: **cero casos, y cero blurs SVG**. Lo interno es pesado por otras
+razones, mas ordinarias.
+
+**Totales medidos sobre `features/` (comentarios excluidos):**
+
+| | Cantidad |
+|---|---|
+| Componentes con `ChangeDetectionStrategy.OnPush` | **1 de 68** (el home, de esta sesion) |
+| Componentes con `content-visibility` | **0 de 68** |
+| `transition: all` | **480** |
+| Animaciones infinitas | **181** |
+| `backdrop-filter: blur()` | **81** |
+| `filter: blur()` | **88** |
+| `<img>` sin `width`/`height` | **460 de 478** |
+| `<img>` sin `loading="lazy"` | **464 de 478** |
+| `@keyframes` que animan `box-shadow` (repintado por frame) | **19** |
+
+**Por orden de impacto, si en algun momento se ataca:**
+1. **`content-visibility: auto` en las paginas largas** (Ruta de Aprendizaje, dashboard). Es lo que
+   mas rindio en el home y no esta aplicado en ningun lado adentro. Ojo con la leccion del 2026-08-27
+   (parte 5): si se aplica, **nadie debe leer geometria de esas secciones en el arranque**.
+2. **`<img>` sin dimensiones: 460.** Es CLS puro (saltos de layout) y ademas impide que Lighthouse
+   detecte imagenes sobredimensionadas — fue justo asi como se descubrieron los avatares de 143 KB
+   del home el 2026-08-27. Barato de arreglar, alto rendimiento.
+3. **OnPush**, empezando por `dashboard` y los `materia-*-path`, que son los mas grandes y los que
+   los estudiantes usan a diario.
+4. **19 `@keyframes` animando `box-shadow`** — mismo arreglo que se hizo aca con
+   `featured-card-breath`: mover la sombra a un pseudo-elemento y animar su `opacity`.
+5. **81 `backdrop-filter`** — la misma sustitucion por fondo translucido solido que se hizo en el home.
+6. **`transition: all` x480** — solo importa cuando el estado cambia una propiedad de layout (como
+   el `font-weight` de `.sim-option-item`), pero con 480 casos conviene revisarlos por tandas.
+
+**Deuda estructural ya conocida, confirmada:** los 5 `materia-*-path.component.ts` pesan ~176 KB
+cada uno y son casi identicos entre si (ver seccion 8). `chunk-24EZH3DU.js` (452 KB, el SDK de
+Firestore) sigue siendo el chunk mas grande del build.
+
+**MEDICION REAL de la Ruta de Aprendizaje, sin credenciales.** Se uso el banco de pruebas
+`/dev/ruta` (ver seccion 9), que monta los componentes REALES con dobles de Auth/Firestore:
+`http://localhost:4301/dev/ruta/comp-lectora?materia=comp-lectora&plan=free`. Confirmado que
+renderiza la Ruta de verdad (`app-dev-ruta-harness`, capitulos reales), no el home. Medido a 412 px:
+
+| | Valor |
+|---|---|
+| Alto del documento | **15.379 px (18,7 pantallas)** |
+| Elementos con `content-visibility` | **0** |
+| Animaciones/transiciones activas | **215** |
+| ...de esas, **corriendo fuera de pantalla** | **211 (98%)** |
+| `backdrop-filter` | 25 |
+| `<img>` sin `width`/`height` | **24 de 24** |
+| Nodos DOM | 1.189 |
+
+**🔴 El hallazgo principal: `.node-title` tiene `transition: all 0.2s`, y hay 208 de ellos.** Como
+`all` incluye propiedades de layout, se midieron **91 transiciones de `font-size`, 91 de `max-width`
+y 20 de `letter-spacing` corriendo A LA VEZ**. Animar cualquiera de esas fuerza layout en cada
+frame. Es la misma clase de bug que el `font-weight` de `.sim-option-item` que se corrigio en el
+home, pero **50 veces mas grande**, y sobre una pagina de 18,7 pantallas que ademas **no se salta
+nada** porque no hay `content-visibility`.
+
+Es casi seguro la razon de que la Ruta se sienta pesada en telefono. El arreglo es el mismo y es
+barato: listar las propiedades reales en vez de `all`. **No se toco nada** — se pidio solo verificar.
+
+---
+
+**Verificacion funcional de OnPush** — critica, porque un fallo de CD **no da error**, simplemente
+deja de repintar. Probado sobre el build real: las 7 preguntas del FAQ abren/cierran, las 3 pestañas
+de "Mira como funciona" cambian y el `src` del video se cambia (`3_consulta.mp4`), el toggle
+mensual/anual de precios funciona, el menu movil abre. Y lo mas importante, los caminos
+**asincronos** (los que dependen de `markForCheck`): la maquina de estados del hero cicla
+correctamente (198 → 9 → 39 → 11 caracteres a lo largo de sus 5 pasos) y el contador de estudiantes
+se mueve solo (236 → 239). Sin errores de consola. Sin overflow horizontal a 412 px.
+
+> **Trampa del entorno, ya documentada el 2026-08-27 y confirmada otra vez:** el panel de navegador
+> de estas sesiones corre la pestaña en segundo plano (`visibilityState: 'hidden'`), donde
+> `requestAnimationFrame` **no se ejecuta** (comprobado: `rafDispara: false`). Como el barrido de
+> revelado esta detras de un gate de rAF, los elementos aparecen con `0/7 is-visible` y opacidad 0,
+> lo que **parece** una regresion grave y no lo es. Ejecutando el barrido a mano revela exactamente
+> los 4 elementos que estan geometricamente en pantalla y su opacidad pasa a 1. **No dar por rota
+> una medicion de revelado en este entorno sin ejecutar el barrido manualmente.**
+
+**Lo que NO se hizo, y por que:**
+- **`katex.min.css` fuera del array global de `angular.json`** (24 KB en toda pagina). Ya se evaluo y
+  descarto el 2026-08-27: el output de KaTeX se inyecta por `innerHTML`, asi que los estilos con
+  encapsulacion de Angular no le aplicarian. Ademas **no esta en el CSS critico embebido**, o sea
+  que no bloquea el pintado. Riesgo real sobre M1/M2 por 24 KB no bloqueantes: no compensa.
+- **SDK de Firestore precargado** (114 KB por `provideFirestore()`). Cambio arquitectonico, no un
+  ajuste. Sigue siendo el mayor peso restante y el candidato natural a la proxima mejora grande.
+- **`getAuth()` → `initializeAuth()`** (288 KB del iframe de auth). Ya rompio el login con Google el
+  2026-08-27; hay un comentario en `app.config.ts` para que no se reintente a ciegas.
+- **`gradientMove` sobre `.text-gradient`** (anima `background-position` con `background-clip: text`,
+  repintado en hilo principal). Es la ultima animacion no compuesta que queda en el camino, pero es
+  el degradado de marca de cada titulo de seccion y ya esta gateada por `content-visibility` y por
+  `prefers-reduced-motion`. Cambiarla implicaria cambiar el diseño.
+
+**Pendiente de confirmar por el usuario, y es lo que cierra el circulo:** correr PageSpeed **3 veces
+quedandose con la mediana** (una sola corrida no distingue una mejora de 4 puntos del ruido, ver
+2026-08-27 parte 4) sobre un canal de vista previa, y **probar en el telefono real la seccion de
+FAQ**, que es el sintoma que origino todo esto. Linea base: movil 64, escritorio 100.
 
 ### 2026-08-27 (parte 6) — PC 100/100. Movil estable en 64 (antes oscilaba 58-85) y el reflow
 desaparecio del informe. Iconos AVIF optimizados -29%, con una leccion sobre COMO medir calidad

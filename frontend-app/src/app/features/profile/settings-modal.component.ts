@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FirestoreService } from '../../core/services/firestore.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AdminService } from '../admin/services/admin.service';
 import { ReportBugModalComponent } from './report-bug-modal.component';
 
 @Component({
@@ -133,7 +134,7 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
               <a routerLink="/soporte" class="support-link" (click)="closeModal()">🎧 Ir a Soporte</a>
             </div>
           </div>
-          <div class="section-block">
+          <div class="section-block" *ngIf="adminService.isAdmin() === true">
             <div class="section-header"><h3>Origen de datos (Mocks)</h3><p>Alterna entre la base de datos de Firebase y datos locales simulados (Mocks).</p></div>
             <div class="grid" style="grid-template-columns: 1fr;">
               <label class="switch">
@@ -301,6 +302,7 @@ export class SettingsModalComponent implements OnInit {
   private readonly firestoreService = inject(FirestoreService);
   private readonly toast = inject(ToastService);
   private readonly notificationService = inject(NotificationService);
+  readonly adminService = inject(AdminService);
 
 
   @Output() close = new EventEmitter<void>();
@@ -330,6 +332,16 @@ export class SettingsModalComponent implements OnInit {
     keyExit: 'escape'
   };
   initialSettingsForm = '';
+
+  // Los mocks locales son una herramienta de desarrollo, solo visible para admins.
+  // Si un usuario no-admin quedó con el flag activo, lo revertimos para que no se
+  // quede atrapado en modo offline sin ningún control para desactivarlo.
+  private readonly _mocksAdminGuard = effect(() => {
+    if (this.adminService.isAdmin() === false && localStorage.getItem('USE_LOCAL_MOCKS') === 'true') {
+      localStorage.removeItem('USE_LOCAL_MOCKS');
+      this.useLocalMocks = false;
+    }
+  });
 
   isDirty(): boolean {
     return this.initialSettingsForm !== JSON.stringify(this.settingsForm);

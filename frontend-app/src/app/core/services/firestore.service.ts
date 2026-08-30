@@ -257,6 +257,28 @@ export class FirestoreService {
     return null;
   }
 
+  /** Como findUidByEmail pero además dice si esa persona YA tiene Plan Pro activo
+   *  (para avisar en el flujo de "regalar Pro" que el regalo solo le sumaría tiempo). */
+  async findUserForGift(email: string): Promise<{ uid: string; isPro: boolean } | null> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const q = query(usersRef, where('email', '==', email.toLowerCase().trim()));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      const d: any = snap.docs[0].data();
+      let isPro = d?.plan === 'premium' || d?.subscription?.tier === 'premium';
+      const endVal = d?.subscription?.endDate;
+      if (isPro && endVal) {
+        const end = typeof endVal.toDate === 'function' ? endVal.toDate() : new Date(endVal);
+        if (end.getTime() < Date.now()) isPro = false;
+      }
+      return { uid: snap.docs[0].id, isPro };
+    } catch (error) {
+      console.error('Error finding user for gift:', error);
+      return null;
+    }
+  }
+
   async migrateUserData(oldUid: string, newUid: string): Promise<void> {
     try {
 
@@ -734,7 +756,9 @@ export class FirestoreService {
 
     try {
       const newsRef = collection(this.firestore, 'news');
-      const q = query(newsRef, orderBy('date', 'desc'));
+      // El carrusel del home solo muestra un puñado y los triplica; sin limit()
+      // esta lectura (la de más tráfico de la app) crecía con cada noticia añadida.
+      const q = query(newsRef, orderBy('date', 'desc'), limit(20));
       const snap = await getDocs(q);
       const news = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       this.writeSessionCache(this.newsCacheKey, news);
@@ -743,6 +767,13 @@ export class FirestoreService {
       console.error('Error fetching news:', error);
       return [];
     }
+  }
+
+  /** Invalida el cache de sesión de las noticias. Lo llama el panel de admin
+   *  tras crear/editar/borrar una noticia para que el home la muestre sin
+   *  esperar a que expire el TTL de 10 min. */
+  clearNewsCache(): void {
+    try { sessionStorage.removeItem(this.newsCacheKey); } catch { /* SSR / modo privado */ }
   }
 
   // Delegan en core/utils/session-cache.ts, que es donde vive la logica y

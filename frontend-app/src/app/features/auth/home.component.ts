@@ -1,4 +1,4 @@
-import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit, NgZone, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, inject, HostListener, AfterViewInit, signal, computed, OnInit, NgZone, OnDestroy, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
@@ -11,8 +11,32 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 @Component({
   selector: 'app-home',
   standalone: true,
+  // RENDIMIENTO (2026-08-29): antes usaba change detection por defecto. El typewriter del hero
+  // re-entra a la zona de Angular cada 3 caracteres a 32 ms (~10 veces por segundo) y el
+  // contador de estudiantes lo hacia cada 5 s -- con CD por defecto, CADA una de esas entradas
+  // recorria el arbol completo de este componente (plantilla de ~1400 lineas con 8 *ngFor).
+  // Con OnPush, Angular solo revisa este componente cuando se le marca explicitamente, que es
+  // lo que hacen los markForCheck() repartidos por los puntos de mutacion.
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // [BARRA DE ANUNCIO 2026-08-29] la clase mueve navbar + contenido para dejar sitio a la barra
+  // fija de promo. REVERTIR: borrar esta linea + .announce-bar + showAnnounce + su CSS.
+  host: { '[class.has-announce]': 'showAnnounce' },
   imports: [CommonModule, RouterModule, LegalModalComponent],
   template: `
+    <!-- [BARRA DE ANUNCIO 2026-08-29] promo "41% OFF" arriba de todo, cerrable (se recuerda en
+         localStorage). El descuento salio del hero (era ruido promocional sobre el titular) y
+         vive aca. REVERTIR: borrar este bloque + showAnnounce/dismissAnnounce + el host
+         [class.has-announce] + el CSS de .announce-bar / --announce-h. -->
+    <div class="announce-bar" *ngIf="showAnnounce">
+      <button type="button" class="announce-main" (click)="scrollTo('pricing')">
+        <span class="announce-chip">AHORRA 41%</span>
+        <span class="announce-text">en el Plan PRO<span class="announce-text-extra"> &mdash; por tiempo limitado</span></span>
+      </button>
+      <button type="button" class="announce-close" (click)="dismissAnnounce()" aria-label="Cerrar aviso">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
     <!-- NAVBAR GLASSMORPHISM -->
     <nav class="navbar" [class.scrolled]="isScrolled" [class.navbar-hidden]="navbarHidden">
       <div class="nav-container">
@@ -21,9 +45,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         </div>
         
         <div class="nav-links">
-          <a (click)="scrollTo('features')">Características</a>
-          <a (click)="scrollTo('testimonials')">Testimonios</a>
-          <a (click)="scrollTo('pricing')">Precios</a>
+          <!-- href real (ancla a la misma pagina) para que Google los cuente como enlaces
+               rastreables; el (click) hace el scroll suave y preventDefault evita el salto nativo. -->
+          <a href="#features" (click)="$event.preventDefault(); scrollTo('features')">Características</a>
+          <a href="#testimonials" (click)="$event.preventDefault(); scrollTo('testimonials')">Testimonios</a>
+          <a href="#pricing" (click)="$event.preventDefault(); scrollTo('pricing')">Precios</a>
         </div>
         
         <div class="nav-actions">
@@ -51,9 +77,9 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       
       <!-- Mobile Menu -->
       <div class="mobile-menu" [class.open]="mobileMenuOpen">
-        <a (click)="scrollTo('features'); mobileMenuOpen = false">Características</a>
-        <a (click)="scrollTo('testimonials'); mobileMenuOpen = false">Testimonios</a>
-        <a (click)="scrollTo('pricing'); mobileMenuOpen = false">Precios</a>
+        <a href="#features" (click)="$event.preventDefault(); scrollTo('features'); mobileMenuOpen = false">Características</a>
+        <a href="#testimonials" (click)="$event.preventDefault(); scrollTo('testimonials'); mobileMenuOpen = false">Testimonios</a>
+        <a href="#pricing" (click)="$event.preventDefault(); scrollTo('pricing'); mobileMenuOpen = false">Precios</a>
         <hr>
         <ng-container *ngIf="!isLoggedIn(); else mobileLoggedIn">
           <button class="btn btn-ghost w-full" (click)="goTo('/login')">Iniciar Sesión</button>
@@ -67,9 +93,29 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       </div>
     </nav>
 
+    <!-- [CTA PEGAJOSA MOVIL 2026-08-29] solo se ve en telefono (CSS), y solo entre el hero y el
+         CTA final (showStickyCta, ver ngAfterViewInit). En mobile el navbar colapsa a hamburguesa
+         y el boton "Crear Cuenta" queda escondido -> esto da un CTA siempre a mano sin tener que
+         bajar hasta los planes. REVERTIR: borrar este elemento, la propiedad, los observers y el CSS. -->
+    <button *ngIf="!isLoggedIn()"
+            class="home-sticky-cta"
+            [class.is-visible]="showStickyCta"
+            (click)="goTo('/register')">
+      Comenzar gratis <span aria-hidden="true">→</span>
+    </button>
+
     <div class="home-container" [class.animations-ready]="animationsReady">
       <!-- DYNAMIC BACKGROUND -->
       <div class="dynamic-bg">
+        <!-- Particulas ambientales (2026-08-29): reemplazan parte del movimiento que se congelo
+             al optimizar. Son 6 divs para TODA la pagina (no por seccion) y solo animan
+             transform + opacity, o sea puro compositor. -->
+        <div class="amb-dot d-1"></div>
+        <div class="amb-dot d-2"></div>
+        <div class="amb-dot d-3"></div>
+        <div class="amb-dot d-4"></div>
+        <div class="amb-dot d-5"></div>
+        <div class="amb-dot d-6"></div>
         <div class="blob blob-purple"></div>
         <div class="blob blob-blue"></div>
         <div class="blob blob-yellow"></div>
@@ -99,30 +145,12 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         </div>
 
         <div class="hero-grid">
-          <!-- LEFT COLUMN: Main title, subtitle, CTAs, Benefits & Social Proof -->
+          <!-- LEFT COLUMN: Main title, subtitle, CTA & Social Proof.
+               [HERO ADELGAZADO 2026-08-29] .hero-top-badges y .hero-benefits-bar se movieron a la
+               <section class="hero-strip"> de abajo. REVERTIR: traerlos de vuelta aca (badges
+               antes del <h1>, benefits despues de .hero-cta-group), borrar la <section hero-strip>
+               y su CSS, y restaurar el 2do boton en .hero-actions. -->
           <div class="hero-left-content">
-            <div class="hero-top-badges">
-              <div class="active-students-badge">
-                <span class="live-dot-pulse">
-                  <span class="live-dot-core"></span>
-                  <span class="live-dot-ring"></span>
-                </span>
-                <span class="students-count-text">
-                  <strong>{{ activeStudentsCount }}</strong> estudiantes activos ahora
-                </span>
-              </div>
-
-              <div class="hero-offer-badge" (click)="scrollTo('pricing')">
-                <div class="hero-offer-badge-inner">
-                  <span class="offer-discount-chip">41% OFF</span>
-                  <span class="offer-divider">|</span>
-                  <span class="offer-text">Descuento en planes Premium</span>
-                  <span class="offer-dot">•</span>
-                  <span class="offer-tag-highlight">POR TIEMPO LIMITADO</span>
-                </div>
-              </div>
-            </div>
-
             <h1 class="hero-title">
               Prepárate para la <span class="text-gradient">PAES</span> con<br>
               <span class="ai-robotic-text" [class.ai-sparkle-flash]="heroSimStep === 4" data-text="Inteligencia Artificial">Inteligencia Artificial</span>
@@ -142,7 +170,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                 </div>
                 <div class="proof-text">
                   <div class="star-rating">⭐⭐⭐⭐⭐</div>
-                  <span>Únete a miles de estudiantes que ya están mejorando sus puntajes con IA</span>
+                  <!-- [CONTADOR EN VIVO 2026-08-29] el contador "N estudiantes activos" volvio al
+                       hero (fusionado con la fila de estrellas). Antes estaba en la pildora
+                       .active-students-badge que se habia movido a .hero-strip. -->
+                  <span class="proof-live">
+                    <span class="proof-live-dot"></span>
+                    <strong>{{ activeStudentsCount }}</strong> estudiantes practicando ahora
+                  </span>
                 </div>
               </div>
 
@@ -151,40 +185,12 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   <button class="btn btn-primary btn-large btn-glow hero-cta-btn" (click)="goTo('/register')">
                     Comenzar Gratis
                   </button>
-                  <button class="btn btn-outline btn-large hero-cta-btn" (click)="goTo('/login')">
-                    Iniciar Sesión →
-                  </button>
                 </ng-container>
                 <ng-template #heroLoggedIn>
                   <button class="btn btn-primary btn-large btn-glow hero-cta-btn" (click)="goTo('/dashboard')">
                     Ir a mi Dashboard
                   </button>
                 </ng-template>
-              </div>
-            </div>
-
-            <!-- MODERN BENEFITS BAR (Replaces stats) -->
-            <div class="hero-benefits-bar">
-              <div class="benefit-chip">
-                <div class="chip-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Adaptativo"></div>
-                <div class="chip-info">
-                  <strong>Adaptativo</strong>
-                  <span>La IA crea tu plan de estudio</span>
-                </div>
-              </div>
-              <div class="benefit-chip">
-                <div class="chip-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="En tiempo real"></div>
-                <div class="chip-info">
-                  <strong>En tiempo real</strong>
-                  <span>Explicaciones al instante mientras ensayas</span>
-                </div>
-              </div>
-              <div class="benefit-chip">
-                <div class="chip-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Logro.avif" alt="100% enfocado"></div>
-                <div class="chip-info">
-                  <strong>100% enfocado</strong>
-                  <span>Solo contenido oficial PAES</span>
-                </div>
               </div>
             </div>
           </div>
@@ -195,7 +201,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
               <!-- Top bar header -->
               <div class="sim-card-header">
                 <div class="sim-header-left">
-                  <span class="sim-badge-live"><span class="live-dot"></span> ENSAYO PAES</span>
+                  <span class="sim-badge-live"><span class="live-dot"></span> SIMULACIÓN</span>
                   <span class="sim-subject-pill" [title]="currentSimExercise.subject">{{ currentSimExercise.subject }}</span>
                 </div>
                 <div class="sim-header-right">
@@ -206,7 +212,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
               <!-- Progress bar -->
               <div class="sim-progress-bar-wrap">
-                <div class="sim-progress-bar-fill" [style.width]="currentSimExercise.progress"></div>
+                <div class="sim-progress-bar-fill" [style.transform]="'scaleX(' + simProgressFraction + ')'"></div>
               </div>
 
               <!-- Question Box -->
@@ -216,7 +222,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                 <!-- Options -->
                 <div class="sim-options-list">
                   <div 
-                    *ngFor="let opt of currentSimExercise.options; let idx = index" 
+                    *ngFor="let opt of currentSimExercise.options; let idx = index; trackBy: trackByIndex" 
                     class="sim-option-item"
                     [class.selected]="heroSimStep >= 1 && idx === currentSimExercise.correctIndex"
                   >
@@ -275,26 +281,67 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   <div class="side-block">
                     <span class="side-title color-success">Fortalezas</span>
                     <ul class="tag-list">
-                      <li *ngFor="let st of currentSimExercise.strengths">✓ {{ st }}</li>
+                      <li *ngFor="let st of currentSimExercise.strengths; trackBy: trackByIndex">✓ {{ st }}</li>
                     </ul>
                   </div>
 
                   <div class="side-block">
                     <span class="side-title color-warning">A reforzar</span>
                     <ul class="tag-list warning">
-                      <li *ngFor="let wk of currentSimExercise.weaknesses">⚠️ {{ wk }}</li>
+                      <li *ngFor="let wk of currentSimExercise.weaknesses; trackBy: trackByIndex">⚠️ {{ wk }}</li>
                     </ul>
                   </div>
                 </div>
               </div>
+
+              <p class="sim-card-footnote">
+                Demo interactiva — así se ve un Ensayo PAES real en EstudiaUni. No es un ensayo en curso.
+              </p>
 
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ╔══ FRANJA POST-HERO (2026-08-29, definitivo) ══════════════════════════════════════════
+           La barra de beneficios (Adaptativo / En tiempo real / 100% enfocado) que ANTES vivia
+           dentro del hero. El contador de estudiantes volvio al hero (fila de estrellas) y el
+           descuento paso a la .announce-bar de arriba, asi que aca ya solo quedan los 3 chips.
+           REVERTIR: mover .hero-benefits-bar de vuelta despues de .hero-cta-group, borrar esta
+           <section> y el CSS .hero-strip / .hero-strip-inner. ══╗ -->
+      <section class="hero-strip" aria-label="Beneficios">
+        <div class="hero-strip-inner">
+          <div class="hero-benefits-bar">
+            <div class="benefit-chip">
+              <div class="chip-icon"><img decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Adaptativo"></div>
+              <div class="chip-info">
+                <strong>Adaptativo</strong>
+                <span>La IA crea tu plan de estudio</span>
+              </div>
+            </div>
+            <div class="benefit-chip">
+              <div class="chip-icon"><img decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="En tiempo real"></div>
+              <div class="chip-info">
+                <strong>En tiempo real</strong>
+                <span>Explicaciones al instante mientras ensayas</span>
+              </div>
+            </div>
+            <div class="benefit-chip">
+              <div class="chip-icon"><img decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Logro.avif" alt="100% enfocado"></div>
+              <div class="chip-info">
+                <strong>100% enfocado</strong>
+                <span>Solo contenido oficial PAES</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ╚══ fin FRANJA POST-HERO ══╝ -->
+
       <!-- FEATURES BENTO BOX -->
       <section id="features" class="features-section">
+        <!-- Cuadricula de fondo continua (2026-08-29). Va en z-index 0, o sea DEBAJO de la placa
+             de circuito de abajo (z-index 1) y del contenido (z-index 2). -->
         <!-- Silicon Circuit Board Background (Transparente, sin cortes de color, altamente visual y original) -->
         <div class="features-circuit-bg">
           <svg viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -355,7 +402,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="bento-grid">
             <!-- Large Card 1 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
               <h3>Rutas de Aprendizaje</h3>
               <p>Sigue un plan de estudio estructurado y personalizado. Avanza paso a paso dominando cada tema hasta alcanzar tu puntaje ideal.</p>
               <div class="bento-visual">
@@ -380,7 +427,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
             <!-- Large Card 2 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Lenguaje.avif" alt="Ensayos PAES"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Lenguaje.avif" alt="Ensayos PAES"></div>
               <h3>Ensayos PAES (Reales y Asistidos)</h3>
               <p>Mídete con ensayos oficiales del DEMRE. Practica en modo real con tiempo límite o en modo asistido con apoyo y feedback al instante.</p>
               <div class="bento-visual">
@@ -405,28 +452,28 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             
             <!-- Small Card 1 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
               <h3>Práctica Adaptativa</h3>
               <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_m2.avif" alt="Visualiza tu Progreso"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_m2.avif" alt="Visualiza tu Progreso"></div>
               <h3>Visualiza tu Progreso</h3>
               <p>Mide tu avance diario e identifica áreas de mejora al instante.</p>
             </div>
             
             <!-- Small Card 3 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
               <h3>Explora tu Futuro</h3>
               <p>Descubre universidades y carreras según tu ubicación e intereses.</p>
             </div>
 
             <!-- Small Card 4 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
               <h3>Acceso Inmediato</h3>
               <p>Comienza gratis hoy. Sin ingresar tarjeta de crédito.</p>
             </div>
@@ -436,6 +483,20 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
       <!-- FOCO AI TUTOR SECTION -->
       <section id="foco-tutor" class="foco-section">
+        <!-- Fondo ambiental compartido: rejilla + simbolos de materias + lineas animadas.
+             Ver el bloque "FONDO AMBIENTAL REUTILIZABLE" en los estilos. -->
+        <div class="ambient-bg">
+          <svg class="ambient-lines" viewBox="0 0 1440 700" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-40,180 L280,180 L400,300 L720,300" stroke="rgba(133,92,214,0.10)" stroke-width="1.4" stroke-linecap="round" />
+            <path class="pulse-path path-delay-1" d="M-40,180 L280,180 L400,300 L720,300" stroke="rgba(167,139,250,0.5)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 220" />
+            <path d="M1480,520 L1180,520 L1060,400 L800,400" stroke="rgba(59,130,246,0.09)" stroke-width="1.4" stroke-linecap="round" />
+            <path class="pulse-path path-delay-3" d="M1480,520 L1180,520 L1060,400 L800,400" stroke="rgba(96,165,250,0.45)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 220" />
+          </svg>
+          <span class="ambient-symbol as-1">pH</span>
+          <span class="ambient-symbol as-2">&#955; = c/f</span>
+          <span class="ambient-symbol as-3">NaCl</span>
+          <span class="ambient-symbol as-4">&#916;v</span>
+        </div>
         <div class="foco-container">
           <!-- Left Column: The Mascot with Speech Bubble -->
           <div class="foco-visual">
@@ -493,7 +554,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   </svg>
                 </div>
 
-                <video src="https://res.cloudinary.com/dqm3syhwr/image/upload/vc_vp9,q_auto,w_520,c_limit/v1/imagenes/branding/gif.webm" aria-label="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" autoplay loop [muted]="true" playsinline width="480" height="480"></video>
+                <!-- preload="metadata": este video vive en .foco-section, que esta bajo la linea de
+                     flotacion. Antes no declaraba preload, asi que se descargaba y decodificaba en el
+                     arranque; ahora lo arranca el IntersectionObserver de ngAfterViewInit, que ademas
+                     lo PAUSA al salir de pantalla (antes no se pausaba nunca). -->
+                <video src="https://res.cloudinary.com/dqm3syhwr/image/upload/vc_vp9,q_auto,w_520,c_limit/v1/imagenes/branding/gif.webm" aria-label="Foco el Pulpo" class="foco-mascot" (click)="onFocoClick()" loop [muted]="true" playsinline preload="metadata" width="480" height="480"></video>
               </div>
             </div>
           </div>
@@ -556,6 +621,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </div>
         </div>
       </section>
+      <div class="section-sep" aria-hidden="true"></div>
 
       <!-- HOW IT WORKS TABS SECTION -->
       <section id="videos" class="videos-section section-fade videos-fade" [class.theme-tab-0]="activeTab === 0" [class.theme-tab-1]="activeTab === 1" [class.theme-tab-2]="activeTab === 2">
@@ -695,28 +761,31 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         <h2 class="section-title">Mira cómo <span class="text-gradient">funciona</span></h2>
         
         <div class="tabs-container">
-          <div class="tabs-buttons">
-            <button class="tab-btn" [class.active]="activeTab === 0" (click)="selectDemoTab(0)">
-              <span class="tab-number">1</span> Ruta de aprendizaje
+          <div class="tabs-buttons" role="tablist">
+            <button class="tab-btn" role="tab" [attr.aria-selected]="activeTab === 0" [class.active]="activeTab === 0" (click)="selectDemoTab(0)">
+              <span class="tab-number">1</span>
+              <span class="tab-txt"><span class="tab-txt-full">Ruta de aprendizaje</span><span class="tab-txt-short">Ruta</span></span>
               <div class="active-indicator"></div>
             </button>
-            <button class="tab-btn" [class.active]="activeTab === 1" (click)="selectDemoTab(1)">
-              <span class="tab-number">2</span> Ensayos PAES
+            <button class="tab-btn" role="tab" [attr.aria-selected]="activeTab === 1" [class.active]="activeTab === 1" (click)="selectDemoTab(1)">
+              <span class="tab-number">2</span>
+              <span class="tab-txt"><span class="tab-txt-full">Ensayos PAES</span><span class="tab-txt-short">Ensayos</span></span>
               <div class="active-indicator"></div>
             </button>
-            <button class="tab-btn" [class.active]="activeTab === 2" (click)="selectDemoTab(2)">
-              <span class="tab-number">3</span> Consulta al tutor IA
+            <button class="tab-btn" role="tab" [attr.aria-selected]="activeTab === 2" [class.active]="activeTab === 2" (click)="selectDemoTab(2)">
+              <span class="tab-number">3</span>
+              <span class="tab-txt"><span class="tab-txt-full">Consulta al tutor IA</span><span class="tab-txt-short">Tutor IA</span></span>
               <div class="active-indicator"></div>
             </button>
           </div>
           
-          <div class="tab-content">
+          <div class="tab-content" [style.--sel-x]="activeTab === 0 ? '15.9%' : activeTab === 1 ? '50%' : '84.1%'">
             <!-- Tab 1: Ruta de aprendizaje -->
             <div *ngIf="activeTab === 0" class="tab-pane fade-in">
               <div class="tab-visual tab-dashboard-wrapper">
                 <video
-                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_800,c_limit/v1786850264/30FPSQuality.mp4"
-                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_800,c_limit/v1786850264/30FPSQuality.jpg"
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1786850264/30FPSQuality.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1786850264/30FPSQuality.jpg"
                   loop
                   [muted]="true"
                   playsinline
@@ -733,8 +802,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 1" class="tab-pane fade-in">
               <div class="tab-visual tab-exam-wrapper">
                 <video
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_800,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.mp4"
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_800,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.jpg"
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_1600,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.mp4"
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.jpg"
                   loop
                   [muted]="true"
                   playsinline
@@ -751,8 +820,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 2" class="tab-pane fade-in">
               <div class="tab-visual tab-chat-wrapper">
                 <video
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_800,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.mp4"
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_800,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.jpg"
+                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_1600,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.mp4"
+                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.jpg"
                   loop
                   [muted]="true"
                   playsinline
@@ -767,6 +836,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </div>
         </div>
       </section>
+      <div class="section-sep" aria-hidden="true"></div>
 
       <section id="testimonials" class="testimonials-section section-fade testimonials-fade">
         <!-- Lienzo de constelación de éxito de fondo con elementos interactivos y fluidos -->
@@ -779,20 +849,25 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
               </linearGradient>
               
               <!-- Gradientes para las orbes/nebulosas reactivas -->
+              <!-- Stops suavizados para reemplazar el feGaussianBlur que llevaban estos circulos
+                   (ver el comentario junto a los <circle class="nebula-glow">). -->
               <radialGradient id="nebula-left-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#855cd6" stop-opacity="0.22" />
-                <stop offset="60%" stop-color="#855cd6" stop-opacity="0.05" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                <stop offset="0%" stop-color="#855cd6" stop-opacity="0.20" />
+                <stop offset="35%" stop-color="#855cd6" stop-opacity="0.13" />
+                <stop offset="65%" stop-color="#855cd6" stop-opacity="0.05" />
+                <stop offset="100%" stop-color="#855cd6" stop-opacity="0" />
               </radialGradient>
               <radialGradient id="nebula-center-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#d946ef" stop-opacity="0.25" />
-                <stop offset="60%" stop-color="#d946ef" stop-opacity="0.06" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                <stop offset="0%" stop-color="#d946ef" stop-opacity="0.23" />
+                <stop offset="35%" stop-color="#d946ef" stop-opacity="0.15" />
+                <stop offset="65%" stop-color="#d946ef" stop-opacity="0.06" />
+                <stop offset="100%" stop-color="#d946ef" stop-opacity="0" />
               </radialGradient>
               <radialGradient id="nebula-right-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22" />
-                <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.05" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.20" />
+                <stop offset="35%" stop-color="#3b82f6" stop-opacity="0.13" />
+                <stop offset="65%" stop-color="#3b82f6" stop-opacity="0.05" />
+                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
               </radialGradient>
 
               <!-- Gradientes para las líneas de luz animadas (Shooting Stars) -->
@@ -820,15 +895,20 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                 </feMerge>
               </filter>
               
-              <filter id="glow-blur" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="30" />
-              </filter>
             </defs>
             
             <!-- Nebulosas Reactivas de Fondo (Se encienden al hacer hover en las tarjetas) -->
-            <circle class="nebula-glow nebula-left" cx="200" cy="250" r="180" fill="url(#nebula-left-grad)" filter="url(#glow-blur)" />
-            <circle class="nebula-glow nebula-center" cx="600" cy="270" r="220" fill="url(#nebula-center-grad)" filter="url(#glow-blur)" />
-            <circle class="nebula-glow nebula-right" cx="1000" cy="250" r="180" fill="url(#nebula-right-grad)" filter="url(#glow-blur)" />
+            <!-- RENDIMIENTO (2026-08-29): estos 3 circulos tenian filter="url(#glow-blur)"
+                 (feGaussianBlur stdDeviation=30) Y una transicion de opacity/transform de 1,5 s que
+                 se dispara al pasar el mouse por las tarjetas (ver las reglas :has() de
+                 .nebula-glow). Escalar un elemento filtrado obliga a RE-RASTERIZAR el desenfoque
+                 gaussiano en cada frame de esa transicion. Como el relleno ya es un radialGradient
+                 que se desvanece a transparente, el desenfoque encima era en gran parte redundante:
+                 se quita el filtro y se suavizan los stops del gradiente para compensar. El hover
+                 se conserva, pero ahora es compositable y practicamente gratis. -->
+            <circle class="nebula-glow nebula-left" cx="200" cy="250" r="180" fill="url(#nebula-left-grad)" />
+            <circle class="nebula-glow nebula-center" cx="600" cy="270" r="220" fill="url(#nebula-center-grad)" />
+            <circle class="nebula-glow nebula-right" cx="1000" cy="250" r="180" fill="url(#nebula-right-grad)" />
 
             <!-- Cruces de Coordenadas Técnicas Ambientales (Pulsantes) -->
             <g class="ambient-cross cross-1">
@@ -868,87 +948,44 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         <h2 class="section-title">Lo que dicen nuestros <span class="text-gradient">estudiantes</span></h2>
         
         <div class="testimonials-grid">
-          <!-- Tarjeta 1: Mati -->
-          <div class="testimonial-card testimonial-card-1">
+          <!-- [TESTIMONIOS ESTATICOS 2026-08-29] antes iteraba testimoniosLoop (3 testimonios x3
+               para el marquee agarrable de telefono). Ahora es grilla estatica en todos lados, asi
+               que itera testimonios (los 3 reales). REVERTIR: volver a testimoniosLoop, restaurar
+               el bloque CSS del marquee y descomentar la llamada a setupGrabbableMarquee de
+               testimonios en ngAfterViewInit. Las clases -1/-2/-3 disparan la reactividad :has(). -->
+          <div *ngFor="let t of testimonios; let i = index; trackBy: trackByIndex"
+               class="testimonial-card"
+               [class.featured]="t.featured"
+               [class.testimonial-card-1]="i === 0"
+               [class.testimonial-card-2]="i === 1"
+               [class.testimonial-card-3]="i === 2"
+               [attr.aria-hidden]="i >= testimonios.length ? 'true' : null">
             <div class="testimonial-header">
               <div class="testimonial-avatar">
-                <img width="128" height="128" src="assets/imagesHome/seccion opiniones/1-avatar-v1.webp" alt="Estudiante Mati" loading="lazy" decoding="async">
+                <img width="128" height="128" [src]="t.avatar" [alt]="t.alt" loading="lazy" decoding="async">
               </div>
               <div class="testimonial-info">
                 <div class="name-row">
-                  <h4>Mati</h4>
-                  <!-- Icono verificado verificado en azul -->
+                  <h4>{{ t.nombre }}</h4>
                   <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificado">
                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
                 </div>
-                <p>Aspirante a Ing. Civil</p>
+                <p>{{ t.rol }}</p>
               </div>
             </div>
-            
-            <!-- Estrellas SVG doradas de alta calidad -->
-            <div class="testimonial-stars">
-              <svg *ngFor="let s of [1,2,3,4,5]" class="star-icon" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#f59e0b"/>
-              </svg>
-            </div>
-            
-            <p class="testimonial-text">"La página está bacán, de verdad te salva. El tutor IA es brígido porque te explica al toque por qué te equivocaste en medio del ensayo, no tienes que andar buscando en Google o viendo videos largos que burren. Apaña caleta para entender todo."</p>
-          </div>
 
-          <!-- Tarjeta 2: ValeRojas -->
-          <div class="testimonial-card featured testimonial-card-2">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img width="128" height="128" src="assets/imagesHome/seccion opiniones/2-avatar-v1.webp" alt="Estudiante ValeRojas" loading="lazy" decoding="async">
-              </div>
-              <div class="testimonial-info">
-                <div class="name-row">
-                  <h4>ValeRojas</h4>
-                  <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificada">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <p>Futura estudiante de Psicología</p>
-              </div>
-            </div>
-            
             <div class="testimonial-stars">
-              <svg *ngFor="let s of [1,2,3,4,5]" class="star-icon" viewBox="0 0 24 24">
+              <svg *ngFor="let s of estrellas; trackBy: trackByIndex" class="star-icon" viewBox="0 0 24 24">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#f59e0b"/>
               </svg>
             </div>
-            
-            <p class="testimonial-text">"Me costaba sentarme a estudiar, pero acá con los simulacros interactivos se hace cero pesado. La página cacha altiro lo que te cuesta y te hace repasar eso. Me pasé al premium hace una semana y vale 100% la pena."</p>
-          </div>
 
-          <!-- Tarjeta 3: Seba -->
-          <div class="testimonial-card testimonial-card-3">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img width="128" height="128" src="assets/imagesHome/seccion opiniones/3-avatar-v1.webp" alt="Estudiante Seba" loading="lazy" decoding="async">
-              </div>
-              <div class="testimonial-info">
-                <div class="name-row">
-                  <h4>Seba</h4>
-                  <svg class="verify-icon" viewBox="0 0 24 24" fill="currentColor" title="Estudiante Verificado">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <p>Aspirante a Derecho</p>
-              </div>
-            </div>
-            
-            <div class="testimonial-stars">
-              <svg *ngFor="let s of [1,2,3,4,5]" class="star-icon" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#f59e0b"/>
-              </svg>
-            </div>
-            
-            <p class="testimonial-text">"Está filete la plataforma. Lo que más me gusta es que puedo hacer los miniquizzes y configurarlo como yo quiera y los mininjuegos son adictivos, recomiendo la pagina a todos los que les cueste estudiar como yo jaja."</p>
+            <p class="testimonial-text">{{ t.texto }}</p>
           </div>
         </div>
       </section>
+      <div class="section-sep" aria-hidden="true"></div>
 
       <!-- PRICING SECTION -->
       <section id="pricing" class="pricing-section section-fade pricing-fade" [class.yearly-active]="billingPeriod === 'yearly'">
@@ -956,28 +993,40 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         <div class="pricing-flow-bg">
           <svg width="100%" height="100%" viewBox="0 0 1440 600" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-               <!-- Filtro de Difuminado de Alta Fidelidad para Bordes Suaves -->
-               <filter id="pricing-studio-blur" x="-50%" y="-50%" width="200%" height="200%">
-                 <feGaussianBlur stdDeviation="75" />
-               </filter>
+               <!-- RENDIMIENTO (2026-08-29): aca vivia el filtro mas caro de todo el home,
+                    'pricing-studio-blur', un feGaussianBlur con stdDeviation=75 (casi 10 veces el
+                    del FAQ) y region de filtro de 200%x200%, aplicado a 3 circulos de r=300, 350
+                    y 380. Y las nebulosas que lo llevaban tienen transiciones de opacity/transform
+                    de 1,2-1,5 s que se disparan al pasar el mouse por una tarjeta de plan (reglas
+                    :has()) y al alternar mensual/anual. Escalar un elemento filtrado obliga a
+                    RE-RASTERIZAR ese desenfoque enorme en cada frame de la transicion: eso era el
+                    lag de la seccion de precios.
+
+                    El relleno ya era un radialGradient que se desvanece a transparente, asi que se
+                    quita el filtro y se compensa ensanchando el radio del gradiente (35-40% -> 50%)
+                    con stops intermedios que reproducen la caida suave. El hover y el toggle anual
+                    se conservan intactos, pero ahora son compositables. -->
 
                <!-- Nebulosas Reactivas Vibrantes -->
-               <radialGradient id="nebula-basic" cx="25%" cy="50%" r="35%">
-                 <stop offset="0%" stop-color="#10b981" stop-opacity="0.45"/>
-                 <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.3"/>
-                 <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+               <radialGradient id="nebula-basic" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#10b981" stop-opacity="0.34"/>
+                 <stop offset="30%" stop-color="#10b981" stop-opacity="0.24"/>
+                 <stop offset="60%" stop-color="#06b6d4" stop-opacity="0.12"/>
+                 <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
                </radialGradient>
-               <radialGradient id="nebula-premium" cx="75%" cy="50%" r="40%">
-                 <stop offset="0%" stop-color="#855cd6" stop-opacity="0.55"/>
-                 <stop offset="50%" stop-color="#f472b6" stop-opacity="0.35"/>
-                 <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+               <radialGradient id="nebula-premium" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#855cd6" stop-opacity="0.4"/>
+                 <stop offset="30%" stop-color="#855cd6" stop-opacity="0.28"/>
+                 <stop offset="60%" stop-color="#f472b6" stop-opacity="0.14"/>
+                 <stop offset="100%" stop-color="#f472b6" stop-opacity="0"/>
                </radialGradient>
 
                <!-- Nebulosa Dorada de Ahorro Anual -->
-               <radialGradient id="nebula-yearly" cx="50%" cy="50%" r="40%">
-                 <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.6"/>
-                 <stop offset="55%" stop-color="#d97706" stop-opacity="0.3"/>
-                 <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+               <radialGradient id="nebula-yearly" cx="50%" cy="50%" r="50%">
+                 <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.44"/>
+                 <stop offset="30%" stop-color="#f59e0b" stop-opacity="0.3"/>
+                 <stop offset="60%" stop-color="#d97706" stop-opacity="0.13"/>
+                 <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
                </radialGradient>
                
                <!-- Patrón de Rejilla de Puntajes -->
@@ -991,11 +1040,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
              <rect width="100%" height="100%" fill="url(#pricing-grid-pattern)" />
 
              <!-- Nebulosas Reactivas de Fondo con Filtro de Difuminado -->
-             <circle class="pricing-nebula basic-nebula" cx="360" cy="300" r="300" fill="url(#nebula-basic)" filter="url(#pricing-studio-blur)" />
-             <circle class="pricing-nebula premium-nebula" cx="1080" cy="300" r="350" fill="url(#nebula-premium)" filter="url(#pricing-studio-blur)" />
+             <circle class="pricing-nebula basic-nebula" cx="360" cy="300" r="300" fill="url(#nebula-basic)" />
+             <circle class="pricing-nebula premium-nebula" cx="1080" cy="300" r="350" fill="url(#nebula-premium)" />
              
              <!-- Nebulosa Dorada Reactiva Anual -->
-             <circle class="pricing-nebula yearly-nebula" cx="720" cy="300" r="380" fill="url(#nebula-yearly)" filter="url(#pricing-studio-blur)" />
+             <circle class="pricing-nebula yearly-nebula" cx="720" cy="300" r="380" fill="url(#nebula-yearly)" />
 
             <!-- Órbitas Concéntricas y Líneas de Enlace de Datos -->
             <circle class="pricing-orbit orbit-outer" cx="720" cy="300" r="450" stroke="rgba(133, 92, 214, 0.03)" stroke-width="1" stroke-dasharray="10 15" />
@@ -1023,19 +1072,6 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
         <h2 class="section-title">Elige tu <span class="text-gradient">plan</span></h2>
         
-        <!-- Toggle Anual/Mensual Interactivo -->
-        <div class="billing-toggle-container">
-          <button class="billing-btn" [class.active]="billingPeriod === 'monthly'" (click)="billingPeriod = 'monthly'">
-            Mensual
-          </button>
-          <div class="billing-switch" (click)="billingPeriod = billingPeriod === 'monthly' ? 'yearly' : 'monthly'">
-            <div class="billing-switch-handle" [style.transform]="billingPeriod === 'yearly' ? 'translateX(32px)' : 'translateX(0px)'"></div>
-          </div>
-          <button class="billing-btn" [class.active]="billingPeriod === 'yearly'" (click)="billingPeriod = 'yearly'">
-            Anual <span class="discount-pill">¡Ahorra 41%!</span>
-          </button>
-        </div>
-
         <div class="pricing-grid">
           <!-- PLAN BÁSICO -->
           <div class="pricing-card basic-card glass-card">
@@ -1107,6 +1143,31 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             
             <button class="pricing-btn-action basic-action" (click)="goTo(isLoggedIn() ? '/dashboard' : '/register')">
               {{ isLoggedIn() ? 'Ir al Panel' : 'Registrarse Gratis' }}
+            </button>
+          </div>
+
+          <!-- Selector Mensual/Anual (rediseño v4 2026-08-29): una sola pastilla con contorno
+               continuo + un divisor central fino (lee como "2 segmentos conectados"). El relleno
+               .billing-fill se desliza de un lado al otro con la Web Animations API
+               (animateBillingFill): ease elastico + un leve estiron/squash = efecto liquido, sin
+               ninguna libreria. Hijo de .pricing-grid; en escritorio se sube a su fila arriba de
+               las dos tarjetas, en movil queda entre las tarjetas apiladas. -->
+          <div class="billing-toggle"
+               [class.yearly]="billingPeriod === 'yearly'"
+               [class.switched]="billingSwitched"
+               role="group" aria-label="Periodo de facturación">
+            <span #billingFill class="billing-fill" aria-hidden="true"></span>
+            <span class="billing-divider" aria-hidden="true"></span>
+            <button type="button" class="billing-opt billing-opt--monthly"
+                    [class.active]="billingPeriod === 'monthly'"
+                    [attr.aria-pressed]="billingPeriod === 'monthly'"
+                    (click)="setBilling('monthly')">Mensual</button>
+            <button type="button" class="billing-opt billing-opt--yearly"
+                    [class.active]="billingPeriod === 'yearly'"
+                    [attr.aria-pressed]="billingPeriod === 'yearly'"
+                    (click)="setBilling('yearly')">
+              Anual
+              <span class="billing-save">Ahorra&nbsp;41%</span>
             </button>
           </div>
 
@@ -1193,10 +1254,23 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </div>
         </div>
       </section>
+      <div class="section-sep" aria-hidden="true"></div>
 
       <!-- NEWS SECTION -->
       <section id="news" class="news-section section-fade news-fade">
         <div class="news-bg-decor"></div>
+        <div class="ambient-bg">
+          <svg class="ambient-lines" viewBox="0 0 1440 700" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-40,140 L320,140 L440,260 L760,260" stroke="rgba(59,130,246,0.09)" stroke-width="1.4" stroke-linecap="round" />
+            <path class="pulse-path path-delay-2" d="M-40,140 L320,140 L440,260 L760,260" stroke="rgba(96,165,250,0.45)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 220" />
+            <path d="M1480,560 L1140,560 L1020,440 L740,440" stroke="rgba(133,92,214,0.09)" stroke-width="1.4" stroke-linecap="round" />
+            <path class="pulse-path path-delay-4" d="M1480,560 L1140,560 L1020,440 L740,440" stroke="rgba(167,139,250,0.45)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 220" />
+          </svg>
+          <span class="ambient-symbol as-1">x&#178;</span>
+          <span class="ambient-symbol as-2">V = IR</span>
+          <span class="ambient-symbol as-3">mol</span>
+          <span class="ambient-symbol as-4">&#945; + &#946;</span>
+        </div>
         <h2 class="section-title">Actualidad y <span class="text-gradient">Noticias PAES</span></h2>
         <p class="section-subtitle-custom">Mantente al tanto de las últimas novedades oficiales del DEMRE y consejos clave para tu postulación.</p>
         
@@ -1206,7 +1280,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </button>
           
           <div class="news-track">
-            <div class="news-card glass-card" *ngFor="let item of news">
+            <!-- newsLoop = las noticias triplicadas: los clones (i >= news.length) solo se ven en el
+                 marquee agarrable de telefono; en desktop se ocultan por CSS. -->
+            <div class="news-card glass-card" *ngFor="let item of newsLoop; let i = index; trackBy: trackByIndex"
+                 [attr.aria-hidden]="i >= news.length ? 'true' : null">
               <div class="news-header-img">
                 <div class="news-img-skeleton" *ngIf="!item.isLoaded"></div>
                 <img width="400" height="225" [src]="item.imageUrl" (load)="item.isLoaded = true" [class.loaded]="item.isLoaded" alt="Portada de la noticia" class="news-cover-img" loading="lazy" decoding="async" />
@@ -1234,10 +1311,14 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </button>
         </div>
 
+        <!-- Barra de progreso del carrusel. Solo en desktop/tablet (>640px): ahi el carrusel se
+             mueve con las flechas y el scroll, y saber la posicion ayuda. En <=640px es un marquee
+             agarrable en bucle -> una barra de progreso no tendria sentido y se oculta por CSS. -->
         <div class="news-scroll-indicator" aria-hidden="true">
           <div class="news-scroll-thumb"></div>
         </div>
       </section>
+      <div class="section-sep" aria-hidden="true"></div>
 
       <!-- FAQ SECTION -->
       <section id="faq" class="faq-section section-fade faq-fade">
@@ -1264,13 +1345,18 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                 <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
               </radialGradient>
               
-              <filter id="faq-glow-filter" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="8" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
+              <!-- Resplandor de los satelites como gradiente en vez de como filtro, para poder
+                   animarlos sin re-rasterizar un desenfoque en cada frame. -->
+              <radialGradient id="faq-sat-glow-a" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#855cd6" stop-opacity="1" />
+                <stop offset="35%" stop-color="#855cd6" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#855cd6" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="faq-sat-glow-b" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity="1" />
+                <stop offset="35%" stop-color="#3b82f6" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+              </radialGradient>
             </defs>
 
             <!-- Slow Floating Nebulas (Dynamic Morphing Backgrounds) -->
@@ -1282,8 +1368,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <circle cx="720" cy="300" r="540" stroke="rgba(59, 130, 246, 0.06)" stroke-width="1" stroke-dasharray="10 12" class="faq-orbit-2" />
 
             <!-- Glowing Technical Node Satellites -->
-            <circle cx="340" cy="180" r="5" fill="#855cd6" filter="url(#faq-glow-filter)" class="faq-satellite sat-1" />
-            <circle cx="1120" cy="420" r="5" fill="#3b82f6" filter="url(#faq-glow-filter)" class="faq-satellite sat-2" />
+            <!-- 2026-08-29: se les quito filter="url(#faq-glow-filter)" (un feGaussianBlur). Con el
+                 filtro puesto NO se podian animar: cada frame re-rasterizaba el desenfoque, que fue
+                 la causa principal del ~1 fps de esta seccion. Sin filtro, el resplandor lo da un
+                 radialGradient (mismo truco que las nebulosas) y el pulso vuelve, pero animando
+                 solo opacity/transform, que si se pueden componer. -->
+            <circle cx="340" cy="180" r="9" fill="url(#faq-sat-glow-a)" class="faq-satellite sat-1" />
+            <circle cx="1120" cy="420" r="9" fill="url(#faq-sat-glow-b)" class="faq-satellite sat-2" />
             
             <!-- Coordinates crosses / markers (+) -->
             <path d="M150,120 H160 M155,115 V125" stroke="rgba(133, 92, 214, 0.2)" stroke-width="1" />
@@ -1299,7 +1390,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         <h2 class="section-title">Preguntas <span class="text-gradient">Frecuentes</span></h2>
         
         <div class="faq-container">
-          <div class="faq-item glass-card" *ngFor="let faq of faqs; let i = index" [class.active]="openFaq === i">
+          <div class="faq-item glass-card" *ngFor="let faq of faqs; let i = index; trackBy: trackByIndex" [class.active]="openFaq === i">
             <button class="faq-question" (click)="toggleFaq(i)">
               <span class="faq-q-text">{{ faq.q }}</span>
               <span class="faq-icon">
@@ -1317,9 +1408,22 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           </div>
         </div>
       </section>
+      <div class="section-sep" aria-hidden="true"></div>
 
       <!-- FINAL CTA -->
       <section id="cta" class="cta-section section-fade cta-fade">
+        <div class="ambient-bg">
+          <svg class="ambient-lines" viewBox="0 0 1440 420" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-40,110 L300,110 L400,210 L700,210" stroke="rgba(133,92,214,0.10)" stroke-width="1.4" stroke-linecap="round" />
+            <path class="pulse-path path-delay-1" d="M-40,110 L300,110 L400,210 L700,210" stroke="rgba(167,139,250,0.5)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 220" />
+            <path d="M1480,320 L1160,320 L1060,220 L800,220" stroke="rgba(59,130,246,0.09)" stroke-width="1.4" stroke-linecap="round" />
+            <path class="pulse-path path-delay-3" d="M1480,320 L1160,320 L1060,220 L800,220" stroke="rgba(96,165,250,0.45)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 220" />
+          </svg>
+          <span class="ambient-symbol as-1">&#960;r&#178;</span>
+          <span class="ambient-symbol as-2">O&#8322;</span>
+          <span class="ambient-symbol as-3">log x</span>
+          <span class="ambient-symbol as-4">&#916;t</span>
+        </div>
         <div class="cta-content glass-card">
           <h2>¿Listo para mejorar tu puntaje?</h2>
           <p>Únete a miles de estudiantes preparándose con EstudiaUni</p>
@@ -1354,21 +1458,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;opacity:0.7"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 Facebook
               </a>
-              <a routerLink="/trabaja-con-nosotros" style="cursor: pointer; margin-top: 0.25rem;">Trabaja con nosotros ↗</a>
+              <a routerLink="/trabaja-con-nosotros" style="cursor: pointer; margin-top: 0.25rem;">Trabaja con nosotros&nbsp;↗</a>
             </div>
             
             <div class="footer-col">
               <h4>Recursos</h4>
-              <a href="https://demre.cl/" target="_blank" rel="noopener" style="cursor: pointer;">Portal Oficial DEMRE ↗</a>
-              <a href="https://demre.cl/publicaciones/" target="_blank" rel="noopener" style="cursor: pointer;">Temarios Oficiales PAES ↗</a>
-              <a href="https://demre.cl/paes/universidades-participantes/universidades-sistema-acceso" target="_blank" rel="noopener" style="cursor: pointer;">Guía de Universidades ↗</a>
-              <a href="https://portal.beneficiosestudiantiles.cl/" target="_blank" rel="noopener" style="cursor: pointer;">Beneficios Estudiantiles ↗</a>
+              <a href="https://demre.cl/" target="_blank" rel="noopener" style="cursor: pointer;">Portal Oficial DEMRE&nbsp;↗</a>
+              <a href="https://demre.cl/publicaciones/" target="_blank" rel="noopener" style="cursor: pointer;">Temarios Oficiales PAES&nbsp;↗</a>
+              <a href="https://demre.cl/paes/universidades-participantes/universidades-sistema-acceso" target="_blank" rel="noopener" style="cursor: pointer;">Guía de Universidades&nbsp;↗</a>
+              <a href="https://portal.beneficiosestudiantiles.cl/" target="_blank" rel="noopener" style="cursor: pointer;">Beneficios Estudiantiles&nbsp;↗</a>
             </div>
             
             <div class="footer-col">
               <h4>Soporte y Legal</h4>
-              <a routerLink="/soporte" style="cursor: pointer;">Soporte de Usuario y Contacto ↗</a>
-              <a style="cursor: pointer;" (click)="scrollTo('faq')">Preguntas Frecuentes </a>
+              <a routerLink="/soporte" style="cursor: pointer;">Soporte de Usuario y Contacto&nbsp;↗</a>
+              <a href="#faq" style="cursor: pointer;" (click)="$event.preventDefault(); scrollTo('faq')">Preguntas Frecuentes </a>
               <a style="cursor: pointer;" (click)="legalModalType = 'terms'">Términos de Servicio </a>
               <a style="cursor: pointer;" (click)="legalModalType = 'privacy'">Política de Privacidad </a>
             </div>
@@ -1379,9 +1483,9 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
               <p>© 2026 EstudiaUni. Todos los derechos reservados.</p>
             </div>
             <div class="footer-bottom-right">
-              <a style="cursor: pointer;" (click)="scrollToTop()">Inicio →</a>
+              <a href="#hero" style="cursor: pointer;" (click)="$event.preventDefault(); scrollToTop()">Inicio →</a>
               <span class="separator">•</span>
-              <a style="cursor: pointer;" (click)="scrollTo('pricing')">Planes →</a>
+              <a href="#pricing" style="cursor: pointer;" (click)="$event.preventDefault(); scrollTo('pricing')">Planes →</a>
               <span class="separator">•</span>
               <a routerLink="/soporte">Soporte →</a>
             </div>
@@ -1412,44 +1516,43 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       contain: strict;
       transform: translateZ(0);
     }
+    /* RENDIMIENTO (2026-08-29): estos 3 blobs vivian dentro de .dynamic-bg, que es
+       position: fixed y cubre el viewport completo DETRAS de los ~15.000 px del documento.
+       Cada uno tenia filter: blur(90px) sobre un circulo solido MAS una animacion infinita
+       de transform. O sea: una capa fija, desenfocada en tiempo real y animandose para
+       siempre, en absolutamente toda posicion de scroll -- incluida la seccion de FAQ, que
+       es donde el usuario reportaba ~1 fps en un telefono real.
+
+       El desenfoque en runtime se reemplaza por un radial-gradient con la misma caida suave:
+       visualmente equivalente a un circulo solido con blur, pero cuesta CERO por frame y no
+       promueve ninguna capa. Se quitan tambien la animacion infinita, will-change y los
+       hacks de promocion (translateZ/backface-visibility), que solo tenian sentido para
+       sostener esa animacion. */
     .blob {
       position: absolute;
-      filter: blur(90px);
       border-radius: 50%;
       opacity: 0.5;
-      animation: morph-blob 20s infinite alternate ease-in-out;
-      will-change: transform;
-      transform: translateZ(0);
-      backface-visibility: hidden;
     }
     .blob-purple {
       width: 50vw;
       height: 50vw;
-      background: rgba(133, 92, 214, 0.4);
+      background: radial-gradient(circle, rgba(133, 92, 214, 0.4) 0%, rgba(133, 92, 214, 0.22) 45%, rgba(133, 92, 214, 0) 72%);
       top: -20vh;
       left: -10vw;
     }
     .blob-blue {
       width: 40vw;
       height: 40vw;
-      background: rgba(59, 130, 246, 0.3);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.16) 45%, rgba(59, 130, 246, 0) 72%);
       bottom: -10vh;
       right: -10vw;
-      animation-delay: -5s;
     }
     .blob-yellow {
       width: 30vw;
       height: 30vw;
-      background: rgba(251, 191, 36, 0.25);
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0.13) 45%, rgba(251, 191, 36, 0) 72%);
       top: 30vh;
       left: 60vw;
-      animation-delay: -10s;
-    }
-    @keyframes morph-blob {
-      0% { transform: translate3d(0, 0, 0) scale(1); }
-      33% { transform: translate3d(8vw, -8vh, 0) scale(1.1); }
-      66% { transform: translate3d(-5vw, 5vh, 0) scale(0.9); }
-      100% { transform: translate3d(0, 0, 0) scale(1); }
     }
 
 
@@ -1459,10 +1562,208 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       max-width: 100vw !important;
       overflow-x: hidden !important;
       position: relative;
+      /* [BARRA DE ANUNCIO 2026-08-29] deja sitio a la barra fija de promo (0 si esta cerrada). */
+      padding-top: var(--announce-h, 0px);
+    }
+
+    /* ==================================================================
+       CUADRICULA CONTINUA DE TODO EL HOME (2026-08-29, segunda version)
+       ==================================================================
+       La primera version ponia una .ambient-grid DENTRO de cada seccion, y se veia a parches:
+       .ambient-bg desvanecia el 12% superior e inferior de CADA seccion (mask-image lineal) y
+       .ambient-grid encima solo mostraba su centro (mask-image radial). Resultado: un ovalo de
+       rejilla en medio de algunas secciones y huecos en cada frontera.
+
+       Ahora es UN solo pseudo-elemento sobre .home-container, que abarca el documento completo:
+       la rejilla es continua de punta a punta, sin costuras, y ademas es mas barata (un elemento
+       en vez de ocho). Va en z-index 0 y las secciones se pintan encima, asi que las que tenian
+       fondo blanco opaco se pasaron a translucido para dejarla ver (ver .videos-section,
+       .testimonials-section, .pricing-section y .footer). */
+    .home-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(133, 92, 214, 0.080) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, rgba(133, 92, 214, 0.055) 1.5px, transparent 1.5px);
+      background-size: 64px 64px;
+      /* Deriva lentisima. Es UNA sola capa animando transform: la GPU la mueve sin repintar,
+         y le devuelve algo de vida al fondo sin ninguna de las cosas caras que se quitaron. */
+      animation: grid-drift 90s linear infinite;
+    }
+    @keyframes grid-drift {
+      from { transform: translate3d(0, 0, 0); }
+      to   { transform: translate3d(-64px, -64px, 0); }
+    }
+
+    /* Separador entre secciones: una linea horizontal simple, del mismo tono que el contorno de
+       las tarjetas (#cbd5e1) pero un poco mas oscura, centrada en el hueco vacio. Solo se
+       desvanece muy sutil en las 2 puntas para que no se vea cortada. No ocupa alto en el flujo
+       (height:0 + ::before absoluto), asi que NO agranda la separacion — solo la decora. */
+    .section-sep {
+      position: relative;
+      height: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .section-sep::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-50%, -50%);
+      width: min(560px, 82%);
+      height: 2px;
+      background: rgba(154, 164, 181, 0.62);
+      -webkit-mask: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+      mask: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
     }
 
     /* ===== VARIABLES & BASE ===== */
     .home-container { min-height: 100vh; }
+
+    /* ╔══ REORDEN DE SECCIONES (2026-08-29, definitivo) ═══════════════════════════════════════════
+       Sube "Elige tu plan" (los precios estaban a ~6-7 pantallas de scroll) y baja "Actualidad
+       y Noticias" al final, junto al footer. Se hace con la propiedad order sobre el flex de
+       .home-container (no se mueve el DOM) -> REVERTIR = borrar este bloque entero.
+       Orden nuevo: hero · franja · features · Foco · videos · PLANES · testimonios · FAQ · CTA ·
+       NOTICIAS · footer. Los precios quedan despues de "Mira como funciona" (ya se explico Foco
+       y la demo, o sea el argumento de PRO), y a ~4 pantallas en movil. Los .section-sep viajan
+       con su hueco vía el selector de hermano adyacente. ══╗ */
+    .home-container { display: flex; flex-direction: column; }
+    .home-container > #hero            { order: 10; }
+    .home-container > .hero-strip      { order: 15; }
+    .home-container > #features        { order: 20; }
+    .home-container > #foco-tutor      { order: 30; }
+    #foco-tutor + .section-sep         { order: 35; }
+    .home-container > #videos          { order: 40; }
+    #videos + .section-sep            { order: 45; }
+    .home-container > #pricing         { order: 50; }
+    #testimonials + .section-sep       { order: 55; }
+    .home-container > #testimonials    { order: 60; }
+    #pricing + .section-sep           { order: 65; }
+    .home-container > #faq             { order: 70; }
+    #news + .section-sep             { order: 75; }
+    .home-container > #cta             { order: 80; }
+    #faq + .section-sep              { order: 85; }
+    .home-container > #news            { order: 90; }
+    .home-container > footer           { order: 100; }
+    .home-container > app-legal-modal  { order: 110; }
+    /* ╚══ fin REORDEN DE SECCIONES ══╝ */
+
+    /* ╔══ CTA PEGAJOSA MOVIL (2026-08-29, definitivo) — REVERTIR: borrar este bloque + su elemento
+       + la propiedad showStickyCta + los 2 observers de ngAfterViewInit. ══╗ */
+    .home-sticky-cta {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 95;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.95rem 1rem;
+      border: 0;
+      border-radius: 14px;
+      background: var(--accent-primary, #855cd6);
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(133, 92, 214, 0.45);
+      transform: translateY(150%);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @media (max-width: 768px) {
+      .home-sticky-cta { display: flex; }
+      .home-sticky-cta.is-visible { transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .home-sticky-cta { transition: none; }
+    }
+    /* ╚══ fin CTA PEGAJOSA MOVIL ══╝ */
+
+    /* ╔══ BARRA DE ANUNCIO (2026-08-29, definitivo) — REVERTIR: borrar este bloque + su elemento +
+       showAnnounce/dismissAnnounce + el host [class.has-announce] + los calc(... + var(--announce-h))
+       de .navbar / .navbar.scrolled / .home-container. ══╗ */
+    .announce-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--announce-h, 42px);
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0 2.5rem;
+      background: linear-gradient(90deg, #4c1d95, #6d28d9 55%, #7c3aed);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .announce-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: none;
+      border: 0;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0.25rem 0.4rem;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+    }
+    .announce-main:hover { background: rgba(255, 255, 255, 0.12); }
+    .announce-chip {
+      background: #f59e0b;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+      padding: 0.14rem 0.44rem;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .announce-text { white-space: nowrap; }
+    .announce-text strong { font-weight: 800; }
+    .announce-close {
+      position: absolute;
+      right: 0.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.4rem;
+      background: none;
+      border: 0;
+      color: #fff;
+      opacity: 0.75;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    .announce-close:hover { opacity: 1; }
+    @media (max-width: 640px) {
+      .announce-bar { font-size: 0.76rem; padding: 0 2.25rem; gap: 0.4rem; }
+      .announce-chip { font-size: 0.66rem; padding: 0.12rem 0.36rem; }
+      /* En telefono se cae "— por tiempo limitado" para no apretar. Queda "41% OFF en Plan PRO". */
+      .announce-text-extra { display: none; }
+    }
+    @media (max-width: 360px) {
+      .announce-text { font-size: 0.72rem; }
+    }
+    /* ╚══ fin BARRA DE ANUNCIO ══╝ */
+
     .section-title, .bento-card, .faq-item, .foco-visual {
       opacity: 0;
       transform: translate3d(0, 30px, 0);
@@ -1476,24 +1777,35 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     }
 
     .w-full { width: 100%; }
-    .text-gradient { 
-      background: var(--gradient-brand); 
-      -webkit-background-clip: text; 
-      -webkit-text-fill-color: transparent; 
-      background-clip: text; 
+    .text-gradient {
+      background: var(--gradient-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       background-size: 200% auto;
       animation: gradientMove 4s ease infinite;
     }
+    /* El letter-spacing negativo del h1 deja la tinta de la ultima letra (~1.4px) fuera de la caja
+       de texto, y background-clip: text no pinta ahi -> la "S" de "PAES" se veia cortada. Un pelin
+       de padding-right extiende la caja del degradado sin mover nada (hay ~18px de aire a la
+       derecha). */
+    .hero-title .text-gradient { padding-right: 0.1em; }
     @keyframes gradientMove {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
+    /* [BARRA DE ANUNCIO 2026-08-29] --announce-h reserva el alto de la barra fija de promo y
+       empuja navbar + contenido. 0 cuando la barra esta cerrada. */
+    :host { --announce-h: 0px; }
+    :host(.has-announce) { --announce-h: 42px; }
+    @media (max-width: 640px) { :host(.has-announce) { --announce-h: 40px; } }
+
     /* ===== NAVBAR ===== */
     .navbar {
       position: fixed;
-      top: 1.5rem;
+      top: calc(1.5rem + var(--announce-h, 0px));
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
@@ -1501,11 +1813,15 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       z-index: 1000;
       padding: 0.6rem 1.5rem;
       transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1), background-color 0.4s ease, border-color 0.4s ease, padding 0.4s ease, top 0.4s ease, box-shadow 0.4s ease;
-      background: rgba(255, 255, 255, 0.72); /* Glassmorphism premium equilibrado */
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      /* RENDIMIENTO (2026-08-29): tenia backdrop-filter: blur(20px). Un backdrop-filter
+         sobre un elemento position: fixed obliga al navegador a releer y desenfocar lo que
+         hay detras EN CADA FRAME mientras la pagina scrollea -- el peor caso conocido en
+         GPU movil, y aqui aplicaba a todo el recorrido del home. Se sustituye por un fondo
+         translucido mas opaco: como el fondo de la pagina es #fafafa, la diferencia visual
+         es minima y el costo por frame pasa a ser cero. */
+      background: rgba(255, 255, 255, 0.92);
       border-radius: 999px;
-      border: 1px solid rgba(133, 92, 214, 0.16); /* Borde sutil de marca */
+      border: 2px solid #cbd5e1; /* Mismo contorno que las tarjetas de "¿Por qué EstudiaUni?" (.bento-card) */
       box-shadow: 
         0 10px 30px rgba(133, 92, 214, 0.04),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -1522,10 +1838,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       pointer-events: none;
     }
     .navbar.scrolled {
-      top: 1rem;
+      top: calc(1rem + var(--announce-h, 0px));
       padding: 0.5rem 1.5rem;
       background: rgba(255, 255, 255, 0.88); /* Transición armónica y sutil en scroll, sin saltos de color */
-      border-color: rgba(133, 92, 214, 0.22);
+      border-color: #cbd5e1;
       box-shadow: 
         0 12px 30px rgba(133, 92, 214, 0.08), 
         0 1px 3px rgba(0, 0, 0, 0.02),
@@ -1648,8 +1964,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       align-items: center;
       gap: 0.85rem;
       padding: 0.5rem 1.2rem;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.94);
       border: 1.5px solid rgba(133, 92, 214, 0.4);
       border-radius: 9999px;
       cursor: pointer;
@@ -1808,28 +2123,35 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       opacity: 0.95;
       will-change: transform;
     }
+    /* RENDIMIENTO (2026-08-29): tenia filter: blur(130px) ADEMAS del radial-gradient de
+       abajo, que ya aporta toda la caida suave -- el desenfoque era practicamente
+       redundante, pero se pagaba en cada frame sobre dos cajas de 550 y 500 px. Y como el
+       hero NO lleva content-visibility (a proposito, esta sobre la linea de flotacion),
+       seguia costando aunque el usuario estuviera abajo del todo. Se quitan el blur, el
+       pulse-slow infinito y el will-change; el parallax por JS que escribe transform se
+       conserva, que sobre un elemento sin filtro es practicamente gratis. */
     .hero-glow-blob {
       position: absolute;
       border-radius: 50%;
-      filter: blur(130px);
       opacity: 0.55;
-      will-change: transform;
     }
     .hero-blob-purple {
       width: 550px;
       height: 550px;
-      background: radial-gradient(circle, rgba(133, 92, 214, 0.48) 0%, rgba(133, 92, 214, 0) 70%);
+      background: radial-gradient(circle, rgba(133, 92, 214, 0.48) 0%, rgba(133, 92, 214, 0.2) 40%, rgba(133, 92, 214, 0) 72%);
       top: -150px;
       left: -150px;
-      animation: pulse-slow 8s ease-in-out infinite alternate;
+      /* OJO: NO animar transform aca. El parallax de onScroll() escribe style.transform sobre
+         este mismo elemento, y una animacion CSS le gana a un estilo inline (las animaciones
+         estan por encima del autor en la cascada), asi que el parallax dejaria de verse. El
+         movimiento ambiental de esta zona lo aportan las .amb-dot y la deriva de la cuadricula. */
     }
     .hero-blob-blue {
       width: 500px;
       height: 500px;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.17) 40%, rgba(59, 130, 246, 0) 72%);
       top: 220px;
       right: -100px;
-      animation: pulse-slow 12s ease-in-out infinite alternate-reverse;
     }
     .floating-symbol {
       position: absolute;
@@ -1837,7 +2159,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       font-weight: 300;
       color: var(--accent-primary);
       opacity: 0.02;
-      will-change: opacity, filter;
+      /* RENDIMIENTO (2026-08-29): antes era 'will-change: opacity, filter' y los keyframes
+         de mas abajo animaban 'filter: blur(3px) -> blur(0)'. Animar 'filter' NO se puede
+         componer: son 8 elementos repintando en el hilo principal, cada frame, para siempre.
+         Los keyframes ahora animan solo opacity, que si es compositable. */
+      will-change: opacity;
       pointer-events: none;
       user-select: none;
     }
@@ -1902,25 +2228,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       animation: symbol-fade-pulse-4 8s ease-in-out infinite;
       animation-delay: 4.5s;
     }
-    @keyframes pulse-slow {
-      0% { transform: scale(1); opacity: 0.5; }
-      100% { transform: scale(1.12); opacity: 0.65; }
-    }
     @keyframes symbol-fade-pulse-1 {
-      0%, 100% { opacity: 0.02; filter: blur(3px); }
-      50% { opacity: 0.30; filter: blur(0px); }
+      0%, 100% { opacity: 0.02; }
+      50% { opacity: 0.30; }
     }
     @keyframes symbol-fade-pulse-2 {
-      0%, 100% { opacity: 0.02; filter: blur(3px); }
-      50% { opacity: 0.24; filter: blur(0px); }
+      0%, 100% { opacity: 0.02; }
+      50% { opacity: 0.24; }
     }
     @keyframes symbol-fade-pulse-3 {
-      0%, 100% { opacity: 0.02; filter: blur(3px); }
-      50% { opacity: 0.28; filter: blur(0px); }
+      0%, 100% { opacity: 0.02; }
+      50% { opacity: 0.28; }
     }
     @keyframes symbol-fade-pulse-4 {
-      0%, 100% { opacity: 0.02; filter: blur(3px); }
-      50% { opacity: 0.26; filter: blur(0px); }
+      0%, 100% { opacity: 0.02; }
+      50% { opacity: 0.26; }
     }
 
     .hero-section {
@@ -1940,12 +2262,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       display: grid;
       grid-template-columns: 0.92fr 1.08fr;
       gap: 4.5rem;
-      /* start (no end): con las columnas alineadas al fondo, la columna izquierda (más baja
-         que la derecha) quedaba empujada hacia abajo por la diferencia de alturas, así que las
-         2 píldoras superiores (estudiantes activos / descuento) terminaban ~84px más abajo que
-         el borde superior de la tarjeta animada de la derecha aunque el padding-top de arriba
-         fuera chico. Con "start" ambas columnas arrancan a la misma altura. */
-      align-items: start;
+      /* [HERO ADELGAZADO 2026-08-29] era 'start' para que las 2 pildoras superiores quedaran a la
+         altura del borde de la tarjeta. Como esas pildoras se movieron a .hero-strip, la columna
+         izquierda quedo corta y con 'start' dejaba mucho aire abajo en escritorio -> 'center'
+         para que se equilibre contra la tarjeta de simulacion. REVERTIR: volver a 'start'. */
+      align-items: center;
       width: 100%;
       max-width: 1320px;
       padding: 0 2rem;
@@ -1975,7 +2296,6 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       font-weight: 600;
       padding: 0.35rem 0.85rem;
       border-radius: 999px;
-      backdrop-filter: blur(10px);
       box-shadow: 0 2px 12px rgba(16, 185, 129, 0.08);
       white-space: nowrap;
       flex-shrink: 0;
@@ -2084,7 +2404,6 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       font-weight: 500;
       padding: 0.32rem 0.8rem;
       border-radius: 999px;
-      backdrop-filter: blur(12px);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       white-space: nowrap;
     }
@@ -2219,6 +2538,52 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       line-height: 1.2;
     }
 
+    /* ╔══ FRANJA POST-HERO (2026-08-29, definitivo) — CSS. REVERTIR: borrar este bloque entero. ══╗
+       Banda que recibe .hero-top-badges + .hero-benefits-bar sacados del hero. */
+    .hero-strip {
+      position: relative;
+      z-index: 2;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+    .hero-strip-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.15rem;
+      padding: 1.4rem 1.75rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 10px 34px rgba(133, 92, 214, 0.05);
+    }
+    .hero-strip .hero-top-badges {
+      margin: 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-strip .hero-benefits-bar {
+      padding: 0;
+      max-width: 780px;
+      gap: 1.25rem;
+    }
+    @media (max-width: 900px) {
+      .hero-strip { padding: 1.5rem 1rem 0.75rem; }
+      .hero-strip-inner { padding: 1.15rem 1.1rem; gap: 0.9rem; border-radius: 16px; }
+    }
+    @media (max-width: 640px) {
+      /* En telefono los 3 chips van en fila compacta (icono + titulo), sin la descripcion,
+         para que la franja no crezca de mas. */
+      .hero-strip .hero-benefits-bar { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .hero-strip .benefit-chip { flex-direction: column; gap: 0.35rem; text-align: center; }
+      .hero-strip .chip-info { text-align: center; align-items: center; }
+      .hero-strip .chip-info span { display: none; }
+      .hero-strip .chip-icon img { width: 38px; height: 38px; }
+      .hero-strip .chip-info strong { font-size: 0.78rem; }
+    }
+    /* ╚══ fin FRANJA POST-HERO (CSS) ══╝ */
+
     /* ===== SOCIAL PROOF ROW (centered above the hero CTA buttons) ===== */
     .hero-cta-group {
       /* inline-flex se encoge al ancho de su contenido (shrink-to-fit), así que "align-items:
@@ -2263,22 +2628,55 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       font-size: 0.72rem;
       letter-spacing: 1px;
     }
-    .proof-text span {
+    .proof-text > span {
       font-size: 0.78rem;
       color: #4b5563;
       font-weight: 600;
     }
+    /* [CONTADOR EN VIVO 2026-08-29] linea de actividad en vivo, fusionada con la fila de
+       estrellas del hero. El punto verde pulsa (solo opacity/transform -> compositor). */
+    .proof-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .proof-live strong {
+      color: #047857;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .proof-live-dot {
+      position: relative;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      flex-shrink: 0;
+    }
+    /* Anillo que late: SOLO transform + opacity (compositor), nada de animar box-shadow. */
+    .proof-live-dot::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.4);
+      animation: proof-live-pulse 2s ease-out infinite;
+    }
+    @keyframes proof-live-pulse {
+      0%   { transform: scale(1); opacity: 0.7; }
+      70%  { transform: scale(3.2); opacity: 0; }
+      100% { transform: scale(3.2); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .proof-live-dot::after { animation: none; }
+    }
 
     /* ===== SIMULATION CARD ENHANCEMENTS ===== */
     .hero-sim-card {
-      /* 840px dejaba ~72px de aire muerto abajo: el contenido real (con la animación del demo
-         del tutor IA ciclando por sus 5 pasos) nunca pasa de ~764px, medido en vivo a lo largo
-         de varios ciclos completos (rango real: 742-764px). 768px es el mínimo que cubre el
-         paso más alto de la animación sin recortar nada, y además deja el borde inferior de
-         esta tarjeta prácticamente a la misma altura que el borde inferior de
-         .hero-benefits-bar (la tarjeta de la izquierda) — antes las dos terminaban 72px
-         desalineadas. */
-      min-height: 768px;
+      /* El contenido real (con la animación del demo del tutor IA ciclando por sus 5 pasos)
+         variaba en 742-764px; con la nota al pie ".sim-card-footnote" (2 líneas, ~44px) sube a
+         ~810px. min-height fija el piso para que la tarjeta no dé saltitos de altura al ciclar. */
+      min-height: 812px;
       box-sizing: border-box;
     }
     .hero-sim-card.glass-card {
@@ -2298,19 +2696,37 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       flex: 1;
       min-width: 0;
     }
+    /* Badge del preview del hero: dice "SIMULACIÓN" a proposito (antes "ENSAYO PAES" + punto
+       verde parecia una sesion real en curso). Color de marca, no verde "en vivo". */
     .sim-badge-live {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #059669;
+      background: rgba(133, 92, 214, 0.1);
+      border: 1px solid rgba(133, 92, 214, 0.3);
+      color: #7c3aed;
       font-size: 0.72rem;
       font-weight: 800;
       padding: 0.2rem 0.6rem;
       border-radius: 999px;
       letter-spacing: 0.04em;
       white-space: nowrap;
+    }
+    .sim-badge-live .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #7c3aed;
+      flex-shrink: 0;
+    }
+    .sim-card-footnote {
+      margin: 0.75rem 0 0;
+      padding-top: 0.6rem;
+      border-top: 1px dashed rgba(133, 92, 214, 0.2);
+      font-size: 0.7rem;
+      line-height: 1.4;
+      color: #9ca3af;
+      text-align: center;
     }
     .sim-subject-pill {
       display: inline-block;
@@ -2346,11 +2762,18 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       overflow: hidden;
       margin-bottom: 0.9rem;
     }
+    /* RENDIMIENTO (2026-08-29): antes se animaba 'width' (via [style.width] + transition: width).
+       Animar width dispara LAYOUT en cada frame de la transicion, cada vez que cambia el ejercicio
+       de la simulacion (~cada 9 s) y para siempre mientras el hero este a la vista. Con scaleX()
+       sobre un ancho fijo del 100%, el mismo efecto corre en la GPU. transform-origin: left es
+       imprescindible: sin el, la barra crecerian desde el centro hacia los dos lados. */
     .sim-progress-bar-fill {
       height: 100%;
+      width: 100%;
+      transform-origin: left center;
       background: linear-gradient(90deg, #855cd6, #3b82f6);
       border-radius: 999px;
-      transition: width 0.6s ease;
+      transition: transform 0.6s ease;
     }
 
     .sim-question-box {
@@ -2383,7 +2806,16 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       background: #fafafa;
       font-size: 0.84rem;
       color: #374151;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      /* RENDIMIENTO (2026-08-29): era 'transition: all'. El estado .selected cambia
+         'font-weight: 600', y al estar incluido en 'all' el navegador lo INTERPOLA -- animar
+         font-weight dispara LAYOUT en cada frame de la transicion, sobre las 4 opciones, en cada
+         ciclo de la simulacion del hero (~cada 9 s) y para siempre mientras el hero este a la
+         vista. Listando las propiedades reales, el font-weight cambia de golpe (imperceptible) y
+         solo se interpolan color/borde/fondo/transform. */
+      transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .sim-opt-key {
       width: 22px;
@@ -2761,125 +3193,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       border-radius: 999px;
     }
 
-    /* THE DOME */
-    .hero-stats {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 5rem;
-      margin-top: 2rem;
-      margin-bottom: 5rem;
-      padding: 0 2rem;
-    }
-
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.6s ease;
-    }
-    .hero-stats.is-visible .stat-item {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .hero-stats.is-visible .stat-item:nth-child(1) { transition-delay: 0.1s; }
-    .hero-stats.is-visible .stat-item:nth-child(2) { transition-delay: 0.3s; }
-    .hero-stats.is-visible .stat-item:nth-child(3) { transition-delay: 0.5s; }
-
-    .stat-icon {
-      width: 60px;
-      height: 60px;
-      background: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      border: 2px solid rgba(0, 0, 0, 0.05);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-      animation: stat-float 4s ease-in-out infinite;
-    }
-    
-    .stat-item:nth-child(2) .stat-icon { animation-delay: 1.3s; }
-    .stat-item:nth-child(3) .stat-icon { animation-delay: 2.6s; }
-    
-    @keyframes stat-float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .stat-text {
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      gap: 0.1rem;
-    }
-
-    .stat-number {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #111827;
-      line-height: 1;
-      letter-spacing: -0.02em;
-    }
-
-    .stat-label {
-      font-size: 0.8rem;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-weight: 700;
-    }
-
-    /* ===== LOGOS CAROUSEL ===== */
-    .logos-section {
-      padding: 4rem 0;
-      overflow: hidden;
-      background: var(--bg-color);
-      border-top: 2px solid var(--glass-border);
-      border-bottom: 2px solid var(--glass-border);
-    }
-    .logos-title {
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 1.5rem;
-    }
-    .footer-brand .nav-logo {
-      font-size: 2.1rem;
-      margin-bottom: 0.5rem;
-    }
-    .logos-carousel {
-      position: relative;
-      width: 100%;
-      overflow: hidden;
-    }
-    .logos-track {
-      display: flex;
-      gap: 4rem;
-      animation: scroll-logos 30s linear infinite;
-      width: max-content;
-    }
-    .logo-item {
-      font-family: var(--font-heading);
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      opacity: 0.6;
-      transition: opacity 0.3s;
-    }
-    .logo-item:hover { opacity: 1; }
-    @keyframes scroll-logos {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(calc(-100% / 3 * 1)); }
-    }
+    /* CSS ELIMINADO (2026-08-29): bloques cuyas clases no existen en la plantilla de
+       este componente -- verificado con grep sobre el template. Incluian animaciones
+       infinitas que nunca se veian (stat-float, scroll-logos 30s) y 2 backdrop-filter.
+       Al ir en 'styles: []' de un componente prerenderizado, beasties los embebia como
+       CSS critico dentro del index.html (206 KB), asi que se descargaban en cada visita. */
     @keyframes fadeInDown {
       from { opacity: 0; transform: translateY(-14px); }
       to { opacity: 1; transform: translateY(0); }
@@ -3226,73 +3544,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       margin: 0 auto;
     }
 
-    .video-card {
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      border: 2px solid var(--glass-border);
-      background: white;
-    }
-
-    .video-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-hover);
-      border-color: var(--accent-primary);
-    }
-
-    .video-placeholder {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 9 / 16;
-      background: linear-gradient(135deg, #e0f2fe, #dbeafe);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-bottom: 2px solid var(--glass-border);
-    }
-
-    .play-icon {
-      width: 60px;
-      height: 60px;
-      background: var(--accent-primary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: white;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 0 #6b46b8;
-    }
-
-    .video-card:hover .play-icon {
-      background: #6b46b8;
-      transform: scale(1.1);
-      box-shadow: 0 2px 0 #5a3a9a;
-    }
-
-    .video-card h3 {
-      padding: 1.5rem 1.5rem 0.5rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #fff;
-      line-height: 1.4;
-    }
-
-    .video-card p {
-      padding: 0 1.5rem 1.5rem;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
 
     /* ===== TESTIMONIALS ===== */
     .testimonials-section {
       padding: 8rem 0;
       position: relative;
       overflow: hidden;
-      background: linear-gradient(to bottom, #ffffff 0%, rgba(133, 92, 214, 0.03) 25%, rgba(255, 255, 255, 0.95) 75%, #ffffff 100%);
+      background: linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(133, 92, 214, 0.03) 25%, rgba(255,255,255,0.42) 75%, rgba(255,255,255,0.55) 100%);
     }
     .testimonials-section .section-title {
       text-align: center;
@@ -3311,7 +3569,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       z-index: 2;
       padding: 0 1.5rem;
     }
-    
+
     /* Elementos del Lienzo SVG Reactivo */
     .nebula-glow {
       transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3351,7 +3609,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       stroke-dashoffset: 340;
       animation: success-stream-flow 7s linear infinite;
       opacity: 0.45;
-      filter: drop-shadow(0 2px 5px rgba(133, 92, 214, 0.15));
+      /* RENDIMIENTO (2026-08-29): tenia un drop-shadow. Combinado con la animacion infinita de
+         stroke-dashoffset de abajo, obligaba a re-rasterizar el filtro en cada frame. Se quita el
+         filtro y se conserva el efecto de "estrella fugaz", que sobre 3 lineas rectas simples es
+         barato por si solo. */
     }
     .stream-1 { animation-delay: 0s; animation-duration: 5s; }
     .stream-2 { animation-delay: 1.5s; animation-duration: 6.5s; }
@@ -3364,9 +3625,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       100% { stroke-dashoffset: 0; opacity: 0; }
     }
     .testimonial-card {
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: rgba(255, 255, 255, 0.9);
       border: 1.5px solid rgba(133, 92, 214, 0.08);
       border-radius: 24px;
       padding: 2.2rem;
@@ -3405,6 +3664,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       border: 2px solid rgba(133, 92, 214, 0.35);
       box-shadow: 0 20px 45px rgba(133, 92, 214, 0.08);
       transform: scale(1.03);
+    }
+    /* RENDIMIENTO (2026-08-29): antes esta tarjeta animaba 'box-shadow' de forma infinita
+       (@keyframes featured-card-breath). Animar box-shadow obliga a un repintado completo
+       en cada frame, para siempre. El resplandor pasa a vivir en un ::after con la sombra
+       FIJA, y lo unico que se anima es su opacity -- que si se puede componer en la GPU.
+       Visualmente es el mismo latido. (::before ya estaba ocupado por la barra de gradiente
+       superior, por eso se usa ::after.) */
+    .testimonial-card.featured::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: -1;
+      box-shadow: 0 20px 45px rgba(133, 92, 214, 0.18), 0 0 15px rgba(133, 92, 214, 0.15);
       animation: featured-card-breath 4s ease-in-out infinite alternate;
     }
     .testimonial-card.featured::before {
@@ -3416,8 +3690,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       box-shadow: 0 30px 65px rgba(133, 92, 214, 0.18);
     }
     @keyframes featured-card-breath {
-      0% { box-shadow: 0 20px 45px rgba(133, 92, 214, 0.08); }
-      100% { box-shadow: 0 20px 45px rgba(133, 92, 214, 0.18), 0 0 15px rgba(133, 92, 214, 0.15); }
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
     .featured-capsule {
       position: absolute;
@@ -3498,7 +3772,12 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       line-height: 1.65;
       font-size: 0.98rem;
       margin-bottom: 2rem;
-      font-style: italic;
+      /* SIN font-style: italic. Inter/Outfit se auto-hostean SOLO en su version 'normal'
+         (ver los 4 @font-face de styles.css, todos font-style: normal); no hay archivo italico.
+         'italic' obligaba al navegador a inclinar los glifos a mano (faux italic): espaciado
+         irregular y, sobre todo, un temblor/borrosidad al desplazarse que hacia casi ilegible
+         el texto en el carrusel en movimiento. El de noticias no lo sufria porque su texto ya
+         era 'normal'. Las comillas del propio testimonio ya lo marcan como cita. */
     }
     
     /* ===== SCORE LEAP DASHBOARD ===== */
@@ -3614,13 +3893,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       text-align: center;
       position: relative;
       overflow: hidden;
-      background: linear-gradient(to bottom, #ffffff 0%, rgba(133, 92, 214, 0.04) 30%, rgba(255, 255, 255, 0.95) 70%, #ffffff 100%);
+      background: linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(133, 92, 214, 0.04) 30%, rgba(255,255,255,0.42) 70%, rgba(255,255,255,0.55) 100%);
       transition: background 1.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     /* Estado Dorado de Ahorro Anual Activo */
     .pricing-section.yearly-active {
-      background: linear-gradient(to bottom, #ffffff 0%, rgba(245, 158, 11, 0.07) 30%, rgba(255, 255, 255, 0.95) 70%, #ffffff 100%);
+      background: linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(245, 158, 11, 0.07) 30%, rgba(255,255,255,0.42) 70%, rgba(255,255,255,0.55) 100%);
     }
     
     /* Título transiciona a dorado */
@@ -3673,14 +3952,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     }
 
     /* Constellation Dynamic Orbits */
+    /* RENDIMIENTO (2026-08-29): estas 2 orbitas rotaban de forma infinita, y .orbit-outer es un
+       circulo de r=450 con stroke-dasharray -- rotar un trazo punteado obliga a re-teselar el path
+       en cada frame. Congeladas; el cambio de color al pasar a anual (transition: stroke) se
+       conserva, que es la parte que el usuario si percibe. */
     .pricing-orbit {
       transform-origin: 720px 300px;
-      animation: spin-pricing-orbit 40s linear infinite;
       transition: stroke 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .orbit-outer {
-      animation-duration: 60s;
-      animation-direction: reverse;
     }
     
     /* Cambiar órbitas a dorado en modo anual */
@@ -3691,9 +3969,6 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       stroke: rgba(245, 158, 11, 0.25) !important;
     }
 
-    @keyframes spin-pricing-orbit {
-      100% { transform: rotate(360deg); }
-    }
 
     /* Interactive Energy Nodes & Technical Pings */
     .pricing-tech-node circle {
@@ -3723,89 +3998,131 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       100% { transform: scale(0.8); opacity: 0; }
     }
     
-    /* Toggle Anual/Mensual */
-    .billing-toggle-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 1rem;
-      background: rgba(133, 92, 214, 0.05);
-      border: 1px solid rgba(133, 92, 214, 0.1);
-      padding: 0.4rem;
-      border-radius: 99px;
-      margin-bottom: 2.2rem;
+    /* ===== Selector Mensual/Anual (rediseño v4 2026-08-29) =====
+       UNA sola pastilla con contorno continuo + un divisor central fino -> se lee como "dos
+       segmentos conectados", sin las 3 piezas sueltas que tenia v3.
+       - .billing-fill: relleno que se desliza de un lado al otro. Lleva un contorno mas OSCURO
+         que su propio relleno (lo que pedia el diseño), y una sombra de color.
+       - Contorno de la pastilla: neutro en reposo, se tiñe hacia el color activo (asi el lado
+         no elegido se "apaga" visualmente).
+       - Movimiento: Web Animations API (animateBillingFill) -> translateX + un leve estiron
+         (scaleX) a mitad de camino = efecto liquido. Cero libreria, solo transform (compositor).
+       Capas (isolation:isolate): 0 divisor · 1 relleno · 2 textos · 3 badge. */
+    .billing-toggle {
+      --bt-purple: #855cd6;
+      --bt-purple-dark: #5b21b6;
+      --bt-gold: #f59e0b;
+      --bt-gold-dark: #b45309;
+      --bt-track: #eef0f4;
+      --bt-line: #cbd0da;
+
       position: relative;
-      z-index: 5;
-    }
-    .billing-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      font-weight: 700;
-      padding: 0.5rem 1.2rem;
-      cursor: pointer;
-      border-radius: 99px;
-      transition: all 0.3s ease;
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      align-items: stretch;
+      width: 340px;
+      max-width: 100%;
+      height: 48px;
+      padding: 4px;
+      border-radius: 999px;
+      background: var(--bt-track);
+      border: 2px solid var(--bt-line);
+      box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.06);
+      z-index: 6;
+      isolation: isolate;
+      transition: border-color 0.45s ease, background-color 0.45s ease;
     }
-    .billing-btn.active {
-      color: white;
-      background: var(--accent-primary);
-      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.3);
-      transition: background 1.2s ease, box-shadow 1.2s ease;
-    }
-    
-    /* Active Button en modo anual */
-    .pricing-section.yearly-active .billing-btn.active {
-      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45) !important;
+    .billing-toggle:not(.yearly) { border-color: rgba(133, 92, 214, 0.5); }
+    .billing-toggle.yearly       { border-color: rgba(245, 158, 11, 0.55); }
+
+    /* Divisor central: la linea fina que hace leer "2 segmentos". Detras del relleno. */
+    .billing-divider {
+      position: absolute;
+      top: 11px;
+      bottom: 11px;
+      left: 50%;
+      width: 2px;
+      margin-left: -1px;
+      border-radius: 2px;
+      background: var(--bt-line);
+      z-index: 0;
+      pointer-events: none;
     }
 
-    .billing-switch {
-      width: 58px;
-      height: 28px;
-      background: rgba(133, 92, 214, 0.15);
-      border-radius: 99px;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.3s ease, background 1.2s ease;
-    }
-    
-    /* Switch en modo anual */
-    .pricing-section.yearly-active .billing-switch {
-      background: rgba(245, 158, 11, 0.25) !important;
-    }
-    .billing-switch-handle {
+    /* Relleno deslizante. En reposo lo coloca el CSS (translateX 0 / 100%); el cambio lo anima
+       animateBillingFill con la Web Animations API (no lleva transition de transform para no
+       pelear con esa animacion). El contorno es mas oscuro que el relleno, como pedia el diseño. */
+    .billing-fill {
       position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 22px;
-      height: 22px;
-      background: white;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc(50% - 8px);
+      border-radius: 999px;
+      background: var(--bt-purple);
+      border: 2px solid var(--bt-purple-dark);
+      box-shadow: 0 4px 12px rgba(133, 92, 214, 0.35);
+      z-index: 1;
+      pointer-events: none;
+      transform: translateX(0);
+      transform-origin: center;
+      transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
     }
-    .discount-pill {
-      font-size: 0.72rem;
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: white;
-      padding: 0.15rem 0.5rem;
-      border-radius: 99px;
+    .billing-toggle.yearly .billing-fill {
+      transform: translateX(calc(100% + 8px));
+      background: var(--bt-gold);
+      border-color: var(--bt-gold-dark);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .billing-opt {
+      position: relative;
+      z-index: 2;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0 0.6rem;
+      font-family: inherit;
+      font-size: 1.04rem;
+      font-weight: 700;
+      line-height: 1;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      background: transparent;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.3s ease 0.06s;
+    }
+    .billing-opt:not(.active):hover { color: #374151; }
+    .billing-opt--monthly.active,
+    .billing-opt--yearly.active { color: #fff; }
+
+    .billing-save {
+      position: absolute;
+      top: -16px;
+      right: -12px;
+      z-index: 3;
+      font-size: 0.74rem;
       font-weight: 800;
-      animation: gold-pulse 2s infinite ease-in-out;
-    }
-    @keyframes gold-pulse {
-      0% { transform: scale(1); opacity: 0.95; }
-      50% { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.95; }
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 0.3rem 0.62rem;
+      border-radius: 8px;
+      background: var(--bt-gold);
+      color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.55);
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto auto;
       gap: 2.2rem;
       max-width: 820px;
       margin: 0 auto;
@@ -3813,15 +4130,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       position: relative;
       z-index: 5;
     }
+    /* Escritorio: el selector se sube a su propia fila, centrado arriba de las dos tarjetas. */
+    .pricing-grid > .billing-toggle {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      justify-self: center;
+      margin-bottom: 0.4rem;
+    }
+    .pricing-grid > .pricing-card { grid-row: 2; }
     .pricing-card {
       padding: 1.8rem 1.6rem;
       border-radius: 24px;
       text-align: left;
       position: relative;
       border: 1px solid rgba(133, 92, 214, 0.08);
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: rgba(255, 255, 255, 0.9);
       box-shadow: 0 15px 35px rgba(133, 92, 214, 0.01);
       display: flex;
       flex-direction: column;
@@ -4084,6 +4407,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     /* ===== CTA SECTION ===== */
     .cta-section {
       padding: 4rem 2rem;
+      /* Necesarios para el .ambient-bg que se le agrego (2026-08-29): sin position: relative el
+         fondo absoluto se anclaria a la seccion anterior, y sin overflow: hidden la rejilla y las
+         lineas se saldrian de la seccion. */
+      position: relative;
+      overflow: hidden;
     }
     .cta-content {
       max-width: 800px;
@@ -4114,6 +4442,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       padding: 3rem 2rem;
       text-align: center;
       background: var(--bg-secondary);
+      position: relative;
+      overflow: hidden;
     }
     .footer-content {
       max-width: 1200px;
@@ -4200,51 +4530,38 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       width: 100%;
       height: 100%;
     }
-    /* Nebulosas del fondo FAQ */
+    /* ==================================================================
+       RENDIMIENTO (2026-08-29): el fondo decorativo del FAQ, CONGELADO
+       ==================================================================
+       Esta seccion era la peor del home: el usuario reportaba ~1 fps en un telefono real.
+       El dibujo SVG de .faq-flow-bg traia 6 animaciones infinitas y NINGUN media query que
+       las apagara en movil:
+
+         - 2 nebulosas con faq-nebula-morph (transform + opacity, 25 s).
+         - 2 orbitas de r=420 y r=540 rotando 80 s / 100 s con stroke-dasharray: rotar un
+           trazo punteado obliga a re-teselar el path en cada frame, y como el SVG se estira
+           con preserveAspectRatio="none", en movil esos circulos son enormes.
+         - 2 satelites con faq-sat-pulse BAJO filter="url(#faq-glow-filter)", que es un
+           feGaussianBlur: el filtro se re-rasteriza en CADA frame mientras la seccion este
+           en pantalla. Ese era el cuello de botella principal.
+
+       Se conserva el dibujo entero (nebulosas, orbitas, satelites, cruces) y se eliminan
+       solo las animaciones y los will-change. El feGaussianBlur deja de importar en cuanto
+       no se anima: se rasteriza una sola vez y queda cacheado. Visualmente la seccion se ve
+       igual, solo quieta. Si alguna vez se le quiere devolver el movimiento, hay que hacerlo
+       FUERA del subarbol con filtro y sin animar stroke-dasharray. */
     .faq-nebula {
-      animation: faq-nebula-morph 25s infinite alternate ease-in-out;
-      will-change: transform, opacity;
       transform-origin: center;
+      opacity: 0.9;
     }
-    .faq-nebula.nebula-2 {
-      animation-delay: -8s;
-    }
-    @keyframes faq-nebula-morph {
-      0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
-      50% { transform: translate(-30px, 40px) scale(1.15); opacity: 1; }
-      100% { transform: translate(40px, -20px) scale(0.9); opacity: 0.8; }
-    }
-    /* Rotación de órbitas técnicas */
-    .faq-orbit-1 {
-      animation: faq-spin-clockwise 80s linear infinite;
-      transform-origin: 720px 300px;
-      will-change: transform;
-    }
-    .faq-orbit-2 {
-      animation: faq-spin-counter 100s linear infinite;
-      transform-origin: 720px 300px;
-      will-change: transform;
-    }
-    @keyframes faq-spin-clockwise {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    @keyframes faq-spin-counter {
-      from { transform: rotate(360deg); }
-      to { transform: rotate(0deg); }
-    }
-    /* Satélites de red neuronal */
     .faq-satellite {
-      animation: faq-sat-pulse 4s infinite ease-in-out alternate;
       transform-origin: center;
-      will-change: transform, opacity;
+      animation: faq-sat-pulse 4s infinite ease-in-out alternate;
     }
-    .faq-satellite.sat-2 {
-      animation-delay: -2s;
-    }
+    .faq-satellite.sat-2 { animation-delay: -2s; }
     @keyframes faq-sat-pulse {
-      0% { opacity: 0.3; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1.2); }
+      0%   { opacity: 0.35; transform: scale(0.85); }
+      100% { opacity: 1;    transform: scale(1.25); }
     }
     .faq-container {
       display: flex;
@@ -4267,40 +4584,64 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       background: white;
       border: 2px solid #cbd5e1;
       border-radius: var(--border-radius);
-      transition: all 0.3s ease;
+      /* El .glass-card global de styles.css mete padding: 2.5rem; en el acordeon eso son 40px de
+         aire muerto por lado (arriba/abajo x7 items = ~560px). La pregunta y la respuesta ya
+         traen su propio padding, asi que aca va en 0. */
+      padding: 0;
+      /* RENDIMIENTO: era 'transition: all', que vuelve candidata a transicionar CUALQUIER
+         propiedad que cambie, incluidas las que fuerzan layout. Se listan las 3 reales. */
+      transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     }
     .faq-item.glass-card {
       border: 2px solid #cbd5e1;
+      padding: 0;
     }
     .faq-item:hover {
       border-color: rgba(133, 92, 214, 0.4);
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(133, 92, 214, 0.08);
     }
+    .faq-item.active {
+      border-color: rgba(133, 92, 214, 0.45);
+    }
     .faq-question {
       width: 100%;
       text-align: left;
-      padding: 1.5rem;
+      padding: 1.35rem 1.5rem;
       background: none;
       border: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 1rem;
       cursor: pointer;
       font-family: var(--font-heading);
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 700;
       color: var(--text-primary);
+      transition: color 0.3s ease;
     }
+    .faq-item.active .faq-question {
+      color: var(--accent-primary);
+    }
+    /* Icono en chip circular: +/- dentro de un circulo suave que se rellena de morado al abrir.
+       Le da a la lista un aspecto de acordeon prolijo y consistente con el resto del home. */
     .faq-icon {
       color: var(--accent-primary);
-      transition: transform 0.3s ease;
+      transition: background 0.3s ease, color 0.3s ease;
       display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
-      margin-left: 1rem;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(133, 92, 214, 0.09);
     }
+    .faq-icon svg { width: 19px; height: 19px; }
     .faq-item.active .faq-icon {
-      transform: rotate(180deg);
+      background: var(--accent-primary);
+      color: #fff;
     }
     .faq-answer-container {
       display: grid;
@@ -4372,6 +4713,31 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     .news-track::-webkit-scrollbar {
       display: none; /* Chrome/Safari */
     }
+    /* Barra de progreso del carrusel de noticias (desktop/tablet). Solo aparece cuando hay
+       suficientes noticias para que el carrusel se pueda desplazar (JS le pone .has-overflow).
+       En <=640px la seccion pasa a marquee agarrable en bucle y se oculta siempre. */
+    .news-scroll-indicator {
+      display: none;
+      position: relative;
+      width: min(240px, 45%);
+      height: 5px;
+      margin: 1.5rem auto 0;
+      background: rgba(133, 92, 214, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      z-index: 2;
+    }
+    .news-scroll-indicator.has-overflow { display: block; }
+    .news-scroll-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 33%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #855cd6, #3b82f6);
+      transition: left 0.15s ease-out, width 0.15s ease-out;
+    }
     .news-card {
       flex: 0 0 calc(33.333% - 1.34rem);
       min-width: 320px;
@@ -4380,16 +4746,16 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       flex-direction: column;
       border-radius: 20px;
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
       border: 2px solid #cbd5e1;
       transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
     .news-card.glass-card {
       border: 2px solid #cbd5e1;
     }
-    .news-scroll-indicator {
+    /* Clones del marquee de telefono: fuera de <=640px no existen visualmente. */
+    .news-card[aria-hidden="true"],
+    .testimonial-card[aria-hidden="true"] {
       display: none;
     }
     .news-card:hover {
@@ -4460,12 +4826,16 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     .news-meta {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.15rem 0.5rem;
       font-size: 0.8rem;
       color: var(--text-muted);
       margin-bottom: 0.75rem;
       font-weight: 600;
     }
+    /* Fuente y fecha nunca parten a media palabra ("El\nMostrador"): si no caben en una linea,
+       la fecha baja entera a la siguiente. */
+    .news-source, .news-date { white-space: nowrap; }
     .news-dot {
       color: rgba(133, 92, 214, 0.3);
     }
@@ -4603,10 +4973,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       
       /* Difuminación perfecta a blanco en extremos superior e inferior */
       background: linear-gradient(to bottom, 
-        #ffffff 0%, 
+        rgba(255, 255, 255, 0.55) 0%, 
         rgba(133, 92, 214, 0.05) 20%, 
-        rgba(255, 255, 255, 0.95) 75%, 
-        #ffffff 100%
+        rgba(255, 255, 255, 0.42) 75%, 
+        rgba(255, 255, 255, 0.55) 100%
       );
       transition: background 1.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -4615,10 +4985,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       --theme-glow: rgba(133, 92, 214, 0.15);
       --theme-accent: #3b82f6;
       background: linear-gradient(to bottom, 
-        #ffffff 0%, 
+        rgba(255, 255, 255, 0.55) 0%, 
         rgba(133, 92, 214, 0.05) 20%, 
-        rgba(255, 255, 255, 0.95) 75%, 
-        #ffffff 100%
+        rgba(255, 255, 255, 0.42) 75%, 
+        rgba(255, 255, 255, 0.55) 100%
       );
     }
     .videos-section.theme-tab-1 {
@@ -4626,10 +4996,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       --theme-glow: rgba(6, 182, 212, 0.15);
       --theme-accent: #1d4ed8;
       background: linear-gradient(to bottom, 
-        #ffffff 0%, 
+        rgba(255, 255, 255, 0.55) 0%, 
         rgba(6, 182, 212, 0.05) 20%, 
-        rgba(255, 255, 255, 0.95) 75%, 
-        #ffffff 100%
+        rgba(255, 255, 255, 0.42) 75%, 
+        rgba(255, 255, 255, 0.55) 100%
       );
     }
     .videos-section.theme-tab-2 {
@@ -4637,10 +5007,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       --theme-glow: rgba(16, 185, 129, 0.15);
       --theme-accent: #a855f7;
       background: linear-gradient(to bottom, 
-        #ffffff 0%, 
+        rgba(255, 255, 255, 0.55) 0%, 
         rgba(16, 185, 129, 0.05) 20%, 
-        rgba(255, 255, 255, 0.95) 75%, 
-        #ffffff 100%
+        rgba(255, 255, 255, 0.42) 75%, 
+        rgba(255, 255, 255, 0.55) 100%
       );
     }
     .videos-section .section-title {
@@ -4695,13 +5065,17 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       display: block;
     }
     
+    /* RENDIMIENTO (2026-08-29): este <g> rotaba 360 grados de forma infinita y contiene, ademas
+       de 2 circulos con stroke-dasharray (r=200 y r=440), 3 circulos con filter="url(#neon-glow)"
+       -- un feGaussianBlur. Rotar el grupo obligaba a RE-TESELAR los trazos punteados y a
+       RE-RASTERIZAR el filtro gaussiano en cada frame, todo el tiempo que la seccion estuviera en
+       pantalla. Era el tiron de la seccion de videos.
+
+       A 140 s por vuelta la rotacion avanza 2,6 grados por segundo: es practicamente
+       imperceptible, asi que congelarla no cambia nada que se note y elimina de golpe las dos
+       cosas caras. */
     .videos-orbit-rotate-container {
       transform-origin: 740px 300px;
-      animation: videos-slow-bg-rotate 140s linear infinite;
-    }
-    @keyframes videos-slow-bg-rotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
     
     .orb-group {
@@ -4749,8 +5123,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       gap: 1.2rem;
     }
     .tab-btn {
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.9);
       border: 2px solid #cbd5e1;
       border-radius: 20px;
       padding: 1.6rem;
@@ -4794,6 +5167,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       font-weight: 800;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    /* La etiqueta corta ("Ruta", "Ensayos", "Tutor IA") solo se usa en telefono; ver @media 640. */
+    .tab-txt-short { display: none; }
     .tab-btn:hover {
       background: rgba(255, 255, 255, 0.9);
       border-color: var(--theme-primary);
@@ -4806,6 +5181,19 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       border: 2.5px solid var(--theme-primary);
       transform: translateX(16px) scale(1.03) !important;
       font-weight: 800;
+      box-shadow: 0 15px 35px var(--theme-glow);
+    }
+    /* RENDIMIENTO (2026-08-29): antes esta pestaña animaba 'box-shadow' de forma infinita, lo que
+       repinta en cada frame mientras la seccion de videos este a la vista. El resplandor pasa a un
+       ::after con la sombra FIJA y se anima solo su opacity, que si se compone en GPU. Mismo
+       arreglo que se hizo con .testimonial-card.featured. */
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: 0 0 16px var(--theme-primary);
       animation: active-tab-pulse 1.8s ease-in-out infinite alternate;
     }
     .tab-btn.active .tab-number {
@@ -4815,12 +5203,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     }
     
     @keyframes active-tab-pulse {
-      0% {
-        box-shadow: 0 15px 35px var(--theme-glow), 0 0 0px var(--theme-primary);
-      }
-      100% {
-        box-shadow: 0 15px 35px var(--theme-glow), 0 0 16px var(--theme-primary);
-      }
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
     }
     
     /* Indicador tipo flecha elegante apuntando hacia la tarjeta */
@@ -4852,10 +5236,30 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       overflow: visible;
       
       /* Transiciones suaves de entrada + estados de interacción */
-      transition: 
+      transition:
         opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
         transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
       transition-delay: 0.3s;
+    }
+    /* Flechita que conecta la pestaña elegida con el borde superior del video. Solo se usa en la
+       fila compacta de telefono (<=640px); en desktop las pestañas van al costado y ya existe
+       .active-indicator apuntando de lado. La X la fija --sel-x segun activeTab (16.66 / 50 /
+       83.33%, centro de cada chip) y transiciona suave al cambiar de pestaña. */
+    .tab-content::after {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: var(--sel-x, 50%);
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 10px solid var(--theme-primary);
+      z-index: 6;
+      opacity: 0;
+      pointer-events: none;
+      transition: left 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
     }
     .tab-pane {
       display: flex;
@@ -4901,154 +5305,28 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     .tab-exam-wrapper { background: linear-gradient(135deg, #e0e7ff, #ede9fe); }
     .tab-chat-wrapper { background: linear-gradient(135deg, #dcfce7, #dbeafe); }
 
-    /* ===== MOCKUPS INTERACTIVOS PREMIUM ===== */
-    
-    /* 1. MOCKUP VIDEO PLAYER (PREHOLDER) */
-    .mock-video-player {
-      position: absolute;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(16px);
-      border-radius: 27px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .mock-video-player:hover {
-      background: rgba(255, 255, 255, 0.35);
-      border-color: rgba(255, 255, 255, 0.55);
-    }
-    
-    /* Botón Play central con doble aro y brillo continuo */
-    .video-play-btn {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: var(--theme-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 10px 25px var(--theme-glow);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      z-index: 5;
-    }
-    .video-play-btn::before {
-      content: '';
-      position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      border: 2.5px solid var(--theme-primary);
-      opacity: 0.5;
-      animation: play-btn-ring-pulse 2s infinite linear;
-    }
-    @keyframes play-btn-ring-pulse {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(1.18); opacity: 0; }
-    }
-    .play-arrow {
-      font-size: 1.6rem;
-      color: white;
-      margin-left: 4px; /* Centrado visual exacto del triángulo */
-      transition: transform 0.3s;
-    }
-    .mock-video-player:hover .video-play-btn {
-      transform: scale(1.1);
-      box-shadow: 0 15px 35px var(--theme-glow);
-    }
-    .mock-video-player:hover .play-arrow {
-      transform: scale(1.08);
-    }
-    
-    /* Barra de controles inferior glassmórfica */
-    .video-controls-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15, 15, 25, 0.7);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 0.8rem 1.2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.2rem;
-      z-index: 6;
-      transform: translateY(0);
-      transition: transform 0.3s ease;
-    }
-    .controls-left, .controls-right {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
-    .control-icon {
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.85);
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .control-icon:hover {
-      color: var(--theme-primary);
-    }
-    .control-time {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.6);
-      font-family: monospace;
-    }
-    
-    /* Timeline del reproductor de video */
-    .controls-timeline {
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
-    .timeline-track {
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 99px;
-      position: relative;
-      cursor: pointer;
-    }
-    .timeline-fill {
-      height: 100%;
-      background: var(--theme-primary);
-      border-radius: 99px;
-    }
-    .timeline-handle {
-      position: absolute;
-      top: 50%;
-      width: 10px;
-      height: 10px;
-      background: white;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      transition: transform 0.1s;
-    }
-    .timeline-track:hover .timeline-handle {
-      transform: translate(-50%, -50%) scale(1.3);
-    }
     
     @media (max-width: 900px) {
       .tabs-container { flex-direction: column; gap: 2rem; }
       .tab-btn.active { transform: none !important; }
       .active-indicator { display: none; }
-      /* En layout apilado, .tab-content/.tab-pane pierden una altura definida, así que el video
-         (height: 100% inline) colapsa a su tamaño intrínseco. Al posicionarlo en absoluto se ajusta
-         siempre al tamaño real de .tab-visual (que sí tiene min-height), sin depender de esa cadena. */
+      /* El video es 16:9 (800x450). En movil, .tab-visual traia min-height: 520px -> como el box
+         quedaba casi cuadrado, object-fit: cover recortaba ~60% del alto del video (se perdia casi
+         toda la demo). Se cambia a aspect-ratio 16/9: el frame completo se ve, sin recorte, y la
+         seccion pierde ~290px de alto. */
+      .tab-visual {
+        min-height: 0;
+        aspect-ratio: 16 / 9;
+        border-radius: 20px;
+      }
+      /* Con .tab-pane sin altura definida en el layout apilado, el video (height:100% inline)
+         colapsaria; en absoluto llena el .tab-visual (que ahora tiene su ratio). */
       .tab-visual .real-video-player {
         position: absolute;
         inset: 0;
         width: 100%;
         height: 100%;
+        object-fit: cover;
       }
     }
 
@@ -5113,7 +5391,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     
     /* ===== FOOTER NEW ===== */
     .footer {
-      background-color: #ffffff;
+      /* Translucido (2026-08-29) para dejar ver la cuadricula continua de .home-container::before.
+         OJO: hay 4 reglas .footer en este archivo y esta es la que gana (va mas abajo en la hoja,
+         con la misma especificidad). Cambiar el fondo en la de mas arriba no tiene ningun efecto. */
+      background-color: rgba(255, 255, 255, 0.55);
       border-top: 1px solid var(--glass-border);
       padding: 4rem 2rem 2rem;
       position: relative;
@@ -5198,15 +5479,24 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         gap: 2.5rem 2rem;
       }
     }
+    /* Footer en telefono/tablet: la columna de marca ocupa todo el ancho arriba y los 3 grupos
+       de enlaces se reparten debajo en una fila pareja (3 col), luego 2 col en pantallas muy
+       angostas. Tipografia e interlineado mas compactos para que no se estire de mas. */
     @media (max-width: 768px) {
       .footer {
         padding: 3rem 1.25rem 1.5rem;
       }
       .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem 1.5rem;
-        margin-bottom: 2.5rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.75rem 1.5rem;
+        margin-bottom: 2.25rem;
       }
+      .footer-col:first-child {
+        grid-column: 1 / -1;
+      }
+      .footer-desc { max-width: 460px; font-size: 0.9rem; }
+      .footer-col h4 { font-size: 0.98rem; margin-bottom: 0.9rem; }
+      .footer-col a { font-size: 0.88rem; margin-bottom: 0.65rem; }
       .footer-bottom {
         flex-direction: column;
         align-items: flex-start;
@@ -5217,13 +5507,28 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       }
     }
     @media (max-width: 480px) {
+      .footer {
+        padding: 2.5rem 1.15rem 1.25rem;
+      }
+      /* Pantallas muy angostas: la marca a todo el ancho y los 3 grupos de enlaces en 2 columnas
+         (el 3ro queda solo en su fila, patron habitual de footer). Interlineado mas apretado. */
       .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem 1rem;
+        margin-bottom: 1.75rem;
       }
       .footer-desc {
         max-width: 100%;
       }
+      .footer-col h4 { margin-bottom: 0.75rem; }
+      .footer-col a { margin-bottom: 0.5rem; font-size: 0.85rem; }
+      /* El 3er grupo a todo el ancho como cierre, en vez de solo en media fila con hueco al lado. */
+      .footer-col:last-child {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--glass-border);
+        padding-top: 1.3rem;
+      }
+      .footer-col:last-child a { display: inline-block; margin-right: 1.5rem; }
     }
 
     /* ===== FOCO SECTION ===== */
@@ -5342,7 +5647,6 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       left: 50%;
       transform: translateX(-50%) translateY(15px) scale(0.85);
       background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(10px);
       border: 2px solid var(--accent-primary);
       border-radius: 20px;
       padding: 0.9rem 1.4rem;
@@ -5450,8 +5754,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       transform: translateY(0) !important;
     }
     .foco-benefit-item.is-visible:hover {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.92);
       border-color: rgba(133, 92, 214, 0.15);
       box-shadow: 0 10px 25px rgba(133, 92, 214, 0.05);
       transform: translateX(12px) !important; /* Elegant 2D sliding that matches Foco's magnetic pull */
@@ -5507,11 +5810,27 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     @media (max-width: 992px) {
       .foco-container {
         grid-template-columns: 1fr;
+        /* En 1 columna, .foco-content se disuelve (display:contents) y el grid pasa a tener 4
+           filas (gif, titulo, beneficios, tip). El gap de 6rem del escritorio dejaba ~288px de
+           aire muerto entre ellas -> aca baja a 2rem. */
+        gap: 2rem;
         text-align: center;
       }
-      .foco-title { text-align: center; }
+      /* Titulo ("Conoce a Foco") + subtitulo ARRIBA del gif; luego beneficios; el tip del plan
+         gratuito al final. display:contents disuelve .foco-content para poder ordenar sus hijos
+         con 'order' (.foco-content no tiene estilos propios, es seguro). */
+      .foco-content { display: contents; }
+      /* El gap del grid (2rem) ya separa las filas -> se anulan los margin-bottom propios que
+         antes sumaban ~90px extra. */
+      .foco-header { order: -1; margin-bottom: 0; }
+      .foco-benefits { order: 1; margin-bottom: 0; gap: 1.25rem; }
+      .freemium-tip { order: 2; }
+      /* El h2 es display:flex (inline style), asi que 'text-align' no centra sus hijos:
+         hace falta justify-content. flex-wrap:center para cuando "Conoce a Foco" + la insignia
+         "IA Activa" pasan a dos lineas. */
+      .foco-title { text-align: center; justify-content: center; align-content: center; }
       .foco-benefit-item { text-align: left; }
-      .foco-mascot-wrapper { max-width: 350px; margin: 0 auto; }
+      .foco-mascot-wrapper { max-width: 250px; margin: 0 auto; }
       .foco-badge { right: 0; }
     }
 
@@ -5524,6 +5843,15 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       .bento-large { grid-column: span 2; }
       .testimonials-grid { grid-template-columns: 1fr; max-width: 500px; margin: 0 auto; }
       .testimonial-card.featured { transform: none; }
+      /* [FIX NAV TABLET 2026-08-29] styles.css global muestra .mobile-menu-btn desde <=1024, pero
+         los .nav-links / .nav-actions solo se ocultaban en <=768 -> entre 769 y 1024 (tablet,
+         movil horizontal) salian LOS DOS: hamburguesa + nav completa apretada ("Iniciar Sesion"
+         partido en 2 lineas). Aca se ocultan a la vez que aparece la hamburguesa. */
+      .nav-links, .nav-actions { display: none !important; }
+      /* Y el navbar deja de ser pastilla 999px: con el drawer abierto DENTRO, esa pastilla se
+         estiraba a ~400px de alto con radio 999px y quedaba una lente deforme. Aca es barra
+         redondeada como en movil. */
+      .navbar { width: min(92%, 760px); border-radius: 22px; }
     }
     @media (max-width: 992px) {
       .hero-grid {
@@ -5567,8 +5895,11 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       .proof-text {
         display: contents;
       }
-      .proof-text span {
+      /* Solo el span-linea (.proof-live), NO los spans anidados (el punto, el <strong>) — si no,
+         el .proof-live-dot de 7px se estiraba a width:100% y salia una raya verde. */
+      .proof-text > span {
         width: 100%;
+        justify-content: center;
         text-align: center;
       }
       /* A max-width:540px + margin:auto card can't actually shrink below its content's
@@ -5586,6 +5917,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         flex-wrap: wrap;
         row-gap: 0.5rem;
       }
+      /* "SIMULACIÓN" es mas largo que el viejo "ENSAYO PAES" y se pisaba con el timer. En
+         movil el header va apilado y CENTRADO: badge + materia arriba, timer + n° de pregunta
+         en su propia linea abajo. */
+      .sim-card-header { justify-content: center; }
+      .sim-header-left { flex: 1 1 100%; align-items: center; }
+      .sim-header-right { width: 100%; padding-top: 0; gap: 0.6rem; justify-content: center; }
+      .sim-badge-live { font-size: 0.68rem; padding: 0.2rem 0.5rem; letter-spacing: 0.03em; }
     }
     @media (max-width: 768px) {
       .nav-links, .nav-actions { display: none !important; }
@@ -5596,7 +5934,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         right: 0 !important;
         margin: 0 auto !important;
         transform: none !important;
-        top: 0.75rem !important;
+        top: calc(0.75rem + var(--announce-h, 0px)) !important;
         padding: 0.6rem 1rem !important;
         border-radius: 20px !important;
       }
@@ -5619,14 +5957,40 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       .hero-cta-group { margin-bottom: 3.5rem; }
       .bento-grid { grid-template-columns: 1fr; }
       .bento-large { grid-column: span 1; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; padding: 0 1.25rem; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; padding: 0 1.25rem; gap: 1.4rem; }
+      /* Movil: el selector vuelve a su sitio en el flujo, entre las tarjetas apiladas. */
+      .pricing-grid > .billing-toggle { grid-column: auto; grid-row: auto; margin: 0.7rem 0; }
+      .pricing-grid > .pricing-card { grid-row: auto; }
       .section-title { font-size: 1.85rem; }
-      /* These sections carry desktop-sized vertical padding (7rem/8rem) that reads as a huge
-         dead-space gap once stacked on a narrow phone — halve the side that borders the
-         neighboring section so the gap shrinks without touching each section's own interior spacing. */
-      .features-section { padding-top: 3.5rem; }
-      .foco-section { padding-bottom: 3rem; }
-      .videos-section { padding-top: 4rem; }
+      /* En movil las secciones apiladas traen el padding vertical de escritorio (6-8rem cada lado),
+         asi que entre dos secciones el hueco suma 12-16rem = espacio muerto enorme. Referencia
+         que gusta: pricing -> news suma ~8rem. Se recorta el padding de CADA lado que toca a un
+         vecino para dejar todos los cruces en ~8rem (y features<->foco un poco mas holgado, ~10rem),
+         sin tocar el espaciado interno de cada seccion. */
+      .features-section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+      .foco-section { padding-top: 4.5rem; padding-bottom: 3.5rem; }
+      .videos-section { padding-top: 3.5rem; padding-bottom: 4rem; }
+      .testimonials-section { padding-top: 4rem; padding-bottom: 4rem; }
+      /* padding simetrico a cada lado del cruce -> el .section-sep queda centrado en el hueco. */
+      .pricing-section { padding-bottom: 4rem; }
+      .news-section { padding-top: 4rem; padding-bottom: 4rem; }
+      .faq-section { padding-top: 4rem; padding-bottom: 4rem; }
+      .cta-section { padding-top: 4rem; }
+      /* CTA final en telefono: la tarjeta traia padding: 4rem (64px) por lado y el h2 en 2.5rem
+         -> ocupaba ~840px para un titulo + un boton. Se ajusta a algo proporcionado. */
+      .cta-content { padding: 2.25rem 1.4rem; }
+      .cta-content h2 { font-size: 1.9rem; margin-bottom: 0.75rem; }
+      .cta-content p { font-size: 1.02rem; margin-bottom: 1.5rem; }
+
+      /* FAQ compacto en telefono: acordeon mas apretado y legible (mismo criterio que el
+         layout compacto de "¿Por que EstudiaUni?"). */
+      .faq-section .section-title { margin-bottom: 2rem; }
+      .faq-container { gap: 0.6rem; padding: 0 1rem; }
+      .faq-item { border-radius: 16px; }
+      .faq-question { padding: 1rem 1.1rem; font-size: 1rem; gap: 0.75rem; }
+      .faq-icon { width: 28px; height: 28px; }
+      .faq-icon svg { width: 17px; height: 17px; }
+      .faq-answer { padding: 0 1.1rem 1.1rem; font-size: 0.9rem; line-height: 1.55; }
 
       /* Foco Speech Bubble on Mobile */
       .foco-speech-bubble {
@@ -5643,71 +6007,227 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     }
     @media (max-width: 640px) {
       .floating-symbol { display: none !important; }
-      .hero-stats { flex-direction: column; width: 100%; max-width: 300px; margin: 2rem auto 0; gap: 0.85rem; }
-      .stat-item { width: 100%; justify-content: center; padding: 0.75rem 1.25rem; }
+      /* "Mira cómo funciona" en telefono: las 3 pestañas pasan a una fila compacta de chips
+         iguales (numero + etiqueta corta), todas visibles a la vez, sin las tarjetotas apiladas. */
+      .tabs-container { gap: 0.9rem; padding: 0 1rem; }
+      /* La flechita SI se muestra aca y apunta al chip elegido (ver .tab-content::after arriba). */
+      .tab-content::after { opacity: 1; }
       .tabs-buttons {
+        flex-direction: row;
         flex-wrap: nowrap;
-        overflow-x: auto;
+        justify-content: center;
+        align-items: stretch;
+        gap: 0.5rem;
         width: 100%;
-        padding-bottom: 0.5rem;
-        justify-content: flex-start;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        padding: 0;
+        overflow: visible;
       }
-      .tabs-buttons::-webkit-scrollbar { display: none; }
-      .tab-btn { flex-shrink: 0; white-space: nowrap; font-size: 0.88rem; padding: 0.7rem 1.1rem; }
-      .news-card { min-width: 85vw; max-width: 85vw; }
-      .news-carousel-container { padding: 0 0.5rem; }
-      .news-scroll-indicator {
-        display: block;
-        position: relative;
-        width: min(160px, 40%);
-        height: 5px;
-        margin: 0.75rem auto 0;
-        background: rgba(133, 92, 214, 0.15);
-        border-radius: 999px;
-        overflow: hidden;
+      .tab-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 0.7rem 0.35rem;
+        border-radius: 14px;
+        border-width: 1.5px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        text-align: center;
+        box-shadow: none;
       }
-      .news-scroll-thumb {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 33%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #855cd6, #3b82f6);
-        will-change: left, width;
+      .tab-btn .tab-number {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        font-size: 0.78rem;
       }
+      .tab-btn.active {
+        transform: none !important;
+        box-shadow: 0 8px 18px var(--theme-glow);
+      }
+      .tab-btn.active::after { animation: none; opacity: 1; }
+      .tab-txt-full { display: none; }
+      .tab-txt-short { display: inline; }
+      /* La entrada por defecto desliza en X (-35px); en la fila compacta se ve raro -> subida corta. */
+      .videos-section:not(.is-visible) .tab-btn { transform: translateY(14px); }
       .bento-card { padding: 1.5rem 1.25rem; }
       .roadmap-visual { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+
+      /* ================================================================
+         CARRUSELES DE TELEFONO: marquee AGARRABLE (noticias + testimonios)
+         ================================================================
+         El track es un scroll-container real con las tarjetas TRIPLICADAS (newsLoop /
+         testimoniosLoop). setupGrabbableMarquee() le suma scrollLeft cada frame y lo recentra
+         1/3 del ancho al cruzar los bordes -> bucle sin salto ("sale por un lado y entra por el
+         otro"). Como el avance es scroll nativo, el usuario puede arrastrar/deslizar cuando
+         quiera; mientras lo hace el avance se pausa y se reanuda ~1,6 s despues. El rAF solo
+         corre con la seccion en pantalla (leer scrollLeft de un subarbol con content-visibility
+         saltado forzaria render). Con "reducir movimiento" el JS no arranca: queda scroll manual. */
+      .news-carousel-container { padding: 0; }
+      /* Los clones (aria-hidden) SI se muestran aca: son las otras 2/3 del track. */
+      .news-card[aria-hidden="true"],
+      .testimonial-card[aria-hidden="true"] { display: flex; }
+      .news-card,
+      .testimonial-card {
+        flex: 0 0 84vw;
+        max-width: 84vw;
+        min-width: 0;
+        margin-right: 1.25rem;
+        scroll-snap-align: none;
+      }
+      .news-track,
+      .testimonials-grid {
+        display: flex;
+        grid-template-columns: none;
+        gap: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
+        padding: 1.75rem 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: none;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        cursor: grab;
+        /* IMPRESCINDIBLE: .news-track trae scroll-behavior: smooth de su regla base. Con eso, cada
+           scrollLeft que escribe el rAF (el avance y, sobre todo, el recentrado de 1/3 del ancho)
+           se ANIMA -> el recentrado se ve como un "rebote" que te devuelve donde estabas. En
+           instant no se nota nada. .testimonials-grid nunca tuvo smooth, por eso no rebotaba. */
+        scroll-behavior: auto;
+      }
+      .news-track:active,
+      .testimonials-grid:active { cursor: grabbing; }
+      .news-track::-webkit-scrollbar,
+      .testimonials-grid::-webkit-scrollbar { display: none; }
+      /* Marquee agarrable en bucle -> la barra de progreso no aplica (aunque JS ponga .has-overflow). */
+      .news-scroll-indicator,
+      .news-scroll-indicator.has-overflow { display: none; }
+
+      /* Las 3 tarjetas de testimonios con el MISMO contorno que la central (.featured). */
+      .testimonial-card { border: 2px solid rgba(133, 92, 214, 0.35); }
+      .testimonial-card.featured {
+        transform: none;
+        border: 2px solid rgba(133, 92, 214, 0.35);
+      }
+      .testimonial-card::before {
+        background: linear-gradient(135deg, #855cd6 0%, #f472b6 50%, #3b82f6 100%);
+        opacity: 1;
+      }
     }
+    /* "Reducir movimiento": el JS no auto-avanza -> solo 3 tarjetas, scroll manual con snap. */
+    @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+      .news-card[aria-hidden="true"],
+      .testimonial-card[aria-hidden="true"] { display: none; }
+      .news-card,
+      .testimonial-card { scroll-snap-align: start; }
+      .news-track,
+      .testimonials-grid { scroll-snap-type: x mandatory; }
+    }
+
+    /* ╔══ TESTIMONIOS ESTATICOS EN TELEFONO (2026-08-29, definitivo) ═══════════════════════════
+       Revierte SOLO los testimonios (las noticias siguen como marquee) a una grilla vertical
+       simple: 3 tarjetas apiladas, sin scroll horizontal. Va DESPUES del bloque del marquee
+       para ganarle. REVERTIR: borrar este bloque + volver el *ngFor a testimoniosLoop +
+       descomentar la llamada a setupGrabbableMarquee de testimonios. ══╗ */
+    @media (max-width: 640px) {
+      .testimonials-section { padding-top: 3rem; padding-bottom: 3rem; }
+      .testimonials-section .section-title { margin-bottom: 2rem; }
+      .testimonials-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 460px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        overflow: visible;
+        cursor: default;
+        scroll-snap-type: none;
+      }
+      .testimonial-card {
+        flex: none;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 1.3rem 1.35rem;
+        scroll-snap-align: none;
+      }
+      .testimonial-header { margin-bottom: 0.6rem; }
+      .testimonial-stars { margin-bottom: 0.6rem; }
+      .testimonial-card[aria-hidden="true"] { display: none; }
+      /* La central queda apenas destacada (fondo con tinte) para dar jerarquia sin el scale. */
+      .testimonial-card.featured {
+        transform: none;
+        background: rgba(133, 92, 214, 0.055);
+        border: 2px solid rgba(133, 92, 214, 0.4);
+      }
+      .testimonial-card.featured::after { animation: none; opacity: 0.5; }
+      .testimonial-text { font-size: 0.95rem; line-height: 1.6; }
+    }
+    /* ╚══ fin TESTIMONIOS ESTATICOS ══╝ */
+    /* ╔══ LAYOUT COMPACTO "¿Por qué EstudiaUni?" (movil) — 2026-08-29 ═══════════════════
+       Las 6 tarjetas apiladas alargaban muchisimo la seccion en telefono. Este bloque las
+       convierte en filas horizontales compactas (icono a la izquierda, titulo + descripcion
+       a la derecha) y oculta los mini-graficos decorativos .bento-visual (roadmap / examen),
+       que solo adornan y sumaban ~120px por tarjeta.
+       Para REVERTIR: borrar este bloque entero, hasta la linea "fin LAYOUT COMPACTO". ═══╗ */
+    @media (max-width: 768px) {
+      .features-section .section-title { margin-bottom: 2rem; }
+
+      .bento-grid { gap: 0.7rem; }
+
+      .bento-card {
+        display: grid;
+        grid-template-columns: 50px 1fr;
+        column-gap: 0.95rem;
+        row-gap: 0.15rem;
+        align-items: start;
+        padding: 1rem 1.05rem;
+        border-radius: 16px;
+      }
+      .bento-card .bento-icon {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        align-self: center;
+        margin: 0;
+      }
+      .bento-card .bento-icon img { width: 50px; height: 50px; }
+      .bento-card h3 {
+        grid-column: 2;
+        grid-row: 1;
+        margin: 0;
+        font-size: 1.02rem;
+        line-height: 1.3;
+      }
+      .bento-card p {
+        grid-column: 2;
+        grid-row: 2;
+        margin: 0;
+        font-size: 0.83rem;
+        line-height: 1.5;
+      }
+      .bento-card .bento-visual { display: none; }
+      /* El hover translateX descoloca la fila compacta y en movil el :hover se queda pegado
+         tras un toque; se anula solo el desplazamiento, el resto del feedback se mantiene. */
+      .bento-card:hover { transform: none; }
+    }
+    /* ╚══ fin LAYOUT COMPACTO "¿Por qué EstudiaUni?" ══════════════════════════════════════╝ */
+
     @media (max-width: 480px) {
       .navbar { padding: 0.45rem 0.75rem; }
       .nav-logo { font-size: 1.7rem; }
       .pricing-card { padding: 1.5rem 1.25rem; }
-      .billing-toggle-container {
-        gap: 0.4rem;
-        padding: 0.3rem;
-        max-width: 100%;
-      }
-      .billing-btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-        gap: 0.35rem;
-        white-space: nowrap;
-      }
-      .discount-pill {
-        font-size: 0.62rem;
-        padding: 0.12rem 0.4rem;
-      }
+      .billing-opt { padding: 0 0.4rem; font-size: 1rem; }
+      .billing-toggle { width: 300px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-badge,
       .hero-title,
       .hero-subtitle,
       .hero-actions,
-      .stat-item,
-      .mockup-container,
       .section-fade {
         opacity: 1 !important;
         transform: none !important;
@@ -5744,6 +6264,127 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       .ai-robotic-text::after {
         animation: none !important;
       }
+    }
+
+    /* ==================================================================
+       FONDO AMBIENTAL REUTILIZABLE (2026-08-29)
+       ==================================================================
+       El hero tenia rejilla + simbolos de materias + lineas animadas, y la seccion de features su
+       placa de circuito, pero el resto del home quedaba visualmente vacio -- mas todavia despues
+       de quitar los desenfoques gaussianos de testimonios/precios/FAQ. Este bloque replica ese
+       lenguaje visual en las secciones que no tenian nada, con tres piezas.
+
+       TODAS son baratas a proposito, y conviene mantenerlo asi si alguien agrega mas:
+        - .ambient-grid es CSS puro (dos linear-gradient repetidos + una mascara). Sin animacion:
+          se pinta una vez y queda cacheado.
+        - .ambient-symbol anima UNICAMENTE opacity, que el compositor si puede manejar, y esta
+          oculto por completo en <=640 px (igual que los .floating-symbol del hero), asi que en
+          telefono su costo es cero.
+        - .ambient-lines son 2 trazos rectos con stroke-dashoffset. Es la misma tecnica que la
+          placa de circuito de features; sobre lineas simples la teselacion es trivial.
+
+       ⚠️ NADA de esto lleva filter ni backdrop-filter, y ningun elemento animado vive dentro de un
+       subarbol con filtro. Ese fue exactamente el patron que hundio el FAQ a ~1 fps (ver arriba):
+       un feGaussianBlur que se re-rasteriza en cada frame porque algo encima se mueve. Si se
+       amplia este fondo, respetar esa regla. */
+    .ambient-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      /* Se desvanece arriba y abajo para que no se corte de golpe contra la seccion vecina. */
+      mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    }
+    /* .ambient-grid se elimino: la cuadricula ahora es UNA sola capa continua sobre
+       .home-container (ver .home-container::before mas arriba). Aca solo quedan los simbolos y
+       las lineas, que si son por seccion. */
+
+    /* Particulas ambientales: 6 puntos para toda la pagina, dentro del .dynamic-bg fijo.
+       Animan UNICAMENTE transform y opacity -> las mueve el compositor sin repintar. Sin filtros
+       (nada de box-shadow difuso ni blur), que es lo que las haria caras. */
+    .amb-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(133, 92, 214, 0.55) 0%, rgba(133, 92, 214, 0) 70%);
+      opacity: 0;
+    }
+    .d-1 { top: 18%; left: 12%; animation: amb-drift-a 26s ease-in-out infinite; }
+    .d-2 { top: 62%; left: 22%; animation: amb-drift-b 32s ease-in-out infinite; animation-delay: -6s; }
+    .d-3 { top: 34%; left: 78%; width: 8px; height: 8px;
+           background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, rgba(59, 130, 246, 0) 70%);
+           animation: amb-drift-a 30s ease-in-out infinite; animation-delay: -12s; }
+    .d-4 { top: 76%; left: 68%; animation: amb-drift-b 28s ease-in-out infinite; animation-delay: -18s; }
+    .d-5 { top: 48%; left: 46%; width: 5px; height: 5px;
+           background: radial-gradient(circle, rgba(244, 114, 182, 0.45) 0%, rgba(244, 114, 182, 0) 70%);
+           animation: amb-drift-a 34s ease-in-out infinite; animation-delay: -24s; }
+    .d-6 { top: 8%;  left: 58%; animation: amb-drift-b 24s ease-in-out infinite; animation-delay: -3s; }
+
+    @keyframes amb-drift-a {
+      0%   { transform: translate3d(0, 0, 0) scale(1);      opacity: 0; }
+      15%  { opacity: 0.9; }
+      50%  { transform: translate3d(40px, -60px, 0) scale(1.5); opacity: 1; }
+      85%  { opacity: 0.7; }
+      100% { transform: translate3d(-20px, -120px, 0) scale(0.8); opacity: 0; }
+    }
+    @keyframes amb-drift-b {
+      0%   { transform: translate3d(0, 0, 0) scale(0.9);    opacity: 0; }
+      20%  { opacity: 0.8; }
+      50%  { transform: translate3d(-50px, -70px, 0) scale(1.4); opacity: 1; }
+      80%  { opacity: 0.6; }
+      100% { transform: translate3d(30px, -130px, 0) scale(1); opacity: 0; }
+    }
+    /* En telefono se reducen a la mitad: siguen siendo baratas, pero no hace falta tanta. */
+    @media (max-width: 640px) {
+      .d-2, .d-4, .d-6 { display: none; }
+    }
+    .ambient-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .ambient-symbol {
+      position: absolute;
+      font-family: var(--font-heading);
+      font-weight: 300;
+      color: var(--accent-primary);
+      opacity: 0.02;
+      will-change: opacity;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .as-1 { top: 18%; left: 8%;  font-size: 2.1rem; animation: symbol-fade-pulse-1 5s ease-in-out infinite; }
+    .as-2 { top: 26%; right: 10%; font-size: 1.6rem; animation: symbol-fade-pulse-2 6.5s ease-in-out infinite; animation-delay: 1.2s; }
+    .as-3 { bottom: 22%; left: 14%; font-size: 1.5rem; animation: symbol-fade-pulse-3 7s ease-in-out infinite; animation-delay: 2.4s; }
+    .as-4 { bottom: 16%; right: 12%; font-size: 1.9rem; animation: symbol-fade-pulse-4 8s ease-in-out infinite; animation-delay: 3.6s; }
+    .as-5 { top: 52%; left: 46%; font-size: 1.4rem; animation: symbol-fade-pulse-2 6s ease-in-out infinite; animation-delay: 0.6s; }
+
+    /* Los simbolos son decoracion de escritorio: en telefono se ocultan por completo, igual que
+       los .floating-symbol del hero. Cero costo en el dispositivo que mas lo necesita. */
+    @media (max-width: 640px) {
+      .ambient-symbol { display: none !important; }
+    }
+
+    /* El fondo va en z-index 0, asi que el contenido de estas secciones necesita quedar por
+       encima explicitamente: un elemento posicionado con z-index 0 crea contexto de apilamiento y
+       se pintaria sobre el contenido en flujo normal, que no esta posicionado. */
+    .foco-section > .foco-container,
+    .news-section > .section-title,
+    .news-section > .section-subtitle-custom,
+    .news-section > .news-carousel-container,
+    .cta-section > .cta-content,
+    .footer > .footer-container {
+      position: relative;
+      z-index: 2;
     }
 
     /* ==================================================================
@@ -5799,6 +6440,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   public firestoreService = inject(FirestoreService);
   private paymentService = inject(PaymentService);
   private zone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
 
@@ -5818,11 +6460,89 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     return p?.displayName?.charAt(0).toUpperCase() || 'U';
   });
 
+  /** [CTA PEGAJOSA MOVIL 2026-08-29] visible cuando el usuario paso el hero y todavia no llega
+   *  al CTA final. Lo controlan 2 IntersectionObserver en ngAfterViewInit. REVERTIR: borrar esto,
+   *  esos observers, el <button class="home-sticky-cta"> y su CSS. */
+  showStickyCta = false;
+
+  /** [BARRA DE ANUNCIO 2026-08-29] promo "41% OFF" arriba de todo. Cerrable, se recuerda en
+   *  localStorage. En prerender se muestra (la mayoria de las visitas son nuevas). REVERTIR:
+   *  borrar esto + dismissAnnounce() + el <div class="announce-bar"> + el host binding + su CSS. */
+  showAnnounce = !this.isBrowser
+    ? true
+    : (() => { try { return localStorage.getItem('announce_41off_dismissed') !== '1'; } catch { return true; } })();
+
+  dismissAnnounce() {
+    this.showAnnounce = false;
+    if (this.isBrowser) { try { localStorage.setItem('announce_41off_dismissed', '1'); } catch {} }
+  }
+
   activeTab = 0;
   videosSectionInView = false;
   billingPeriod: 'monthly' | 'yearly' = 'monthly';
+  /** Se pone en true al primer cambio de plan (no se usa para animar, solo por si algo del CSS
+   *  quisiera distinguir "ya interactuaron"). */
+  billingSwitched = false;
+  @ViewChild('billingFill') billingFillRef?: ElementRef<HTMLElement>;
+
+  setBilling(period: 'monthly' | 'yearly') {
+    if (this.billingPeriod === period) return;
+    this.billingSwitched = true;
+    this.billingPeriod = period;
+    this.animateBillingFill(period === 'yearly' ? 1 : -1);
+  }
+
+  /** Animacion del relleno del selector Mensual/Anual, con la Web Animations API nativa
+   *  (misma idea que la sugerencia de GSAP -- ease elastico + estiramiento -- pero SIN sumar
+   *  ~23 KB de libreria: WAAPI ya viene en el navegador y solo anima transform, que es trabajo
+   *  de compositor). Corre una sola vez por clic, sobre un elemento de ~150x44 px: costo nulo.
+   *  Se salta con prefers-reduced-motion. El estado en reposo lo fija el CSS (.billing-toggle.yearly
+   *  .billing-fill), asi que al terminar la animacion el relleno queda donde debe sin fill:forwards. */
+  private billingFillAnim?: Animation;
+  private animateBillingFill(dir: 1 | -1) {
+    if (!this.isBrowser) return;
+    const el = this.billingFillRef?.nativeElement;
+    if (!el) return;
+
+    const seg = el.offsetWidth;
+    if (!seg) return;                           // seccion aun sin layout (content-visibility): no animar
+
+    if (typeof el.animate !== 'function') return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+    const travel = seg + 8;                     // = ancho del relleno + los 8px de separacion central
+    const from = dir === 1 ? 0 : travel;
+    const to   = dir === 1 ? travel : 0;
+    const overshoot = 7 * dir;                  // se pasa un pelin y vuelve (elastico)
+
+    this.zone.runOutsideAngular(() => {
+      this.billingFillAnim?.cancel();           // si venia una en curso (clics rapidos), se descarta
+      this.billingFillAnim = el.animate(
+        [
+          { transform: `translateX(${from}px) scaleX(1)`,                          offset: 0 },
+          { transform: `translateX(${(from + to) / 2 + overshoot}px) scaleX(1.14)`, offset: 0.45, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+          { transform: `translateX(${to + overshoot * 0.55}px) scaleX(0.97)`,      offset: 0.78 },
+          { transform: `translateX(${to}px) scaleX(1)`,                            offset: 1 },
+        ],
+        { duration: 520, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'none' }
+      );
+    });
+  }
 
   openFaq: number | null = null;
+  /** RENDIMIENTO (2026-08-29): las 3 filas de estrellas usaban un literal *ngFor="let s of
+   *  [1,2,3,4,5]" directamente en la plantilla. Un literal de array se re-crea con identidad
+   *  NUEVA en cada pasada de change detection, asi que ngFor volvia a diferenciar las 15
+   *  estrellas cada vez. Como constante de clase la identidad es estable y no vuelve a
+   *  diferenciar nunca. */
+  readonly estrellas = [1, 2, 3, 4, 5];
+
+  /** trackBy por indice: evita que ngFor destruya y recree nodos DOM cuando el array cambia
+   *  de identidad pero su contenido posicional es equivalente. */
+  trackByIndex = (i: number) => i;
+  /** Las noticias vienen de Firestore; si traen id se usa, si no el indice. */
+  trackByNoticia = (i: number, item: any) => item?.id ?? i;
+
   faqs = [
     {
       q: '¿Es realmente gratis?',
@@ -5897,6 +6617,55 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   ];
 
+  /** Testimonios de la seccion "Lo que dicen nuestros estudiantes". */
+  // [TESTIMONIOS: TEXTO ACORTADO 2026-08-29] las citas originales eran de ~50 palabras cada una:
+  // con la grilla estatica las tarjetas quedaban de ~340px y la seccion se iba a ~1350px. Se
+  // recortaron a ~30 palabras (mismo tono, la mejor frase de cada una). REVERTIR: restaurar los
+  // textos largos (estan en el historial de git / bitacora).
+  readonly testimonios = [
+    {
+      nombre: 'Mati',
+      rol: 'Aspirante a Ing. Civil',
+      avatar: 'assets/imagesHome/seccion opiniones/1-avatar-v1.webp',
+      alt: 'Estudiante Mati',
+      featured: false,
+      texto: '"El tutor IA es brígido: te explica al toque por qué te equivocaste en medio del ensayo, sin andar buscando en Google. Apaña caleta para entender todo."'
+    },
+    {
+      nombre: 'ValeRojas',
+      rol: 'Futura estudiante de Psicología',
+      avatar: 'assets/imagesHome/seccion opiniones/2-avatar-v1.webp',
+      alt: 'Estudiante ValeRojas',
+      featured: true,
+      texto: '"Me costaba sentarme a estudiar, pero con los simulacros interactivos se hace cero pesado. Cacha altiro lo que te cuesta y te lo hace repasar. Me pasé al premium y vale 100% la pena."'
+    },
+    {
+      nombre: 'Seba',
+      rol: 'Aspirante a Derecho',
+      avatar: 'assets/imagesHome/seccion opiniones/3-avatar-v1.webp',
+      alt: 'Estudiante Seba',
+      featured: false,
+      texto: '"Está filete. Puedo armar los miniquizzes como quiera y los minijuegos son adictivos. La recomiendo a todos los que les cueste estudiar, jaja."'
+    }
+  ];
+  /** Lista TRIPLICADA para el marquee agarrable de telefono: el track es un scroll-container real
+   *  y setupGrabbableMarquee() lo recentra por 1/3 del ancho al cruzar los bordes, dejando siempre
+   *  un juego completo de margen a cada lado para arrastrar. Los clones van con aria-hidden y en
+   *  desktop se ocultan con .testimonial-card[aria-hidden="true"] { display: none }. */
+  readonly testimoniosLoop = [...this.testimonios, ...this.testimonios, ...this.testimonios];
+
+  /** Igual que testimoniosLoop pero para las noticias, que llegan async desde Firestore. */
+  private _newsLoopCache: { src: any[]; out: any[] } = { src: [], out: [] };
+  get newsLoop(): any[] {
+    if (this._newsLoopCache.src !== this.news) {
+      this._newsLoopCache = {
+        src: this.news,
+        out: this.news.length > 1 ? [...this.news, ...this.news, ...this.news] : this.news.slice()
+      };
+    }
+    return this._newsLoopCache.out;
+  }
+
   scrollNews(direction: 'left' | 'right') {
     const container = document.querySelector('.news-track') as HTMLElement;
     if (!container) return;
@@ -5907,13 +6676,40 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
+  // ── Barra de progreso del carrusel de noticias (solo desktop/tablet, y solo si hay scroll) ──
+  private newsTrackEl: HTMLElement | null = null;
+  private newsThumbEl: HTMLElement | null = null;
+  private newsIndicatorEl: HTMLElement | null = null;
+  private newsThumbRafPending = false;
+
+  /** Sincroniza la barra con la posicion de scroll horizontal del carrusel. Solo lee/escribe
+   *  geometria del propio track, y siempre detras de un rAF (el listener de scroll dispara muchas
+   *  veces por gesto). Si el carrusel no se puede desplazar (pocas noticias), oculta la barra. */
+  private updateNewsScrollThumb = () => {
+    const track = this.newsTrackEl;
+    const thumb = this.newsThumbEl;
+    if (!track || !thumb || !track.scrollWidth) return;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    this.newsIndicatorEl?.classList.toggle('has-overflow', maxScroll > 4);
+    if (maxScroll <= 4) return;
+    const widthPct = Math.max(15, Math.min(100, (track.clientWidth / track.scrollWidth) * 100));
+    const leftPct = (track.scrollLeft / maxScroll) * (100 - widthPct);
+    thumb.style.width = widthPct + '%';
+    thumb.style.left = leftPct + '%';
+  };
+
+  private onNewsScroll = () => {
+    if (this.newsThumbRafPending) return;
+    this.newsThumbRafPending = true;
+    requestAnimationFrame(() => {
+      this.newsThumbRafPending = false;
+      this.updateNewsScrollThumb();
+    });
+  };
+
   activeStudentsCount = 767;
   private activeStudentsTimer: any = null;
 
-  count1 = 0;
-  count2 = 0;
-  count3 = 0;
-  statsAnimated = false;
   isScrolled = false;
   mobileMenuOpen = false;
   animationsReady = false;
@@ -6056,33 +6852,20 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     this.focoMessage = messages[Math.floor(Math.random() * messages.length)];
     this.showFocoBubble = true;
 
-    setTimeout(() => {
+    // Antes este setTimeout no se guardaba en ningun lado, asi que no habia forma de
+    // cancelarlo en ngOnDestroy: podia dispararse contra un componente ya destruido.
+    if (this.focoBubbleTimer) clearTimeout(this.focoBubbleTimer);
+    this.focoBubbleTimer = setTimeout(() => {
       this.showFocoBubble = false;
+      this.cdr.markForCheck();
     }, 5000);
   }
 
 
-  animateCounters() {
-    if (this.statsAnimated) return;
-    this.statsAnimated = true;
-    this.animateValue('count1', 0, 5000, 2000);
-    this.animateValue('count2', 0, 1000, 2000);
-    this.animateValue('count3', 0, 95, 2000);
-  }
-
-  animateValue(prop: string, start: number, end: number, duration: number) {
-    let startTimestamp: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      (this as any)[prop] = Math.floor(easeProgress * (end - start) + start);
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  }
+  // CODIGO ELIMINADO (2026-08-29): animateCounters()/animateValue() eran un bucle de
+  // requestAnimationFrame que solo se disparaba al ver un elemento .hero-stats -- una clase
+  // que NO existe en esta plantilla. Sus 3 propiedades (count1/2/3) tampoco estaban ligadas
+  // a nada. Camino muerto completo, junto con su CSS.
 
   // Hero Live Interactive SaaS Simulation Dataset & State Machine
   heroSimExercises = [
@@ -6157,6 +6940,20 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   private destroyed = false;
   private globalListeners: Array<{ target: EventTarget; type: string; handler: EventListener; options?: any }> = [];
 
+  /** Todos los IntersectionObserver de este componente, para desconectarlos en ngOnDestroy.
+   *  Antes se creaban 3 y ninguno se desconectaba: seguian vivos tras destruir el componente. */
+  private observers: IntersectionObserver[] = [];
+  /** Desengancha el parallax de la mascota de Foco (mousemove/mouseleave en document). Solo
+   *  existe si el dispositivo tiene puntero fino; ver ngAfterViewInit. */
+  private desengancharParallaxFoco: (() => void) | null = null;
+  /** Debounce de la clase .is-scrolling. Antes era una variable local del listener y por lo
+   *  tanto no se podia cancelar en ngOnDestroy. */
+  private scrollEndTimer: any = null;
+  /** setTimeout que oculta la burbuja de Foco. Mismo problema que el anterior. */
+  private focoBubbleTimer: any = null;
+  /** El hero se pausa cuando sale de pantalla (ver ngAfterViewInit). */
+  private heroAnimacionesActivas = false;
+
   /** Registers a window/document listener and remembers it so ngOnDestroy can remove it —
    *  these are added via zone.runOutsideAngular() and otherwise outlive this component. */
   private registerGlobalListener(target: EventTarget, type: string, handler: EventListener, options?: any) {
@@ -6175,8 +6972,42 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.heroSimExercises[this.heroSimIndex];
   }
 
+  /** El 'progress' del ejercicio viene como cadena de porcentaje ('28%'); la barra lo aplica como
+   *  scaleX (0-1) en vez de como width, para no disparar layout en cada frame. Ver el CSS de
+   *  .sim-progress-bar-fill. */
+  get simProgressFraction(): number {
+    const pct = parseFloat(this.currentSimExercise?.progress ?? '0');
+    return isNaN(pct) ? 0 : Math.max(0, Math.min(1, pct / 100));
+  }
+
   startHeroSimulation() {
+    this.heroAnimacionesActivas = true;
     this.runHeroSimCycle();
+  }
+
+  /** RENDIMIENTO (2026-08-29): el hero no lleva content-visibility, asi que su simulacion
+   *  (cadena infinita de setTimeout + un typewriter de 32 ms que re-entra a la zona de Angular)
+   *  seguia corriendo aunque el usuario estuviera al final de la pagina. Se pausa al salir de
+   *  pantalla y se reanuda al volver; lo dispara un IntersectionObserver en ngAfterViewInit. */
+  private pausarAnimacionesHero() {
+    if (!this.heroAnimacionesActivas) return;
+    this.heroAnimacionesActivas = false;
+    if (this.heroSimTypingTimer) { clearInterval(this.heroSimTypingTimer); this.heroSimTypingTimer = null; }
+    if (this.heroSimCycleTimer) { clearTimeout(this.heroSimCycleTimer); this.heroSimCycleTimer = null; }
+    this.heroSimTimeouts.forEach(h => clearTimeout(h));
+    this.heroSimTimeouts = [];
+    if (this.activeStudentsTimer) { clearInterval(this.activeStudentsTimer); this.activeStudentsTimer = null; }
+  }
+
+  private reanudarAnimacionesHero() {
+    if (this.heroAnimacionesActivas || this.destroyed) return;
+    this.heroAnimacionesActivas = true;
+    this.zone.run(() => {
+      this.runHeroSimCycle();
+      this.updateActiveStudentsCount();
+      this.arrancarIntervaloEstudiantes();
+      this.cdr.markForCheck();
+    });
   }
 
   /** setTimeout wrapper that tracks the handle and no-ops after ngOnDestroy, so the
@@ -6197,17 +7028,22 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.heroSimTypingTimer) clearInterval(this.heroSimTypingTimer);
     if (this.heroSimCycleTimer) clearTimeout(this.heroSimCycleTimer);
 
+    this.cdr.markForCheck();
+
     // Step 1 (t = 2.2s): Select Option
     this.heroSimCycleTimer = this.trackedTimeout(() => {
       this.heroSimStep = 1;
+      this.cdr.markForCheck();
 
       // Step 2 (t = 3.8s): Analyzing Response
       this.trackedTimeout(() => {
         this.heroSimStep = 2;
+        this.cdr.markForCheck();
 
         // Step 3 (t = 5.2s): Start Typewriter
         this.trackedTimeout(() => {
           this.heroSimStep = 3;
+          this.cdr.markForCheck();
           const fullText = this.currentSimExercise.explanation;
           let charIdx = 0;
           // Runs outside Angular's zone so the ~30fps character tick doesn't force a
@@ -6219,8 +7055,11 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
               if (charIdx < fullText.length) {
                 this.heroSimTypedText += fullText.charAt(charIdx);
                 charIdx++;
-                if (charIdx % 3 === 0 || charIdx === fullText.length) {
-                  this.zone.run(() => {});
+                // Con OnPush basta con marcar el componente: ya no hace falta una pasada de CD
+                // global. Se sube de cada 3 caracteres a cada 4 para repintar ~8 veces/s en vez
+                // de ~10, que a 32 ms por caracter sigue leyendose como escritura fluida.
+                if (charIdx % 4 === 0 || charIdx === fullText.length) {
+                  this.zone.run(() => this.cdr.markForCheck());
                 }
               } else {
                 clearInterval(this.heroSimTypingTimer);
@@ -6228,6 +7067,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
                   // Step 4 (t = +1s): Show Concept Pill
                   this.trackedTimeout(() => {
                     this.heroSimStep = 4;
+                    this.cdr.markForCheck();
 
                     // Step 5 (t = +3.2s): Transition to next exercise
                     this.trackedTimeout(() => {
@@ -6280,15 +7120,36 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.heroSimCycleTimer) clearTimeout(this.heroSimCycleTimer);
     this.heroSimTimeouts.forEach(h => clearTimeout(h));
     this.heroSimTimeouts = [];
+    // Estos dos no se limpiaban: eran variables locales de sus manejadores.
+    if (this.scrollEndTimer) clearTimeout(this.scrollEndTimer);
+    if (this.focoBubbleTimer) clearTimeout(this.focoBubbleTimer);
+    // Los IntersectionObserver tampoco se desconectaban nunca.
+    this.observers.forEach(o => o.disconnect());
+    this.observers = [];
+    this.marqueeStops.forEach(stop => stop());
+    this.marqueeStops = [];
+    if (this.desengancharParallaxFoco) this.desengancharParallaxFoco();
     this.removeGlobalListeners();
   }
 
   startActiveStudentsFluctuation() {
     this.updateActiveStudentsCount();
-    this.activeStudentsTimer = setInterval(() => {
-      const change = Math.floor((Math.random() - 0.47) * 9);
-      this.activeStudentsCount = Math.max(115, this.activeStudentsCount + change);
-    }, 5000);
+    this.arrancarIntervaloEstudiantes();
+  }
+
+  private arrancarIntervaloEstudiantes() {
+    if (this.activeStudentsTimer) clearInterval(this.activeStudentsTimer);
+    // Corre fuera de la zona: antes este setInterval provocaba una pasada COMPLETA de change
+    // detection cada 5 segundos, para siempre, solo para mover un contador del hero. Ahora
+    // marca el componente explicitamente, que con OnPush es todo lo que hace falta.
+    this.zone.runOutsideAngular(() => {
+      this.activeStudentsTimer = setInterval(() => {
+        if (this.destroyed) return;
+        const change = Math.floor((Math.random() - 0.47) * 9);
+        this.activeStudentsCount = Math.max(115, this.activeStudentsCount + change);
+        this.zone.run(() => this.cdr.markForCheck());
+      }, 5000);
+    });
   }
 
   updateActiveStudentsCount() {
@@ -6323,6 +7184,8 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       const data = await this.firestoreService.getNews();
       if (data && data.length > 0) {
         this.news = data;
+        this.cdr.markForCheck();
+        // Las tarjetas cambian -> el ancho del track cambia -> re-medir la barra de progreso.
         if (this.isBrowser) requestAnimationFrame(() => this.updateNewsScrollThumb());
       }
     } catch (e) {
@@ -6330,20 +7193,116 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
-  private newsTrackEl: HTMLElement | null = null;
-  private newsThumbEl: HTMLElement | null = null;
+  /** Marquee "agarrable" de un carrusel de telefono. `track` es un scroll-container real con las
+   *  tarjetas TRIPLICADAS; cada frame le sumamos scrollLeft y, al alejarse del centro, lo
+   *  recentramos por 1 juego (los tres son identicos -> el salto es invisible). El movimiento es
+   *  scroll nativo, asi que el usuario puede arrastrarlo cuando quiera: se detecta comparando la
+   *  posicion real contra la que escribimos nosotros; mientras el usuario lo mueve el avance se
+   *  pausa y se reanuda ~400 ms despues de que suelta. El avance NO se pausa al mirarlo ni al
+   *  hacer hover: solo al arrastrarlo. El rAF corre unicamente mientras la seccion esta cerca del
+   *  viewport (leer scrollLeft de un subarbol con content-visibility saltado forzaria render, y
+   *  ademas asi no gasta recursos cuando no se ve). */
+  private marqueeStops: Array<() => void> = [];
+  private setupGrabbableMarquee(sectionSelector: string, trackSelector: string, cardSelector: string, speedPxPerFrame: number) {
+    const section = document.querySelector(sectionSelector);
+    const track = document.querySelector(trackSelector) as HTMLElement | null;
+    if (!section || !track) return;
 
-  /** Keeps the mobile news-carousel indicator bar in sync with horizontal scroll position. */
-  private updateNewsScrollThumb = () => {
-    const track = this.newsTrackEl;
-    const thumb = this.newsThumbEl;
-    if (!track || !thumb || !track.scrollWidth) return;
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    const widthPct = Math.max(15, Math.min(100, (track.clientWidth / track.scrollWidth) * 100));
-    const leftPct = maxScroll > 0 ? (track.scrollLeft / maxScroll) * (100 - widthPct) : 0;
-    thumb.style.width = widthPct + '%';
-    thumb.style.left = leftPct + '%';
-  };
+    const mqMobile = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 640px)') : null;
+    const mqReduce = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const isMobile = () => !mqMobile || mqMobile.matches;
+    const reduced = () => !!mqReduce && mqReduce.matches;
+
+    let raf = 0;
+    let acc = 0;
+    let paused = false;
+    let resumeTimer: any = null;
+    let setWidth = 0;
+    let expected = -1;          // ultimo scrollLeft que escribimos nosotros
+    let nearViewport = false;
+    let listenersOn = false;
+
+    // Ancho EXACTO de un juego de tarjetas: distancia real entre el inicio del 1er clon y el 1ro
+    // original. Dividir scrollWidth/3 acumula error de subpixel y hace que el recentrado se note.
+    const measure = () => {
+      const all = Array.from(track.querySelectorAll(cardSelector)) as HTMLElement[];
+      const n = all.filter(c => !c.hasAttribute('aria-hidden')).length;
+      setWidth = (n > 0 && all.length >= n * 2)
+        ? all[n].offsetLeft - all[0].offsetLeft
+        : track.scrollWidth / 3;
+    };
+    const setScroll = (v: number) => { track.scrollLeft = v; expected = track.scrollLeft; };
+
+    const tick = () => {
+      if (setWidth > 0) {
+        // Recentrado invisible: los tres juegos son identicos, sumar/restar uno deja el mismo
+        // pixel. Banda ancha (~1 juego de recorrido a cada lado) para que un arrastre normal
+        // nunca lo dispare visiblemente.
+        if (track.scrollLeft < setWidth * 0.35) setScroll(track.scrollLeft + setWidth);
+        else if (track.scrollLeft > setWidth * 1.65) setScroll(track.scrollLeft - setWidth);
+        if (!paused && !reduced()) {
+          acc += speedPxPerFrame;
+          if (acc >= 1) { const step = Math.floor(acc); setScroll(track.scrollLeft + step); acc -= step; }
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    // Si la posicion real se aleja de la que escribimos nosotros, es el usuario moviendolo
+    // (arrastre, inercia, rueda horizontal): se pausa el avance y se reanuda 400 ms despues de
+    // que se estabilice. Un scroll vertical de la pagina o un hover no tocan scrollLeft -> no pausa.
+    const onUserScroll = () => {
+      if (expected >= 0 && Math.abs(track.scrollLeft - expected) > 3) {
+        paused = true;
+        if (resumeTimer) clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(() => { paused = false; }, 400);
+      }
+    };
+
+    const attachListeners = () => {
+      if (listenersOn) return;
+      listenersOn = true;
+      this.registerGlobalListener(track, 'scroll', onUserScroll, { passive: true });
+    };
+
+    // Arranca/detiene el rAF segun si la seccion esta cerca del viewport Y estamos en telefono
+    // (en desktop el track no es un carrusel). Idempotente; measure() solo con la seccion visible.
+    const sync = () => {
+      // Con "reducir movimiento" el rAF no arranca: queda un carrusel de scroll manual (3 tarjetas,
+      // los clones se ocultan por CSS) y NO se recentra.
+      const wants = nearViewport && isMobile() && !reduced();
+      if (wants && !raf) {
+        this.zone.runOutsideAngular(() => {
+          measure();
+          // Arrancar en el juego del medio: un juego completo de margen para arrastrar a cada lado.
+          if (setWidth > 0 && track.scrollLeft < setWidth * 0.5) setScroll(setWidth);
+          else expected = track.scrollLeft;
+          attachListeners();
+          raf = requestAnimationFrame(tick);
+        });
+      } else if (wants && raf) {
+        measure();
+      } else if (!wants && raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = null; }
+        paused = false;
+      }
+    };
+    const stop = () => { nearViewport = false; sync(); };
+
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) { nearViewport = e.isIntersecting; }
+      sync();
+    }, { rootMargin: '120px 0px' });
+    io.observe(section);
+    this.observers.push(io);
+    // Cambiar de desktop a telefono (o al reves), o togglear "reducir movimiento", con la seccion
+    // a la vista, debe arrancar/parar el rAF.
+    this.registerGlobalListener(window, 'resize', sync, { passive: true });
+    if (mqReduce) this.registerGlobalListener(mqReduce, 'change', sync);
+    this.marqueeStops.push(stop);
+  }
 
   ngAfterViewInit() {
     // Pure DOM/visual wiring (parallax, scroll listeners, video autoplay, IntersectionObserver) —
@@ -6355,21 +7314,127 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       this.animationsReady = true;
     });
 
-    // Registrar eventos en zona externa de Angular (cero lag y sin layout thrashing)
+    const SELECTOR_REVELADO = '.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .faq-item, .news-card';
+
+    // Scroll Reveal Animation Logic (Unobserve once revealed for maximum performance)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll(SELECTOR_REVELADO).forEach(el => observer.observe(el));
+    this.observers.push(observer);
+
+    // [CTA PEGAJOSA MOVIL 2026-08-29] aparece al pasar el hero, se esconde al llegar al CTA final.
+    // REVERTIR: borrar este bloque + la propiedad showStickyCta + el <button class="home-sticky-cta">.
+    {
+      const heroEl = document.getElementById('hero');
+      const ctaEl = document.getElementById('cta');
+      let heroPassed = false;
+      let closerVisible = false;
+      const syncSticky = () => {
+        const next = heroPassed && !closerVisible;
+        if (next !== this.showStickyCta) { this.showStickyCta = next; this.cdr.markForCheck(); }
+      };
+      if (heroEl) {
+        const obsHeroPass = new IntersectionObserver(([e]) => { heroPassed = !e.isIntersecting; syncSticky(); });
+        obsHeroPass.observe(heroEl);
+        this.observers.push(obsHeroPass);
+      }
+      if (ctaEl) {
+        // Se esconde en cuanto el CTA final toca la pantalla, y NO vuelve a salir mientras sigas
+        // bajando (noticias + footer): closerVisible queda true si el CTA quedo por encima del
+        // viewport. Solo reaparece si haces scroll hacia arriba y el CTA vuelve a quedar debajo.
+        const obsCloser = new IntersectionObserver(([e]) => {
+          const vh = (e.rootBounds && e.rootBounds.height) || window.innerHeight;
+          closerVisible = e.isIntersecting || e.boundingClientRect.top < vh;
+          syncSticky();
+        }, { rootMargin: '0px 0px 120px 0px' });
+        obsCloser.observe(ctaEl);
+        this.observers.push(obsCloser);
+      }
+    }
+
+    // Red de seguridad del revelado por scroll.
+    //
+    // Las 9 secciones bajo la linea de flotacion usan content-visibility: auto. Mientras una
+    // seccion esta lejos del viewport el navegador se salta su renderizado y sus hijos no
+    // tienen caja, asi que el IntersectionObserver de arriba no puede dispararse para ellos.
+    // En la practica el navegador re-renderiza la seccion ANTES de que entre en pantalla y el
+    // observer alcanza a disparar, pero si no lo hiciera esos elementos se quedarian en
+    // opacity: 0 PARA SIEMPRE -- o sea, media landing en blanco.
+    //
+    // RENDIMIENTO (2026-08-29): esta red de seguridad estaba costando carisimo. Antes, en CADA
+    // frame de scroll y para siempre, hacia:
+    //   1. document.querySelector('.news-section') + getBoundingClientRect() INCONDICIONAL.
+    //      .news-section tiene content-visibility: auto, y medir la geometria de un subarbol
+    //      saltado OBLIGA al navegador a renderizarlo. Un reflow forzado por frame, indefinidamente.
+    //   2. Un querySelectorAll de 9 selectores sobre todo el documento, tambien cada frame.
+    //
+    // Ahora: la lista de pendientes se calcula UNA vez y se va vaciando; la comprobacion de
+    // noticias solo corre mientras no se hayan pedido; y cuando ya no queda nada por revelar el
+    // barrido se apaga solo. En una pagina ya recorrida el costo pasa a ser cero.
+    let pendientesDeRevelar: Element[] = Array.from(document.querySelectorAll(SELECTOR_REVELADO));
+    let barridoActivo = true;
+    const barrerRevelado = () => {
+      if (!barridoActivo) return;
+
+      if (!this.noticiasSolicitadas) {
+        const secNoticias = document.querySelector('.news-section');
+        if (secNoticias) {
+          const rn = secNoticias.getBoundingClientRect();
+          if (rn.height > 0 && rn.top < window.innerHeight + 800 && rn.bottom > -800) {
+            this.cargarNoticiasSiHaceFalta();
+          }
+        }
+      }
+
+      if (pendientesDeRevelar.length) {
+        const alto = window.innerHeight;
+        pendientesDeRevelar = pendientesDeRevelar.filter(el => {
+          if (el.classList.contains('is-visible')) return false;
+          const r = el.getBoundingClientRect();
+          if (r.height > 0 && r.top < alto && r.bottom > 0) {
+            el.classList.add('is-visible');
+            return false;
+          }
+          return true;
+        });
+      }
+
+      // Ya no puede hacer falta: nada pendiente y las noticias pedidas. Se apaga sola.
+      if (!pendientesDeRevelar.length && this.noticiasSolicitadas) {
+        barridoActivo = false;
+      }
+    };
+
+    // Carruseles agarrables de telefono (noticias + testimonios). Cada uno se auto-gestiona con
+    // su propio IntersectionObserver: solo avanza mientras su seccion esta cerca del viewport.
+    this.setupGrabbableMarquee('.news-section', '.news-track', '.news-card', 0.4);
+    // [TESTIMONIOS ESTATICOS 2026-08-29] el marquee de testimonios se desactivo (grilla estatica en
+    // movil). REVERTIR: descomentar la linea de abajo + revertir el bloque CSS y el *ngFor.
+    // this.setupGrabbableMarquee('.testimonials-section', '.testimonials-grid', '.testimonial-card', 0.32);
+
+    // Barra de progreso del carrusel de noticias (desktop/tablet). NO se mide aca: .news-track vive
+    // dentro de .news-section, que tiene content-visibility: auto, y leer scrollWidth forzaria su
+    // render en el arranque. Se mide cuando la seccion se acerca (obsNoticias, mas abajo) y cuando
+    // llegan las noticias (loadFirestoreNews). El listener de scroll pasa por un rAF.
     this.zone.runOutsideAngular(() => {
       this.newsTrackEl = document.querySelector('.news-track') as HTMLElement;
       this.newsThumbEl = document.querySelector('.news-scroll-thumb') as HTMLElement;
-      // NO se mide la barra aca. updateNewsScrollThumb() lee scrollWidth/clientWidth, y esos
-      // elementos viven dentro de .news-section, que tiene content-visibility: auto. Consultar la
-      // geometria de un subarbol saltado OBLIGA al navegador a renderizarlo: anula la optimizacion
-      // y provoca un reflow forzado caro justo en el arranque (Lighthouse lo medio en 219 ms en las
-      // corridas lentas del 2026-08-27, contra 8 ms en las rapidas). Se mide cuando la seccion se
-      // acerca de verdad (ver el observer de noticias mas abajo) y cuando llegan las noticias.
+      this.newsIndicatorEl = document.querySelector('.news-scroll-indicator') as HTMLElement;
       if (this.newsTrackEl) {
-        this.registerGlobalListener(this.newsTrackEl, 'scroll', this.updateNewsScrollThumb, { passive: true });
+        this.registerGlobalListener(this.newsTrackEl, 'scroll', this.onNewsScroll, { passive: true });
       }
-      this.registerGlobalListener(window, 'resize', this.updateNewsScrollThumb, { passive: true });
+      this.registerGlobalListener(window, 'resize', this.onNewsScroll, { passive: true });
+    });
 
+    // Registrar eventos en zona externa de Angular (cero lag y sin layout thrashing)
+    this.zone.runOutsideAngular(() => {
       const sectionEl = document.getElementById('foco-tutor');
       const mascotEl = document.querySelector('.foco-mascot') as HTMLElement;
 
@@ -6381,17 +7446,11 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
         if (mascotEl) mascotRect = mascotEl.getBoundingClientRect();
       };
 
-      // Tampoco se mide aca, por el mismo motivo: #foco-tutor es .foco-section, que tambien tiene
-      // content-visibility: auto. El manejador de mousemove de mas abajo ya recalcula solo si los
-      // rects estan en null, asi que la medicion ocurre recien cuando el puntero entra en la
-      // seccion -- momento en el que esa seccion ya se esta renderizando igual.
-      //
-      // Y en scroll/resize se INVALIDAN en vez de recalcularse: antes cada evento de scroll
-      // disparaba dos getBoundingClientRect(), o sea un layout sincrono por evento. Poner null es
-      // gratis y el recalculo perezoso llega solo cuando de verdad hace falta.
+      // No se mide aca, por el mismo motivo: #foco-tutor es .foco-section, que tambien tiene
+      // content-visibility: auto. El manejador de mousemove recalcula solo si los rects estan
+      // en null, asi que la medicion ocurre recien cuando el puntero entra en la seccion.
       const invalidarRects = () => { sectionRect = null; mascotRect = null; };
       this.registerGlobalListener(window, 'resize', invalidarRects, { passive: true });
-      this.registerGlobalListener(window, 'scroll', invalidarRects, { passive: true });
 
       let mouseTicking = false;
       const onMouseMove = (e: MouseEvent) => {
@@ -6431,138 +7490,120 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
             const scale = isHovered ? 1.06 : 1.0;
 
-            mascotEl.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
+            mascotEl.style.transform = 'translate3d(' + translateX + 'px, ' + translateY + 'px, 0) scale(' + scale + ')';
             mouseTicking = false;
           });
           mouseTicking = true;
         }
       };
-      this.registerGlobalListener(document, 'mousemove', onMouseMove as EventListener, { passive: true });
 
       const onMouseLeave = () => {
         if (mascotEl) {
           mascotEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
         }
       };
-      this.registerGlobalListener(document, 'mouseleave', onMouseLeave, { passive: true });
 
-      // Optimized scroll listener outside Angular zone to fix lag
+      // RENDIMIENTO (2026-08-29): antes estos dos listeners se registraban en `document` para
+      // toda la vida de la pagina. El de mousemove dispara con CUALQUIER movimiento del puntero,
+      // en cualquier parte del documento, aunque #foco-tutor estuviera a miles de px. Ahora:
+      //   - No se registran en absoluto si el dispositivo no tiene puntero fino (todo movil).
+      //   - Solo estan enganchados mientras la seccion de Foco esta cerca del viewport.
+      const punteroFino = typeof window.matchMedia === 'function'
+        ? window.matchMedia('(pointer: fine)').matches
+        : true;
+      if (punteroFino && sectionEl && mascotEl) {
+        let parallaxEnganchado = false;
+        const engancharParallax = () => {
+          if (parallaxEnganchado) return;
+          parallaxEnganchado = true;
+          document.addEventListener('mousemove', onMouseMove as EventListener, { passive: true });
+          document.addEventListener('mouseleave', onMouseLeave, { passive: true });
+        };
+        const desengancharParallax = () => {
+          if (!parallaxEnganchado) return;
+          parallaxEnganchado = false;
+          document.removeEventListener('mousemove', onMouseMove as EventListener);
+          document.removeEventListener('mouseleave', onMouseLeave);
+          mascotEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
+        };
+        this.desengancharParallaxFoco = desengancharParallax;
+
+        const obsParallax = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) engancharParallax();
+            else desengancharParallax();
+          }
+        }, { rootMargin: '200px 0px' });
+        obsParallax.observe(sectionEl);
+        this.observers.push(obsParallax);
+      }
+
+      // Parallax del hero + estado del navbar + red de seguridad del revelado.
+      //
+      // RENDIMIENTO (2026-08-29): antes habia TRES listeners de scroll separados en window
+      // (invalidarRects, onParallaxScroll y el barrido de revelado), cada uno con su propio
+      // gate de rAF. Ahora es UNO solo con un unico gate: el navegador despacha un evento en
+      // vez de tres y todo el trabajo cae en el mismo frame.
+      //
+      // Ademas, el marcado de .is-scrolling (classList + clearTimeout + setTimeout) corria
+      // ANTES del gate, o sea en cada evento crudo de scroll. Ahora esta dentro del rAF.
       const gridOverlay = document.querySelector('.hero-grid-overlay') as HTMLElement;
       const blobPurple = document.querySelector('.hero-blob-purple') as HTMLElement;
       const blobBlue = document.querySelector('.hero-blob-blue') as HTMLElement;
       const homeContainer = document.querySelector('.home-container') as HTMLElement;
 
       let ticking = false;
-      let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
-      const onParallaxScroll = () => {
-        const currentScrollY = window.scrollY;
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          ticking = false;
+          const currentScrollY = window.scrollY;
 
-        // Mark the page as "actively scrolling" so hover-heavy stacked lists (e.g. FAQ)
-        // don't repeatedly trigger :hover transitions as items pass under a stationary
-        // cursor while scrolling — that was the main source of jank there.
-        // (Toggled on .home-container, not document.body, since Angular's view
-        // encapsulation only scopes styles to elements rendered by this component.)
-        if (homeContainer) homeContainer.classList.add('is-scrolling');
-        if (scrollEndTimer) clearTimeout(scrollEndTimer);
-        scrollEndTimer = setTimeout(() => {
-          if (homeContainer) homeContainer.classList.remove('is-scrolling');
-        }, 150);
+          // Los rects del parallax de Foco dejan de ser validos al scrollear. Invalidar es
+          // gratis; el recalculo perezoso llega solo cuando el puntero lo necesita.
+          invalidarRects();
 
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            // Parallax updates
-            if (gridOverlay) {
-              gridOverlay.style.transform = `translate3d(0, ${currentScrollY * 0.22}px, 0)`;
-            }
-            if (blobPurple) {
-              blobPurple.style.transform = `translate3d(0, ${currentScrollY * 0.26}px, 0) scale(${1 + currentScrollY * 0.00015})`;
-            }
-            if (blobBlue) {
-              blobBlue.style.transform = `translate3d(0, ${currentScrollY * 0.2}px, 0) scale(${1 - currentScrollY * 0.0001})`;
-            }
-
-            // Navbar state updates (only trigger Angular zone if state changes)
-            const newIsScrolled = currentScrollY > 50;
-            const newNavbarHidden = currentScrollY > this.lastScrollY && currentScrollY > 100;
-
-            if (newIsScrolled !== this.isScrolled || newNavbarHidden !== this.navbarHidden) {
-              this.zone.run(() => {
-                this.isScrolled = newIsScrolled;
-                this.navbarHidden = newNavbarHidden;
-              });
-            }
-            this.lastScrollY = currentScrollY;
-            ticking = false;
-          });
-          ticking = true;
-        }
-      };
-      this.registerGlobalListener(window, 'scroll', onParallaxScroll, { passive: true });
-    });
-
-    // Scroll Reveal Animation Logic (Unobserve once revealed for maximum performance)
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          if (entry.target.classList.contains('hero-stats')) {
-            this.animateCounters();
+          // Marca la pagina como "scrolleando" para que las listas apiladas con :hover (el FAQ)
+          // no disparen una transicion por cada item que pasa bajo un cursor quieto.
+          if (homeContainer) {
+            homeContainer.classList.add('is-scrolling');
+            if (this.scrollEndTimer) clearTimeout(this.scrollEndTimer);
+            this.scrollEndTimer = setTimeout(() => {
+              homeContainer.classList.remove('is-scrolling');
+            }, 150);
           }
-          observer.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
 
-    const SELECTOR_REVELADO = '.features-section, .foco-section, .videos-section, .section-title, .bento-card, .foco-benefit-item, .foco-visual, .hero-stats, .faq-item, .news-card';
-    const animatedElements = document.querySelectorAll(SELECTOR_REVELADO);
-    animatedElements.forEach(el => observer.observe(el));
-
-    // Red de seguridad del revelado por scroll.
-    //
-    // Las 9 secciones bajo la linea de flotacion usan content-visibility: auto (ver los
-    // estilos de este componente). Mientras una seccion esta lejos del viewport el navegador
-    // se salta su renderizado y sus hijos no tienen caja, asi que el IntersectionObserver de
-    // arriba no puede dispararse para ellos.
-    //
-    // En la practica eso no es problema: el navegador vuelve a renderizar la seccion ANTES de
-    // que entre en pantalla, y ahi el observer dispara con normalidad. Pero si por cualquier
-    // motivo no lo hiciera, estos elementos se quedarian en opacity: 0 PARA SIEMPRE — o sea,
-    // media landing en blanco. Es un modo de fallo demasiado caro para dejarlo al azar.
-    //
-    // Este barrido lo vuelve imposible: en cada scroll (limitado a un frame) revela por pura
-    // geometria cualquier elemento que ya este en pantalla y que el observer aun no haya
-    // marcado. Cuando el observer funciona normal, esto no hace nada: los elementos ya llegan
-    // con is-visible y la comprobacion sale por el primer if.
-    let barridoPendiente = false;
-    const revelarLoQueYaEstaEnPantalla = () => {
-      if (barridoPendiente) return;
-      barridoPendiente = true;
-      requestAnimationFrame(() => {
-        barridoPendiente = false;
-        // Respaldo de las noticias por la misma via geometrica (ver cargarNoticiasSiHaceFalta).
-        const secNoticias = document.querySelector('.news-section');
-        if (secNoticias) {
-          const rn = secNoticias.getBoundingClientRect();
-          if (rn.height > 0 && rn.top < window.innerHeight + 800 && rn.bottom > -800) {
-            this.cargarNoticiasSiHaceFalta();
+          // Parallax updates
+          if (gridOverlay) {
+            gridOverlay.style.transform = 'translate3d(0, ' + (currentScrollY * 0.22) + 'px, 0)';
           }
-        }
-
-        document.querySelectorAll(SELECTOR_REVELADO).forEach(el => {
-          if (el.classList.contains('is-visible')) return;
-          const r = el.getBoundingClientRect();
-          if (r.height > 0 && r.top < window.innerHeight && r.bottom > 0) {
-            el.classList.add('is-visible');
+          if (blobPurple) {
+            blobPurple.style.transform = 'translate3d(0, ' + (currentScrollY * 0.26) + 'px, 0) scale(' + (1 + currentScrollY * 0.00015) + ')';
           }
+          if (blobBlue) {
+            blobBlue.style.transform = 'translate3d(0, ' + (currentScrollY * 0.2) + 'px, 0) scale(' + (1 - currentScrollY * 0.0001) + ')';
+          }
+
+          // Red de seguridad del revelado (se auto-apaga cuando ya no queda nada).
+          barrerRevelado();
+
+          // Navbar state updates (only trigger Angular zone if state changes)
+          const newIsScrolled = currentScrollY > 50;
+          const newNavbarHidden = currentScrollY > this.lastScrollY && currentScrollY > 100;
+
+          if (newIsScrolled !== this.isScrolled || newNavbarHidden !== this.navbarHidden) {
+            this.zone.run(() => {
+              this.isScrolled = newIsScrolled;
+              this.navbarHidden = newNavbarHidden;
+              this.cdr.markForCheck();
+            });
+          }
+          this.lastScrollY = currentScrollY;
         });
-      });
-    };
-    this.registerGlobalListener(window, 'scroll', revelarLoQueYaEstaEnPantalla, { passive: true });
+      };
+      this.registerGlobalListener(window, 'scroll', onScroll, { passive: true });
+    });
 
     // Noticias: se leen de Firestore recien cuando su seccion se acerca (ver el comentario en
     // ngOnInit sobre por que no se hace al arrancar). El margen de 800 px hace que lleguen ya
@@ -6574,12 +7615,12 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           if (!entry.isIntersecting) continue;
           obsNoticias.disconnect();
           this.cargarNoticiasSiHaceFalta();
-          // Ahora si vale medir: la seccion esta entrando en pantalla, o sea que el navegador la
-          // esta renderizando de todos modos.
+          // La seccion ya se esta renderizando: es seguro medir la barra de progreso.
           requestAnimationFrame(() => this.updateNewsScrollThumb());
         }
       }, { rootMargin: '800px 0px' });
       obsNoticias.observe(seccionNoticias);
+      this.observers.push(obsNoticias);
     }
 
     // Demo video: only fetch/play while the "Mira cómo funciona" section is in view, like an auto-looping gif.
@@ -6594,7 +7635,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           if (entry.isIntersecting) {
             // Belt-and-suspenders: the [muted] property binding should already cover this,
             // but Chrome's autoplay policy silently rejects play() on any video whose live
-            // `.muted` property isn't true, so we force it right before playing.
+            // '.muted' property isn't true, so we force it right before playing.
             video.muted = true;
             video.play().catch(() => {});
           } else {
@@ -6603,6 +7644,48 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
         });
       }, { threshold: 0.25 });
       videoObserver.observe(videosSection);
+      this.observers.push(videoObserver);
+    }
+
+    // RENDIMIENTO (2026-08-29): la mascota de Foco es un <video autoplay loop> que, a diferencia
+    // de los 3 videos de demo, NO se pausaba nunca al salir de pantalla: seguia decodificando
+    // frames durante todo el recorrido del home. Es el tiron que se notaba a media pagina.
+    // Se observa la SECCION, no el <video> de dentro: .foco-section es la que lleva
+    // content-visibility, asi que siempre tiene caja. Un elemento dentro de un subarbol
+    // saltado no la tiene, y el observer no podria dispararse para el. Mismo patron que el
+    // observer de los videos de demo, que tambien observa su seccion.
+    const focoSection = document.querySelector('.foco-section');
+    if (focoSection) {
+      const obsMascota = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          const mascotVideo = entry.target.querySelector('video.foco-mascot') as HTMLVideoElement | null;
+          if (!mascotVideo) continue;
+          if (entry.isIntersecting) {
+            mascotVideo.muted = true;
+            mascotVideo.play().catch(() => {});
+          } else {
+            mascotVideo.pause();
+          }
+        }
+      }, { threshold: 0.01 });
+      obsMascota.observe(focoSection);
+      this.observers.push(obsMascota);
+    }
+
+    // El hero NO lleva content-visibility (esta sobre la linea de flotacion), asi que su
+    // simulacion animada seguia corriendo para siempre: una cadena infinita de setTimeout mas
+    // un typewriter de 32 ms que re-entra a la zona de Angular ~10 veces por segundo. Estando
+    // el usuario en el FAQ eso era puro churn de change detection. Ahora se pausa al salir.
+    const heroSection = document.getElementById('hero');
+    if (heroSection) {
+      const obsHero = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) this.reanudarAnimacionesHero();
+          else this.pausarAnimacionesHero();
+        }
+      }, { rootMargin: '100px 0px' });
+      obsHero.observe(heroSection);
+      this.observers.push(obsHero);
     }
   }
 

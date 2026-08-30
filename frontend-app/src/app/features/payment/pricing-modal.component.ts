@@ -159,12 +159,24 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                   <span *ngIf="emailStatus() === 'not_found'">❌</span>
                 </span>
               </div>
-              <p class="feedback-msg success" *ngIf="emailStatus() === 'found'">
+              <p class="feedback-msg success" *ngIf="emailStatus() === 'found' && recipientPlan() !== 'premium'">
                 ✅ <strong>{{ giftEmail }}</strong> — Cuenta verificada.
+              </p>
+              <p class="feedback-msg warn" *ngIf="emailStatus() === 'found' && recipientPlan() === 'premium'">
+                ⚠️ <strong>{{ giftEmail }}</strong> ya tiene Plan Pro activo. El regalo le
+                sumará el tiempo al final de su período actual (no lo pierde).
               </p>
               <p class="feedback-msg error" *ngIf="emailStatus() === 'not_found'">
                 ❌ No encontramos una cuenta registrada con ese correo.
               </p>
+
+              <!-- Aviso de recurrencia SOLO para regalo por Flow (transferencia ya avisa aparte). -->
+              <div class="gift-recurring-note" *ngIf="emailStatus() === 'found' && paymentMethod() === 'flow'">
+                🔁 Este regalo es una <strong>suscripción con renovación automática</strong>: se
+                cobrará a <strong>tu</strong> tarjeta cada {{ billingCycle() === 'monthly' ? 'mes' : 'año' }}
+                hasta que lo canceles. Podrás cancelarlo cuando quieras desde
+                <strong>tu perfil → “Regalos de Plan Pro que pagas”</strong>.
+              </div>
             </div>
 
             <!-- ── PAYMENT METHOD SELECTOR ── -->
@@ -256,7 +268,8 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                 <ul>
                   <li>La activación <strong>no es inmediata</strong> — un administrador revisa tu comprobante a mano, puede tardar algunas horas.</li>
                   <li>Esto <strong>no es una suscripción</strong>: es un pago único por {{ billingCycle() === 'monthly' ? '1 mes' : '1 año' }}. No se te cobrará de nuevo automáticamente.</li>
-                  <li>Cuando termine ese período, <strong>todas las funciones PRO se bloquean</strong> otra vez hasta que hagas una nueva transferencia.</li>
+                  <li *ngIf="recipientMode() === 'self'">Cuando termine ese período, <strong>todas las funciones PRO se bloquean</strong> otra vez hasta que hagas una nueva transferencia.</li>
+                  <li *ngIf="recipientMode() === 'gift'">Al terminar ese período, el Plan Pro de <strong>{{ giftEmail || 'la persona' }}</strong> se bloquea hasta que se haga una nueva transferencia. Este regalo es de una sola vez.</li>
                 </ul>
               </div>
 
@@ -398,6 +411,9 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .feedback-msg { font-size:0.85rem; font-weight:600; margin:0 0 1rem; padding:0.6rem 0.9rem; border-radius:10px; }
     .feedback-msg.success { background:rgba(16,185,129,0.08); color:#047857; }
     .feedback-msg.error { background:rgba(239,68,68,0.08); color:#b91c1c; }
+    .feedback-msg.warn { background:rgba(245,158,11,0.1); color:#b45309; line-height:1.4; }
+    .gift-recurring-note { font-size:0.82rem; line-height:1.45; color:#3730a3; background:rgba(99,102,241,0.08); border:1.5px solid rgba(99,102,241,0.22); border-radius:12px; padding:0.7rem 0.95rem; margin:0 0 0.5rem; }
+    .gift-recurring-note strong { color:#312e81; }
 
     /* Payment method */
     .section-label-sm { display:block; font-size:0.82rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem; }
@@ -575,12 +591,13 @@ export class PricingModalComponent implements OnInit {
 
   goToRecipient() { this.currentStep.set('recipient'); }
 
-  goBack() { this.currentStep.set('plans'); this.resetGiftState(); }
+  goBack() { this.currentStep.set('plans'); this.recipientMode.set('self'); this.resetGiftState(); }
 
   closeModal() {
     this.paymentService.closePricingModal();
     this.currentStep.set('plans');
     this.cameFromHome.set(false);
+    this.recipientMode.set('self');
     this.resetGiftState();
     this.resetCouponState();
     this.resetTransferState();
@@ -634,9 +651,10 @@ export class PricingModalComponent implements OnInit {
   private async lookupEmail(email: string) {
     this.emailStatus.set('checking');
     try {
-      const uid = await this.firestoreService.findUidByEmail(email);
-      if (uid) {
-        this.giftTargetUid = uid;
+      const found = await this.firestoreService.findUserForGift(email);
+      if (found) {
+        this.giftTargetUid = found.uid;
+        this.recipientPlan.set(found.isPro ? 'premium' : 'free');
         this.emailStatus.set('found');
       } else {
         this.emailStatus.set('not_found');
@@ -683,9 +701,10 @@ export class PricingModalComponent implements OnInit {
     const returnUrl = `${environment.apiUrl}/api/subscriptions/flow/return`;
     const plan = this.billingCycle();
     const targetUid = this.recipientMode() === 'gift' ? this.giftTargetUid : undefined;
+    const targetEmail = this.recipientMode() === 'gift' ? this.giftEmail.trim().toLowerCase() : undefined;
     const couponCode = this.couponStatus() === 'valid' ? this.couponCode.trim().toUpperCase() : undefined;
 
-    this.paymentService.startFlowRegistration(plan, returnUrl, targetUid, couponCode).subscribe({
+    this.paymentService.startFlowRegistration(plan, returnUrl, targetUid, couponCode, targetEmail).subscribe({
       next: (res) => {
         // Flow's documented redirect pattern: a plain GET to url?token=..., no form/POST needed.
         window.location.href = `${res.url}?token=${res.token}`;
@@ -755,6 +774,7 @@ export class PricingModalComponent implements OnInit {
       transferNumber: this.transferNumber.trim(),
       amount: finalAmount,
       targetUid: this.recipientMode() === 'gift' ? this.giftTargetUid : undefined,
+      targetEmail: this.recipientMode() === 'gift' ? this.giftEmail.trim().toLowerCase() : undefined,
       couponCode: this.couponStatus() === 'valid' ? this.couponCode.trim().toUpperCase() : undefined,
       receiptUrl: this.receiptPreview() || undefined,
     };

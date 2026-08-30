@@ -277,6 +277,12 @@ export const baseRoutes: Routes = [
     data: { title: 'Admin · Reportes de Errores', noIndex: true }
   },
   {
+    path: 'admin/noticias',
+    loadComponent: () => import('./features/admin/admin-news.component').then(m => m.AdminNewsComponent),
+    canActivate: [authGuard, adminGuard],
+    data: { title: 'Admin · Noticias', noIndex: true }
+  },
+  {
     path: 'admin/suscripciones',
     loadComponent: () => import('./features/admin/admin-subscriptions.component').then(m => m.AdminSubscriptionsComponent),
     canActivate: [authGuard, adminGuard],

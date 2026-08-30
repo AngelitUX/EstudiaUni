@@ -42,7 +42,7 @@ export const environment = {
   // PARA REACTIVARLO: cargar TURNSTILE_SECRET_KEY en backend/.env, correr
   // desplegar-backend.bat, comprobar que el endpoint devuelve un token no vacio, y poner esto
   // en `true`. No hace falta ningun otro cambio.
-  appCheckEnabled: false,
+  appCheckEnabled: true,
   turnstileSiteKey: '0x4AAAAAAEb00X1M9HopFvPf',
   turnstileTokenExchangeUrl: `${apiUrl}/api/app-check/exchange`
 };

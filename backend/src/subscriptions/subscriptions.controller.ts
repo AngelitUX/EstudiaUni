@@ -10,7 +10,7 @@ import {
 import { SubscriptionsService } from './subscriptions.service';
 import { FlowService } from './flow.service';
 import { CheckCreditsDto } from './dto/change-plan.dto';
-import { StartFlowRegistrationDto, ConfirmFlowSubscriptionDto, ValidateCouponDto } from './dto/flow.dto';
+import { StartFlowRegistrationDto, ConfirmFlowSubscriptionDto, ValidateCouponDto, CancelGiftDto } from './dto/flow.dto';
 import { SubmitTransferDto } from './dto/manual-payment.dto';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import {
@@ -61,6 +61,22 @@ export class SubscriptionsController {
     return result;
   }
 
+  @Post('gift/cancel')
+  @HttpCode(HttpStatus.OK)
+  async cancelGift(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: CancelGiftDto,
+  ) {
+    const result = await this.subscriptionsService.cancelGift(user.uid, dto.flowSubscriptionId);
+    if (result.flowSubscriptionId) {
+      // Cortar los cobros futuros en Flow. Un fallo del lado de Flow se registra
+      // pero no se le muestra al usuario como error: el regalo ya quedó marcado
+      // como cancelado y la persona conserva el acceso hasta su endDate.
+      await this.flowService.cancelFlowSubscription(result.flowSubscriptionId).catch(() => {});
+    }
+    return result;
+  }
+
   @Post('validate-coupon')
   @HttpCode(HttpStatus.OK)
   async validateCoupon(@Body() dto: ValidateCouponDto) {
@@ -80,6 +96,7 @@ export class SubscriptionsController {
       dto.returnUrl,
       dto.targetUid,
       dto.couponCode,
+      dto.targetEmail,
     );
   }
 
