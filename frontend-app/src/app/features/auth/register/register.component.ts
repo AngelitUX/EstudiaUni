@@ -28,6 +28,10 @@ export class RegisterComponent {
   showPassword = false;
   showConfirmPassword = false;
   acceptedTerms = false;
+  /** true cuando el usuario intento registrarse sin marcar la casilla de términos: resalta
+   *  la casilla con un mensaje justo al lado (antes el botón de Google simplemente quedaba
+   *  deshabilitado y no daba ninguna pista de por qué). Se limpia al marcar la casilla. */
+  termsError = false;
   legalModalType: 'terms' | 'privacy' | null = null;
 
   togglePasswordVisibility() {
@@ -115,6 +119,7 @@ export class RegisterComponent {
     this.error = '';
 
     if (!this.acceptedTerms) {
+      this.termsError = true;
       this.error = 'Debes aceptar los Términos de Servicio y la Política de Privacidad para crear una cuenta.';
       return;
     }
@@ -224,6 +229,7 @@ export class RegisterComponent {
     this.error = '';
 
     if (!this.acceptedTerms) {
+      this.termsError = true;
       this.error = 'Debes aceptar los Términos de Servicio y la Política de Privacidad para crear una cuenta.';
       return;
     }

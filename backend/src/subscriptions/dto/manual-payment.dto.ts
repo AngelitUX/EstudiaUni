@@ -27,6 +27,10 @@ export class SubmitTransferDto {
 
   @IsString()
   @IsOptional()
+  targetEmail?: string; // Recipient's email (gift) — se guarda para que el admin sepa a quién va
+
+  @IsString()
+  @IsOptional()
   receiptUrl?: string;
 
   @IsString()

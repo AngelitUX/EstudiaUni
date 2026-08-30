@@ -15,12 +15,21 @@ export class StartFlowRegistrationDto {
 
   @IsOptional()
   @IsString()
+  targetEmail?: string; // Recipient's email — stored so the payer can see whom they're gifting
+
+  @IsOptional()
+  @IsString()
   couponCode?: string; // Optional discount code, applied to the first charge only
 }
 
 export class ConfirmFlowSubscriptionDto {
   @IsString()
   token: string;
+}
+
+export class CancelGiftDto {
+  @IsString()
+  flowSubscriptionId: string;
 }
 
 export class ValidateCouponDto {

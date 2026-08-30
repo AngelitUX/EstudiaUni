@@ -1355,6 +1355,21 @@ body .logout-confirm-modal .btn-danger {
   width: 100%;
   flex-shrink: 0;
 }
+
+/* [FIX HITBOX LOGO NAVBAR MOVIL 2026-08-29] El logo del header movil es un PNG 500x500 con la
+   marca en una franja central. La regla de componente lo pone a `width: 190px; height: auto`, o
+   sea un <img> CUADRADO de 190x190 que, centrado en la fila de 60px de .mobile-header-top, se
+   extiende ~65px arriba y ~65px abajo -> tapa por completo la fila de "Mejorar a PRO" (Plan
+   Basico) y, como el link del logo tiene z-index, le roba el clic al boton.
+   Aca se acota el <img> a 190x40 y con object-fit: cover se muestra solo la franja de la marca,
+   sin recortarla. Asi el link mide lo que se ve y no invade la fila de abajo. */
+.mobile-header-top .mobile-logo-img {
+  width: 190px !important;
+  max-width: 62vw !important;
+  height: 44px !important;
+  object-fit: cover !important;
+  object-position: center 47% !important;
+}
 .dashboard-layout,
 .ensayos-container {
   display: flex;

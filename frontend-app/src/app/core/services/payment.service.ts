@@ -34,8 +34,19 @@ export interface ManualTransferData {
   amount: number;
   payerEmail?: string;
   targetUid?: string;
+  targetEmail?: string;
   receiptUrl?: string;
   couponCode?: string;
+}
+
+export interface GiftedSubscription {
+  flowSubscriptionId: string;
+  recipientUid: string;
+  recipientEmail: string;
+  planType: 'monthly' | 'yearly';
+  status: 'active' | 'cancelled';
+  createdAt?: any;
+  cancelledAt?: any;
 }
 
 export interface TransactionRecord {
@@ -47,6 +58,8 @@ export interface TransactionRecord {
   payerEmail?: string;
   payerUid?: string;
   recipientUid?: string;
+  recipientEmail?: string | null;
+  isGift?: boolean;
   amount: number;
   planType: 'monthly' | 'yearly';
   status: 'pending' | 'paid' | 'failed' | 'rejected' | 'pending_approval' | 'approved';
@@ -96,11 +109,13 @@ export class PaymentService {
     returnUrl: string,
     targetUid?: string,
     couponCode?: string,
+    targetEmail?: string,
   ): Observable<FlowRegistrationResponse> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     const url = `${baseUrl}/api/subscriptions/flow/register-card`;
     const body: any = { planType, returnUrl };
     if (targetUid) body.targetUid = targetUid;
+    if (targetEmail) body.targetEmail = targetEmail;
     if (couponCode) body.couponCode = couponCode;
     return this.http.post<FlowRegistrationResponse>(url, body);
   }
@@ -126,6 +141,14 @@ export class PaymentService {
   cancelSubscription(): Observable<{ success: boolean; message: string; endDate?: string | Date | null; flowSubscriptionId?: string | null }> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     return this.http.post<{ success: boolean; message: string; endDate?: string | Date | null; flowSubscriptionId?: string | null }>(`${baseUrl}/api/subscriptions/cancel`, {});
+  }
+
+  /** Cancela un REGALO de Plan Pro por Flow que el usuario actual está pagando.
+   *  El backend verifica que el flowSubscriptionId esté en SUS giftedSubscriptions,
+   *  corta los cobros en Flow y marca la suscripción del amigo como cancelada. */
+  cancelGift(flowSubscriptionId: string): Observable<{ success: boolean; message: string }> {
+    const baseUrl = environment.apiUrl || 'http://localhost:3000';
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/subscriptions/gift/cancel`, { flowSubscriptionId });
   }
 
   /**

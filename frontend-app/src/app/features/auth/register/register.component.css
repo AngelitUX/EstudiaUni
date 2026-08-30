@@ -12,6 +12,21 @@
   margin-bottom: 1.25rem;
 }
 
+/* Resalta la casilla de términos cuando el usuario intenta registrarse sin marcarla. */
+.form-group-checkbox.checkbox-required {
+  padding: 0.6rem 0.75rem;
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.06);
+  box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.35);
+}
+.form-group-checkbox.checkbox-required input[type="checkbox"] {
+  accent-color: #dc2626;
+  outline: 2px solid rgba(220, 38, 38, 0.5);
+  outline-offset: 1px;
+}
+
 .checkbox-label {
   display: flex;
   align-items: flex-start;

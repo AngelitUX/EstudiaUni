@@ -157,7 +157,9 @@ if not errorlevel 1 (
 REM ---------------------------------------------------------------------------
 REM  Paso 4 - La direccion del backend (el error mas caro de este proyecto)
 REM ---------------------------------------------------------------------------
-findstr /C:"localhost:3000" "frontend-app\src\environments\environment.ts" >nul 2>&1
+REM  Solo la ASIGNACION real de apiUrl, no el "localhost:3000" que aparece en un
+REM  comentario del propio archivo (eso daba un falso aviso en cada despliegue).
+findstr /C:"apiUrl = 'http://localhost" /C:"apiUrl='http://localhost" "frontend-app\src\environments\environment.ts" >nul 2>&1
 if not errorlevel 1 (
     echo   [*] environment.ts apunta el backend a http://localhost:3000
     echo       En el sitio publicado NO va a funcionar nada que pase por el

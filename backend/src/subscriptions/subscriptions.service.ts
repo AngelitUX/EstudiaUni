@@ -453,11 +453,24 @@ export class SubscriptionsService {
 
     const transferId = `TRF-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const recipientUid = dto.targetUid || uid;
+    const isGift = recipientUid !== uid;
+
+    // Correo del destinatario del regalo: el que mandó el form, o si no vino, se
+    // busca en su doc — así el admin siempre ve a quién va, no un UID pelado.
+    let recipientEmail = isGift ? (dto.targetEmail || '').toLowerCase().trim() : (dto.payerEmail || '');
+    if (isGift && !recipientEmail) {
+      try {
+        const recSnap = await this.firebaseService.firestore.collection('users').doc(recipientUid).get();
+        recipientEmail = recSnap.exists ? (recSnap.data()?.email || '') : '';
+      } catch { /* best-effort */ }
+    }
 
     const transferData = {
       id: transferId,
       payerUid: uid,
       recipientUid,
+      recipientEmail,
+      isGift,
       bankName: dto.bankName,
       transferNumber: dto.transferNumber,
       amount: dto.amount,
@@ -731,6 +744,7 @@ export class SubscriptionsService {
 
       trfSnapshot.forEach(doc => {
         const d = doc.data();
+        const isGift = !!d.recipientUid && d.recipientUid !== d.payerUid;
         transactions.push({
           id: doc.id,
           type: 'transfer',
@@ -739,6 +753,8 @@ export class SubscriptionsService {
           payerEmail: d.payerEmail,
           payerUid: d.payerUid,
           recipientUid: d.recipientUid,
+          recipientEmail: d.recipientEmail || null,
+          isGift,
           amount: d.amount,
           planType: d.planType || 'monthly',
           status: d.status,
@@ -924,6 +940,70 @@ export class SubscriptionsService {
         ? `Tu suscripción fue cancelada. Mantendrás acceso Premium hasta el ${endDateJs.toLocaleDateString('es-CL')}.`
         : 'Tu suscripción fue cancelada.',
       endDate: endDateJs,
+      flowSubscriptionId,
+    };
+  }
+
+  /**
+   * Cancelar un REGALO de Plan Pro por Flow que este usuario esta pagando.
+   * Solo puede hacerlo el pagador (el flowSubscriptionId tiene que estar en SU
+   * `giftedSubscriptions`). Corta los cobros en Flow (lo hace el controlador con
+   * el flowSubscriptionId que devolvemos) y marca la suscripcion del recipiente
+   * como cancelada — el amigo mantiene el acceso hasta su endDate ya pagado.
+   */
+  async cancelGift(payerUid: string, flowSubscriptionId: string) {
+    const payerRef = this.firebaseService.firestore.collection('users').doc(payerUid);
+    const payerDoc = await payerRef.get();
+    const gift = payerDoc.exists
+      ? payerDoc.data()?.giftedSubscriptions?.[flowSubscriptionId]
+      : null;
+
+    if (!gift || gift.status !== 'active') {
+      throw new BadRequestException('No encontramos un regalo activo con ese identificador en tu cuenta.');
+    }
+
+    const recipientUid: string = gift.recipientUid;
+    let recipientEndDate: Date | null = null;
+
+    // Marcar la suscripcion del recipiente para que no renueve (mantiene acceso
+    // hasta endDate, igual que un cancel normal).
+    try {
+      const recRef = this.firebaseService.firestore.collection('users').doc(recipientUid);
+      const recDoc = await recRef.get();
+      const sub = recDoc.exists ? recDoc.data()?.subscription : null;
+      const endVal = sub?.endDate;
+      if (endVal) {
+        recipientEndDate = typeof endVal.toDate === 'function' ? endVal.toDate() : new Date(endVal);
+      }
+      // Solo si esa suscripcion sigue siendo la del regalo (no si el amigo ya
+      // se pago su propio Pro por otra via encima).
+      if (sub?.flowSubscriptionId === flowSubscriptionId) {
+        await recRef.update({
+          'subscription.cancelAtPeriodEnd': true,
+          'subscription.status': 'cancelled',
+          updatedAt: new Date(),
+        });
+      }
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] cancelGift: could not update recipient ${recipientUid}: ${e.message}`);
+    }
+
+    // Marcar el regalo como cancelado en el doc del pagador.
+    try {
+      await payerRef.set({
+        giftedSubscriptions: {
+          [flowSubscriptionId]: { ...gift, status: 'cancelled', cancelledAt: new Date() },
+        },
+      }, { merge: true });
+    } catch (e) {
+      this.logger.warn(`[SubscriptionsService] cancelGift: could not mark gift cancelled: ${e.message}`);
+    }
+
+    return {
+      success: true,
+      message: recipientEndDate
+        ? `Regalo cancelado. Ya no se cobrará a tu tarjeta. La persona mantiene el Plan Pro hasta el ${recipientEndDate.toLocaleDateString('es-CL')}.`
+        : 'Regalo cancelado. Ya no se cobrará a tu tarjeta.',
       flowSubscriptionId,
     };
   }

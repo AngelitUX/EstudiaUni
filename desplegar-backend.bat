@@ -83,8 +83,18 @@ if errorlevel 1 (
 )
 echo   [OK] gcloud disponible
 
-call "!GCLOUD!" auth list --filter=status:ACTIVE --format="value(account)" 2>nul | findstr /R "." >nul
-if errorlevel 1 (
+REM  Se comprueba escribiendo la salida a un archivo temporal en vez de
+REM  `... | findstr`: el patron `call "gcloud" ... | findstr` se rompia en algunas
+REM  maquinas (el pipe abre un cmd anidado y el `call "gcloud"` entre comillas no
+REM  resolvia bien), y el script decia "no hay cuenta" aunque `gcloud auth list`
+REM  mostrara una activa. Tampoco se usa `--filter=status:ACTIVE` (fragil entre
+REM  versiones): basta con que exista alguna cuenta con credenciales.
+set "GCTMP=%TEMP%\eu_gcloud_acct.txt"
+call "!GCLOUD!" auth list --format="value(account)" 1>"!GCTMP!" 2>nul
+set "GCACCOUNT="
+for /f "usebackq delims=" %%A in ("!GCTMP!") do if not defined GCACCOUNT set "GCACCOUNT=%%A"
+del /q "!GCTMP!" >nul 2>&1
+if not defined GCACCOUNT (
     echo   [X] No hay ninguna cuenta de Google conectada en gcloud.
     echo.
     echo       Ejecuta esto ^(abre el navegador para que inicies sesion^):
@@ -94,7 +104,7 @@ if errorlevel 1 (
     echo         "%LOCALAPPDATA%\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd" auth login
     goto :error
 )
-echo   [OK] Sesion de gcloud iniciada
+echo   [OK] Sesion de gcloud iniciada ^(!GCACCOUNT!^)
 
 if not exist "backend\.env" (
     echo   [X] No existe backend\.env

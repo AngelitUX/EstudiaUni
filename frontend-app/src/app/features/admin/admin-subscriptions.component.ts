@@ -86,9 +86,15 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
                   </span>
                 </td>
                 <td class="user-cell">
-                  <div class="user-info">
-                    <span class="user-email">{{ tx.payerEmail || tx.recipientUid || tx.payerUid }}</span>
-                    <span class="user-subtext" *ngIf="tx.payerEmail && tx.recipientUid">UID: {{ tx.recipientUid }}</span>
+                  <div class="user-info" *ngIf="!tx.isGift">
+                    <span class="user-email">{{ tx.payerEmail || tx.payerUid }}</span>
+                    <span class="user-subtext" *ngIf="tx.payerEmail && tx.payerUid">UID: {{ tx.payerUid }}</span>
+                  </div>
+                  <div class="user-info gift-info" *ngIf="tx.isGift">
+                    <span class="gift-badge">🎁 Regalo</span>
+                    <span class="user-subtext">Paga: <strong>{{ tx.payerEmail || tx.payerUid }}</strong></span>
+                    <span class="user-email">Para: {{ tx.recipientEmail || tx.recipientUid }}</span>
+                    <span class="user-subtext" *ngIf="tx.recipientUid">UID destino: {{ tx.recipientUid }}</span>
                   </div>
                 </td>
                 <td>
@@ -98,8 +104,8 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
                 </td>
                 <td>
                   <div class="action-btn-row" *ngIf="tx.type === 'transfer' && tx.status === 'pending_approval'">
-                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id, 'monthly')" title="Otorgar 1 mes de Plan PRO">📅 1 Mes</button>
-                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id, 'yearly')" title="Otorgar 1 año de Plan PRO">🗓️ 1 Año</button>
+                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id, 'monthly')" [title]="'Otorgar 1 mes de Plan PRO a ' + (tx.isGift ? (tx.recipientEmail || tx.recipientUid) : (tx.payerEmail || tx.payerUid))">📅 1 Mes</button>
+                    <button class="btn-approve-sm" (click)="approveTransfer(tx.id, 'yearly')" [title]="'Otorgar 1 año de Plan PRO a ' + (tx.isGift ? (tx.recipientEmail || tx.recipientUid) : (tx.payerEmail || tx.payerUid))">🗓️ 1 Año</button>
                     <button class="btn-reject-sm" (click)="rejectTransfer(tx.id)" title="Rechazar Comprobante">🔴 Rechazar</button>
                   </div>
                   <button *ngIf="tx.type === 'transfer' && (tx.status === 'approved' || tx.status === 'rejected')" class="btn-delete-sm" (click)="deleteTransferRecord(tx.id)" title="Eliminar registro y liberar espacio del comprobante">
@@ -212,6 +218,12 @@ import { AdminSidebarComponent } from './admin-sidebar.component';
     .status-chip.paid, .status-chip.completed, .status-chip.approved { background: rgba(16,185,129,0.12); color: #059669; }
     .status-chip.pending_approval { background: rgba(245,158,11,0.15); color: #b45309; }
     .status-chip.failed, .status-chip.rejected { background: rgba(239,68,68,0.12); color: #b91c1c; }
+
+    .user-info { display: flex; flex-direction: column; gap: 0.1rem; }
+    .user-email { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+    .user-subtext { font-size: 0.72rem; color: var(--text-muted); }
+    .user-info.gift-info { gap: 0.15rem; }
+    .gift-badge { align-self: flex-start; font-size: 0.7rem; font-weight: 800; color: #7c3aed; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.25); border-radius: 6px; padding: 0.1rem 0.4rem; }
 
     .action-btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .btn-approve-sm { padding: 0.35rem 0.75rem; border-radius: 8px; border: none; background: #10b981; color: #fff; font-weight: 700; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
@@ -351,7 +363,11 @@ export class AdminSubscriptionsComponent implements OnInit {
 
   approveTransfer(transferId: string, planType: 'monthly' | 'yearly') {
     const label = planType === 'yearly' ? '1 año' : '1 mes';
-    if (!confirm(`¿Confirmas otorgar ${label} de Plan PRO por esta transferencia?`)) return;
+    const tx = this.filteredTransactions().find(t => t.id === transferId);
+    const dest = tx?.isGift
+      ? `\n\n🎁 ES UN REGALO — el Plan PRO se activará en: ${tx.recipientEmail || tx.recipientUid}\n(paga: ${tx.payerEmail || tx.payerUid})`
+      : '';
+    if (!confirm(`¿Confirmas otorgar ${label} de Plan PRO por esta transferencia?${dest}`)) return;
     this.paymentService.adminApproveTransfer({ transferId, action: 'approve', planType }).subscribe({
       next: (res) => {
         this.actionMsg.set(res.message);

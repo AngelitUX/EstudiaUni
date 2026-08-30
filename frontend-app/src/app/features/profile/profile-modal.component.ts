@@ -107,6 +107,24 @@ import { CareerService, Career } from '../../core/services/career.service';
                   </button>
                 </div>
               </div>
+
+              <!-- Regalos de Plan Pro que este usuario paga (por Flow). Su cuenta puede ser
+                   Básica, así que sin esto no tendría forma de parar el cobro recurrente. -->
+              <div class="info-row" *ngIf="giftedProSubscriptions().length > 0" style="margin-top: 0.75rem;">
+                <div class="info-item" style="width: 100%;">
+                  <span class="info-label">Regalos de Plan Pro que pagas</span>
+                  <div class="gifted-list">
+                    <div class="gifted-row" *ngFor="let g of giftedProSubscriptions()">
+                      <span class="gifted-info">
+                        Para <strong>{{ g.recipientEmail }}</strong> · plan {{ g.planType }} · renovación automática a tu tarjeta
+                      </span>
+                      <button class="btn-cancel-gift" [disabled]="cancellingGiftId === g.id" (click)="cancelGiftedPro(g.id, g.recipientEmail)">
+                        {{ cancellingGiftId === g.id ? 'Cancelando…' : 'Cancelar regalo' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               </div>
               <div class="section-block subjects-section" [class.highlight-section]="scrollTarget === 'subjects-section'">
                 <div class="section-header"><h3>Ruta de Aprendizaje</h3><p>Selecciona las materias que quieres ver en tu ruta.</p></div>
@@ -408,6 +426,13 @@ import { CareerService, Career } from '../../core/services/career.service';
     /* CANCEL SUBSCRIPTION */
     .btn-cancel-subscription { margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: #ef4444; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-cancel-subscription:hover { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.6); transform: translateY(-1px); }
+    .gifted-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+    .gifted-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.6rem 0.85rem; }
+    .gifted-info { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+    .gifted-info strong { color: var(--text-primary); }
+    .btn-cancel-gift { flex-shrink: 0; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1.5px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: #ef4444; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel-gift:hover:not([disabled]) { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.6); }
+    .btn-cancel-gift[disabled] { opacity: 0.5; cursor: not-allowed; }
     .cancel-sub-warning { margin-top: 1rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; font-weight: 600; color: #ef4444; text-align: center; }
     .btn-cancel-sub-next { padding: 0.85rem; border-radius: 12px; border: none; background: #f59e0b; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(245,158,11,0.25); }
     .btn-cancel-sub-next:hover { filter: brightness(1.1); transform: translateY(-2px); }
@@ -921,6 +946,46 @@ export class ProfileModalComponent implements OnInit {
       error: () => {
         this.toast.error('No se pudo cancelar la suscripción. Contacta a soporte.');
       }
+    });
+  }
+
+  /** Regalos de Plan Pro (por Flow) que este usuario está PAGANDO — para que pueda
+   *  cortarlos, ya que su propia cuenta queda "Básico" y no ve "Cancelar Suscripción". */
+  giftedProSubscriptions(): Array<{ id: string; recipientEmail: string; planType: string; status: string }> {
+    const map = (this.firestoreService.profileSignal() as any)?.giftedSubscriptions;
+    if (!map || typeof map !== 'object') return [];
+    return Object.entries(map).map(([id, g]: [string, any]) => ({
+      id,
+      recipientEmail: g?.recipientEmail || 'un usuario',
+      planType: g?.planType === 'yearly' ? 'anual' : 'mensual',
+      status: g?.status || 'active',
+    })).filter(g => g.status === 'active');
+  }
+
+  cancellingGiftId: string | null = null;
+
+  cancelGiftedPro(flowSubscriptionId: string, recipientEmail: string) {
+    if (!confirm(`¿Cancelar el regalo de Plan Pro a ${recipientEmail}? Ya no se cobrará a tu tarjeta. La persona mantiene el acceso hasta el fin de su período ya pagado.`)) return;
+    this.cancellingGiftId = flowSubscriptionId;
+    this.paymentService.cancelGift(flowSubscriptionId).subscribe({
+      next: (res) => {
+        this.cancellingGiftId = null;
+        const current: any = this.firestoreService.profileSignal();
+        if (current?.giftedSubscriptions?.[flowSubscriptionId]) {
+          this.firestoreService.profileSignal.set({
+            ...current,
+            giftedSubscriptions: {
+              ...current.giftedSubscriptions,
+              [flowSubscriptionId]: { ...current.giftedSubscriptions[flowSubscriptionId], status: 'cancelled' },
+            },
+          });
+        }
+        this.toast.info(res.message || 'Regalo cancelado.');
+      },
+      error: (err) => {
+        this.cancellingGiftId = null;
+        this.toast.error(err?.error?.message || 'No se pudo cancelar el regalo. Contacta a soporte.');
+      },
     });
   }
 

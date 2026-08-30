@@ -1045,9 +1045,11 @@ type PathItem = {
       color: var(--text-secondary); 
       white-space: nowrap;
       text-align: center;
-      pointer-events: none; 
-      transition: all 0.2s; 
-      text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1); 
+      pointer-events: none;
+      /* Antes 'transition: all' — animaba font-size/padding/bottom (layout por frame,
+         x~200 nodos). Solo las props de pintado que cambian entre estados. */
+      transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+      text-shadow: 0 2px 4px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1);
     }
     .node-title.historia-title {
       font-size: 0.9rem;
@@ -1103,7 +1105,10 @@ type PathItem = {
     .node-completed.node-boss .node-inner { box-shadow: inset 0 0 0 4px #ef4444; }
 
     /* ACTIVE STATE */
-    .node-active { background: #ce82ff; box-shadow: 0 8px 0 #a559d6, 0 0 0 8px rgba(206,130,255,0.2); transform: scale(1.1); animation: pulseRing 3s infinite; }
+    .node-active { background: #ce82ff; box-shadow: 0 8px 0 #a559d6, 0 0 0 8px rgba(206,130,255,0.2); transform: scale(1.1); }
+    /* El anillo que late: antes 'animation: pulseRing' animaba box-shadow (repintado
+       por frame). Ahora un ::after que solo escala + se desvanece (GPU, sin repintado). */
+    .node-active::after { content: ''; position: absolute; inset: -1px; border-radius: 50%; border: 3px solid rgba(206,130,255,0.5); pointer-events: none; animation: pulseRing 3s infinite; }
     .node-active .node-inner { background: linear-gradient(180deg, #dfa6ff, #ce82ff); border: 4px solid white; width: 76px; height: 76px; }
     .node-active .node-icon { color: white; width: 36px; height: 36px; }
     .node-active:active { transform: scale(1.1) translateY(8px); box-shadow: 0 0 0 #a559d6, 0 0 0 4px rgba(206,130,255,0.2); }
@@ -1191,9 +1196,9 @@ type PathItem = {
     .node-locked:active { transform: translateY(6px); box-shadow: 0 0 0 #cccccc; }
 
     @keyframes pulseRing {
-      0% { box-shadow: 0 8px 0 #a559d6, 0 0 0 0 rgba(206,130,255,0.4); }
-      70% { box-shadow: 0 8px 0 #a559d6, 0 0 0 15px rgba(206,130,255,0); }
-      100% { box-shadow: 0 8px 0 #a559d6, 0 0 0 0 rgba(206,130,255,0); }
+      0% { transform: scale(1); opacity: 0.7; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
 
     .admin-node-toggle {
@@ -1638,21 +1643,25 @@ type PathItem = {
     .tooltip-label { font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
     .tooltip-formula { font-size: 1.1rem; color: #a78bfa; font-family: monospace; font-weight: bold; }
 
+    /* [FIX HEADER TABLET 2026-08-29] El sidebar de escritorio colapsa a .mobile-header desde
+       <=1024 (regla global de styles.css), pero des-clampear el .dashboard-header y ocultar los
+       duplicados de .welcome-actions (racha / PRO / badge / avatar) solo se hacia en <=768.
+       Entre 769 y 1024 el header quedaba apretado a ~110px y esos elementos desbordaban por
+       debajo del titulo. Aca se alinea con el colapso del sidebar: header = solo titulo. */
+    @media (max-width: 1024px) {
+      .dashboard-header { height: auto !important; max-height: none !important; min-height: 0 !important; }
+      .dashboard-header .welcome-actions app-streak-icon,
+      .dashboard-header .welcome-actions .plan-badge,
+      .dashboard-header .welcome-actions .btn-upgrade-pro,
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
+    }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-header { display: flex; }
       .main-content { margin-left: 0; max-width: 100%; }
       .materia-page { padding-top: 60px; }
-      /* La barra móvil fija ya trae logo + foto de perfil; estos mismos
-         elementos duplicados dentro de .dashboard-header quedaban apilados
-         debajo del título (foto "cortada" bajo el texto). */
-      .dashboard-header { height: auto !important; max-height: none !important; }
-      .dashboard-header .welcome-actions app-streak-icon,
-      .dashboard-header .welcome-actions .plan-badge,
-      .dashboard-header .welcome-actions .btn-upgrade-pro,
-      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
-      /* Plan Básico: el header fijo mide 104px (60px + fila de la píldora PRO) en vez de 60px. */
-      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
 
       .sim-drawer { width: 100vw; right: -100vw; }
       .sim-tab-trigger.panel-open { right: calc(100vw - 10px); }

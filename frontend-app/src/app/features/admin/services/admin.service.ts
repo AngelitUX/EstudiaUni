@@ -1,8 +1,24 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { Firestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, writeBatch } from '@angular/fire/firestore';
+import { Firestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, writeBatch } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
 import { PoolPregunta, MateriaId } from '../../learning-path/models/paes.models';
 import { PaesContentService } from '../../learning-path/services/paes-content.service';
+import { FirestoreService } from '../../../core/services/firestore.service';
+
+/** Una noticia del carrusel del home (colección `news`). Los campos coinciden
+ *  con lo que renderiza home.component.ts y con lo que siembra seedNews(). */
+export interface NewsItem {
+  id?: string;
+  title: string;
+  excerpt: string;
+  source: string;
+  date: string;      // ISO 'YYYY-MM-DD' — se usa para ordenar (orderBy('date','desc'))
+  dateText: string;  // texto legible, ej. "19 de mayo, 2026"
+  linkUrl: string;
+  imageUrl: string;
+  gradient: string;  // CSS gradient para el overlay de la portada
+  tag: string;       // texto del badge, ej. "¡Advertencia!"
+}
 
 // Firestore permite hasta 500 escrituras por batch; nos quedamos por debajo
 // del límite para dejar margen a otras operaciones concurrentes.
@@ -13,6 +29,7 @@ export class AdminService {
   private firestore = inject(Firestore);
   private auth = inject(Auth);
   private paesContent = inject(PaesContentService);
+  private firestoreService = inject(FirestoreService);
 
   // ─── Admin role ───
   private _isAdmin = signal<boolean | null>(null); // null = not checked yet
@@ -289,8 +306,10 @@ export class AdminService {
 
   async getBugReports(): Promise<any[]> {
     try {
+      // limit(100): la colección crece sin techo (la crea cualquier usuario) y el
+      // panel no necesita el historial completo — los últimos 100 sobran.
       const snap = await getDocs(
-        query(collection(this.firestore, 'bug_reports'), orderBy('timestamp', 'desc'))
+        query(collection(this.firestore, 'bug_reports'), orderBy('timestamp', 'desc'), limit(100))
       );
       return snap.docs.map(d => ({ id: d.id, ...d.data() }));
     } catch (error) {
@@ -305,6 +324,40 @@ export class AdminService {
 
   async deleteBugReport(id: string): Promise<void> {
     await deleteDoc(doc(this.firestore, 'bug_reports', id));
+  }
+
+  // ─── Noticias del home (colección `news`) ───
+  // El home las lee con FirestoreService.getNews() (cacheado 10 min + limit(20)).
+  // Tras cada escritura se limpia ese cache para que el cambio se vea al instante.
+
+  async getNews(): Promise<NewsItem[]> {
+    try {
+      const snap = await getDocs(
+        query(collection(this.firestore, 'news'), orderBy('date', 'desc'), limit(100))
+      );
+      return snap.docs.map(d => ({ id: d.id, ...d.data() } as NewsItem));
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      return [];
+    }
+  }
+
+  async createNews(item: Omit<NewsItem, 'id'>): Promise<string> {
+    const ref = await addDoc(collection(this.firestore, 'news'), item);
+    this.firestoreService.clearNewsCache();
+    return ref.id;
+  }
+
+  async updateNews(id: string, changes: Partial<NewsItem>): Promise<void> {
+    const data = { ...changes };
+    delete (data as any).id;
+    await updateDoc(doc(this.firestore, 'news', id), data);
+    this.firestoreService.clearNewsCache();
+  }
+
+  async deleteNews(id: string): Promise<void> {
+    await deleteDoc(doc(this.firestore, 'news', id));
+    this.firestoreService.clearNewsCache();
   }
 }
 

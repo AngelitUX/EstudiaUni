@@ -62,6 +62,10 @@ import { AdminService } from './services/admin.service';
           <span class="admin-nav-icon">🐛</span>
           <span class="admin-nav-text">Reportes de Bug</span>
         </a>
+        <a routerLink="/admin/noticias" routerLinkActive="active" class="admin-nav-item">
+          <span class="admin-nav-icon">📰</span>
+          <span class="admin-nav-text">Noticias del Home</span>
+        </a>
         <a routerLink="/admin/modo-infinito" routerLinkActive="active" class="admin-nav-item">
           <span class="admin-nav-icon">⚡</span>
           <span class="admin-nav-text">Modo Infinito</span>

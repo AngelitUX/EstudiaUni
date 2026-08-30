@@ -703,25 +703,26 @@ import { InfiniteMasteryModalComponent } from './infinite-mastery-modal.componen
       50% { transform: translateY(-8px); }
     }
 
+    /* [FIX HEADER TABLET 2026-08-29] El sidebar de escritorio colapsa a .mobile-header desde
+       <=1024 (regla global de styles.css), pero el "des-clampeo" del .dashboard-header y el
+       ocultar los duplicados de .welcome-actions (racha / PRO / badge / avatar) solo se hacia
+       en <=768. Entre 769 y 1024 el header quedaba apretado a ~110px y esos elementos
+       desbordaban por debajo del titulo. Aca se alinea con el colapso del sidebar: el header
+       queda SOLO con titulo + descripcion, y se reserva el alto real de .mobile-header. */
+    @media (max-width: 1024px) {
+      .dashboard-header { height: auto !important; max-height: none !important; min-height: 0 !important; }
+      .dashboard-header .welcome-actions app-streak-icon,
+      .dashboard-header .welcome-actions .plan-badge,
+      .dashboard-header .welcome-actions .btn-upgrade-pro,
+      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
+      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
+    }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-header { display: flex; }
       .main-content { margin-left: 0; max-width: 100%; }
       .page-header { flex-direction: column; }
-      /* La barra móvil fija (.mobile-header) ya trae logo + foto de perfil;
-         estos mismos elementos duplicados dentro de .dashboard-header quedaban
-         apilados debajo del título/descripción (foto "cortada" bajo el texto). */
-      /* El fallback global de styles.css fija .dashboard-header a height/max-height:
-         var(--header-height) (~110px, pensado para el zoom de escritorio) SIN excepción por
-         breakpoint — con el título+descripción de 2 líneas de algunos módulos, el contenido
-         real no entraba ahí y se desbordaba invisible/tapado bajo la tarjeta blanca de abajo. */
-      .dashboard-header { height: auto !important; max-height: none !important; }
-      .dashboard-header .welcome-actions app-streak-icon,
-      .dashboard-header .welcome-actions .plan-badge,
-      .dashboard-header .welcome-actions .btn-upgrade-pro,
-      .dashboard-header .welcome-actions .profile-menu-wrap { display: none !important; }
-      /* Plan Básico: el header fijo mide 104px (60px + fila de la píldora PRO) en vez de 60px. */
-      .mobile-header.mobile-header-with-pro ~ .main-content { padding-top: 104px !important; }
 
       .horizontal-card { flex-direction: column; gap: 1.5rem; padding: 1.5rem; }
       .card-image-col { flex: 0 0 auto; }

@@ -240,6 +240,7 @@ export class FlowService {
     returnUrl: string,
     targetUid?: string,
     couponCode?: string,
+    targetEmail?: string,
   ): Promise<{ token: string; url: string }> {
     const recipientUid = targetUid || payerUid;
     if (targetUid) {
@@ -265,7 +266,9 @@ export class FlowService {
 
     const registrationRecord = {
       payerUid,
+      payerEmail: email,
       recipientUid,
+      recipientEmail: recipientUid !== payerUid ? (targetEmail || '').toLowerCase().trim() : email,
       isGift: recipientUid !== payerUid,
       customerId,
       planType,
@@ -406,6 +409,29 @@ export class FlowService {
       }
 
       await regRef.update({ status: 'completed', subscriptionId: String(subscriptionId), updatedAt: new Date() }).catch(() => {});
+
+      // Regalo: dejar el registro en el doc del PAGADOR para que pueda verlo y
+      // cancelarlo (activateSubscription solo escribe en el doc del recipiente, o
+      // sea el pagador queda 'free' y de otro modo no tendria como parar el cobro
+      // recurrente en su tarjeta). Ver SubscriptionsService.cancelGift().
+      if (regData.isGift) {
+        try {
+          await this.firebaseService.firestore.collection('users').doc(regData.payerUid).set({
+            giftedSubscriptions: {
+              [String(subscriptionId)]: {
+                flowSubscriptionId: String(subscriptionId),
+                recipientUid: regData.recipientUid,
+                recipientEmail: regData.recipientEmail || '',
+                planType: regData.planType,
+                status: 'active',
+                createdAt: new Date(),
+              },
+            },
+          }, { merge: true });
+        } catch (giftDbError) {
+          this.logger.warn(`[Flow] Could not record gift on payer ${regData.payerUid}: ${giftDbError.message}`);
+        }
+      }
 
       return {
         success: true,
