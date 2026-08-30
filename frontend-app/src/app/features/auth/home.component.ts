@@ -3398,17 +3398,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     }
     .pulse-path {
       fill: none;
+      /* RENDIMIENTO (2026-08-29 parte 9): antes 'circuit-pulse' animaba stroke-dashoffset
+         infinitamente en ~12 trazos (features, foco, news, cta). Animar el dashoffset obliga
+         al navegador a recalcular las posiciones del guion a lo largo del path EN CADA FRAME
+         -> era la causa del lag en "¿Por que EstudiaUni?" y "Conoce a Foco". Los trazos
+         quedan estaticos (guion 40/220 = traza de circuito punteada, se ve igual, quieta).
+         Mismo criterio que se aplico al FAQ (ver bitacora 2026-08-29). */
       stroke-dashoffset: 0;
-      animation: circuit-pulse 10s linear infinite;
-    }
-    .path-delay-1 { animation-delay: 0s; }
-    .path-delay-2 { animation-delay: 3s; animation-duration: 12s; }
-    .path-delay-3 { animation-delay: 1.5s; animation-duration: 8s; }
-    .path-delay-4 { animation-delay: 4.5s; animation-duration: 11s; }
-
-    @keyframes circuit-pulse {
-      0% { stroke-dashoffset: 260; }
-      100% { stroke-dashoffset: -260; }
     }
 
     .node-glow {
@@ -5585,27 +5581,14 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       display: block;
     }
     
-    /* Animación de rotación de las líneas orbitales */
-    .orbit-line-1 {
-      animation: orbit-rotate-clockwise 25s linear infinite;
+    /* RENDIMIENTO (2026-08-29 parte 9): las orbitas -1 y -2 son circulos con stroke-dasharray
+       que ANTES rotaban infinitamente. Rotar un trazo punteado obliga a re-teselar el guion
+       cada frame (mismo hallazgo que hundio el FAQ). La -3 (solida) rotando ni se notaba.
+       Quedan quietas: el dibujo alrededor de la mascota de Foco se ve igual, sin costo por
+       frame. transform-origin se deja por si se quiere devolver la rotacion como transform
+       compositado en el futuro. */
+    .orbit-line-1, .orbit-line-2, .orbit-line-3 {
       transform-origin: 300px 300px;
-    }
-    .orbit-line-2 {
-      animation: orbit-rotate-counter 35s linear infinite;
-      transform-origin: 300px 300px;
-    }
-    .orbit-line-3 {
-      animation: orbit-rotate-clockwise 50s linear infinite;
-      transform-origin: 300px 300px;
-    }
-
-    @keyframes orbit-rotate-clockwise {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes orbit-rotate-counter {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(-360deg); }
     }
     
     /* Efecto de flotado suave para los nodos sinápticos */
@@ -6423,15 +6406,35 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     .footer {
       content-visibility: auto;
     }
-    .features-section     { contain-intrinsic-size: auto 2445px; }
-    .foco-section         { contain-intrinsic-size: auto 1447px; }
-    .videos-section       { contain-intrinsic-size: auto 1089px; }
-    .testimonials-section { contain-intrinsic-size: auto 1611px; }
-    .pricing-section      { contain-intrinsic-size: auto 1483px; }
-    .news-section         { contain-intrinsic-size: auto 967px; }
-    .faq-section          { contain-intrinsic-size: auto 1795px; }
-    .cta-section          { contain-intrinsic-size: auto 695px; }
-    .footer               { contain-intrinsic-size: auto 1139px; }
+    /* Alturas estimadas para la barra de scroll mientras la seccion no se ha renderizado.
+       Re-medidas el 2026-08-29 (parte 9) sobre el build REAL, seccion por seccion, tras la
+       reestructura: las viejas estaban MUY desfasadas (features declaraba 2445 y mide ~1300
+       en escritorio / ~1060 en movil) y al renderizarse la seccion cambiaba de tamano de
+       golpe -> el navegador re-anclaba el scroll y "te devolvia" o saltaba. Ahora coinciden
+       con la altura real (+ ~6% de colchon) y ESCRITORIO vs MOVIL van por separado, porque
+       varias secciones tienen alturas muy distintas segun el layout (1 vs varias columnas).
+       El keyword auto de contain-intrinsic-size hace que tras el primer render el navegador
+       use el tamano real igual; esto solo minimiza el salto de la PRIMERA vez. */
+    .features-section     { contain-intrinsic-size: auto 1390px; }
+    .foco-section         { contain-intrinsic-size: auto 960px; }
+    .videos-section       { contain-intrinsic-size: auto 970px; }
+    .testimonials-section { contain-intrinsic-size: auto 790px; }
+    .pricing-section      { contain-intrinsic-size: auto 990px; }
+    .news-section         { contain-intrinsic-size: auto 1060px; }
+    .faq-section          { contain-intrinsic-size: auto 1090px; }
+    .cta-section          { contain-intrinsic-size: auto 490px; }
+    .footer               { contain-intrinsic-size: auto 520px; }
+    @media (max-width: 640px) {
+      .features-section     { contain-intrinsic-size: auto 1130px; }
+      .foco-section         { contain-intrinsic-size: auto 1480px; }
+      .videos-section       { contain-intrinsic-size: auto 530px; }
+      .testimonials-section { contain-intrinsic-size: auto 1130px; }
+      .pricing-section      { contain-intrinsic-size: auto 1660px; }
+      .news-section         { contain-intrinsic-size: auto 950px; }
+      .faq-section          { contain-intrinsic-size: auto 860px; }
+      .cta-section          { contain-intrinsic-size: auto 490px; }
+      .footer               { contain-intrinsic-size: auto 820px; }
+    }
   `]
 })
 export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {

@@ -701,6 +701,43 @@ siguen presentes.
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
 
+### 2026-08-29 (parte 9) — Home en producción: los "saltos" al hacer scroll eran `contain-intrinsic-size` desfasado 2x tras la reestructura; el lag de "¿Por qué EstudiaUni?" y "Conoce a Foco" era animar `stroke-dashoffset` en ~12 trazos
+Typecheck ✅ · `ng build --configuration production` ✅ (6 rutas) · medido sobre el build REAL
+servido en local, seccion por seccion con `scrollIntoView` (el metodo de scroll-through da valores
+falsos: lee el placeholder de `content-visibility`, no la altura real).
+
+**1. "Saltos / te devuelve a donde estabas / salta de un lado a otro" al hacer scroll.** Causa:
+los `contain-intrinsic-size` de las 9 secciones diferidas estaban MUY desfasados tras la
+reestructura (partes 2-7). Medido: `.features-section` declaraba `2445px` y mide **~1307 en
+escritorio / ~1064 en movil**; `.faq-section` declaraba `1795` y mide **~1014 / ~805**. Cuando la
+seccion se renderiza al acercarse, cambia de tamano de golpe (a veces la mitad) y el navegador
+re-ancla el scroll -> el salto. **Arreglo:** re-medidas todas seccion por seccion sobre el build
+real y puestas a la altura real + ~6%, con un `@media (max-width: 640px)` aparte porque varias
+cambian mucho entre 1 y varias columnas (`.foco-section` mide 897 en escritorio pero 1393 en
+movil, `.pricing-section` 929 vs 1563). El metodo de medicion correcto quedo anotado en el
+comentario del bloque: **`scrollIntoView` a cada seccion y medir esa, NUNCA un scroll-through**
+(ese lee el placeholder). Si se vuelve a tocar el layout del home, hay que re-medir.
+
+**2. Lag en "¿Por qué EstudiaUni?" (`.features-section`) y "Conoce a Foco" (`.foco-section`).**
+Causa: `@keyframes circuit-pulse` animaba `stroke-dashoffset` infinitamente en **~12 `<path>`**
+(4 en features, 2 en foco, 2 en news, 2 en cta, todos con `stroke-dasharray: 40 220`), mas las
+orbitas `.orbit-line-1/2` de Foco que son `<circle>` **con `stroke-dasharray` que rotaban**.
+Animar el dashoffset (o rotar un trazo punteado) obliga al navegador a recalcular las posiciones
+del guion a lo largo del path **en cada frame** — es el mismo hallazgo exacto que hundio el FAQ
+(bitacora 2026-08-29). **Arreglo:** se quito `circuit-pulse` de `.pulse-path` (los trazos quedan
+estaticos, se ven igual) y las 3 animaciones de rotacion de `.orbit-line-*`. `content-visibility`
+ya limitaba estas animaciones a "solo mientras la seccion se ve", pero justo cuando el usuario
+esta MIRANDO esas secciones es cuando corrian. Medido: animaciones activas en `.features-section`
+9 -> 5, en `.foco-section` 15 -> 10. Lo que queda animando en esas dos: `ambient-symbol`/
+`neural-node`/`mascot-float` (transform/opacity, GPU) y `text-gradient` (`background-position`, ya
+gateado por `prefers-reduced-motion`).
+
+**3. Error de Flow al comprar: "Commerce has not automatic charge contract".** NO es un bug de
+codigo — es que la cuenta de **www.flow.cl** no tiene activado el contrato de **cobro
+automatico / suscripciones recurrentes**. Flow lo gatea detras de una aprobacion (riesgo de
+contracargos). Hay que solicitarlo/activarlo en el panel de Flow o con su soporte. El sandbox lo
+trae por defecto, produccion no.
+
 ### 2026-08-29 (parte 8) — Presupuesto de CSS subido + preparación del deploy a producción de las credenciales de Turnstile y Flow (el usuario pega los secretos)
 `ng build --configuration production` ✅ — el WARNING de `anyComponentStyle` desaparece.
 `node -c` + corrida real de `generar-env-yaml.js` ✅.
