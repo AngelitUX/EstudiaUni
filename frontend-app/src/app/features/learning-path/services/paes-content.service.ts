@@ -396,13 +396,48 @@ export class PaesContentService {
       const sortedCapitulos = capitulos.sort((a, b) => a.order - b.order);
       this._capitulos.set(await this.syncLocalChapters(sortedCapitulos));
 
-      // 3. Set pool preguntas from local hardcoded variable (just in case)
-      this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
+      // 3. Banco de preguntas de Mini Ensayos / Mente Veloz / Modo Infinito.
+      //    Se genera con `node tools/pool-preguntas/build.js` a partir de
+      //    content/pool-preguntas/**.json (la fuente versionada). El mock en sí
+      //    NO va en git — cae bajo el patrón `*-mock-local.json` del .gitignore.
+      //    Si no está generado todavía, se cae al puñado de preguntas
+      //    hardcodeadas de LOCAL_POOL_PREGUNTAS para no dejar los módulos vacíos.
+      await this.loadPoolPreguntasMock();
     } catch (error) {
       console.warn('⚠️ [EstudiaUni Testing] Failed to load local mocks. Falling back to Firestore...', error);
       await this.loadDataFromFirestore();
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /**
+   * Carga el banco de preguntas local (modo USE_LOCAL_MOCKS).
+   *
+   * El archivo lo genera `node tools/pool-preguntas/build.js` desde
+   * content/pool-preguntas/**.json. Está fuera de git a propósito (patrón
+   * `*-mock-local.json` del .gitignore raíz): lo versionado es el contenido
+   * fuente, no el artefacto. Por eso un checkout limpio no lo tiene, y este
+   * método NO puede tratar su ausencia como un error — cae al fallback
+   * hardcodeado y deja los módulos utilizables.
+   */
+  private async loadPoolPreguntasMock(): Promise<void> {
+    try {
+      const res = await fetch('/assets/mocks/pool-preguntas-mock-local.json?v=' + Date.now());
+      if (!res.ok) throw new Error('pool-preguntas-mock-local.json not found');
+      const pool = await res.json();
+      if (!Array.isArray(pool) || pool.length === 0) throw new Error('pool mock vacío');
+      this._poolPreguntas.set(pool);
+      this.poolPreguntasLoaded = true;
+      console.info(`🧪 [EstudiaUni Testing] Pool local cargado: ${pool.length} preguntas.`);
+    } catch (error) {
+      console.warn(
+        '⚠️ [EstudiaUni Testing] No se pudo cargar pool-preguntas-mock-local.json ' +
+        '(genéralo con: node tools/pool-preguntas/build.js). Usando el pool mínimo hardcodeado.',
+        error
+      );
+      this._poolPreguntas.set(LOCAL_POOL_PREGUNTAS);
+      this.poolPreguntasLoaded = true;
     }
   }
 

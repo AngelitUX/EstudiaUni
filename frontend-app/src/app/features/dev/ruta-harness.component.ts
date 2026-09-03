@@ -8,6 +8,8 @@ import { AdminService } from '../admin/services/admin.service';
 import { PaesContentService } from '../learning-path/services/paes-content.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { LearningAccessService } from '../learning-path/services/learning-access.service';
+import { AuthService } from '../../core/services/auth.service';
+import { MiniEnsayoService } from '../../core/services/mini-ensayo.service';
 
 /**
  * BANCO DE PRUEBAS DE LA RUTA DE APRENDIZAJE — SOLO DESARROLLO.
@@ -77,8 +79,17 @@ export const DEV_HARNESS_PROVIDERS = [
   { provide: AdminService, useFactory: fakeAdminServiceFactory },
   // Instancias propias del subárbol para que resuelvan los dobles de arriba
   // (las de root ya están creadas con los servicios reales).
+  //
+  // OJO: si un servicio `providedIn: 'root'` NO aparece en esta lista, el
+  // subárbol recibe la instancia de root, que está construida con el Auth y el
+  // Firestore REALES — y entonces el harness deja de ser un harness. Por eso
+  // hay que declarar aquí toda la cadena de dependencias del componente que se
+  // quiera montar, no solo el servicio de más arriba.
   PaesContentService,
   LearningAccessService,
+  AuthService,
+  DashboardService,
+  MiniEnsayoService,
 ];
 
 @Component({

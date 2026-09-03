@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-27 · Rama en la que se escribió: `master`
+> Última actualización: 2026-08-30 · Rama en la que se escribió: `poolPreguntas`
 
 ---
 
@@ -200,7 +200,7 @@ estos archivos son casi idénticos entre sí (~150 KB cada uno) y se desincroniz
 | `users/{uid}/actividad/{id}` | Log de actividades de estudio (para racha e historial) | Usuario |
 | `ensayos/{id}` | Metadata de cada ensayo PAES (`title`, `subject`, `questionCount`, `timeMinutes`, `isActive`) | Admin |
 | `preguntas/{id}` | Preguntas de ensayos (`ensayoId`, `order`, `options` A–E, `correctAnswer`, `readingText`) | Admin |
-| `pool_preguntas/{id}` | Banco de preguntas del panel admin (esquema `PoolPregunta`) | Admin |
+| `pool_preguntas/{id}` | Banco de preguntas de Mini Ensayos / Mente Veloz / Modo Infinito (esquema `PoolPregunta`). **La fuente de verdad versionada es `content/pool-preguntas/`** (2026-08-30); Firestore es la copia que consume la app. Ver el README de esa carpeta antes de agregar preguntas | Admin + `tools/pool-preguntas/upload.js` |
 | `intentos/{id}` | Intento de ensayo. **Ojo: el campo de dueño se llama `odId`, no `userId`** | Usuario |
 | `lp_materias/{id}` | Materias de la ruta | Admin |
 | `lp_capitulos/{id}` | Capítulos (con subcolección `secciones`) | Admin |
@@ -467,6 +467,22 @@ Crear los planes recurrentes en Flow (una sola vez):
 cd backend && npm run setup:flow-plans
 ```
 
+Banco de preguntas (`pool_preguntas`) — detalle completo en `content/pool-preguntas/README.md`.
+Validar el contenido y regenerar el mock local:
+```bash
+node tools/pool-preguntas/build.js
+```
+
+Comprobar que el banco alcanza para Mini Ensayo, Mente Veloz y Modo Infinito:
+```bash
+node tools/pool-preguntas/verificar-modulos.js
+```
+
+Subir a Firestore (sin `--commit` solo simula; nunca borra ni toca preguntas de otra procedencia):
+```bash
+node tools/pool-preguntas/upload.js --commit
+```
+
 > Los scripts `*:landing` fueron eliminados del `package.json` (2026-08-18): el landing dejó de ser un
 > proyecto aparte y ahora vive dentro de la app Angular como `features/auth/home.component.ts`.
 
@@ -700,6 +716,230 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-08-30 — Banco de preguntas: de 29 a 1.154 preguntas, con el contenido versionado en git en vez de solo en Firestore. Y el mock de 1,6 MB con TODAS las respuestas correctas dejaba de publicarse en producción
+Typecheck ✅ · `ng build --configuration production` ✅ · verificado en el navegador sobre el
+módulo real de Mini Ensayo (no solo el JSON) · **nada subido a Firestore todavía**: el uploader
+quedó probado en simulación, a la espera de la orden explícita.
+
+**El problema:** `pool_preguntas` tenía **29 preguntas** en Firestore (20 de Comprensión Lectora,
+4 de Biología, 2 de Química, 2 de M1, 1 de Historia). Los tres módulos que dependen de esa
+colección —Mini Ensayos, Mente Veloz y el Modo Infinito— estaban técnicamente vivos pero sin
+contenido con que funcionar.
+
+**1.125 preguntas nuevas, 45 por tema.** El número no es arbitrario: Mini Ensayo permite pedir
+**30 preguntas y marcar un solo tema**, así que con menos de 30 por tema `generateSession()`
+recorta la sesión en silencio. 45 deja margen para que un alumno que repite el mismo tema no vea
+siempre las mismas. Cubre los 25 temas de las 7 materias con contenido:
+
+| Materia | Preguntas | Materia | Preguntas |
+|---|---|---|---|
+| Matemática M1 | 180 | Ciencias · Física | 180 |
+| Matemática M2 | 180 | Ciencias · Química | 135 |
+| Competencia Lectora | 135 | Historia | 135 |
+| Ciencias · Biología | 180 | **Total** | **1.125** |
+
+`ciencias-tp` quedó vacía **a propósito** (decisión del equipo). No rompe nada: el selector ya
+muestra "No hay preguntas disponibles para esta materia aún" — verificado en el navegador.
+
+**🔴 El contenido ahora vive en git, no solo en Firestore.** Antes, lo único que existía era lo
+que alguien hubiera cargado a mano por el panel admin: sin revisión, sin historial y sin forma de
+volver atrás. Ahora la fuente de verdad es `content/pool-preguntas/<materia>/<tema>.json` y
+Firestore es la copia que consume la app. Ver `content/pool-preguntas/README.md`.
+
+**Herramientas nuevas (`tools/pool-preguntas/`):**
+- `schema.js` — espejo de `AdminService.temasPorMateria`. **Si ese mapa cambia, hay que cambiar
+  este archivo también**: el importador del panel valida contra el original, así que si divergen,
+  contenido que el script da por bueno sería rechazado por el panel.
+- `build.js` — valida con **las mismas reglas que `validateAndImport()`** del panel admin, más
+  chequeos que el panel no hace (alternativas idénticas, enunciado+preámbulo duplicado, ids
+  repetidos). Genera el mock local. `--check` valida sin escribir.
+- `verificar-modulos.js` — replica la lógica de filtrado **real** de los tres consumidores
+  (`MiniEnsayoService`, `normalizeMateriaId` de Mente Veloz, y el emparejamiento por eje del Modo
+  Infinito) para comprobar que a ninguno le falta contenido.
+- `rebalance.js` — corrige el sesgo de la letra correcta. **Nunca toca preguntas cuyas cuatro
+  alternativas forman una secuencia numérica ordenada** (ej. "20% / 25% / 80% / 125%"), porque ahí
+  el orden es información para el estudiante. Los 25 temas quedaron entre 10 y 12 por letra.
+- `upload.js` — sube a Firestore. Solo toca `pool_preguntas`, **nunca borra**, usa ids
+  deterministas (re-ejecutarlo no duplica) y **se salta todo documento cuyo `createdBy` no sea el
+  de esta tanda**, así que las 29 preguntas previas quedan intactas. Simulación por defecto.
+- `audit-firestore.js` — auditoría de solo lectura de la colección.
+
+**🔴 Hallazgo de seguridad corregido, del mismo tipo que el de los PDFs con solucionario
+(sección 11): `src/assets/mocks/` se estaba publicando en producción.** `angular.json` copia
+`src/assets` entero al build, así que el mock generado —**1,1 MB con las 1.125 preguntas y su
+`respuesta_correcta`**— habría quedado servido sin autenticación en
+`https://estudiauni.cl/assets/mocks/pool-preguntas-mock-local.json`. Los mocks de capítulos y
+materias (0,5 MB) ya se publicaban así desde antes.
+
+> **Ojo con cómo se arregla, porque el primer intento rompió el modo mocks.** Agregar `mocks/**`
+> al `ignore` de `build.options.assets` lo excluye **también de `ng serve`**, porque la
+> configuración `development` hereda ese array — verificado: el mock pasó a devolver 404 en el
+> servidor de desarrollo, dejando inservible `USE_LOCAL_MOCKS`. La exclusión tiene que ir en
+> `configurations.production.assets`, sobrescribiendo el array completo. Comprobado en los dos
+> lados: en producción `assets/mocks/` no existe y `grep respuesta_correcta` sobre `dist/assets/`
+> no devuelve nada; en desarrollo el mock responde 200 con las 1.125 preguntas.
+
+**`formula_latex` tiene que ser legible sin renderizar, y el validador lo exige.** El runner de
+Mini Ensayo y el Modo Infinito pasan ese campo por KaTeX, pero **Mente Veloz lo imprime tal cual
+dentro de un `<code>`** (`mente-veloz.component.ts` ~línea 344). Por eso `schema.js` rechaza
+`\frac`, `\sqrt` y `\begin`: en Mente Veloz el alumno vería el código crudo. Se usa notación plana
+(`x^2`, `3/4`, `(a+b)/2`), que se ve bien en los tres módulos.
+
+**Nuevo: `/dev/mini-ensayo`** en `app.routes.dev.ts`, con el mismo patrón del harness de la Ruta.
+Permite revisar el módulo real sin iniciar sesión. Requirió agregar `AuthService`,
+`DashboardService` y `MiniEnsayoService` a `DEV_HARNESS_PROVIDERS`: **un servicio
+`providedIn: 'root'` que no esté en esa lista recibe la instancia de root, construida con el Auth
+y el Firestore reales**, y entonces el harness deja de aislar nada. Hay que declarar toda la
+cadena de dependencias del componente que se quiera montar. Verificado que no llega a producción
+(`grep -rl "DevRutaHarness\|dev/mini-ensayo" dist/` → vacío).
+
+**Verificado en el navegador, sobre el módulo real y con el mock local:**
+- Las 7 materias muestran sus temas con "45 pregs" cada uno.
+- Con plan PRO, tema único (M2 · Geometría) y 30 preguntas: la sesión se armó con **30 preguntas,
+  30 ids únicos, todas de `matematicas-m2` / `Geometría`**. Ese era exactamente el escenario que
+  motivó el piso de 45 por tema.
+- Consola: `🧪 Pool local cargado: 1125 preguntas`.
+
+**Modo Infinito — un eje queda por debajo del umbral, y es aceptable.** El emparejamiento busca
+los tópicos del eje dentro de `tema + enunciado`. `química/soluciones` obtiene 4 coincidencias
+(el servicio pide 5) y cae en su respaldo: usar todas las preguntas de la materia. El quiz se arma
+igual. El resto de los ejes va de 5 a 56 coincidencias.
+
+**Auditoría de las 29 preguntas preexistentes (solo lectura, nada modificado):** cumplen el
+esquema, usan temas válidos y no hay duplicados ni alternativas repetidas. **Un solo problema
+real:** `test-m1-alg-1-q1` dice "Observa el siguiente gráfico de una función afín" y su
+`preambulo_imagen_url` apunta a Wikimedia, que **devuelve HTTP 400** (bloqueo de hotlinking). La
+pregunta es irresoluble tal como está. Es la única del banco con imagen externa; el contenido
+nuevo no usa ninguna. **Corregida el mismo 2026-08-30 — ver "La imagen rota" más abajo.**
+
+**Subido a Firestore:** 1.125 altas, 0 actualizaciones, 0 documentos previos tocados. La colección
+quedó con **1.154**. Verificado después con `verificar-firestore.js` (lectura de los 1.154 docs
+reales): esquema OK, 0 temas fuera del catálogo, 0 enunciados repetidos, los 25 temas por sobre el
+piso de 30, y distribución global A=275 B=304 C=304 D=271 (máximo 26,3%, contra un 25% de azar
+puro). El único hallazgo fue la imagen rota de `test-m1-alg-1-q1`, corregida después (ver abajo).
+
+#### 🔴 Contraste con el temario oficial DEMRE 2027 — hecho DESPUÉS de escribir el contenido
+
+Los temarios oficiales **estaban en el repo desde antes** (`pdfs/*/2027-26-03-19-temario-paes-*.pdf`
+y `pdfs/ciencias/TemarioCiencias.txt`) y no se usaron al redactar: el contenido se escribió sobre la
+estructura de ejes que ya define `AdminService.temasPorMateria`. Al cruzarlo después aparecieron
+desajustes reales. **Nada de esto está corregido todavía** — varias correcciones implican decidir
+si se re-alinea el catálogo de temas de la app o el contenido.
+
+- **🔴 Física · "Energía" — el desajuste más grave.** El área oficial se llama **"Energía – Tierra"**
+  y trata de **tectónica de placas, deriva continental, geosfera, sismos y volcanismo**. Las 45
+  preguntas escritas son de trabajo, energía cinética/potencial, potencia, calor, temperatura y
+  termodinámica: **contenido correcto pero fuera del temario 2027**. Ojo: el nombre corto "Energía"
+  viene de `temasPorMateria`, que ya estaba así antes de este trabajo.
+- **Física · Mecánica:** el temario incluye además **modelos geocéntrico/heliocéntrico, Kepler,
+  Galileo y teorías del origen del universo (Big Bang)**. Sin cobertura.
+- **Física · "Electricidad y magnetismo":** el área oficial es solo **"Electricidad"**. Las preguntas
+  de imanes, inducción y transformadores quedan fuera. Falta "componentes de la instalación
+  eléctrica domiciliaria".
+- **Física · Ondas:** el temario se centra en **ondas electromagnéticas**, espejos/lentes y
+  dispositivos (radar, fibra óptica, telescopios). Hay bastante contenido de sonido, menos
+  prioritario.
+- **Biología · "Procesos y funciones biológicas":** el área oficial es mucho **más estrecha** de lo
+  escrito — solo sistema nervioso, sexualidad y reproducción, métodos de control de natalidad
+  (incluidos los naturales: Billings, calendario, temperatura basal) e ITS específicas. Las
+  preguntas de digestivo, respiratorio, circulatorio y excretor están fuera.
+- **Biología · "Organismo y ambiente":** oficialmente es solo fotosíntesis, respiración celular,
+  flujo de energía y ciclo del carbono/oxígeno. La ecología amplia (relaciones interespecíficas,
+  sucesión, eutrofización, biodiversidad) excede el temario.
+- **Biología · Herencia:** faltan los **puntos de control del ciclo celular (G1–S, G2–M, metafase)**,
+  la embriología como evidencia evolutiva y Wallace.
+- **Química:** faltan análisis porcentual, fórmula empírica vs molecular, molalidad, fracción molar,
+  ppm, %m/m–%m/v–%v/v y mezclas de soluciones; en orgánica faltan hibridación, ángulos/longitudes de
+  enlace, modelos de representación (topológica, esferas y varillas) y varios grupos funcionales
+  (haluros, sulfuros, anhídridos, fenoles, nitrilos).
+- **M1 · Probabilidad y Estadística:** **cuartiles, percentiles y diagrama de cajón son M1** en el
+  temario oficial, y quedaron tratados en M2. Hay que moverlos o duplicarlos.
+- **M2:** ~~faltan **gráficos de las funciones seno y coseno**, **rectas en el plano y posiciones
+  relativas**, **modelos binomiales**~~ — **los tres se agregaron el mismo 2026-08-30, ver más
+  abajo**. Siguen faltando **cuerdas y secantes en la circunferencia** y la matemática financiera
+  aplicada (AFP, créditos hipotecarios y de consumo).
+- **🔴 Historia · "Economía y Sociedad":** el eje oficial se llama **"Sistema económico"** y es mucho
+  más acotado: funcionamiento del mercado y factores que lo alteran, relaciones Estado–mercado,
+  modelos de desarrollo con sus impactos sociales y ambientales, y **derechos laborales**. La
+  macroeconomía escrita (PIB, IPC, inflación, política monetaria, Banco Central, impuestos,
+  presupuesto) **no está en el temario**.
+- **🔴 Geografía ya no es un eje de la PAES de Historia** en el temario 2027. Las preguntas de
+  relieve, clima y población chilena quedaron fuera de temario, y el eje `geografia` del Modo
+  Infinito (`infinite-mastery.service.ts`) tampoco corresponde.
+- **Bien alineados:** M1 completo salvo lo indicado, M2 en lo demás, **Competencia Lectora** (las
+  tres habilidades y sus tareas lectoras coinciden con el temario) e **Historia · "Mundo, América y
+  Chile"** y **"Formación Ciudadana"**, salvo que a esta última le falta el **sistema judicial
+  chileno y el acceso a la justicia**, que sí está en el temario.
+
+> **Para la próxima vez: leer `pdfs/*/2027-*-temario-*.pdf` ANTES de escribir contenido.** Se pueden
+> extraer a texto con el `pdf-parse` que ya está en `backend/node_modules` (usar la clase
+> `PDFParse`, no la función por defecto: la API cambió).
+
+#### Primer cierre de brechas del temario: los 3 vacíos de M2 (+18 preguntas)
+
+`build.js --check` ✅ 1.143 preguntas · `verificar-modulos.js` ✅ · subido a Firestore y verificado
+con `verificar-firestore.js` sobre los **1.172** documentos reales.
+
+Se cubrieron los tres contenidos de M2 que el temario oficial exige y el banco no tenía. Van al
+tema que les corresponde según DEMRE, **no a uno nuevo** — el catálogo `AdminService.temasPorMateria`
+no se tocó, así que aparecen de inmediato en el selector de Mini Ensayo:
+
+| Contenido | Tema (M2) | Ids |
+|---|---|---|
+| Gráficos de seno y coseno (período, amplitud, recorrido, desfase, modelo periódico aplicado) | Álgebra y Funciones | `pp-m2-alg-046..051` |
+| Rectas en el plano y posiciones relativas (paralelas, perpendiculares, coincidentes, intersección, pendiente desde la ecuación general) | Geometría | `pp-m2-geo-046..051` |
+| Modelos binomiales (condiciones, cálculo, valor esperado `n·p`, caso que NO es binomial) | Probabilidad y Estadística | `pp-m2-pro-046..051` |
+
+Los tres temas quedan en **51 preguntas** (M2 total: 198). La distribución de la letra correcta se
+eligió a mano para no reintroducir sesgo: los tres quedaron en A=12 B=13 C=13 D=13, y el global de
+la colección en A=280 B=308 C=307 D=277 (máximo 26,3%). No hizo falta correr `rebalance.js`.
+
+Detalle que importa para no romper Mente Veloz: las fórmulas van en notación plana
+(`f(x) = 3 * sen(x)`, `2x + 4y - 8 = 0`) y **la pregunta se entiende sin ver el gráfico** — se
+describe la función en el enunciado en vez de depender de una imagen, porque el banco no usa
+imágenes externas (la única que las usaba, `test-m1-alg-1-q1`, se corrigió justo después — ver
+la sección siguiente).
+
+Sigue pendiente del contraste con el temario: **cuerdas y secantes en la circunferencia** y
+matemática financiera aplicada en M2, más todo lo listado arriba para Física, Biología, Química,
+M1 e Historia.
+
+#### La imagen rota (`test-m1-alg-1-q1`): reescrita autocontenida y adoptada por la fuente versionada
+
+`build.js --check` ✅ 1.144 preguntas · `verificar-firestore.js` sobre los **1.172 docs reales** ✅
+**sin ningún fallo** (antes acusaba 1).
+
+La pregunta decía "Observa el siguiente gráfico de una función afín" con un
+`preambulo_imagen_url` a Wikimedia que **devuelve HTTP 400** por bloqueo de hotlinking: era
+irresoluble. **Re-hospedar la imagen en Cloudinary no era una opción**: las `CLOUDINARY_*` de
+`backend/.env` están vacías (bloqueante #4 de la sección 11).
+
+Se reescribió **sin depender de ninguna imagen**, que es el criterio del resto del banco. La
+matemática, las 4 alternativas y la respuesta correcta (`B`, `y = x/2 + 1`) **no cambiaron**: la
+recta se describe por dos puntos, `(0, 1)` y `(4, 3)`, de donde `n = 1` y `m = (3-1)/(4-0) = 1/2`.
+Los tres distractores siguen siendo pedagógicamente útiles (`y = 2x + 1` confunde la pendiente con
+su recíproco, `y = 2x - 1` además cambia el corte, `y = -2x + 1` invierte el signo).
+
+**🔴 Lo que costó un script aparte, y conviene entender antes de tocar otra pregunta vieja:**
+`upload.js` **se salta a propósito** todo documento cuyo `createdBy` no sea el de esta tanda
+(esta era `migration-script`), para no pisar contenido cargado a mano por el panel. Esa protección
+es correcta, pero también impide corregir una de esas preguntas desde `content/`. Por eso se creó
+**`tools/pool-preguntas/adoptar.js`**, la excepción explícita:
+
+- Solo toca los ids que se le pasan por argumento — **nunca hace un barrido**.
+- **Exige que el id ya exista en `content/`** y que pase el validador; si no, aborta. Así la
+  versión versionada es siempre la que queda en la base, nunca al revés.
+- Imprime el **antes/después campo por campo** y es simulación por defecto (`--commit` para
+  escribir).
+- **Conserva el `createdAt` original.** Ojo con esto si alguien lo modifica: `aDocumentoFirestore()`
+  pisa `createdAt` con la fecha que se le pase, así que llamarlo sin más borraría la fecha de
+  creación real. El primer borrador del script tenía justamente ese bug y lo delató el diff.
+- El diff compara con las llaves ordenadas, si no un cambio de *orden* de `alternativas` se lee
+  como cambio de contenido (falso positivo que apareció en la primera corrida).
+
+Tras la adopción, `upload.js` pasa a administrarla como una más: el dry-run informa **1.144
+actualizaciones y 28 documentos preexistentes intactos** (antes 29).
 
 ### 2026-08-29 (parte 9) — Home en producción: los "saltos" al hacer scroll eran `contain-intrinsic-size` desfasado 2x tras la reestructura; el lag de "¿Por qué EstudiaUni?" y "Conoce a Foco" era animar `stroke-dashoffset` en ~12 trazos
 Typecheck ✅ · `ng build --configuration production` ✅ (6 rutas) · medido sobre el build REAL

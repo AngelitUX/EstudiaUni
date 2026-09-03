@@ -59,4 +59,29 @@ const devInicioRoute = {
   ],
 };
 
-export const routes: Routes = [...baseRoutes, devRutaHarnessRoute, devInicioRoute, wildcardRoute];
+// Mini Ensayos sin login, para revisar el banco de preguntas (pool_preguntas).
+// Es el consumidor principal del pool: permite comprobar que cada materia
+// muestre sus temas con el conteo correcto y que la sesión se arme bien.
+// Con USE_LOCAL_MOCKS activo lee el mock local generado desde
+// content/pool-preguntas/ (ver tools/pool-preguntas/build.js).
+const devMiniEnsayoRoute = {
+  path: 'dev/mini-ensayo',
+  data: { title: 'DEV · Mini Ensayo', noIndex: true },
+  loadComponent: () =>
+    import('./features/dev/ruta-harness.component').then(m => m.DevRutaHarnessComponent),
+  children: [
+    {
+      path: '',
+      loadComponent: () =>
+        import('./features/mini-ensayos/mini-ensayo-setup.component').then(m => m.MiniEnsayoSetupComponent),
+    },
+  ],
+};
+
+export const routes: Routes = [
+  ...baseRoutes,
+  devRutaHarnessRoute,
+  devInicioRoute,
+  devMiniEnsayoRoute,
+  wildcardRoute,
+];
