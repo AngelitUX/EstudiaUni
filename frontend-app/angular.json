@@ -87,7 +87,22 @@
                   "maximumError": "150kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "public"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "src/assets",
+                  "output": "assets",
+                  "ignore": [
+                    "pruebasDemre/**",
+                    "mocks/**"
+                  ]
+                }
+              ]
             },
             "development": {
               "fileReplacements": [
