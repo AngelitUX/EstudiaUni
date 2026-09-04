@@ -10,7 +10,7 @@ import {
 import { SubscriptionsService } from './subscriptions.service';
 import { FlowService } from './flow.service';
 import { CheckCreditsDto } from './dto/change-plan.dto';
-import { StartFlowRegistrationDto, ConfirmFlowSubscriptionDto, ValidateCouponDto, CancelGiftDto } from './dto/flow.dto';
+import { CreateFlowPaymentDto, ConfirmFlowPaymentDto, ValidateCouponDto } from './dto/flow.dto';
 import { SubmitTransferDto } from './dto/manual-payment.dto';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import {
@@ -42,40 +42,16 @@ export class SubscriptionsController {
 
   // NOTE: there is intentionally no public "upgrade" endpoint here. Granting
   // premium must only ever happen after a verified payment (see
-  // FlowService.confirmRegistrationAndSubscribe / handleRecurringWebhook) or
-  // an admin action (see SubscriptionsService.manualGrant/approveTransfer). A
-  // directly callable `POST /subscriptions/upgrade` used to exist and would
-  // grant Premium to ANY authenticated user with no payment check at all —
-  // it was removed.
+  // FlowService.confirmPayment / handlePaymentWebhook) or an admin action
+  // (see SubscriptionsService.manualGrant/approveTransfer). A directly
+  // callable `POST /subscriptions/upgrade` used to exist and would grant
+  // Premium to ANY authenticated user with no payment check at all — it was
+  // removed.
 
-  @Post('cancel')
-  async cancel(@CurrentUser() user: CurrentUserData) {
-    const result = await this.subscriptionsService.cancel(user.uid);
-    if (result.flowSubscriptionId) {
-      // Stop future Flow charges. Local access already keeps running until
-      // endDate regardless of whether this call succeeds, so a Flow-side
-      // failure here is logged (inside FlowService) but never surfaced as an
-      // error to the user — the cancellation they asked for did take effect.
-      await this.flowService.cancelFlowSubscription(result.flowSubscriptionId).catch(() => {});
-    }
-    return result;
-  }
-
-  @Post('gift/cancel')
-  @HttpCode(HttpStatus.OK)
-  async cancelGift(
-    @CurrentUser() user: CurrentUserData,
-    @Body() dto: CancelGiftDto,
-  ) {
-    const result = await this.subscriptionsService.cancelGift(user.uid, dto.flowSubscriptionId);
-    if (result.flowSubscriptionId) {
-      // Cortar los cobros futuros en Flow. Un fallo del lado de Flow se registra
-      // pero no se le muestra al usuario como error: el regalo ya quedó marcado
-      // como cancelado y la persona conserva el acceso hasta su endDate.
-      await this.flowService.cancelFlowSubscription(result.flowSubscriptionId).catch(() => {});
-    }
-    return result;
-  }
+  // NOTE: there is also intentionally no "cancel subscription" endpoint.
+  // That only ever made sense while Flow auto-charged the card every period
+  // (see CLAUDE.md §6/§12 for why that stopped) — a one-time "pase" has
+  // nothing recurring to cancel, it just expires on its own `endDate`.
 
   @Post('validate-coupon')
   @HttpCode(HttpStatus.OK)
@@ -83,13 +59,13 @@ export class SubscriptionsController {
     return this.flowService.validateCoupon(dto.code, dto.planType);
   }
 
-  @Post('flow/register-card')
+  @Post('flow/create-payment')
   @HttpCode(HttpStatus.OK)
-  async startFlowRegistration(
+  async createFlowPayment(
     @CurrentUser() user: CurrentUserData,
-    @Body() dto: StartFlowRegistrationDto,
+    @Body() dto: CreateFlowPaymentDto,
   ) {
-    return this.flowService.startCardRegistration(
+    return this.flowService.createPayment(
       user.uid,
       user.email,
       dto.planType,
@@ -102,11 +78,11 @@ export class SubscriptionsController {
 
   @Post('flow/confirm')
   @HttpCode(HttpStatus.OK)
-  async confirmFlowSubscription(
+  async confirmFlowPayment(
     @CurrentUser() user: CurrentUserData,
-    @Body() dto: ConfirmFlowSubscriptionDto,
+    @Body() dto: ConfirmFlowPaymentDto,
   ) {
-    return this.flowService.confirmRegistrationAndSubscribe(user.uid, dto.token);
+    return this.flowService.confirmPayment(user.uid, dto.token);
   }
 
   @Post('transfer/submit')

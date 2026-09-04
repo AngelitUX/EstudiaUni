@@ -1,6 +1,6 @@
 import { IsString, IsIn, IsUrl, IsOptional } from 'class-validator';
 
-export class StartFlowRegistrationDto {
+export class CreateFlowPaymentDto {
   @IsString()
   @IsIn(['monthly', 'yearly'])
   planType: 'monthly' | 'yearly';
@@ -11,7 +11,7 @@ export class StartFlowRegistrationDto {
 
   @IsOptional()
   @IsString()
-  targetUid?: string; // If provided, premium will be granted to this user (gift flow)
+  targetUid?: string; // If provided, the pass is granted to this user (gift flow)
 
   @IsOptional()
   @IsString()
@@ -19,17 +19,12 @@ export class StartFlowRegistrationDto {
 
   @IsOptional()
   @IsString()
-  couponCode?: string; // Optional discount code, applied to the first charge only
+  couponCode?: string; // Optional discount code, applied to this one-time payment
 }
 
-export class ConfirmFlowSubscriptionDto {
+export class ConfirmFlowPaymentDto {
   @IsString()
   token: string;
-}
-
-export class CancelGiftDto {
-  @IsString()
-  flowSubscriptionId: string;
 }
 
 export class ValidateCouponDto {

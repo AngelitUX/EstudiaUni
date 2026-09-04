@@ -275,7 +275,7 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
               <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                 <div class="ai-hero-left">
                   <div class="ai-hero-rec" [class.anim-even]="activeRecIdx % 2 === 0" [class.anim-odd]="activeRecIdx % 2 !== 0" *ngIf="dashSvc.recommendations()[activeRecIdx] as rec">
-                  <div class="ai-hero-icon">{{ rec.icon }}</div>
+                  <div class="ai-hero-icon"><img [src]="rec.iconSrc" [alt]="rec.title" loading="lazy" decoding="async" /></div>
                   <div class="ai-hero-text">
                     <h3>{{ rec.title }}</h3>
                     <p>{{ rec.description }}</p>
@@ -295,11 +295,12 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
                 <button class="btn-cta-primary btn-hero" [routerLink]="dashSvc.recommendations()[activeRecIdx].routerLink || '/ruta'">
                    Ir
                 </button>
-                <button *ngIf="isProPlan() || adminService.isAdmin()" class="btn-cta-secondary btn-hero" [disabled]="coachLoading()" (click)="openStudyCoach()">
+                <button *ngIf="isProPlan() || adminService.isAdmin()" class="btn-cta-secondary btn-hero btn-foco-glow" [disabled]="coachLoading()" (click)="openStudyCoach()">
                   {{ coachLoading() ? 'Foco está pensando...' : 'Hablar con Foco' }}
                 </button>
-                <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-cta-secondary btn-hero" (click)="paymentService.openPricingModal()">
-                  🔒 Recomendaciones IA (PRO)
+                <button *ngIf="!isProPlan() && !adminService.isAdmin()" class="btn-cta-secondary btn-hero btn-pro-shimmer" (click)="paymentService.openPricingModal()">
+                  <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Pro.avif" alt="" class="btn-pro-ico" aria-hidden="true" />
+                  Recomendaciones IA (PRO)
                 </button>
               </div>
               <div class="ai-reco-panel" *ngIf="aiRecoText() || aiRecoError()">
@@ -1423,7 +1424,8 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
       0% { opacity: 0; transform: translateY(8px) scale(0.98); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .ai-hero-icon { font-size: 2.2rem; background: rgba(133,92,214,0.1); padding: 0.65rem; border-radius: 14px; line-height: 1; flex-shrink: 0; }
+    .ai-hero-icon { background: rgba(133,92,214,0.1); padding: 0.7rem; border-radius: 16px; line-height: 0; flex-shrink: 0; display: inline-flex; }
+    .ai-hero-icon img { width: 3.5rem; height: 3.5rem; object-fit: contain; display: block; }
     .ai-hero-text { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
     .ai-hero-text h3 { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0; }
     .ai-hero-text p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
@@ -1476,6 +1478,65 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
     .btn-hero:active {
       transform: translateY(0);
     }
+
+    /* ══ Efecto destellante de los botones de "Recomendación IA" ══
+       Mismo patrón que .btn-upgrade-pro (styles.css): un barrido de luz en ::after
+       (transform + opacity, compositable, recortado por overflow:hidden) y un glow
+       que late en la propia box-shadow del botón. Es UN solo elemento pequeño, así
+       que animar box-shadow acá es aceptable (igual que .btn-upgrade-pro). */
+    .btn-foco-glow, .btn-pro-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    /* Contorno dorado del botón de Foco (sobre el fondo morado de .btn-hero). */
+    .btn-foco-glow { border: 2px solid #FFD75E; }
+    .btn-foco-glow:hover { border-color: #FFE9A8; }
+    .btn-foco-glow { animation: focoGlowBreath 2.6s ease-in-out infinite alternate; }
+    .btn-pro-shimmer { animation: proGlowBreath 2.6s ease-in-out infinite alternate; }
+    @keyframes focoGlowBreath {
+      0%   { box-shadow: 0 4px 12px rgba(133,92,214,0.3), 0 0 10px rgba(133,92,214,0.35); }
+      100% { box-shadow: 0 4px 14px rgba(133,92,214,0.4), 0 0 22px rgba(133,92,214,0.8), 0 0 34px rgba(28,176,246,0.45); }
+    }
+    @keyframes proGlowBreath {
+      0%   { box-shadow: 0 4px 12px rgba(230,161,0,0.35), 0 0 10px rgba(255,200,0,0.35); }
+      100% { box-shadow: 0 4px 14px rgba(230,161,0,0.5), 0 0 24px rgba(255,200,0,0.85), 0 0 38px rgba(245,158,11,0.5); }
+    }
+    .btn-foco-glow::after, .btn-pro-shimmer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 55px;
+      height: 100%;
+      pointer-events: none;
+      transform: skewX(-22deg) translateX(-120px);
+      animation: btnShimmerSweep 4.5s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+    }
+    .btn-foco-glow::after { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%); }
+    .btn-pro-shimmer::after { background: linear-gradient(90deg, rgba(255,248,220,0) 0%, rgba(255,248,220,0.85) 50%, rgba(255,248,220,0) 100%); }
+    @keyframes btnShimmerSweep {
+      0% { transform: skewX(-22deg) translateX(-120px); opacity: 0; }
+      8% { opacity: 1; }
+      28% { transform: skewX(-22deg) translateX(260px); opacity: 0; }
+      100% { transform: skewX(-22deg) translateX(260px); opacity: 0; }
+    }
+    /* El botón del plan básico: fondo dorado (va al modal de precios) + contorno morado de marca. */
+    .btn-pro-shimmer {
+      background: linear-gradient(135deg, #FFE885 0%, #E6A100 50%, #B87E00 100%);
+      border: 2px solid var(--accent-primary);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+    }
+    .btn-pro-shimmer:hover { filter: brightness(1.06); border-color: #6d3fc4; }
+    .btn-pro-ico { width: 1.15rem; height: 1.15rem; object-fit: contain; margin-right: 0.15rem; vertical-align: -2px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-foco-glow, .btn-pro-shimmer { animation: none; }
+      .btn-foco-glow { box-shadow: 0 4px 14px rgba(133,92,214,0.4), 0 0 16px rgba(133,92,214,0.5); }
+      .btn-pro-shimmer { box-shadow: 0 4px 14px rgba(230,161,0,0.5), 0 0 16px rgba(255,200,0,0.5); }
+      .btn-foco-glow::after, .btn-pro-shimmer::after { animation: none; opacity: 0; }
+    }
+
     .btn-hero-secondary { background: none; border: none; color: var(--accent-primary); font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; padding: 0.4rem 0.8rem; border-radius: 9px; }
     .btn-hero-secondary:hover { background: rgba(133,92,214,0.08); text-decoration: underline; }
 

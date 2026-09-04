@@ -5092,13 +5092,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       opacity: 1;
     }
 
-    .flow-pulse-node {
-      animation: flow-node-pulse 2.5s ease-in-out infinite alternate;
-    }
-    @keyframes flow-node-pulse {
-      0% { r: 3px; opacity: 0.25; }
-      100% { r: 8px; opacity: 0.65; }
-    }
+    /* (Se eliminó .flow-pulse-node / @keyframes flow-node-pulse: CSS muerto — ninguna clase
+       del template lo usa — y animaba 'r' de un <circle>, que no se puede componer.) */
 
     /* ESTADOS DE ENTRADA CHOREOGRAPHED (ANIMACIONES DE ENTRADA) */
     .videos-section:not(.is-visible) .tab-btn {
@@ -7059,6 +7054,14 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           this.cdr.markForCheck();
           const fullText = this.currentSimExercise.explanation;
           let charIdx = 0;
+          // En teléfonos (puntero grueso) la cadencia baja: 60 ms/caracter y markForCheck cada
+          // 6 (~2,7 pasadas de CD/s en vez de ~8), porque este typewriter corre TODO el tiempo
+          // que el hero está aunque sea parcialmente visible -- o sea, justo mientras el usuario
+          // scrollea el hero de arriba a abajo. Sigue leyéndose como escritura fluida.
+          const coarse = typeof window !== 'undefined'
+            && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+          const tickMs = coarse ? 60 : 32;
+          const markEvery = coarse ? 6 : 4;
           // Runs outside Angular's zone so the ~30fps character tick doesn't force a
           // full-tree change detection pass on every frame (was the main cause of hero
           // animation jank while scrolling). CD is re-entered only every few characters.
@@ -7068,10 +7071,8 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
               if (charIdx < fullText.length) {
                 this.heroSimTypedText += fullText.charAt(charIdx);
                 charIdx++;
-                // Con OnPush basta con marcar el componente: ya no hace falta una pasada de CD
-                // global. Se sube de cada 3 caracteres a cada 4 para repintar ~8 veces/s en vez
-                // de ~10, que a 32 ms por caracter sigue leyendose como escritura fluida.
-                if (charIdx % 4 === 0 || charIdx === fullText.length) {
+                // Con OnPush basta con marcar el componente: ya no hace falta una pasada de CD global.
+                if (charIdx % markEvery === 0 || charIdx === fullText.length) {
                   this.zone.run(() => this.cdr.markForCheck());
                 }
               } else {
@@ -7090,7 +7091,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
                   }, 900);
                 });
               }
-            }, 32);
+            }, tickMs);
           });
         }, 1500);
       }, 1600);
@@ -7393,8 +7394,18 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     // barrido se apaga solo. En una pagina ya recorrida el costo pasa a ser cero.
     let pendientesDeRevelar: Element[] = Array.from(document.querySelectorAll(SELECTOR_REVELADO));
     let barridoActivo = true;
+    let ultimoBarrido = 0;
     const barrerRevelado = () => {
       if (!barridoActivo) return;
+      // El IntersectionObserver de arriba es el mecanismo primario de revelado; esto es solo
+      // una red de seguridad para casos borde de content-visibility. No hace falta en cada
+      // frame de scroll: a lo sumo cada ~250 ms. Antes, un usuario rebotando dentro del hero
+      // (sin bajar lo suficiente para revelar todo) forzaba getBoundingClientRect sobre
+      // decenas de elementos -- varios en secciones con content-visibility: auto, lo que
+      // fuerza su render -- en cada frame, indefinidamente.
+      const ahora = performance.now();
+      if (ahora - ultimoBarrido < 250) return;
+      ultimoBarrido = ahora;
 
       if (!this.noticiasSolicitadas) {
         const secNoticias = document.querySelector('.news-section');
@@ -7565,6 +7576,15 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       const blobBlue = document.querySelector('.hero-blob-blue') as HTMLElement;
       const homeContainer = document.querySelector('.home-container') as HTMLElement;
 
+      // RENDIMIENTO: en teléfonos el parallax del hero (escribir transform en cada frame de
+      // scroll sobre .hero-grid-overlay -- un layer enmascarado > viewport con will-change --
+      // y los 2 blobs) es trabajo de compositor imperceptible pero caro en GPU de gama baja,
+      // y es justo el "lag al mover el hero de arriba a abajo" que se reporta. En puntero
+      // grueso o con "reducir movimiento" no se escribe ningún transform: el layer queda
+      // estático y barato. El estado del navbar y el barrido de revelado siguen corriendo.
+      const parallaxOn = !window.matchMedia('(hover: none) and (pointer: coarse)').matches
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
       let ticking = false;
       const onScroll = () => {
         if (ticking) return;
@@ -7587,15 +7607,17 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
             }, 150);
           }
 
-          // Parallax updates
-          if (gridOverlay) {
-            gridOverlay.style.transform = 'translate3d(0, ' + (currentScrollY * 0.22) + 'px, 0)';
-          }
-          if (blobPurple) {
-            blobPurple.style.transform = 'translate3d(0, ' + (currentScrollY * 0.26) + 'px, 0) scale(' + (1 + currentScrollY * 0.00015) + ')';
-          }
-          if (blobBlue) {
-            blobBlue.style.transform = 'translate3d(0, ' + (currentScrollY * 0.2) + 'px, 0) scale(' + (1 - currentScrollY * 0.0001) + ')';
+          // Parallax updates (solo en escritorio / puntero fino — ver parallaxOn arriba)
+          if (parallaxOn) {
+            if (gridOverlay) {
+              gridOverlay.style.transform = 'translate3d(0, ' + (currentScrollY * 0.22) + 'px, 0)';
+            }
+            if (blobPurple) {
+              blobPurple.style.transform = 'translate3d(0, ' + (currentScrollY * 0.26) + 'px, 0) scale(' + (1 + currentScrollY * 0.00015) + ')';
+            }
+            if (blobBlue) {
+              blobBlue.style.transform = 'translate3d(0, ' + (currentScrollY * 0.2) + 'px, 0) scale(' + (1 - currentScrollY * 0.0001) + ')';
+            }
           }
 
           // Red de seguridad del revelado (se auto-apaga cuando ya no queda nada).

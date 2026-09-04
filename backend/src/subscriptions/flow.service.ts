@@ -10,6 +10,11 @@ const PLAN_AMOUNTS: Record<string, number> = {
   yearly: 69990,
 };
 
+const PLAN_LABELS: Record<string, string> = {
+  monthly: 'EstudiaUni PRO - Pase de 1 mes',
+  yearly: 'EstudiaUni PRO - Pase de 1 año',
+};
+
 const SANDBOX_BASE_URL = 'https://sandbox.flow.cl/api';
 const PRODUCTION_BASE_URL = 'https://www.flow.cl/api';
 
@@ -22,6 +27,25 @@ export interface CouponValidationResult {
   finalAmount?: number;
 }
 
+/**
+ * Flow.cl integration — ONE-TIME PAYMENTS ONLY.
+ *
+ * This used to be built on Flow's recurring-subscription API
+ * (`/customer/register` + `/subscription/create`, with Flow auto-charging
+ * the card every period). Flow told the merchant that product is no longer
+ * available to this account, so the whole thing was rebuilt on Flow's plain
+ * payment-order API (`/payment/create` + `/payment/getStatus`): the user
+ * buys a "pase" (1 month or 1 year) as a single non-recurring charge, and
+ * has to repeat the purchase to keep Plan Pro going. Nothing here ever
+ * charges a card again on its own — see CLAUDE.md §6 for the business
+ * rules this replaced.
+ *
+ * The "buying again while days remain adds to what's left instead of
+ * resetting it" behavior lives in SubscriptionsService.activateSubscription()
+ * — it already worked that way before this change (it was written for the
+ * gift-while-already-Pro case), so it needed no changes at all to satisfy
+ * the new "membership stacking" requirement.
+ */
 @Injectable()
 export class FlowService {
   private readonly logger = new Logger(FlowService.name);
@@ -30,8 +54,7 @@ export class FlowService {
   private readonly baseUrl: string;
   private readonly apiKey: string;
   private readonly secretKey: string;
-  private readonly planIdMonthly: string;
-  private readonly planIdYearly: string;
+  private readonly backendPublicUrl: string;
 
   constructor(
     private readonly firebaseService: FirebaseService,
@@ -43,8 +66,7 @@ export class FlowService {
       || (this.isProduction ? PRODUCTION_BASE_URL : SANDBOX_BASE_URL);
     this.apiKey = this.configService.get<string>('FLOW_API_KEY') || '';
     this.secretKey = this.configService.get<string>('FLOW_SECRET_KEY') || '';
-    this.planIdMonthly = this.configService.get<string>('FLOW_PLAN_ID_MONTHLY') || '';
-    this.planIdYearly = this.configService.get<string>('FLOW_PLAN_ID_YEARLY') || '';
+    this.backendPublicUrl = (this.configService.get<string>('BACKEND_PUBLIC_URL') || '').replace(/\/$/, '');
 
     if (!this.apiKey || !this.secretKey) {
       // Unlike Transbank, Flow does not publish shared sandbox credentials — every
@@ -117,7 +139,7 @@ export class FlowService {
     return data as T;
   }
 
-  // ── Coupons (unrelated to the gateway itself — ported as-is) ──
+  // ── Coupons (unrelated to the payment mechanism itself — unchanged) ──
 
   async validateCoupon(code: string, planType: 'monthly' | 'yearly'): Promise<CouponValidationResult> {
     const normalized = code.trim().toUpperCase();
@@ -173,7 +195,7 @@ export class FlowService {
 
     return {
       valid: true,
-      message: `¡Código aplicado! Descuento de ${discountLabel} (solo primer cobro)`,
+      message: `¡Código aplicado! Descuento de ${discountLabel}`,
       discountType: data.type,
       discountValue: data.value,
       discountAmount,
@@ -205,35 +227,17 @@ export class FlowService {
     }
   }
 
-  // ── Customer + card registration ──
-
-  private async getOrCreateCustomer(uid: string, email: string): Promise<string> {
-    const userRef = this.firebaseService.firestore.collection('users').doc(uid);
-    const userDoc = await userRef.get();
-    const existing = userDoc.exists ? userDoc.data()?.subscription?.flowCustomerId : null;
-    if (existing) return existing;
-
-    const result = await this.request<{ customerId: string }>('POST', '/customer/create', {
-      name: email.split('@')[0],
-      email,
-      externalId: uid,
-    });
-
-    try {
-      await userRef.set({ subscription: { flowCustomerId: result.customerId } }, { merge: true });
-    } catch (dbError) {
-      this.logger.warn(`[Flow] Could not persist flowCustomerId for uid=${uid}: ${dbError.message}`);
-    }
-
-    return result.customerId;
-  }
+  // ── One-time payment ("pase") ──
 
   /**
-   * Kick off card registration for a future subscription. Stores the intended
-   * plan/coupon/recipient in `flow_registrations/{token}` so the return trip
-   * (confirmRegistrationAndSubscribe) knows what to subscribe the customer to.
+   * Start a one-time Flow payment for a 1-month or 1-year "pase" of Plan
+   * Pro. Stores the intent in `flow_payments/{token}` (doc id = the Flow
+   * token, since that's the only thing the browser return trip and the
+   * webhook both have to look the payment up by) so confirmPayment() /
+   * handlePaymentWebhook() know who to grant access to once Flow confirms
+   * the charge went through.
    */
-  async startCardRegistration(
+  async createPayment(
     payerUid: string,
     email: string,
     planType: 'monthly' | 'yearly',
@@ -242,36 +246,52 @@ export class FlowService {
     couponCode?: string,
     targetEmail?: string,
   ): Promise<{ token: string; url: string }> {
+    if (!this.backendPublicUrl) {
+      throw new BadRequestException(
+        'Flow no está configurado: falta BACKEND_PUBLIC_URL en las variables de entorno del backend (se usa como urlConfirmation del pago).',
+      );
+    }
+
     const recipientUid = targetUid || payerUid;
     if (targetUid) {
       await this.verifyUserExists(targetUid);
     }
 
     let appliedCoupon: string | null = null;
+    let amount = PLAN_AMOUNTS[planType];
     if (couponCode) {
       const couponResult = await this.validateCoupon(couponCode, planType);
       if (couponResult.valid) {
         appliedCoupon = couponCode.trim().toUpperCase();
+        amount = couponResult.finalAmount!;
       } else {
-        this.logger.warn(`[Flow] Invalid coupon "${couponCode}" submitted for registration — ignoring.`);
+        this.logger.warn(`[Flow] Invalid coupon "${couponCode}" submitted for payment — ignoring.`);
       }
     }
 
-    const customerId = await this.getOrCreateCustomer(payerUid, email);
+    const commerceOrder = `PASS-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const urlConfirmation = `${this.backendPublicUrl}/api/subscriptions/flow/webhook`;
 
-    const result = await this.request<{ url: string; token: string }>('POST', '/customer/register', {
-      customerId,
-      url_return: returnUrl,
+    const result = await this.request<{ url: string; token: string; flowOrder?: number }>('POST', '/payment/create', {
+      commerceOrder,
+      subject: PLAN_LABELS[planType],
+      currency: 'CLP',
+      amount,
+      email,
+      urlConfirmation,
+      urlReturn: returnUrl,
     });
 
-    const registrationRecord = {
+    const paymentRecord = {
+      commerceOrder,
+      flowOrder: result.flowOrder ?? null,
       payerUid,
       payerEmail: email,
       recipientUid,
       recipientEmail: recipientUid !== payerUid ? (targetEmail || '').toLowerCase().trim() : email,
       isGift: recipientUid !== payerUid,
-      customerId,
       planType,
+      amount,
       appliedCoupon,
       status: 'pending',
       createdAt: new Date(),
@@ -280,284 +300,223 @@ export class FlowService {
 
     try {
       await this.firebaseService.firestore
-        .collection('flow_registrations')
+        .collection('flow_payments')
         .doc(result.token)
-        .set(registrationRecord);
+        .set(paymentRecord);
     } catch (dbError) {
-      this.logger.error(`[Flow] Could not persist registration ${result.token}: ${dbError.message}`);
-      throw new BadRequestException('No se pudo iniciar el registro de la tarjeta. Intenta nuevamente en unos segundos.');
+      this.logger.error(`[Flow] Could not persist payment ${result.token}: ${dbError.message}`);
+      throw new BadRequestException('No se pudo iniciar el pago. Intenta nuevamente en unos segundos.');
     }
 
     return { token: result.token, url: result.url };
   }
 
   /**
-   * Called when the user lands back on our return page after registering a
-   * card with Flow. Verifies the card was registered, subscribes the customer
-   * to the plan (Flow charges the first period immediately), and activates
-   * Premium for the recipient. Mirrors the old commitTransaction()'s
-   * claim-then-verify-then-upgrade pattern so double-clicks / retries are safe.
+   * Called when the user lands back on our return page after paying (or
+   * cancelling) on Flow's site. Verifies the charge against Flow's own
+   * `/payment/getStatus` (never trusts anything the browser could have
+   * tampered with) and, if paid, grants the "pase" via
+   * SubscriptionsService.activateSubscription() — which stacks the new
+   * period on top of any days the user already had, exactly like the
+   * "buy again before it runs out" requirement asks for.
+   *
+   * Races the webhook (handlePaymentWebhook) via a claim transaction on the
+   * same `flow_payments/{token}` doc, so whichever of the two arrives first
+   * is the one that actually grants access — the other backs off instead of
+   * double-granting.
    */
-  async confirmRegistrationAndSubscribe(uid: string, token: string) {
-    const regRef = this.firebaseService.firestore.collection('flow_registrations').doc(token);
+  async confirmPayment(uid: string, token: string) {
+    const payRef = this.firebaseService.firestore.collection('flow_payments').doc(token);
 
-    let regData: any;
+    let payData: any;
     let claimed = true;
     try {
       await this.firebaseService.firestore.runTransaction(async (t) => {
-        const doc = await t.get(regRef);
+        const doc = await t.get(payRef);
         if (!doc.exists) {
           throw new BadRequestException('Registro de pago no encontrado');
         }
-        regData = doc.data();
-        if (regData.status === 'completed' || regData.status === 'processing') {
+        payData = doc.data();
+        if (payData.status === 'completed' || payData.status === 'processing') {
           claimed = false;
           return;
         }
-        t.update(regRef, { status: 'processing', updatedAt: new Date() });
+        t.update(payRef, { status: 'processing', updatedAt: new Date() });
       });
     } catch (dbError) {
       if (dbError instanceof BadRequestException) throw dbError;
-      this.logger.error(`[Flow] Could not claim registration ${token}: ${dbError.message}`);
-      throw new BadRequestException('No se pudo verificar el registro de la tarjeta.');
+      this.logger.error(`[Flow] Could not claim payment ${token}: ${dbError.message}`);
+      throw new BadRequestException('No se pudo verificar el pago.');
     }
 
-    if (!regData) {
+    if (!payData) {
       throw new BadRequestException('Registro de pago no encontrado');
     }
 
     if (!claimed) {
-      return { success: true, message: 'Esta suscripción ya fue procesada.', planType: regData.planType };
+      // Either the webhook is mid-flight for this same payment, or it (or a
+      // previous call to this same method) already finished. Re-read so the
+      // browser gets the real outcome instead of a generic "in progress".
+      const fresh = await payRef.get();
+      const freshData = fresh.data() || payData;
+      if (freshData.status === 'completed') {
+        return { success: true, message: 'Pago confirmado.', planType: freshData.planType, isGift: freshData.isGift || false, amount: freshData.amount };
+      }
+      return {
+        success: false,
+        message: 'Tu pago se está verificando. Si en un par de minutos tu Plan Pro no aparece activo, contacta a soporte.',
+      };
     }
 
-    if (regData.payerUid !== uid) {
-      await this.markRegistrationTerminal(regRef, 'pending');
-      throw new BadRequestException('Este registro de pago no pertenece a tu cuenta.');
+    if (payData.payerUid !== uid) {
+      await this.markPaymentTerminal(payRef, 'pending');
+      throw new BadRequestException('Este pago no pertenece a tu cuenta.');
     }
 
     try {
-      const status = await this.request<any>('GET', '/customer/getRegisterStatus', { token });
-      // Flow returns `status` as the STRING "1" on success, not the number 1
-      // (confirmed against a real sandbox response) — a strict `=== 1` never
-      // matches, so every registration looked "rejected" even when the card
-      // was actually inscribed.
-      const registered = String(status.status) === '1' || String(status.status).toUpperCase() === 'SUCCESS';
+      const status = await this.request<any>('GET', '/payment/getStatus', { token });
+      const isPaid = Number(status.status) === 2;
 
-      if (!registered) {
-        await this.markRegistrationTerminal(regRef, 'rejected');
+      if (!isPaid) {
+        await this.markPaymentTerminal(payRef, 'rejected');
         return {
           success: false,
-          message: 'No se pudo registrar tu tarjeta en Flow. Intenta nuevamente con otro medio de pago.',
+          message: 'El pago no fue aprobado por Flow. Intenta nuevamente con otro medio de pago.',
         };
       }
 
-      const planId = regData.planType === 'yearly' ? this.planIdYearly : this.planIdMonthly;
-      if (!planId) {
-        throw new BadRequestException(
-          `Flow no está configurado: falta FLOW_PLAN_ID_${regData.planType === 'yearly' ? 'YEARLY' : 'MONTHLY'} en las variables de entorno.`,
-        );
-      }
-
-      const subscription = await this.request<any>('POST', '/subscription/create', {
-        planId,
-        customerId: regData.customerId,
-      });
-      const subscriptionId = subscription.subscriptionId || subscription.id;
-
-      if (regData.appliedCoupon) {
-        // Best-effort: the discount only ever affects the first charge. If Flow
-        // rejects it we still keep the subscription (full price) rather than
-        // failing the whole activation over a coupon.
-        try {
-          await this.request('POST', '/subscription/addDiscount', {
-            subscriptionId,
-            coupon: regData.appliedCoupon,
-          });
-        } catch (discountError) {
-          this.logger.warn(`[Flow] Could not apply coupon "${regData.appliedCoupon}" to subscription ${subscriptionId}: ${discountError.message}`);
-        }
-        await this.incrementCouponUsage(regData.appliedCoupon);
+      if (payData.appliedCoupon) {
+        await this.incrementCouponUsage(payData.appliedCoupon);
       }
 
       try {
-        await this.firebaseService.firestore
-          .collection('flow_subscriptions')
-          .doc(String(subscriptionId))
-          .set({ uid: regData.recipientUid, planType: regData.planType, createdAt: new Date() });
-      } catch (dbError) {
-        this.logger.warn(`[Flow] Could not persist flow_subscriptions index for ${subscriptionId}: ${dbError.message}`);
-      }
-
-      try {
-        await this.subscriptionsService.activateSubscription(regData.recipientUid, regData.planType, {
+        await this.subscriptionsService.activateSubscription(payData.recipientUid, payData.planType, {
           provider: 'flow',
-          flowCustomerId: regData.customerId,
-          flowSubscriptionId: subscriptionId,
+          flowPaymentToken: token,
         });
       } catch (subError) {
-        // The card WAS charged by Flow at this point — money changed hands —
-        // but the Firestore write that grants Premium failed. Never claim
+        // Flow DID charge the card at this point — money changed hands —
+        // but the Firestore write that grants the pass failed. Never claim
         // success here; flag it so an admin can grant manually.
         this.logger.error(
-          `[Flow] Subscribed but activation FAILED for uid=${regData.recipientUid}, subscriptionId=${subscriptionId}: ${subError.message}`,
+          `[Flow] Paid but activation FAILED for uid=${payData.recipientUid}, token=${token}: ${subError.message}`,
         );
-        await regRef.update({ status: 'upgrade_failed', upgradeError: subError.message, updatedAt: new Date() }).catch(() => {});
+        await payRef.update({ status: 'activation_failed', activationError: subError.message, updatedAt: new Date() }).catch(() => {});
         return {
           success: false,
-          message: 'Tu suscripción fue creada en Flow, pero hubo un problema activando tu Plan Pro. Nuestro equipo ya fue notificado — si en unos minutos tu cuenta no se actualiza, por favor contacta a soporte.',
+          message: 'Tu pago fue aprobado por Flow, pero hubo un problema activando tu Plan Pro. Nuestro equipo ya fue notificado — si en unos minutos tu cuenta no se actualiza, por favor contacta a soporte.',
         };
       }
 
-      await regRef.update({ status: 'completed', subscriptionId: String(subscriptionId), updatedAt: new Date() }).catch(() => {});
-
-      // Regalo: dejar el registro en el doc del PAGADOR para que pueda verlo y
-      // cancelarlo (activateSubscription solo escribe en el doc del recipiente, o
-      // sea el pagador queda 'free' y de otro modo no tendria como parar el cobro
-      // recurrente en su tarjeta). Ver SubscriptionsService.cancelGift().
-      if (regData.isGift) {
-        try {
-          await this.firebaseService.firestore.collection('users').doc(regData.payerUid).set({
-            giftedSubscriptions: {
-              [String(subscriptionId)]: {
-                flowSubscriptionId: String(subscriptionId),
-                recipientUid: regData.recipientUid,
-                recipientEmail: regData.recipientEmail || '',
-                planType: regData.planType,
-                status: 'active',
-                createdAt: new Date(),
-              },
-            },
-          }, { merge: true });
-        } catch (giftDbError) {
-          this.logger.warn(`[Flow] Could not record gift on payer ${regData.payerUid}: ${giftDbError.message}`);
-        }
-      }
+      await payRef.update({ status: 'completed', updatedAt: new Date() }).catch(() => {});
 
       return {
         success: true,
-        message: regData.isGift
-          ? 'Suscripción activada. ¡Le regalaste el Plan Pro a un usuario!'
-          : 'Suscripción activada. Tu Plan Pro se renovará automáticamente.',
-        isGift: regData.isGift || false,
-        planType: regData.planType,
-        subscriptionId: String(subscriptionId),
-        cardType: status.creditCardType || status.brand || null,
-        cardLast4: status.last4Digits || status.paymentData?.last4 || null,
+        message: payData.isGift
+          ? '¡Pago aprobado! Le regalaste un pase de Plan Pro a un usuario.'
+          : 'Pago aprobado. Tu Plan Pro está activo.',
+        isGift: payData.isGift || false,
+        planType: payData.planType,
+        amount: payData.amount,
+        cardType: status.paymentData?.media || status.mediaType || null,
       };
     } catch (error) {
-      await this.markRegistrationTerminal(regRef, 'pending');
+      await this.markPaymentTerminal(payRef, 'pending');
       if (error instanceof BadRequestException) throw error;
-      this.logger.error(`[Flow] Failed to confirm subscription for token=${token}: ${error.message}`);
-      throw new BadRequestException(error.message || 'No se pudo confirmar la suscripción con Flow.');
+      this.logger.error(`[Flow] Failed to confirm payment for token=${token}: ${error.message}`);
+      throw new BadRequestException(error.message || 'No se pudo confirmar el pago con Flow.');
     }
   }
 
-  private async markRegistrationTerminal(
-    regRef: admin.firestore.DocumentReference,
+  private async markPaymentTerminal(
+    payRef: admin.firestore.DocumentReference,
     status: 'pending' | 'rejected',
   ): Promise<void> {
     try {
-      await regRef.update({ status, updatedAt: new Date() });
+      await payRef.update({ status, updatedAt: new Date() });
     } catch (dbError) {
-      this.logger.warn(`[Flow] Could not reset registration status to "${status}": ${dbError.message}`);
+      this.logger.warn(`[Flow] Could not reset payment status to "${status}": ${dbError.message}`);
     }
   }
 
-  // ── Cancellation ──
-
-  async cancelFlowSubscription(subscriptionId: string): Promise<void> {
-    if (!subscriptionId) return;
-    try {
-      await this.request('POST', '/subscription/cancel', { subscriptionId });
-    } catch (error) {
-      this.logger.error(`[Flow] Could not cancel subscription ${subscriptionId} in Flow: ${error.message}`);
-      throw error;
-    }
-  }
-
-  // ── Recurring charge webhook (urlCallback / urlConfirmation on the Plan) ──
+  // ── Payment confirmation webhook (Flow's `urlConfirmation`, called server-to-server) ──
 
   /**
-   * Flow calls this after every charge attempt on a subscription (success or
-   * failure), including the very first one. We never trust the posted body
-   * for money-relevant fields — always re-fetch the authoritative invoice
-   * status from Flow before touching Firestore.
+   * Flow calls this once, shortly after the user pays (or the payment
+   * fails) on its site — this is the real source of truth for "did the
+   * money arrive", independent of whether the user's browser ever made it
+   * back to our `urlReturn` page. Never trusts the posted body for
+   * money-relevant fields — always re-fetches the invoice status from Flow
+   * keyed by the token before touching Firestore.
    */
-  async handleRecurringWebhook(body: Record<string, any>): Promise<void> {
-    this.logger.log(`[Flow] Webhook received: ${JSON.stringify(body)}`);
+  async handlePaymentWebhook(body: Record<string, any>): Promise<void> {
+    this.logger.log(`[Flow] Payment webhook received: ${JSON.stringify(body)}`);
 
-    const invoiceId = body.invoiceId || body.invoice_id;
     const token = body.token;
+    if (!token) {
+      this.logger.warn('[Flow] Webhook payload had no token — ignoring.');
+      return;
+    }
 
-    let invoiceStatus: any = null;
+    const payRef = this.firebaseService.firestore.collection('flow_payments').doc(token);
+
+    let payData: any;
+    let claimed = true;
     try {
-      if (invoiceId) {
-        invoiceStatus = await this.request('GET', '/invoice/get', { invoiceId });
-      } else if (token) {
-        invoiceStatus = await this.request('GET', '/invoice/get', { token });
-      }
-    } catch (error) {
-      this.logger.error(`[Flow] Webhook: could not verify invoice status: ${error.message}`);
-      return;
-    }
-
-    // SECURITY: subscriptionId must come from the verified Flow response, never
-    // from the raw webhook body. Flow's webhook payload isn't signed, so anyone
-    // could POST here with an `invoiceId` for a real (even their own) paid
-    // invoice alongside a forged `subscriptionId` pointing at a victim's
-    // subscription — if we trusted body.subscriptionId, that would extend the
-    // victim's Premium for free. invoiceStatus?.subscriptionId came back from a
-    // signed GET to Flow's API keyed by the invoiceId/token, so it can't be
-    // spoofed the same way. Only fall back to the body value when Flow gave us
-    // no invoiceStatus at all — in that case isPaid is false below regardless,
-    // so an unverified subscriptionId can't be used to grant anything.
-    const subscriptionId = invoiceStatus?.subscriptionId || body.subscriptionId;
-    if (!subscriptionId) {
-      this.logger.warn('[Flow] Webhook payload had no subscriptionId we could resolve — ignoring.');
-      return;
-    }
-
-    const indexDoc = await this.firebaseService.firestore
-      .collection('flow_subscriptions')
-      .doc(String(subscriptionId))
-      .get();
-    if (!indexDoc.exists) {
-      this.logger.warn(`[Flow] Webhook: no local index for subscriptionId=${subscriptionId} — ignoring.`);
-      return;
-    }
-    const { uid, planType } = indexDoc.data()!;
-
-    const isPaid = invoiceStatus?.status === 1 || String(invoiceStatus?.status).toUpperCase() === 'PAID';
-    const invoiceDocId = String(invoiceId || invoiceStatus?.invoiceId || `${subscriptionId}-${Date.now()}`);
-    const invoiceRef = this.firebaseService.firestore.collection('flow_invoices').doc(invoiceDocId);
-
-    const existingInvoice = await invoiceRef.get();
-    if (existingInvoice.exists && existingInvoice.data()?.status === 'paid') {
-      return; // Already processed — Flow retries webhooks, this must be idempotent.
-    }
-
-    try {
-      await invoiceRef.set({
-        uid,
-        subscriptionId: String(subscriptionId),
-        planType,
-        amount: invoiceStatus?.amount ?? null,
-        status: isPaid ? 'paid' : 'failed',
-        createdAt: new Date(),
-      }, { merge: true });
+      await this.firebaseService.firestore.runTransaction(async (t) => {
+        const doc = await t.get(payRef);
+        if (!doc.exists) {
+          claimed = false;
+          return;
+        }
+        payData = doc.data();
+        if (payData.status === 'completed' || payData.status === 'processing') {
+          claimed = false;
+          return;
+        }
+        t.update(payRef, { status: 'processing', updatedAt: new Date() });
+      });
     } catch (dbError) {
-      this.logger.warn(`[Flow] Could not log invoice ${invoiceDocId}: ${dbError.message}`);
+      this.logger.error(`[Flow] Webhook: could not claim payment ${token}: ${dbError.message}`);
+      return;
     }
 
+    if (!payData) {
+      this.logger.warn(`[Flow] Webhook: no local payment record for token=${token} — ignoring.`);
+      return;
+    }
+    if (!claimed) {
+      return; // Already handled by the browser return-flow, or a duplicate webhook retry.
+    }
+
+    let status: any;
+    try {
+      status = await this.request('GET', '/payment/getStatus', { token });
+    } catch (error) {
+      this.logger.error(`[Flow] Webhook: could not verify payment status: ${error.message}`);
+      await this.markPaymentTerminal(payRef, 'pending');
+      return;
+    }
+
+    const isPaid = Number(status.status) === 2;
     if (!isPaid) {
-      this.logger.warn(`[Flow] Renewal charge FAILED for uid=${uid}, subscriptionId=${subscriptionId}`);
+      this.logger.warn(`[Flow] Webhook: payment ${token} not paid (status=${status.status})`);
+      await this.markPaymentTerminal(payRef, 'rejected');
       return;
     }
 
     try {
-      await this.subscriptionsService.extendSubscriptionPeriod(uid, planType);
+      if (payData.appliedCoupon) {
+        await this.incrementCouponUsage(payData.appliedCoupon);
+      }
+      await this.subscriptionsService.activateSubscription(payData.recipientUid, payData.planType, {
+        provider: 'flow',
+        flowPaymentToken: token,
+      });
+      await payRef.update({ status: 'completed', updatedAt: new Date() });
     } catch (error) {
-      this.logger.error(`[Flow] Could not extend subscription period for uid=${uid}: ${error.message}`);
+      this.logger.error(`[Flow] Webhook: activation FAILED for uid=${payData.recipientUid}, token=${token}: ${error.message}`);
+      await payRef.update({ status: 'activation_failed', activationError: error.message, updatedAt: new Date() }).catch(() => {});
     }
   }
 }

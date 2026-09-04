@@ -41,8 +41,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
             <p class="subtitle">Gestiona el banco de preguntas PAES para todas las materias</p>
           </div>
           <div class="header-actions">
-            <button class="btn-refresh" (click)="refresh()" [disabled]="adminSvc.loading()">
-              {{ adminSvc.loading() ? '⏳' : '🔄' }} Actualizar
+            <button class="btn-refresh" (click)="refresh()" [disabled]="adminSvc.pageLoading()">
+              {{ adminSvc.pageLoading() ? '⏳' : '🔄' }} Actualizar
             </button>
             <button class="btn-refresh" (click)="importModalOpen.set(true)" style="background: rgba(133,92,214,0.08); border-color: rgba(133,92,214,0.3); color: var(--accent-primary);">
               📥 Importar JSON
@@ -65,23 +65,23 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
         </div>
 
         <!-- TOOLBAR: búsqueda, filtro de tema y modo selección -->
-        @if (!adminSvc.loading() && adminSvc.allPreguntas().length > 0) {
+        @if (adminSvc.totalCount() > 0 || adminSvc.pageItems().length > 0) {
           <div class="tools-bar">
             <div class="search-box">
               <span class="search-icon">🔎</span>
               <input
                 type="text"
                 class="search-input"
-                placeholder="Buscar por enunciado o tema..."
-                [value]="searchQuery()"
+                placeholder="Buscar por enunciado o tema (en todo el banco)..."
+                [value]="searchInput()"
                 (input)="onSearchInput($event)">
-              @if (searchQuery()) {
-                <button class="btn-clear-search" title="Limpiar búsqueda" (click)="searchQuery.set('')">×</button>
+              @if (searchInput()) {
+                <button class="btn-clear-search" title="Limpiar búsqueda" (click)="clearSearch()">×</button>
               }
             </div>
 
             @if (temasDisponibles().length > 0) {
-              <select class="tema-select" [value]="filterTema()" (change)="onTemaFilterChange($event)">
+              <select class="tema-select" [value]="adminSvc.filterTema()" (change)="onTemaFilterChange($event)">
                 <option value="all">Todos los temas</option>
                 @for (tema of temasDisponibles(); track tema) {
                   <option [value]="tema">{{ tema }}</option>
@@ -100,7 +100,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
           <div class="bulk-bar">
             <div class="bulk-bar-info">
               <button class="btn-select-all" (click)="allVisibleSelected() ? deselectAll() : selectAllVisible()">
-                {{ allVisibleSelected() ? '◻️ Deseleccionar todas' : '☑️ Seleccionar las ' + displayedPreguntas().length + ' visibles' }}
+                {{ allVisibleSelected() ? '◻️ Deseleccionar todas' : '☑️ Seleccionar las ' + adminSvc.pageItems().length + ' de esta página' }}
               </button>
               <span class="bulk-count">{{ selectedCount() }} seleccionada{{ selectedCount() === 1 ? '' : 's' }}</span>
             </div>
@@ -111,7 +111,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
         }
 
         <!-- LOADING -->
-        @if (adminSvc.loading()) {
+        @if (adminSvc.pageLoading()) {
           <div class="loading-state">
             <div class="spinner"></div>
             <p>Cargando preguntas...</p>
@@ -119,7 +119,7 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
         }
 
         <!-- EMPTY STATE: sin ninguna pregunta en la BD -->
-        @if (!adminSvc.loading() && adminSvc.allPreguntas().length === 0) {
+        @if (!adminSvc.pageLoading() && adminSvc.totalCount() === 0 && adminSvc.pageItems().length === 0) {
           <div class="empty-state glass-card">
             <div class="empty-icon">📭</div>
             <h3>No hay preguntas aún</h3>
@@ -131,7 +131,8 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
         }
 
         <!-- EMPTY STATE: la búsqueda/filtro no encontró nada -->
-        @if (!adminSvc.loading() && adminSvc.allPreguntas().length > 0 && displayedPreguntas().length === 0) {
+        @if (!adminSvc.pageLoading() && adminSvc.pageItems().length === 0
+             && (adminSvc.totalCount() > 0 || adminSvc.searchQuery() || adminSvc.filterTema() !== 'all' || adminSvc.filterMateria() !== 'all')) {
           <div class="empty-state glass-card">
             <div class="empty-icon">🔍</div>
             <h3>Sin resultados</h3>
@@ -140,19 +141,19 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
         }
 
         <!-- QUESTION LIST -->
-        @if (!adminSvc.loading() && displayedPreguntas().length > 0) {
+        @if (!adminSvc.pageLoading() && adminSvc.pageItems().length > 0) {
           <div class="question-list">
-            @for (pregunta of displayedPreguntas(); track pregunta.id) {
+            @for (pregunta of adminSvc.pageItems(); track pregunta.id) {
               <div class="question-card glass-card-simple"
                 [class.image-type]="pregunta.tipo_alternativas === 'imagen'"
                 [class.selected-card]="selectionMode() && isSelected(pregunta.id)"
-                (click)="selectionMode() && toggleSelect(pregunta.id)">
+                (click)="selectionMode() && toggleSelect(pregunta)">
                 <div class="card-header">
                   <div class="card-badges">
                     @if (selectionMode()) {
                       <input type="checkbox" class="select-checkbox"
                         [checked]="isSelected(pregunta.id)"
-                        (click)="toggleSelect(pregunta.id, $event)">
+                        (click)="toggleSelect(pregunta, $event)">
                     }
                     <span class="badge-materia">{{ adminSvc.getMateriaIcon(pregunta.materiaId) }} {{ adminSvc.getMateriaLabel(pregunta.materiaId) }}</span>
                     <span class="badge-tema">{{ pregunta.tema }}</span>
@@ -202,6 +203,17 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
                 </div>
               </div>
             }
+          </div>
+        }
+
+        <!-- PAGINACIÓN -->
+        @if (adminSvc.totalCount() > 0 && (adminSvc.pageIndex() > 0 || adminSvc.hasNextPage())) {
+          <div class="pagination-bar">
+            <button class="page-btn" (click)="adminSvc.prevPage()"
+              [disabled]="adminSvc.pageIndex() === 0 || adminSvc.pageLoading()">‹ Anterior</button>
+            <span class="page-indicator">Página {{ adminSvc.pageIndex() + 1 }}</span>
+            <button class="page-btn" (click)="adminSvc.nextPage()"
+              [disabled]="!adminSvc.hasNextPage() || adminSvc.pageLoading()">Siguiente ›</button>
           </div>
         }
       </main>
@@ -674,6 +686,30 @@ import { PoolPregunta, MateriaId } from '../learning-path/models/paes.models';
     /* QUESTION CARDS */
     .question-list { display: flex; flex-direction: column; gap: 1.25rem; }
 
+    /* PAGINACIÓN */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .page-btn {
+      padding: 0.65rem 1.25rem;
+      border-radius: 12px;
+      border: 2px solid var(--glass-border);
+      background: #ffffff;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled) { border-color: rgba(133,92,214,0.4); color: var(--accent-primary); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-indicator { font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); }
+
     .glass-card-simple {
       background: #ffffff;
       border: 2px solid var(--glass-border);
@@ -1049,96 +1085,92 @@ export class AdminPanelComponent implements OnInit {
   deleteTarget = signal<PoolPregunta | null>(null);
   deleting = signal(false);
 
-  // ─── Búsqueda y filtro de tema (además del filtro de materia, que vive en AdminService) ───
-  searchQuery = signal('');
-  filterTema = signal<string>('all');
+  // ─── Búsqueda y filtro de tema (el estado real vive en AdminService; acá solo
+  //     el valor crudo del input para el debounce y el botón de limpiar) ───
+  searchInput = signal('');
+  private searchDebounce: any = null;
 
-  temasDisponibles = computed(() => {
+  temasDisponibles = computed<string[]>(() => {
     const materia = this.adminSvc.filterMateria();
     if (materia === 'all') return [];
-    const set = new Set<string>();
-    for (const p of this.adminSvc.allPreguntas()) {
-      if (p.materiaId === materia && p.tema) set.add(p.tema);
-    }
-    return Array.from(set).sort();
-  });
-
-  displayedPreguntas = computed(() => {
-    let list = this.adminSvc.preguntas(); // ya filtrada por materia
-    const tema = this.filterTema();
-    if (tema !== 'all') list = list.filter(p => p.tema === tema);
-    const q = this.searchQuery().trim().toLowerCase();
-    if (q) {
-      list = list.filter(p =>
-        p.enunciado?.toLowerCase().includes(q) ||
-        p.tema?.toLowerCase().includes(q)
-      );
-    }
-    return list;
+    return this.adminSvc.getTemasForMateria(materia as MateriaId);
   });
 
   changeMateriaFilter(materia: MateriaId | 'all') {
-    this.adminSvc.setFilter(materia);
-    this.filterTema.set('all'); // los temas son específicos de cada materia
+    this.adminSvc.setMateriaFilter(materia);
   }
 
   onSearchInput(event: Event) {
-    this.searchQuery.set((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.searchInput.set(value);
+    clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => this.adminSvc.setSearch(value), 250);
+  }
+
+  clearSearch() {
+    clearTimeout(this.searchDebounce);
+    this.searchInput.set('');
+    this.adminSvc.setSearch('');
   }
 
   onTemaFilterChange(event: Event) {
-    this.filterTema.set((event.target as HTMLSelectElement).value);
+    this.adminSvc.setTemaFilter((event.target as HTMLSelectElement).value);
   }
 
   // ─── Selección múltiple y borrado en lote ───
+  // Map<id, PoolPregunta> (no solo ids) para que el desglose por materia y el
+  // borrado no necesiten la lista completa — que ya no existe en memoria.
   selectionMode = signal(false);
-  selectedIds = signal<Set<string>>(new Set());
-  selectedCount = computed(() => this.selectedIds().size);
+  selectedItems = signal<Map<string, PoolPregunta>>(new Map());
+  selectedCount = computed(() => this.selectedItems().size);
   bulkDeleteModalOpen = signal(false);
   bulkDeleting = signal(false);
   bulkDeleteProgress = signal({ current: 0, total: 0 });
 
   allVisibleSelected = computed(() => {
-    const visible = this.displayedPreguntas();
+    const visible = this.adminSvc.pageItems();
     if (visible.length === 0) return false;
-    const selected = this.selectedIds();
+    const selected = this.selectedItems();
     return visible.every(p => selected.has(p.id));
   });
 
   selectedBreakdown = computed(() => {
-    const selected = this.selectedIds();
-    const all = this.adminSvc.allPreguntas();
     const counts = new Map<string, number>();
-    for (const p of all) {
-      if (selected.has(p.id)) counts.set(p.materiaId, (counts.get(p.materiaId) || 0) + 1);
+    for (const p of this.selectedItems().values()) {
+      counts.set(p.materiaId, (counts.get(p.materiaId) || 0) + 1);
     }
     return Array.from(counts.entries()).map(([materiaId, count]) => ({ materiaId, count }));
   });
 
   toggleSelectionMode() {
     this.selectionMode.update(v => !v);
-    if (!this.selectionMode()) this.selectedIds.set(new Set());
+    if (!this.selectionMode()) this.selectedItems.set(new Map());
   }
 
   isSelected(id: string): boolean {
-    return this.selectedIds().has(id);
+    return this.selectedItems().has(id);
   }
 
-  toggleSelect(id: string, event?: Event) {
+  toggleSelect(pregunta: PoolPregunta, event?: Event) {
     event?.stopPropagation();
-    this.selectedIds.update(set => {
-      const next = new Set(set);
-      if (next.has(id)) next.delete(id); else next.add(id);
+    this.selectedItems.update(map => {
+      const next = new Map(map);
+      if (next.has(pregunta.id)) next.delete(pregunta.id);
+      else next.set(pregunta.id, pregunta);
       return next;
     });
   }
 
   selectAllVisible() {
-    this.selectedIds.set(new Set(this.displayedPreguntas().map(p => p.id)));
+    this.selectedItems.update(map => {
+      const next = new Map(map);
+      for (const p of this.adminSvc.pageItems()) next.set(p.id, p);
+      return next;
+    });
   }
 
   deselectAll() {
-    this.selectedIds.set(new Set());
+    this.selectedItems.set(new Map());
   }
 
   confirmBulkDelete() {
@@ -1147,7 +1179,7 @@ export class AdminPanelComponent implements OnInit {
   }
 
   async executeBulkDelete() {
-    const ids = Array.from(this.selectedIds());
+    const ids = Array.from(this.selectedItems().keys());
     this.bulkDeleting.set(true);
     this.bulkDeleteProgress.set({ current: 0, total: ids.length });
     try {
@@ -1160,8 +1192,9 @@ export class AdminPanelComponent implements OnInit {
           `Las que ya se borraron no aparecerán más en la lista; vuelve a seleccionar el resto e inténtalo de nuevo.`
         );
       }
-      this.selectedIds.set(new Set());
+      this.selectedItems.set(new Map());
       this.bulkDeleteModalOpen.set(false);
+      await this.adminSvc.refreshPool();
     } catch (e: any) {
       alert('Error al eliminar en lote: ' + e.message);
     } finally {
@@ -1317,7 +1350,7 @@ export class AdminPanelComponent implements OnInit {
         this.importSuccess.set(`🎉 ¡Éxito! Se importaron ${result.savedCount} preguntas correctamente.`);
         this.importJsonText.set('');
       }
-      this.adminSvc.loadPreguntas();
+      await this.adminSvc.refreshPool();
     } catch (e: any) {
       this.importErrors.set([`Error al subir preguntas: ${e.message}`]);
     } finally {
@@ -1326,18 +1359,15 @@ export class AdminPanelComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.adminSvc.loadPreguntas();
+    this.adminSvc.initPool();
   }
 
   countByMateria(materiaId: MateriaId): number {
-    // Count from ALL preguntas (unfiltered)
-    return this.adminSvc.totalPreguntas() > 0
-      ? this.adminSvc.allPreguntas().filter(p => p.materiaId === materiaId).length
-      : 0;
+    return this.adminSvc.countForMateria(materiaId);
   }
 
   refresh() {
-    this.adminSvc.loadPreguntas();
+    this.adminSvc.refreshPool();
   }
 
   editPregunta(pregunta: PoolPregunta) {

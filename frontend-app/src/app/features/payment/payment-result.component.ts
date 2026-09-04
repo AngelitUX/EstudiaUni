@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PaymentService, FlowSubscriptionResult } from '../../core/services/payment.service';
+import { PaymentService, FlowPaymentResult } from '../../core/services/payment.service';
 import { FirestoreService } from '../../core/services/firestore.service';
 
 @Component({
@@ -25,8 +25,8 @@ import { FirestoreService } from '../../core/services/firestore.service';
             </div>
             <div class="spinner-glow"></div>
           </div>
-          <h1 class="title text-gradient">Activando tu Suscripción</h1>
-          <p class="subtitle">Estamos confirmando tu suscripción con Flow. Por favor no cierres ni recargues esta página.</p>
+          <h1 class="title text-gradient">Activando tu Plan Pro</h1>
+          <p class="subtitle">Estamos confirmando tu pago con Flow. Por favor no cierres ni recargues esta página.</p>
           
           <div class="loading-bar">
             <div class="loading-progress"></div>
@@ -43,21 +43,21 @@ import { FirestoreService } from '../../core/services/firestore.service';
           </div>
           
           <h1 class="title text-gradient success-title">¡Bienvenido a Premium! 🚀</h1>
-          <p class="subtitle">Tu suscripción {{ result()?.planType === 'yearly' ? 'anual' : 'mensual' }} ha sido activada con éxito. Se renovará automáticamente — ya tienes acceso ilimitado a todas las herramientas PAES.</p>
+          <p class="subtitle">Tu pase {{ result()?.planType === 'yearly' ? 'anual' : 'mensual' }} de Plan Pro fue activado con éxito — ya tienes acceso ilimitado a todas las herramientas PAES. Es un pago único: no se te cobrará de nuevo automáticamente.</p>
 
           <!-- Receipt Details -->
           <div class="receipt-box">
-            <div class="receipt-row">
-              <span class="receipt-label">N° de Suscripción</span>
-              <span class="receipt-value font-mono">{{ result()?.subscriptionId || '---' }}</span>
+            <div class="receipt-row" *ngIf="result()?.amount">
+              <span class="receipt-label">Monto pagado</span>
+              <span class="receipt-value font-mono">$ {{ (result()?.amount || 0).toLocaleString('es-CL') }}</span>
             </div>
-            <div class="receipt-row" *ngIf="result()?.cardLast4">
-              <span class="receipt-label">Tarjeta</span>
-              <span class="receipt-value">{{ result()?.cardType }} •••• {{ result()?.cardLast4 }}</span>
+            <div class="receipt-row" *ngIf="result()?.cardType">
+              <span class="receipt-label">Medio de pago</span>
+              <span class="receipt-value">{{ result()?.cardType }}</span>
             </div>
             <div class="receipt-row">
-              <span class="receipt-label">Plan</span>
-              <span class="receipt-value text-bold">{{ result()?.planType === 'yearly' ? 'Pro Anual' : 'Pro Mensual' }} (renovación automática)</span>
+              <span class="receipt-label">Pase</span>
+              <span class="receipt-value text-bold">{{ result()?.planType === 'yearly' ? 'Pro — 1 año' : 'Pro — 1 mes' }} (pago único)</span>
             </div>
             <div class="receipt-divider"></div>
             <div class="receipt-row">
@@ -474,26 +474,27 @@ export class PaymentResultComponent implements OnInit {
   private firestoreService = inject(FirestoreService);
 
   state = signal<'loading' | 'success' | 'error'>('loading');
-  errorMessage = signal<string>('Ocurrió un error inesperado al procesar tu suscripción.');
-  result = signal<FlowSubscriptionResult | null>(null);
+  errorMessage = signal<string>('Ocurrió un error inesperado al procesar tu pago.');
+  result = signal<FlowPaymentResult | null>(null);
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       const token = params['token'];
 
       if (token) {
-        // Card was registered with Flow — confirm and subscribe with our backend.
+        // The user finished (or cancelled) on Flow's payment page — confirm
+        // the charge and grant the pass with our backend.
         this.verifyPayment(token);
       } else {
         // No token: either the user cancelled on Flow's site or landed here directly.
         this.state.set('error');
-        this.errorMessage.set('No se encontró ningún token de pago válido. Si cancelaste el registro de tu tarjeta en Flow, no se realizó ningún cobro.');
+        this.errorMessage.set('No se encontró ningún token de pago válido. Si cancelaste el pago en Flow, no se realizó ningún cobro.');
       }
     });
   }
 
   private verifyPayment(token: string) {
-    this.paymentService.confirmFlowSubscription(token).subscribe({
+    this.paymentService.confirmFlowPayment(token).subscribe({
       next: (res) => {
         if (res.success) {
           this.result.set(res);
@@ -503,13 +504,13 @@ export class PaymentResultComponent implements OnInit {
           this.firestoreService.getUserProfile(true).subscribe();
         } else {
           this.state.set('error');
-          this.errorMessage.set(res.message || 'La suscripción fue rechazada por el banco o por Flow.');
+          this.errorMessage.set(res.message || 'El pago fue rechazado por el banco o por Flow.');
         }
       },
       error: (err) => {
-        console.error('[PaymentResult] Error confirming Flow subscription:', err);
+        console.error('[PaymentResult] Error confirming Flow payment:', err);
         this.state.set('error');
-        this.errorMessage.set(err.error?.message || 'Error de conexión al confirmar tu suscripción con Flow. Si el dinero fue descontado de tu cuenta, por favor comunícate con soporte.');
+        this.errorMessage.set(err.error?.message || 'Error de conexión al confirmar tu pago con Flow. Si el dinero fue descontado de tu cuenta, por favor comunícate con soporte.');
       }
     });
   }

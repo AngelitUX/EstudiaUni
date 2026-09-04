@@ -2,7 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadMateriaSecciones } from './services/paes-content.service';
 import { enforceLearningAccess } from './services/learning-access.service';
 import { KatexService } from '../../core/services/katex.service';
 import { GuideSlidesComponent } from './guide-slides.component';
@@ -178,6 +178,9 @@ export class CapituloBiologiaDetailComponent {
     // Gate freemium: el Plan Basico solo cursa el primer capitulo de cada materia.
     // Reactivo porque el contenido carga async (ver enforceLearningAccess).
     enforceLearningAccess({ materiaId: () => this.materiaId(), capituloId: () => this.capituloId() });
+
+    // Deep-link directo: asegura que las secciones de esta materia estén cargadas.
+    autoLoadMateriaSecciones(() => this.materiaId());
 
     this.route.paramMap.subscribe(params => {
       // Detect materiaId from URL since it's no longer a route parameter in the isolated routes

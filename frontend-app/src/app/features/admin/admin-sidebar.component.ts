@@ -40,7 +40,9 @@ import { AdminService } from './services/admin.service';
         <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="admin-nav-item">
           <span class="admin-nav-icon">📋</span>
           <span class="admin-nav-text">Pool de Preguntas</span>
-          <span class="admin-nav-count">{{ adminSvc.totalPreguntas() }}</span>
+          @if (adminSvc.totalCount() > 0) {
+            <span class="admin-nav-count">{{ adminSvc.totalCount() }}</span>
+          }
         </a>
         <a routerLink="/admin/pregunta/nueva" routerLinkActive="active" class="admin-nav-item">
           <span class="admin-nav-icon">➕</span>

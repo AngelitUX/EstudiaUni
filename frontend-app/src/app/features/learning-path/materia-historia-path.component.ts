@@ -1,7 +1,7 @@
 import { Component, effect, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadMateriaSecciones } from './services/paes-content.service';
 import { LearningAccessService } from './services/learning-access.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
@@ -2726,6 +2726,9 @@ export class MateriaHistoriaPathComponent implements AfterViewInit, OnDestroy {
     const paramId = this.route.snapshot.paramMap.get('materiaId');
     const dataId = this.route.snapshot.data['materiaId'];
     this.materiaId.set(paramId || dataId || 'historia');
+
+    // Carga las secciones de esta materia bajo demanda (historia viene de seeds → no-op). Idempotente.
+    autoLoadMateriaSecciones(() => this.materiaId());
 
     // Modo Infinito: reservado para una actualización futura. Solo el panel de admin
     // (/admin/modo-infinito) puede activarlo, vía ?mode=infinite — ya no hay ningún botón

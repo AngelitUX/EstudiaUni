@@ -33,6 +33,9 @@ export interface MiniEnsayoResult {
   config: MiniEnsayoConfig;
   answers: Record<string, 'A' | 'B' | 'C' | 'D' | null>;
   questionIds: string[];
+  /** Las preguntas completas de la sesión — para que la revisión no dependa de
+   *  volver a cargar el pool. Puede faltar en resultados guardados antes de 2026-09. */
+  questions?: PoolPregunta[];
   correctCount: number;
   totalQuestions: number;
   score: number;
@@ -72,23 +75,30 @@ export class MiniEnsayoService {
   }
 
   getAvailableTopics(materiaId: MateriaId): { topic: string; count: number }[] {
-    const allPreguntas = this.paesContent.poolPreguntas();
-    const materiaPreguntas = allPreguntas.filter(p => p.materiaId === materiaId);
-    
+    // Camino rápido: conteos del resumen (pool_preguntas_meta), sin cargar preguntas.
+    const metaTemas = this.paesContent.poolTemasForMateria(materiaId);
+    if (Object.keys(metaTemas).length > 0) {
+      return Object.entries(metaTemas)
+        .map(([topic, count]) => ({ topic, count }))
+        .sort((a, b) => b.count - a.count);
+    }
+
+    // Fallback: contar sobre el pool completo (si ya está cargado).
+    const materiaPreguntas = this.paesContent.poolPreguntas().filter(p => p.materiaId === materiaId);
     const topicMap = new Map<string, number>();
     for (const p of materiaPreguntas) {
       if (p.tema) {
         topicMap.set(p.tema, (topicMap.get(p.tema) || 0) + 1);
       }
     }
-    
     return Array.from(topicMap.entries())
       .map(([topic, count]) => ({ topic, count }))
       .sort((a, b) => b.count - a.count);
   }
 
-  generateSession(config: MiniEnsayoConfig): MiniEnsayoSession {
-    const allPreguntas = this.paesContent.poolPreguntas();
+  async generateSession(config: MiniEnsayoConfig): Promise<MiniEnsayoSession> {
+    // Solo las preguntas de esta materia (cacheadas por materia, TTL 6 h).
+    const allPreguntas = await this.paesContent.loadPoolForMaterias([config.materiaId]);
 
     // Free users are capped at FREE_MINI_ENSAYO_MAX_QUESTIONS regardless of what the UI requested
     const requestedCount = this.isProPlan() ? config.questionCount : Math.min(config.questionCount, FREE_MINI_ENSAYO_MAX_QUESTIONS);
@@ -156,6 +166,7 @@ export class MiniEnsayoService {
       config: session.config,
       answers,
       questionIds: session.questions.map(q => q.id),
+      questions: session.questions,
       correctCount,
       totalQuestions: session.questions.length,
       score,

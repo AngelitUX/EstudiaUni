@@ -89,40 +89,25 @@ import { CareerService, Career } from '../../core/services/career.service';
             </aside>
             <div class="profile-main">
               <div class="section-block">
-                <div class="section-header"><h3>Plan de Cuenta</h3><p>Estado actual de tu suscripción en EstudiaUni.</p></div>
+                <div class="section-header"><h3>Membresía</h3><p>Estado actual de tu Membresía PRO en EstudiaUni.</p></div>
                 <div class="info-row">
                 <div class="info-item" style="width: 100%;">
-                  <span class="info-label">Suscripción activa</span>
+                  <span class="info-label">Membresía PRO</span>
                   <div class="subscription-badge-wrap">
                     <span class="plan-badge-inline" [class.pro]="isProPlan()">{{ isProPlan() ? 'Premium 🚀' : 'Básico (Gratis)' }}</span>
                     <div class="subscription-status" *ngIf="isProPlan() && getSubscriptionInfo()">
-                      <span class="subscription-cancelled" *ngIf="isSubscriptionCancelled()">(Cancelado)</span>
                       <span class="subscription-time-remaining animate-fade-in">
                         {{ getSubscriptionInfo() }}
                       </span>
                     </div>
                   </div>
-                  <button *ngIf="isProPlan() && !isSubscriptionCancelled()" class="btn-cancel-subscription" (click)="openCancelSubscription()" id="btn-cancel-suscripcion">
-                    ⚠️ Cancelar Suscripción
+                  <p class="membership-hint" *ngIf="isProPlan()">
+                    Es un pase de {{ membershipPlanLabel() }} — no se renueva solo. Cuando esté por
+                    vencer, compra un nuevo pase para sumarle más días.
+                  </p>
+                  <button *ngIf="isProPlan()" class="btn-renew-membership" (click)="openRenewMembership()">
+                    🔁 Comprar otro pase
                   </button>
-                </div>
-              </div>
-
-              <!-- Regalos de Plan Pro que este usuario paga (por Flow). Su cuenta puede ser
-                   Básica, así que sin esto no tendría forma de parar el cobro recurrente. -->
-              <div class="info-row" *ngIf="giftedProSubscriptions().length > 0" style="margin-top: 0.75rem;">
-                <div class="info-item" style="width: 100%;">
-                  <span class="info-label">Regalos de Plan Pro que pagas</span>
-                  <div class="gifted-list">
-                    <div class="gifted-row" *ngFor="let g of giftedProSubscriptions()">
-                      <span class="gifted-info">
-                        Para <strong>{{ g.recipientEmail }}</strong> · plan {{ g.planType }} · renovación automática a tu tarjeta
-                      </span>
-                      <button class="btn-cancel-gift" [disabled]="cancellingGiftId === g.id" (click)="cancelGiftedPro(g.id, g.recipientEmail)">
-                        {{ cancellingGiftId === g.id ? 'Cancelando…' : 'Cancelar regalo' }}
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
               </div>
@@ -293,57 +278,6 @@ import { CareerService, Career } from '../../core/services/career.service';
         </div>
       </div>
     </div>
-    <!-- CANCEL SUBSCRIPTION - STEP 1 -->
-    <div class="logout-confirm-overlay" *ngIf="showCancelSubStep1" (click)="showCancelSubStep1 = false">
-      <div class="logout-confirm-modal glass" (click)="$event.stopPropagation()">
-        <div class="confirm-header">
-          <h2>Cancelar Suscripción</h2>
-          <button class="close-btn" (click)="showCancelSubStep1 = false">&times;</button>
-        </div>
-        <div class="confirm-body">
-          <div class="confirm-content">
-            <div class="confirm-icon">📄</div>
-            <h3>¿Seguro que quieres cancelar?</h3>
-            <p>Perderás todos los beneficios <strong>Premium</strong> al término del período pagado. Ensayos ilimitados, Tutor IA y más.</p>
-            <div class="cancel-sub-warning">⚠️ Esta acción es irreversible.</div>
-          </div>
-        </div>
-        <div class="confirm-footer">
-          <button class="btn-cancel" (click)="showCancelSubStep1 = false">No, mantener Premium</button>
-          <button class="btn-cancel-sub-next" (click)="goToCancelStep2()">Sí, continuar →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- CANCEL SUBSCRIPTION - STEP 2 (double confirm) -->
-    <div class="logout-confirm-overlay" *ngIf="showCancelSubStep2" (click)="showCancelSubStep2 = false">
-      <div class="logout-confirm-modal glass cancel-step2-modal" (click)="$event.stopPropagation()">
-        <div class="confirm-header">
-          <h2>Confirmación Final</h2>
-          <button class="close-btn" (click)="showCancelSubStep2 = false">&times;</button>
-        </div>
-        <div class="confirm-body">
-          <div class="confirm-content">
-            <div class="confirm-icon">🚫</div>
-            <h3>Úlltima oportunidad</h3>
-            <p>¿Estás completamente seguro? Deja de tener acceso Premium al finalizar tu ciclo de facturación.</p>
-            <div class="cancel-countdown" *ngIf="cancelCountdown &gt; 0">
-              El botón se activará en <strong>{{ cancelCountdown }}s</strong>
-            </div>
-          </div>
-        </div>
-        <div class="confirm-footer">
-          <button class="btn-cancel" (click)="showCancelSubStep2 = false">No, quiero mantenerla</button>
-          <button
-            class="btn-cancel-sub-final"
-            [disabled]="cancelCountdown &gt; 0"
-            (click)="executeCancelSubscription()"
-          >
-            {{ cancelCountdown &gt; 0 ? 'Espera ' + cancelCountdown + 's...' : '🚫 Cancelar definitivamente' }}
-          </button>
-        </div>
-      </div>
-    </div>
   `,
   styles: [`
     @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -423,24 +357,10 @@ import { CareerService, Career } from '../../core/services/career.service';
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* CANCEL SUBSCRIPTION */
-    .btn-cancel-subscription { margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: #ef4444; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-cancel-subscription:hover { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.6); transform: translateY(-1px); }
-    .gifted-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
-    .gifted-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.6rem 0.85rem; }
-    .gifted-info { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
-    .gifted-info strong { color: var(--text-primary); }
-    .btn-cancel-gift { flex-shrink: 0; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1.5px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: #ef4444; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-cancel-gift:hover:not([disabled]) { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.6); }
-    .btn-cancel-gift[disabled] { opacity: 0.5; cursor: not-allowed; }
-    .cancel-sub-warning { margin-top: 1rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; font-weight: 600; color: #ef4444; text-align: center; }
-    .btn-cancel-sub-next { padding: 0.85rem; border-radius: 12px; border: none; background: #f59e0b; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(245,158,11,0.25); }
-    .btn-cancel-sub-next:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .cancel-step2-modal { border-color: rgba(239,68,68,0.3) !important; }
-    .cancel-countdown { margin-top: 1rem; font-size: 0.88rem; color: var(--text-secondary); background: var(--bg-secondary); border-radius: 8px; padding: 0.5rem 0.75rem; text-align: center; }
-    .btn-cancel-sub-final { padding: 0.85rem; border-radius: 12px; border: none; background: #ef4444; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239,68,68,0.25); }
-    .btn-cancel-sub-final:hover:not([disabled]) { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-cancel-sub-final[disabled] { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    /* MEMBERSHIP (pase de 1 mes/año — sin renovación automática, nada que cancelar) */
+    .membership-hint { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; max-width: 420px; }
+    .btn-renew-membership { margin-top: 0.6rem; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid rgba(133,92,214,0.35); background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-renew-membership:hover { background: rgba(133,92,214,0.16); border-color: rgba(133,92,214,0.6); transform: translateY(-1px); }
 
     .logout-profile-btn .icon{font-size:1.1rem}
     .profile-main{display:flex;flex-direction:column;gap:1.2rem}
@@ -474,7 +394,6 @@ import { CareerService, Career } from '../../core/services/career.service';
     .plan-badge-inline.pro{background:rgba(245,158,11,0.1);color:#d97706;border:1px solid rgba(245,158,11,0.3)}
     .subscription-badge-wrap{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.25rem}
     .subscription-status{display:flex;flex-direction:column;gap:0.25rem}
-    .subscription-cancelled{font-size:0.75rem;font-weight:700;color:#ef4444}
     .subscription-time-remaining{font-size:0.88rem;font-weight:600;color:var(--text-secondary);border:1.5px solid var(--glass-border);padding:0.4rem 0.8rem;border-radius:8px;background:rgba(255, 255, 255, 0.45);box-shadow:var(--shadow-sm);line-height:1}
     .input-with-icon{position:relative;display:flex;align-items:center}
     .input-icon{position:absolute;left:0.75rem;font-size:1rem;pointer-events:none}
@@ -687,10 +606,6 @@ export class ProfileModalComponent implements OnInit {
   showEmojiPicker = false;
   showLogoutConfirm = false;
   showUndoConfirm = false;
-  showCancelSubStep1 = false;
-  showCancelSubStep2 = false;
-  cancelCountdown = 5;
-  private cancelCountdownInterval: any = null;
   showImageEditor = false;
   shakeSaveButton = false;
   isEditingName = false;
@@ -788,8 +703,14 @@ export class ProfileModalComponent implements OnInit {
 
   isProPlan = () => this.firestoreService.profileSignal()?.plan === 'premium';
 
-  isSubscriptionCancelled(): boolean {
-    return this.firestoreService.profileSignal()?.subscription?.status === 'cancelled';
+  membershipPlanLabel(): string {
+    const planType = this.firestoreService.profileSignal()?.subscription?.planType;
+    return planType === 'yearly' ? '1 año' : '1 mes';
+  }
+
+  openRenewMembership(): void {
+    const planType = this.firestoreService.profileSignal()?.subscription?.planType || 'monthly';
+    this.paymentService.openPricingModal(true, planType);
   }
 
   getSubscriptionInfo(): string {
@@ -906,87 +827,6 @@ export class ProfileModalComponent implements OnInit {
     this.profileForm = { ...original };
     this.toast.info('Cambios deshechos.');
     this.showUndoConfirm = false;
-  }
-
-  openCancelSubscription() {
-    this.showCancelSubStep1 = true;
-  }
-
-  goToCancelStep2() {
-    this.showCancelSubStep1 = false;
-    this.showCancelSubStep2 = true;
-    this.cancelCountdown = 5;
-    if (this.cancelCountdownInterval) clearInterval(this.cancelCountdownInterval);
-    this.cancelCountdownInterval = setInterval(() => {
-      this.cancelCountdown--;
-      if (this.cancelCountdown <= 0) {
-        clearInterval(this.cancelCountdownInterval);
-        this.cancelCountdownInterval = null;
-      }
-    }, 1000);
-  }
-
-  executeCancelSubscription() {
-    this.showCancelSubStep2 = false;
-    if (this.cancelCountdownInterval) clearInterval(this.cancelCountdownInterval);
-    this.paymentService.cancelSubscription().subscribe({
-      next: (res) => {
-        // Reflect the two fields the backend actually changed — cancelAtPeriodEnd
-        // is what stops the next Flow renewal from extending endDate, status is
-        // just what isSubscriptionCancelled() reads for the "already cancelled" UI.
-        const current = this.firestoreService.profileSignal();
-        if (current?.subscription) {
-          this.firestoreService.profileSignal.set({
-            ...current,
-            subscription: { ...current.subscription, status: 'cancelled', cancelAtPeriodEnd: true }
-          });
-        }
-        this.toast.info(res.message || 'Tu suscripción ha sido cancelada. Mantendrás el acceso Premium hasta el fin de tu período pagado.');
-      },
-      error: () => {
-        this.toast.error('No se pudo cancelar la suscripción. Contacta a soporte.');
-      }
-    });
-  }
-
-  /** Regalos de Plan Pro (por Flow) que este usuario está PAGANDO — para que pueda
-   *  cortarlos, ya que su propia cuenta queda "Básico" y no ve "Cancelar Suscripción". */
-  giftedProSubscriptions(): Array<{ id: string; recipientEmail: string; planType: string; status: string }> {
-    const map = (this.firestoreService.profileSignal() as any)?.giftedSubscriptions;
-    if (!map || typeof map !== 'object') return [];
-    return Object.entries(map).map(([id, g]: [string, any]) => ({
-      id,
-      recipientEmail: g?.recipientEmail || 'un usuario',
-      planType: g?.planType === 'yearly' ? 'anual' : 'mensual',
-      status: g?.status || 'active',
-    })).filter(g => g.status === 'active');
-  }
-
-  cancellingGiftId: string | null = null;
-
-  cancelGiftedPro(flowSubscriptionId: string, recipientEmail: string) {
-    if (!confirm(`¿Cancelar el regalo de Plan Pro a ${recipientEmail}? Ya no se cobrará a tu tarjeta. La persona mantiene el acceso hasta el fin de su período ya pagado.`)) return;
-    this.cancellingGiftId = flowSubscriptionId;
-    this.paymentService.cancelGift(flowSubscriptionId).subscribe({
-      next: (res) => {
-        this.cancellingGiftId = null;
-        const current: any = this.firestoreService.profileSignal();
-        if (current?.giftedSubscriptions?.[flowSubscriptionId]) {
-          this.firestoreService.profileSignal.set({
-            ...current,
-            giftedSubscriptions: {
-              ...current.giftedSubscriptions,
-              [flowSubscriptionId]: { ...current.giftedSubscriptions[flowSubscriptionId], status: 'cancelled' },
-            },
-          });
-        }
-        this.toast.info(res.message || 'Regalo cancelado.');
-      },
-      error: (err) => {
-        this.cancellingGiftId = null;
-        this.toast.error(err?.error?.message || 'No se pudo cancelar el regalo. Contacta a soporte.');
-      },
-    });
   }
 
   logout() {

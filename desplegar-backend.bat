@@ -55,13 +55,26 @@ if errorlevel 1 (
 )
 echo   [OK] Node.js
 
-REM  Normalmente basta con "gcloud" porque el instalador lo mete en el PATH.
-REM  Pero si se instalo con esta ventana ya abierta, el PATH de aqui es el de
-REM  ANTES y no lo encuentra, aunque este perfectamente instalado. Por eso, si
-REM  falla, se busca en la ruta habitual antes de dar el error.
-set "GCLOUD=gcloud"
-where gcloud >nul 2>&1
-if errorlevel 1 (
+REM  Se resuelve SIEMPRE a la ruta completa de gcloud.cmd, nunca a un nombre
+REM  corto tipo "gcloud" o "gcloud.cmd" a secas.
+REM
+REM  Motivo, confirmado en la practica (costo un buen rato encontrarlo): el
+REM  wrapper gcloud.cmd del SDK calcula su propia carpeta de instalacion con
+REM  `SET "CLOUDSDK_ROOT_DIR=%~dp0.."` — y `%~dp0` deberia ser siempre "la
+REM  carpeta del propio script", pero cuando gcloud.cmd se invoca con
+REM  `call "gcloud.cmd" ...` (resuelto por busqueda en PATH, sin ruta) DESDE
+REM  DENTRO de otro .bat, `%~dp0` se resuelve mal y termina apuntando a la
+REM  carpeta del .bat que lo esta llamando (este mismo script), no a la del
+REM  SDK. Efecto real: gcloud intentaba abrir
+REM  "<carpeta-de-este-script>\..\lib\gcloud.py" (que no existe), fallaba en
+REM  silencio, y el chequeo de mas abajo (`auth list`) reportaba "no hay
+REM  ninguna cuenta conectada" aunque `gcloud auth list` sí mostrara una
+REM  sesion activa al tipearlo a mano. Pasandole la ruta COMPLETA (sin
+REM  busqueda en PATH) `%~dp0` se resuelve bien sin importar desde donde se
+REM  llame, y el problema desaparece.
+set "GCLOUD="
+for /f "usebackq delims=" %%G in (`where gcloud.cmd 2^>nul`) do if not defined GCLOUD set "GCLOUD=%%G"
+if not defined GCLOUD (
     set "GCALT=%LOCALAPPDATA%\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
     if exist "!GCALT!" (
         set "GCLOUD=!GCALT!"

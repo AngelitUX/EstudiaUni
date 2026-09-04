@@ -195,6 +195,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Resumen de conteos del banco de preguntas (doc `summary`). Lo leen Mini
+    // Ensayo / Mente Veloz para mostrar "N preguntas por tema/materia" sin bajar
+    // las ~1.200 preguntas. Lo escribe el panel admin tras cada edición y el
+    // script tools/meta/build-meta.js.
+    match /pool_preguntas_meta/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     // ============ RECURSOS ADICIONALES ============
     match /recursos_adicionales/{recursoId} {
       allow read: if isAuthenticated();

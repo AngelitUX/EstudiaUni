@@ -1408,7 +1408,10 @@ export class InfiniteMasteryModalComponent implements OnInit, OnDestroy {
   }
 
   async loadMasteryData(): Promise<void> {
-    await this.paesContent.ensurePoolPreguntasLoaded();
+    // Solo las preguntas de esta materia (cacheadas por materia). loadPoolForMaterias
+    // además las vuelca en el signal `poolPreguntas()`, que es lo que lee el
+    // MasteryService de forma síncrona.
+    await this.paesContent.loadPoolForMaterias([this.materiaId]);
     this.config = this.masteryService.getSubjectConfig(this.materiaId);
     this.progress = this.masteryService.getProgress(this.materiaId);
     this.computePolygon();

@@ -981,8 +981,11 @@ export class LearningPathComponent implements OnInit, OnDestroy {
   }
 
   getSectionCount(materiaId: string): number {
-    return this.paes.getCapitulosByMateria(materiaId)
-      .reduce((acc, cap) => acc + cap.secciones.length, 0);
+    const enMemoria = this.paes.getCapitulosByMateria(materiaId)
+      .reduce((acc, cap) => acc + (cap.secciones?.length ?? 0), 0);
+    if (enMemoria > 0) return enMemoria;
+    // Secciones aún no cargadas (modo lazy): usar el conteo del resumen (lp_materias).
+    return (this.paes.getMateriaById(materiaId) as any)?.sectionCount ?? 0;
   }
 
   goToMateria(m: Materia, mode?: 'infinite', event?: Event) {

@@ -26,22 +26,22 @@ export const environment = {
   // Cloudflare aún no republicó una versión corregida) — en su lugar pasa por un endpoint
   // propio del backend (ver backend/src/app-check/), que hace exactamente lo mismo.
 
-  // INTERRUPTOR de App Check en el cliente. Hoy en `false` a proposito.
+  // INTERRUPTOR de App Check en el cliente. Vuelto a `true` el 2026-09-04 (parte 3), a pedido
+  // explicito del usuario, DESPUES de corregir en Cloudflare los 2 problemas que causaban el
+  // retry loop de Firefox: agrego los 3 hostnames (estudiauni.cl, www.estudiauni.cl,
+  // estudiauni.web.app) a la allowlist del widget de Turnstile y cambio el modo de "Invisible"
+  // a "Managed". TURNSTILE_SECRET_KEY ya estaba cargada y desplegada en el backend desde antes.
   //
-  // Motivo: el backend no tiene TURNSTILE_SECRET_KEY cargada, asi que
-  // POST /api/app-check/exchange devuelve { token: "", expireTimeMillis: 0 } (verificado en
-  // produccion el 2026-08-27). CloudflareProviderOptions interpreta eso como fallo y REINTENTA
-  // sin parar: la consola del sitio publicado se llena de TurnstileError 600010 y esos
-  // reintentos saturan el hilo principal — el mismo sintoma que ya obligo a excluir localhost
-  // unas lineas mas arriba en app.config.ts.
+  // OJO: este flag por si solo NO bloquea bots todavia. App Check sigue en modo "Supervision"
+  // en la consola de Firebase (Build > App Check > APIs) -- esta emitiendo y contando tokens,
+  // pero deja pasar tanto lo verificado como lo no verificado. El bloqueo real de scrapers/bots
+  // requiere pasar Cloud Firestore (y despues Authentication) a "Aplicar" en esa pantalla, y eso
+  // se hace recien despues de confirmar ahi que el % de "Solicitudes verificadas" esta alto y
+  // estable (varios dias, probado en Chrome + Firefox + Safari + movil) -- si se aplica con el
+  // % bajo, se bloquearia trafico real, no solo bots.
   //
-  // Desactivarlo NO baja la seguridad hoy: App Check esta en modo "Supervision" (no "Aplicar")
-  // en la consola de Firebase, o sea que los tokens no se validan igual; lo unico que se
-  // dejaba de enviar era un token vacio.
-  //
-  // PARA REACTIVARLO: cargar TURNSTILE_SECRET_KEY en backend/.env, correr
-  // desplegar-backend.bat, comprobar que el endpoint devuelve un token no vacio, y poner esto
-  // en `true`. No hace falta ningun otro cambio.
+  // Si vuelven a aparecer errores de Turnstile en la consola (sobre todo en Firefox), revisar
+  // primero la config del widget en Cloudflare (hostnames + modo) antes de volver esto a `false`.
   appCheckEnabled: true,
   turnstileSiteKey: '0x4AAAAAAEb00X1M9HopFvPf',
   turnstileTokenExchangeUrl: `${apiUrl}/api/app-check/exchange`

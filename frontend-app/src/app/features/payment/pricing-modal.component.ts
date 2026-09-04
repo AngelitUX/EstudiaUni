@@ -73,8 +73,8 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                   <span class="amount">{{ billingCycle() === 'monthly' ? '9.990' : '5.833' }}</span>
                   <span class="period">/mes</span>
                 </div>
-                <p class="price-sub" *ngIf="billingCycle() === 'monthly'">Facturado mensualmente</p>
-                <p class="price-sub savings" *ngIf="billingCycle() === 'yearly'">Facturado anualmente ($69.990) — ¡Ahorra 41%!</p>
+                <p class="price-sub" *ngIf="billingCycle() === 'monthly'">Pago único — pase de 1 mes, sin renovación automática</p>
+                <p class="price-sub savings" *ngIf="billingCycle() === 'yearly'">Pago único de $69.990 — pase de 1 año, ¡Ahorra 41%!</p>
               </div>
               <div class="card-divider"></div>
               <ul class="features-list">
@@ -91,7 +91,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </div>
           </div>
 
-          <p class="secure-checkout-text">🔒 Suscripción 100% segura a través de Flow o Transferencia Bancaria</p>
+          <p class="secure-checkout-text">🔒 Pago 100% seguro a través de Flow o Transferencia Bancaria — sin renovación automática</p>
         </ng-container>
 
         <!-- ─────────────── STEP 2: Recipient, Method & Plan ─────────────── -->
@@ -170,12 +170,12 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                 ❌ No encontramos una cuenta registrada con ese correo.
               </p>
 
-              <!-- Aviso de recurrencia SOLO para regalo por Flow (transferencia ya avisa aparte). -->
-              <div class="gift-recurring-note" *ngIf="emailStatus() === 'found' && paymentMethod() === 'flow'">
-                🔁 Este regalo es una <strong>suscripción con renovación automática</strong>: se
-                cobrará a <strong>tu</strong> tarjeta cada {{ billingCycle() === 'monthly' ? 'mes' : 'año' }}
-                hasta que lo canceles. Podrás cancelarlo cuando quieras desde
-                <strong>tu perfil → “Regalos de Plan Pro que pagas”</strong>.
+              <!-- Es un pago único en ambos métodos — mismo aviso independiente de cuál se elija. -->
+              <div class="gift-recurring-note" *ngIf="emailStatus() === 'found'">
+                🎁 Esto es un <strong>pago único</strong>: <strong>{{ giftEmail }}</strong> recibirá
+                el pase de {{ billingCycle() === 'monthly' ? '1 mes' : '1 año' }} de Plan Pro apenas
+                se apruebe el pago. No se te cobrará de nuevo automáticamente — para regalarle más
+                tiempo más adelante, repites este mismo proceso.
               </div>
             </div>
 
@@ -184,7 +184,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               <label class="section-label-sm">Método de Pago:</label>
               <div class="method-tabs">
                 <button class="method-tab" [class.active]="paymentMethod() === 'flow'" (click)="setPaymentMethod('flow')">
-                  💳 Flow <span class="sub-tag">(Tarjetas, suscripción)</span>
+                  💳 Flow <span class="sub-tag">(Tarjetas, pago único)</span>
                 </button>
                 <button class="method-tab" [class.active]="paymentMethod() === 'transfer'" (click)="setPaymentMethod('transfer')">
                   🏛️ Transferencia <span class="sub-tag">(Manual)</span>
@@ -237,13 +237,13 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               <button class="btn-checkout big" style="margin-top: 1.5rem;" (click)="proceedCheckout()" [disabled]="loadingCheckout() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
                 <span *ngIf="!loadingCheckout()">
                   {{ couponResult()?.valid
-                    ? 'Suscribirme por $' + formatPrice(couponResult()!.finalAmount!) + ' con Flow 🔒'
-                    : 'Suscribirme con Flow 🔒'
+                    ? 'Comprar pase por $' + formatPrice(couponResult()!.finalAmount!) + ' con Flow 🔒'
+                    : 'Comprar pase con Flow 🔒'
                   }}
                 </span>
                 <span *ngIf="loadingCheckout()" class="loading-dots">Conectando con Flow</span>
               </button>
-              <p class="secure-checkout-text">🔒 Suscripción con renovación automática ({{ billingCycle() === 'monthly' ? 'mensual' : 'anual' }}) — cancela cuando quieras</p>
+              <p class="secure-checkout-text">🔒 Pago único por {{ billingCycle() === 'monthly' ? '1 mes' : '1 año' }} — no se renueva automáticamente, vuelve a comprar cuando lo necesites</p>
             </div>
 
             <!-- ── MANUAL TRANSFER FLOW ── -->
@@ -251,12 +251,12 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               <div class="bank-details-box">
                 <h4>🏛️ Datos para Transferencia Bancaria:</h4>
                 <div class="bank-grid">
-                  <div><strong>Banco:</strong> Banco de Chile / BancoEstado</div>
-                  <div><strong>Tipo de Cuenta:</strong> Cuenta Vista / Corriente</div>
-                  <div><strong>N° de Cuenta:</strong> 77-654321-0</div>
-                  <div><strong>RUT:</strong> 77.654.321-K</div>
-                  <div><strong>Nombre:</strong> EstudiaUni SpA</div>
-                  <div><strong>Correo Pagos:</strong> pagos&#64;estudiauni.cl</div>
+                  <div><strong>Banco:</strong> BancoEstado</div>
+                  <div><strong>Tipo de Cuenta:</strong> Cuenta Vista</div>
+                  <div><strong>N° de Cuenta:</strong> 00026110472</div>
+                  <div><strong>RUT:</strong> 26.110.472-5</div>
+                  <div><strong>Nombre:</strong> Angel Gabriel Pino Cardenas</div>
+                  <div><strong>Correo Pagos:</strong> contacto.estudiauni&#64;gmail.com</div>
                 </div>
                 <p class="bank-amount-notice">
                   Monto exacto a transferir: <strong>$ {{ couponResult()?.valid ? formatPrice(couponResult()!.finalAmount!) : (billingCycle() === 'monthly' ? '9.990' : '69.990') }} CLP</strong>
@@ -694,25 +694,27 @@ export class PricingModalComponent implements OnInit {
 
   proceedCheckout() {
     this.loadingCheckout.set(true);
-    // Flow always POSTs the token back to `url_return` (never a plain GET) —
+    // Flow always POSTs the token back to `urlReturn` (never a plain GET) —
     // a static SPA route can't read a POST body, so this points at a backend
     // bridge that reads it server-side and redirects here with a query param
-    // instead. See flow-webhook.controller.ts `returnFromRegistration()`.
+    // instead. See flow-webhook.controller.ts `returnFromPayment()`.
     const returnUrl = `${environment.apiUrl}/api/subscriptions/flow/return`;
     const plan = this.billingCycle();
     const targetUid = this.recipientMode() === 'gift' ? this.giftTargetUid : undefined;
     const targetEmail = this.recipientMode() === 'gift' ? this.giftEmail.trim().toLowerCase() : undefined;
     const couponCode = this.couponStatus() === 'valid' ? this.couponCode.trim().toUpperCase() : undefined;
 
-    this.paymentService.startFlowRegistration(plan, returnUrl, targetUid, couponCode, targetEmail).subscribe({
+    this.paymentService.createFlowPayment(plan, returnUrl, targetUid, couponCode, targetEmail).subscribe({
       next: (res) => {
-        // Flow's documented redirect pattern: a plain GET to url?token=..., no form/POST needed.
+        // Flow's documented redirect pattern to START a payment: a plain GET
+        // to url?token=..., no form/POST needed (that only applies to the
+        // RETURN trip, handled server-side above).
         window.location.href = `${res.url}?token=${res.token}`;
       },
       error: (err) => {
         this.loadingCheckout.set(false);
         const errMsg = err.error?.message || err.message || 'Error de conexión';
-        alert('Hubo un problema al iniciar la suscripción: ' + errMsg);
+        alert('Hubo un problema al iniciar el pago: ' + errMsg);
       }
     });
   }

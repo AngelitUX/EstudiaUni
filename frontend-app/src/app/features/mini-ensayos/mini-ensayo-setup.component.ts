@@ -522,7 +522,6 @@ export class MiniEnsayoSetupComponent implements OnInit {
     { id: 'ciencias-biologia', label: 'Biología', icon: 'assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Biologia.avif' },
     { id: 'ciencias-fisica', label: 'Física', icon: 'assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Fisica.avif' },
     { id: 'ciencias-quimica', label: 'Química', icon: 'assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Quimica.avif' },
-    { id: 'ciencias-tp', label: 'Ciencias TP', icon: 'assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_TecnicoProfesional.avif' },
     { id: 'historia', label: 'Historia', icon: 'assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Historia.avif' },
   ];
 
@@ -552,8 +551,9 @@ export class MiniEnsayoSetupComponent implements OnInit {
       this.questionCount.set(16);
     }
 
-    // El banco de preguntas se carga bajo demanda (no es parte de la carga inicial de la app)
-    this.paesContent.ensurePoolPreguntasLoaded();
+    // Solo el RESUMEN de conteos (1 lectura). Las preguntas reales se cargan al
+    // iniciar el ensayo, y solo las de la materia elegida.
+    this.paesContent.ensurePoolMetaLoaded();
 
     this.route.queryParams.subscribe(async params => {
       if (params['mode'] === 'mejorador') {
@@ -562,7 +562,7 @@ export class MiniEnsayoSetupComponent implements OnInit {
         const matId = params['materiaId'] as MateriaId;
         if (matId) {
           this.selectedMateria.set(matId);
-          await this.paesContent.ensurePoolPreguntasLoaded();
+          await this.ensurePoolReady();
           this.availableTopics.set(this.miniEnsayoSvc.getAvailableTopics(matId));
 
           if (params['topics']) {
@@ -592,9 +592,17 @@ export class MiniEnsayoSetupComponent implements OnInit {
     });
   }
 
+  /** Deja el conteo listo: primero el resumen; si falla, el pool completo. */
+  private async ensurePoolReady(): Promise<void> {
+    await this.paesContent.ensurePoolMetaLoaded();
+    if (!this.paesContent.poolMeta()) {
+      await this.paesContent.ensurePoolPreguntasLoaded();
+    }
+  }
+
   async selectMateria(id: MateriaId) {
     this.selectedMateria.set(id);
-    await this.paesContent.ensurePoolPreguntasLoaded();
+    await this.ensurePoolReady();
     this.availableTopics.set(this.miniEnsayoSvc.getAvailableTopics(id));
     // Check all by default if not pre-filled
     if (this.mode() !== 'mejorador') {
@@ -638,7 +646,7 @@ export class MiniEnsayoSetupComponent implements OnInit {
 
   async startMiniEnsayo() {
     if (!this.isValid()) return;
-    await this.paesContent.ensurePoolPreguntasLoaded();
+    await this.ensurePoolReady();
 
     if (!this.isProPlan() && !this.adminService.isAdmin()) {
       const status = this.miniEnsayoSvc.canStartToday();
@@ -654,7 +662,7 @@ export class MiniEnsayoSetupComponent implements OnInit {
       finalCount = this.totalAvailableQuestions() as any;
     }
 
-    this.miniEnsayoSvc.generateSession({
+    await this.miniEnsayoSvc.generateSession({
       materiaId: this.selectedMateria()!,
       selectedTopics: this.selectedTopics(),
       questionCount: finalCount as any,
