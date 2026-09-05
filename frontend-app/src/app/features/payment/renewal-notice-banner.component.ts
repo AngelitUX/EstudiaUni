@@ -1,20 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { FirestoreService } from '../../core/services/firestore.service';
+import { PaymentService } from '../../core/services/payment.service';
 
-const WARNING_WINDOW_DAYS = 3;
-const DISMISS_KEY = 'renewal_notice_dismissed_for_date';
+const WARNING_WINDOW_DAYS = 5;
+const DISMISS_KEY = 'membership_notice_dismissed_for_date';
 
 /**
- * Reminds a Plan PRO user, a few days ahead of time, that Flow is about to
- * auto-charge their card for the next billing period — so they have a real
- * chance to cancel first if they don't want it. Flow's subscription API has
- * no "notify N days before charging" webhook of its own (only a webhook
- * AFTER each charge attempt, see FlowService.handleRecurringWebhook), so this
- * reads the `endDate` we already have on the user's Firestore profile and
- * warns client-side once it's within WARNING_WINDOW_DAYS. Intentionally not
- * shown for `provider === 'manual' | 'transfer'` — those never auto-charge.
+ * Warns a Plan PRO user a few days ahead of time that their "pase" (1-month
+ * or 1-year, bought once with Flow or by bank transfer) is about to run
+ * out — nothing auto-renews anymore, so unlike the old Flow-subscription
+ * banner this replaced, there's no card being charged to warn about: the
+ * point is just to remind them to buy their next pass before access lapses.
+ * Reads the `endDate` already on the user's Firestore profile; shown for
+ * ANY provider (flow/manual/transfer) since none of them recur.
  */
 @Component({
   selector: 'app-renewal-notice-banner',
@@ -26,10 +25,10 @@ const DISMISS_KEY = 'renewal_notice_dismissed_for_date';
         <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
       </svg>
       <span class="rb-text">
-        Tu Plan PRO se renueva automáticamente el <strong>{{ renewalDateLabel() }}</strong>{{ amountLabel() ? ' por ' + amountLabel() : '' }} — se cobrará a tu tarjeta en Flow si no cancelas antes.
+        Tu Membresía PRO vence el <strong>{{ renewalDateLabel() }}</strong> ({{ daysLeftLabel() }}) — cómprala de nuevo antes de esa fecha para no perder tu acceso.
       </span>
       <div class="rb-actions">
-        <button class="rb-btn rb-btn-settings" (click)="goToSettings()">Gestionar suscripción</button>
+        <button class="rb-btn rb-btn-settings" (click)="renewNow()">Renovar membresía</button>
         <button class="rb-btn rb-btn-dismiss" (click)="dismiss()" aria-label="Cerrar aviso">✕</button>
       </div>
     </div>
@@ -59,7 +58,7 @@ const DISMISS_KEY = 'renewal_notice_dismissed_for_date';
 })
 export class RenewalNoticeBannerComponent {
   private firestoreService = inject(FirestoreService);
-  private router = inject(Router);
+  private paymentService = inject(PaymentService);
 
   private dismissedForDate = signal<string | null>(
     typeof localStorage !== 'undefined' ? localStorage.getItem(DISMISS_KEY) : null
@@ -75,8 +74,7 @@ export class RenewalNoticeBannerComponent {
     const profile = this.firestoreService.profileSignal();
     const sub = profile?.subscription;
     if (!sub) return false;
-    // Only Flow subscriptions auto-charge; manual/transfer grants just expire.
-    return sub.tier === 'premium' && sub.status === 'active' && sub.provider === 'flow' && !sub.cancelAtPeriodEnd;
+    return sub.tier === 'premium' && sub.status === 'active';
   });
 
   daysLeft = computed<number | null>(() => {
@@ -84,6 +82,14 @@ export class RenewalNoticeBannerComponent {
     if (!end) return null;
     const ms = end.getTime() - Date.now();
     return Math.ceil(ms / (24 * 3600 * 1000));
+  });
+
+  daysLeftLabel = computed(() => {
+    const days = this.daysLeft();
+    if (days === null) return '';
+    if (days <= 0) return 'vence hoy';
+    if (days === 1) return 'queda 1 día';
+    return `quedan ${days} días`;
   });
 
   visible = computed(() => {
@@ -98,13 +104,6 @@ export class RenewalNoticeBannerComponent {
     return end ? end.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' }) : '';
   });
 
-  amountLabel = computed(() => {
-    const planType = this.firestoreService.profileSignal()?.subscription?.planType;
-    if (planType === 'monthly') return '$9.990';
-    if (planType === 'yearly') return '$69.990';
-    return '';
-  });
-
   private renewalDateKey(): string {
     const end = this.endDate();
     return end ? end.toISOString().split('T')[0] : '';
@@ -116,7 +115,8 @@ export class RenewalNoticeBannerComponent {
     try { localStorage.setItem(DISMISS_KEY, key); } catch { /* ignore quota errors */ }
   }
 
-  goToSettings() {
-    this.router.navigate(['/settings']);
+  renewNow() {
+    const planType = this.firestoreService.profileSignal()?.subscription?.planType || 'monthly';
+    this.paymentService.openPricingModal(true, planType);
   }
 }

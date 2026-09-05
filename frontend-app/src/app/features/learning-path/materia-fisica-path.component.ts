@@ -1,7 +1,7 @@
 import { Component, effect, inject, signal, computed, HostListener, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { PaesContentService } from './services/paes-content.service';
+import { PaesContentService, autoLoadMateriaSecciones } from './services/paes-content.service';
 import { LearningAccessService } from './services/learning-access.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsModalComponent } from '../profile/settings-modal.component';
@@ -2724,6 +2724,9 @@ export class MateriaFisicaPathComponent implements AfterViewInit, OnDestroy {
     let matId = 'fisica';
     if (url.includes('ciencias-fisica')) matId = 'ciencias-fisica';
     this.materiaId.set(matId);
+
+    // Carga las secciones de esta materia bajo demanda. Idempotente.
+    autoLoadMateriaSecciones(() => this.materiaId());
 
     // Modo Infinito: reservado para una actualización futura. Solo el panel de admin
     // (/admin/modo-infinito) puede activarlo, vía ?mode=infinite — ya no hay ningún botón

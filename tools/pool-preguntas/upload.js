@@ -137,6 +137,26 @@ async function main() {
 
   const final = await db.collection(COLECCION).get();
   console.log(`\n✔ Listo. ${escritas} documento(s) escritos. La coleccion tiene ahora ${final.size}.`);
+
+  // Reconstruir el resumen de conteos (pool_preguntas_meta/summary) que consumen
+  // Mini Ensayo / Mente Veloz para no bajar las ~1.200 preguntas solo para contar.
+  // (Los conteos de secciones de la Ruta NO se tocan aca — para eso esta
+  //  `node tools/meta/build-meta.js`.)
+  const byMateria = {};
+  final.forEach(d => {
+    const { materiaId, tema } = d.data();
+    if (!materiaId) return;
+    byMateria[materiaId] = byMateria[materiaId] || { total: 0, temas: {} };
+    byMateria[materiaId].total++;
+    if (tema) byMateria[materiaId].temas[tema] = (byMateria[materiaId].temas[tema] || 0) + 1;
+  });
+  await db.collection('pool_preguntas_meta').doc('summary').set({
+    updatedAt: new Date().toISOString(),
+    total: final.size,
+    byMateria,
+  });
+  console.log('✔ pool_preguntas_meta/summary reconstruido.');
+
   console.log('Recuerda: el panel admin y la app cachean el pool 6 h. Usa "Actualizar Datos"');
   console.log('en /admin o borra `pool_preguntas_cache` de localStorage para verlo al instante.\n');
   process.exit(0);

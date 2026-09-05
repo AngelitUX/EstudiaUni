@@ -598,10 +598,17 @@ export class MiniEnsayoReviewComponent {
     if (!this.result()) {
       this.router.navigate(['/dashboard']);
     }
-    // El banco de preguntas se carga bajo demanda; garantizamos que esté disponible aquí
-    // porque a esta pantalla se puede llegar sin pasar por el setup (ej. "Ver último resultado").
-    this.paesContent.ensurePoolPreguntasLoaded();
+    // La revisión usa r.questions (guardadas en el resultado). Para resultados
+    // viejos que no las traen, cargamos solo el pool de esa materia como fallback.
+    const r = this.result();
+    if (r && !(r.questions && r.questions.length) && r.config?.materiaId) {
+      this.paesContent.loadPoolForMaterias([r.config.materiaId])
+        .then(qs => this.fallbackPool.set(qs))
+        .catch(() => {});
+    }
   }
+
+  private fallbackPool = signal<any[]>([]);
 
   materiaTitle = computed(() => {
     const r = this.result();
@@ -619,8 +626,11 @@ export class MiniEnsayoReviewComponent {
   questions = computed(() => {
     const r = this.result();
     if (!r) return [];
-    const allPool = this.paesContent.poolPreguntas();
-    return r.questionIds.map(id => allPool.find(p => p.id === id)).filter(p => !!p) as any[];
+    if (r.questions && r.questions.length) return r.questions as any[];
+    // Fallback para resultados viejos sin `questions`: buscar por id en el pool
+    // de la materia (o en el pool completo si ya estaba cargado).
+    const pool = this.fallbackPool().length ? this.fallbackPool() : this.paesContent.poolPreguntas();
+    return r.questionIds.map(id => pool.find(p => p.id === id)).filter(p => !!p) as any[];
   });
 
   answeredQuestions = computed(() => {

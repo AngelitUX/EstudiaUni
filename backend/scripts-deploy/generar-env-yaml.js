@@ -82,11 +82,16 @@ if (excluidas.length) console.log(`  omitidas a proposito: ${excluidas.join(', '
 // no las fusiona: cualquier variable que no este aqui DESAPARECE del Cloud Run en
 // funcionamiento. Si falta una que la produccion necesita, Foco / los pagos /
 // Firebase Admin se rompen despues del deploy sin ningun error en el propio deploy.
+// FLOW_PLAN_ID_MONTHLY/FLOW_PLAN_ID_YEARLY quedaron fuera de esta lista a
+// propósito (2026-09-04): el Plan PRO pasó a pago único vía /payment/create
+// (ver CLAUDE.md sección 6), que no usa "planes" de Flow precreados. Si
+// siguen en el .env no hacen daño (ConfigService simplemente no las lee),
+// pero ya no son obligatorias.
 const ESPERADAS_EN_PRODUCCION = [
   'FIREBASE_PROJECT_ID', 'FIREBASE_CLIENT_EMAIL', 'FIREBASE_PRIVATE_KEY',
   'GEMINI_API_KEY', 'FRONTEND_APP_URL',
   'FLOW_ENVIRONMENT', 'FLOW_API_KEY', 'FLOW_SECRET_KEY',
-  'FLOW_PLAN_ID_MONTHLY', 'FLOW_PLAN_ID_YEARLY', 'BACKEND_PUBLIC_URL',
+  'BACKEND_PUBLIC_URL',
   'TURNSTILE_SECRET_KEY',
 ];
 const faltantes = ESPERADAS_EN_PRODUCCION.filter((k) => !incluidas.includes(k));

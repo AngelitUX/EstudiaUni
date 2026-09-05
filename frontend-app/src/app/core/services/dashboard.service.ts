@@ -49,6 +49,9 @@ export interface PaesRecord {
 
 export interface AIRecommendation {
   icon: string;
+  /** Ruta a un ícono AVIF de la marca (IconosAVIF/) relacionado con el consejo.
+   *  Reemplaza al emoji grande en la tarjeta de "Recomendación IA" del dashboard. */
+  iconSrc: string;
   title: string;
   description: string;
   estimatedTime: string;
@@ -56,6 +59,8 @@ export interface AIRecommendation {
   routerLink: string;
   type: 'leccion' | 'ensayo' | 'repaso';
 }
+
+const ICONOS_AVIF = 'assets/images/Nuevos VideosEIlustraciones/IconosAVIF/';
 
 function storageKeyActivities(uid: string) { return `estudiauni_activities_${uid}`; }
 function storageKeyStreak(uid: string) { return `estudiauni_streak_${uid}`; }
@@ -136,6 +141,7 @@ export class DashboardService {
       if (weakest.mastery < 100) {
         recs.push({
           icon: weakest.subjectIcon,
+          iconSrc: this.getSubjectIconSrc(weakest.subjectId),
           title: `Refuerza ${weakest.subjectName}`,
           description: `Tu dominio actual es ${weakest.mastery}%. Completar más lecciones te ayudará a mejorar tu puntaje PAES en esta área.`,
           estimatedTime: '15-20 min',
@@ -155,6 +161,7 @@ export class DashboardService {
       const m = untouchedMaterias[0];
       recs.push({
         icon: m.icon,
+        iconSrc: this.getSubjectIconSrc(m.id),
         title: `Comienza ${m.title}`,
         description: `Aún no has explorado esta materia. ¡Empieza hoy y desbloquea tu potencial!`,
         estimatedTime: '10-15 min',
@@ -170,6 +177,7 @@ export class DashboardService {
       if (!best) {
         recs.push({
           icon: '📝',
+          iconSrc: ICONOS_AVIF + 'P_EnsayosPaes.avif',
           title: 'Realiza tu primer Ensayo PAES',
           description: 'Ya has completado varias lecciones. ¡Es hora de poner a prueba tus conocimientos con un ensayo completo!',
           estimatedTime: '2h 20min',
@@ -180,6 +188,7 @@ export class DashboardService {
       } else {
         recs.push({
           icon: '🏆',
+          iconSrc: ICONOS_AVIF + 'P_Logro.avif',
           title: 'Supera tu puntaje récord',
           description: `Tu mejor ensayo tuvo ${best.correctAnswers}/${best.totalQuestions} correctas. ¡Intenta superarte!`,
           estimatedTime: '2h 20min',
@@ -195,6 +204,7 @@ export class DashboardService {
     if (streak === 0 && activities.length > 0) {
       recs.push({
         icon: '🔥',
+        iconSrc: ICONOS_AVIF + 'P_MenteVeloz.avif',
         title: 'Recupera tu racha de estudio',
         description: 'Tu racha se ha reiniciado. ¡Completa una lección hoy para empezar una nueva racha!',
         estimatedTime: '10 min',
@@ -208,6 +218,7 @@ export class DashboardService {
     if (recs.length === 0) {
       recs.push({
         icon: '🚀',
+        iconSrc: ICONOS_AVIF + 'P_RutaDeAprendizaje.avif',
         title: 'Comienza tu preparación PAES',
         description: 'Explora la ruta de aprendizaje y empieza con tu primera lección. ¡Tu viaje académico comienza aquí!',
         estimatedTime: '10-15 min',
@@ -219,6 +230,21 @@ export class DashboardService {
 
     return recs;
   });
+
+  /** Ícono AVIF de la marca para una materia (para la tarjeta de Recomendación IA). */
+  private getSubjectIconSrc(subjectId: string): string {
+    const map: Record<string, string> = {
+      'comp-lectora': 'P_Lenguaje', lenguaje: 'P_Lenguaje', 'competencia-lectora': 'P_Lenguaje',
+      mat1: 'P_m1', matematica1: 'P_m1', 'matematicas-m1': 'P_m1',
+      mat2: 'P_m2', 'matematicas-m2': 'P_m2',
+      historia: 'P_Historia',
+      'ciencias-biologia': 'P_Biologia', biologia: 'P_Biologia',
+      'ciencias-fisica': 'P_Fisica', fisica: 'P_Fisica',
+      'ciencias-quimica': 'P_Quimica', quimica: 'P_Quimica',
+      'ciencias-tp': 'P_TecnicoProfesional', ciencias: 'P_RutaDeAprendizaje',
+    };
+    return ICONOS_AVIF + (map[subjectId] || 'P_RutaDeAprendizaje') + '.avif';
+  }
 
   constructor() {
     // Subscribe to auth state changes to load/clear user-specific data

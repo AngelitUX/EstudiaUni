@@ -1386,8 +1386,12 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
     });
     this.updateSessionStatus();
 
-    // El banco de preguntas se carga bajo demanda (no es parte de la carga inicial de la app)
-    this.paesContent.ensurePoolPreguntasLoaded();
+    // Solo el RESUMEN de conteos (1 lectura). Las preguntas reales se cargan al
+    // iniciar la partida, y solo las de las materias seleccionadas (cacheadas por
+    // materia: una 2ª ronda con las mismas materias no vuelve a leer nada).
+    this.paesContent.ensurePoolMetaLoaded().then(() => {
+      if (!this.paesContent.poolMeta()) this.paesContent.ensurePoolPreguntasLoaded();
+    });
 
     // Load personal records when auth is resolved
     this.authService.user$.subscribe(user => {
@@ -1508,6 +1512,18 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
   }
 
   getPoolCount(): number {
+    // Camino rápido: conteos del resumen (sin cargar preguntas).
+    if (this.paesContent.poolMeta()) {
+      const seen = new Set<string>();
+      let n = 0;
+      for (const m of this.selectedMaterias) {
+        const canon = this.paesContent.toPoolMateriaId(m);
+        if (seen.has(canon)) continue;
+        seen.add(canon);
+        n += this.paesContent.poolCountForMateria(canon);
+      }
+      return n;
+    }
     return this.paesContent.poolPreguntas().filter(q => this.isMateriaSelected(q.materiaId)).length;
   }
 
@@ -1551,9 +1567,8 @@ export class MenteVelozComponent implements OnInit, OnDestroy {
       this.recordSessionStart();
     }
 
-    await this.paesContent.ensurePoolPreguntasLoaded();
-    const allQuestions = this.paesContent.poolPreguntas();
-    this.poolQuestions = allQuestions.filter(q => this.isMateriaSelected(q.materiaId));
+    // Solo las materias seleccionadas (cacheadas por materia).
+    this.poolQuestions = await this.paesContent.loadPoolForMaterias([...this.selectedMaterias]);
     this.poolQuestions = this.shuffleArray([...this.poolQuestions]);
 
     if (this.poolQuestions.length === 0) {

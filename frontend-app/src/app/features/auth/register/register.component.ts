@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { mensajeErrorGoogle } from '../../../core/utils/auth-error';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
 import { LegalModalComponent } from '../../../shared/components/legal-modal.component';
 import { PasswordVisibilityIconComponent } from '../../../shared/components/password-visibility-icon.component';
@@ -15,10 +16,37 @@ import { PasswordVisibilityIconComponent } from '../../../shared/components/pass
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   router = inject(Router);
   private auth = inject(Auth);
+  private stuckGoogleLoginTimer: ReturnType<typeof setTimeout> | null = null;
+  private authSub: Subscription | null = null;
+
+  ngOnInit() {
+    // Suscripción persistente, no un chequeo de una sola pasada — ver el comentario largo
+    // en LoginComponent.ngOnInit para el porqué exacto.
+    //
+    // 🔴 El `user.emailVerified` NO es opcional aquí, es lo que evita romper el registro por
+    // correo: `onSubmit()` llama a `createUserWithEmailAndPassword`, y en cuanto eso resuelve
+    // `authState` YA emite la cuenta recién creada — mucho antes de que el método termine de
+    // enviar el correo de verificación, mostrar la pantalla de "revisa tu bandeja" y hacer el
+    // `signOut()` final. Sin este filtro, la suscripción sacaba al usuario a /dashboard en ese
+    // instante; `emailVerifiedGuard` lo mandaba a /verify-email, el `signOut()` lo dejaba sin
+    // sesión y terminaba en /login sin haber visto nunca la pantalla de verificación. Una
+    // cuenta de Google siempre llega con `emailVerified: true`, así que el camino que esta
+    // suscripción sí debe cubrir (volver del redirect de Google) no se ve afectado.
+    this.authSub = this.authService.user$.subscribe((user) => {
+      if (user?.emailVerified) {
+        this.router.navigate(['/dashboard']);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
+    this.authSub?.unsubscribe();
+  }
 
   name = '';
   email = '';
@@ -235,12 +263,21 @@ export class RegisterComponent {
     }
 
     this.loading = true;
+
+    // Ver el comentario largo en LoginComponent.loginWithGoogle() — mismo mecanismo, mismo
+    // problema en Firefox con protección estricta de cookies de terceros.
+    this.stuckGoogleLoginTimer = setTimeout(() => {
+      this.loading = false;
+      this.error = 'Esto está tardando más de lo normal — tu navegador podría estar bloqueando el inicio de sesión con Google (pasa seguido en Firefox, por su protección de cookies de terceros). Si no avanza solo en unos segundos más, prueba crear tu cuenta con correo y contraseña, o usa Chrome.';
+    }, 10000);
+
     try {
-      await this.authService.loginWithGoogle();
-      this.router.navigate(['/dashboard']);
+      // Navega a Google — no vuelve a este método. El resultado (éxito o error) se
+      // recoge en AppComponent.ngOnInit cuando la app se recarga de vuelta.
+      await this.authService.startGoogleLogin();
     } catch (e: any) {
+      if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
       this.error = mensajeErrorGoogle(e);
-    } finally {
       this.loading = false;
     }
   }

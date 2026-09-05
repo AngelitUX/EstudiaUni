@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-08-30 · Rama en la que se escribió: `poolPreguntas`
+> Última actualización: 2026-09-04 · Rama en la que se escribió: `Flow-Admin-Arreglos`
 
 ---
 
@@ -200,10 +200,11 @@ estos archivos son casi idénticos entre sí (~150 KB cada uno) y se desincroniz
 | `users/{uid}/actividad/{id}` | Log de actividades de estudio (para racha e historial) | Usuario |
 | `ensayos/{id}` | Metadata de cada ensayo PAES (`title`, `subject`, `questionCount`, `timeMinutes`, `isActive`) | Admin |
 | `preguntas/{id}` | Preguntas de ensayos (`ensayoId`, `order`, `options` A–E, `correctAnswer`, `readingText`) | Admin |
-| `pool_preguntas/{id}` | Banco de preguntas de Mini Ensayos / Mente Veloz / Modo Infinito (esquema `PoolPregunta`). **La fuente de verdad versionada es `content/pool-preguntas/`** (2026-08-30); Firestore es la copia que consume la app. Ver el README de esa carpeta antes de agregar preguntas | Admin + `tools/pool-preguntas/upload.js` |
+| `pool_preguntas/{id}` | Banco de preguntas de Mini Ensayos / Mente Veloz / Modo Infinito (esquema `PoolPregunta`). **La fuente de verdad versionada es `content/pool-preguntas/`** (2026-08-30); Firestore es la copia que consume la app. Ver el README de esa carpeta antes de agregar preguntas. **Ya NO se lee entera: la app carga solo las materias que necesita (`where('materiaId','in',...)`) + el doc resumen** (2026-09-04 p2) | Admin + `tools/pool-preguntas/upload.js` |
+| `pool_preguntas_meta/summary` | Doc único con conteos por materia/tema del pool. Lo leen Mini Ensayo / Mente Veloz para mostrar "N preguntas" sin bajar las ~1.200. **Se reconstruye solo:** el panel admin tras cada edición, y `tools/pool-preguntas/upload.js --commit` al terminar. `node tools/meta/build-meta.js` lo rehace a mano (y además los `sectionCount`) | Admin + scripts |
 | `intentos/{id}` | Intento de ensayo. **Ojo: el campo de dueño se llama `odId`, no `userId`** | Usuario |
-| `lp_materias/{id}` | Materias de la ruta | Admin |
-| `lp_capitulos/{id}` | Capítulos (con subcolección `secciones`) | Admin |
+| `lp_materias/{id}` | Materias de la ruta. **Campos `chapterCount`/`sectionCount`/`sectionCountByChapter`** (los pone `tools/meta/build-meta.js`) permiten a la Ruta calcular progreso sin leer las 401 secciones (2026-09-04 p2) | Admin + `tools/meta/build-meta.js` |
+| `lp_capitulos/{id}` | Capítulos (con subcolección `secciones`). **Las `secciones` ya NO se cargan con `collectionGroup` al abrir la Ruta: cada materia lee las suyas al abrirse** (`ensureMateriaSeccionesLoaded`, 2026-09-04 p2) | Admin |
 | `lp_tests/{id}` | Tests por sección | Admin |
 | `recursos_adicionales/{id}` | Recursos (con placeholders si está vacía) | Admin |
 | `news/{id}` | Noticias — **lectura pública sin auth** | Admin |
@@ -249,28 +250,57 @@ Fuente de verdad: `backend/src/subscriptions/subscriptions.service.ts`.
 - **Resultados retenidos 3 horas** tras terminar un ensayo.
 - Mente Veloz: solo `mat1` y `comp-lectora`, tiempos de 60 s y 180 s, **3 sesiones por 24 h**.
 
-### Plan PRO
+### Plan PRO — Membresía por "pases", NO suscripción (desde 2026-09-04)
+> Flow le informó al equipo que ya no puede usar su producto de **suscripción con cobro
+> recurrente** en esta cuenta. Por eso el Plan PRO se compra como un **pase de acceso por
+> tiempo definido** (1 mes o 1 año), pagado con un **cargo único** — nada se cobra de nuevo
+> automáticamente. Para seguir siendo PRO, el usuario tiene que volver a comprar un pase antes
+> de que el actual expire.
 - Ensayos y quizzes **ilimitados**, sin cooldown, resultados inmediatos.
 - **500 fichas de Foco/día**.
 - Todas las materias y tiempos en Mente Veloz.
-- **$9.990 CLP/mes** o **$69.990 CLP/año** (definidos en `backend/src/scripts/setup-flow-plans.ts`).
+- **$9.990 CLP** el pase de 1 mes, **$69.990 CLP** el pase de 1 año (`PLAN_AMOUNTS` en
+  `backend/src/subscriptions/flow.service.ts`).
+- **Los pases se ACUMULAN, no se reemplazan.** Si compras un pase nuevo mientras todavía te
+  quedan días del anterior (p. ej. 5 días restantes), esos días **se suman** al período nuevo
+  (5 + 30 = 35 días), en vez de resetear el conteo desde hoy. Esto lo hace
+  `SubscriptionsService.activateSubscription()` — comparando el `endDate` actual contra "ahora"
+  y sumando el nuevo período desde el que sea mayor. Esta lógica ya existía antes del cambio a
+  pases (se escribió originalmente para el caso "te regalan Pro estando ya Pro") — no hizo falta
+  tocarla para que la "membresía se sume" funcione.
 
 ### Detalles importantes
 - Los **admins reciben trato PRO** en todos lados (`firebaseService.isAdmin(uid)`).
 - Las fichas de Foco se consumen con `amount` variable: acciones "pesadas" (análisis completo) cuestan más
   que una pista rápida en examen.
 - Los créditos se resetean por fecha (`dailyCredits.lastResetDate`).
-- Se puede **regalar** una suscripción a otro usuario (`targetUid` en el flujo de pago).
+- Se puede **regalar** un pase a otro usuario (`targetUid` en el flujo de pago) — el amigo recibe
+  los días de inmediato; como es un pago único, no hay nada que "cancelar" después (a diferencia
+  del viejo modelo de suscripción, donde regalar creaba un cobro recurrente a la tarjeta del que
+  regalaba).
+- **No existe ningún endpoint de "cancelar suscripción".** Con pases de un solo pago no hay nada
+  que cancelar: el acceso simplemente expira en `subscription.endDate`. El aviso de vencimiento
+  (`RenewalNoticeBannerComponent`, en el dashboard) avisa ~5 días antes para que el usuario compre
+  su próximo pase a tiempo — ver detalle en la Bitácora 2026-09-04.
 
 ### Pagos
-Dos vías, ambas en `pricing-modal.component.ts`:
-1. **Flow.cl** — suscripción recurrente. Flujo: `register-card` → redirect a Flow → vuelve a
-   `/pago-resultado?token=…` → `flow/confirm`. Webhook en `POST /api/subscriptions/flow/webhook`.
-   Requiere planes precreados con `npm run setup:flow-plans`; el backend **nunca crea planes en runtime**.
+Dos vías, ambas en `pricing-modal.component.ts`, y ambas son **pago único** (ninguna cobra de
+nuevo sola):
+1. **Flow.cl** — pago único vía `/payment/create` (no `/customer/register` +
+   `/subscription/create`, que es lo que Flow dejó de permitir). Flujo: `flow/create-payment` →
+   redirect a Flow (`url + "?token=" + token`) → Flow cobra → Flow llama server-to-server a
+   `POST /api/subscriptions/flow/webhook` (urlConfirmation) **y** el navegador vuelve a
+   `/pago-resultado?token=…` → `flow/confirm` — ambos caminos llaman a
+   `FlowService.confirmPayment()`/`handlePaymentWebhook()`, que verifican el pago real contra
+   `/payment/getStatus` (nunca confían en el body) antes de otorgar el pase; una transacción de
+   Firestore sobre `flow_payments/{token}` asegura que solo uno de los dos caminos otorgue el pase,
+   no los dos. **No requiere ningún script de setup ni "planes" precreados** — cada compra crea su
+   propia orden en Flow al momento, a diferencia del viejo modelo (`setup-flow-plans.ts`, eliminado).
 2. **Transferencia bancaria manual** — el usuario sube comprobante, queda `pending_approval`,
-   y un admin lo aprueba en `/admin/suscripciones`.
+   y un admin lo aprueba en `/admin/suscripciones`. Ya era pago único desde antes de este cambio.
 
-También hay **cupones de descuento** (`discount_codes`, `POST /api/subscriptions/validate-coupon`).
+También hay **cupones de descuento** (`discount_codes`, `POST /api/subscriptions/validate-coupon`),
+aplicables al pago único de cualquiera de los dos métodos.
 
 ---
 
@@ -384,10 +414,46 @@ alternativa gratuita a reCAPTCHA Enterprise. Detalle completo en la Bitácora 20
   recuperar-contraseña, que van directo del navegador a Firebase Auth y nunca tocan este
   backend; a esas 3 páginas las protege la aplicación de App Check a nivel de Firebase, sin
   necesidad de ningún guard propio.
-- **Interruptor del cliente (2026-08-27):** `provideAppCheck(...)` además solo se registra si
-  `environment.appCheckEnabled` es `true`, y **hoy está en `false`**. Motivo y pasos para
-  reactivarlo: ver la Bitácora del 2026-08-27 y el comentario en `environment.ts`. Mientras esté
-  apagado, el navegador no instancia el widget de Turnstile en absoluto.
+- **🔴 El proveedor va SIEMPRE envuelto en un tope de tiempo (`conTopeDeTiempo`, `app.config.ts`), y
+  eso no es opcional.** `CloudflareProviderOptions.getToken()` hace `await readyTurnstile`, un promise
+  **sin rama de rechazo ni tiempo límite**: si el desafío de Turnstile no se completa queda pendiente
+  para siempre en vez de fallar. Y tanto `@firebase/auth` (dentro de `_getRedirectUrl()`, o sea antes
+  de navegar a Google) como `@firebase/firestore` esperan ese token antes de seguir — los dos manejan
+  bien un **error** del proveedor, ninguno maneja un **cuelgue**. Sin el tope, el login con Google
+  simplemente no navega. Diagnóstico completo en la Bitácora 2026-09-05. Si algún día se cambia de
+  proveedor de App Check, envolverlo igual.
+- **Interruptor del cliente:** `provideAppCheck(...)` solo se registra si `environment.appCheckEnabled`
+  es `true`. **Hoy en `true` en prod, `false` en dev** (historial completo abajo).
+- **Cronología del 2026-09-04** (útil si vuelve a fallar):
+  1. Se verificó que `TURNSTILE_SECRET_KEY` **sí estaba** en `backend/.env` y desplegada en Cloud
+     Run (el endpoint `/api/app-check/exchange` tarda ~1 s = llama de verdad a
+     `challenges.cloudflare.com/siteverify`). Las entradas viejas de la bitácora que dicen "sin
+     `TURNSTILE_SECRET_KEY`" estaban desactualizadas.
+  2. Aun así, el widget fallaba **en Firefox** (`challenge-platform/.../pat/... → 401` +
+     `TurnstileError: Nothing to reset found for provided container` + retry loop) y en
+     navegadores automatizados — en Chrome funcionaba sin errores. Se puso `appCheckEnabled:
+     false` de urgencia (limpia la consola; no bajaba seguridad porque estaba en "Supervisión").
+  3. **Causa raíz encontrada, en el propio dashboard de Cloudflare Turnstile:** el widget solo
+     tenía **1 de 3 hostnames** configurados (`estudiauni.cl`; faltaban `www.estudiauni.cl` —el
+     que se estaba probando— y `estudiauni.web.app`, los 3 sirven la app directo), y el **Widget
+     Mode** estaba en "Invisible" en vez de "Managed" (el recomendado por Cloudflare). El usuario
+     corrigió ambas cosas en Cloudflare.
+  4. Con eso corregido, se volvió a poner **`appCheckEnabled: true`** (desplegar con
+     `actualizar.bat`). Ver el comentario extenso en `environment.ts` para el detalle completo.
+- **🔴 Importante — el flag por sí solo NO bloquea nada.** App Check sigue en modo **"Supervisión"**
+  en Firebase Console → Build → App Check → APIs (Cloud Firestore y Authentication): emite y
+  cuenta tokens, pero deja pasar tanto lo verificado como lo no verificado. El bloqueo real de
+  bots/scrapers requiere pasar esos 2 servicios a **"Aplicar"**, y eso recién debe hacerse cuando
+  el % de "Solicitudes verificadas" de esa tabla esté alto y estable por varios días (probado en
+  Chrome + Firefox + Safari + móvil) — aplicarlo con el % bajo bloquearía tráfico real, no bots.
+- **La pantalla Firebase Console → App Check → Apps mostrando "reCAPTCHA Enterprise · Registrada"
+  no es lo que usa este proyecto** — es la sugerencia por defecto de Firebase para quien use su
+  SDK oficial de reCAPTCHA. Esta app usa un **Custom Provider** (Turnstile, vía el endpoint propio
+  del backend descrito arriba), que no necesita ni usa esa registración. No hay que tocarla.
+- **Bonus (no es nuestro bug): el beacon de Cloudflare Web Analytics** (`static.cloudflareinsights.com/
+  beacon.min.js`) falla el SRI/CORS en Firefox ("ninguno de los hashes sha512 coincide") — Cloudflare
+  inyecta ese `<script integrity>` en el borde y el hash quedó viejo. Apagar/reactivar "Web Analytics"
+  en el dashboard de Cloudflare de la zona lo arregla. Solo ensucia la consola de Firefox.
 - **SSR:** `provideAppCheck(...)` en `app.config.ts` solo se registra si
   `typeof window !== 'undefined'` — ni siquiera se intenta en el servidor. No es solo que
   `initializeAppCheck()` no sirva en Node: el constructor de `CloudflareProviderOptions` toca
@@ -433,7 +499,8 @@ alternativa gratuita a reCAPTCHA Enterprise. Detalle completo en la Bitácora 20
   (2026-08-20, ver Bitácora) hasta que se renombraron sus clases con prefijo `admin-` (`.admin-sidebar`,
   `.admin-main-content`, etc.). Antes de nombrar una clase nueva, `grep` rápido sobre `styles.css`.
 - **Nada de emojis nuevos en la UI**: hubo un commit dedicado a quitarlos (`080f8f8a`). Se usan
-  **SVG desde `assets/images/Nuevos VideosEIlustraciones/iconosSVG/`**.
+  los **íconos AVIF de `assets/images/Nuevos VideosEIlustraciones/IconosAVIF/`** (`P_*.avif` —
+  `iconosSVG/` se eliminó el 2026-08-25) o SVG inline con `stroke="currentColor"`.
 - Estilos: tokens CSS en `src/styles.css` (`--accent-primary: #855cd6` morado de marca,
   `--accent-secondary: #1cb0f6`, fuentes `Outfit` para títulos e `Inter` para cuerpo).
 
@@ -462,10 +529,8 @@ Sembrar contenido de la ruta a Firestore (desde `backend/`):
 node scratch/push-mock-to-firestore.js
 ```
 
-Crear los planes recurrentes en Flow (una sola vez):
-```bash
-cd backend && npm run setup:flow-plans
-```
+> El Plan PRO se compra como pago único (pase de 1 mes/año, ver sección 6) — no hay "planes"
+> recurrentes que precrear en Flow, así que no existe ningún script de setup para esto.
 
 Banco de preguntas (`pool_preguntas`) — detalle completo en `content/pool-preguntas/README.md`.
 Validar el contenido y regenerar el mock local:
@@ -481,6 +546,13 @@ node tools/pool-preguntas/verificar-modulos.js
 Subir a Firestore (sin `--commit` solo simula; nunca borra ni toca preguntas de otra procedencia):
 ```bash
 node tools/pool-preguntas/upload.js --commit
+```
+
+**Reconstruir los resúmenes de conteos** (`pool_preguntas_meta/summary` + los campos `sectionCount`
+de `lp_materias`) — correr tras CUALQUIER re-siembra de contenido (pool o Ruta). Sin `--commit` solo
+simula:
+```bash
+node tools/meta/build-meta.js --commit
 ```
 
 > Los scripts `*:landing` fueron eliminados del `package.json` (2026-08-18): el landing dejó de ser un
@@ -547,9 +619,9 @@ FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY
 OPENAI_API_KEY          # declarado pero NO usado — el proveedor real es Gemini
 CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET
 FLOW_ENVIRONMENT (sandbox|production) / FLOW_API_KEY / FLOW_SECRET_KEY / FLOW_BASE_URL
-FLOW_PLAN_ID_MONTHLY / FLOW_PLAN_ID_YEARLY
-BACKEND_PUBLIC_URL      # URL HTTPS pública para el webhook Y el retorno de registro de Flow (en
-                        # dev: un túnel — ver "Probar Flow en local" más abajo. Se recomienda
+BACKEND_PUBLIC_URL      # URL HTTPS pública para el webhook (urlConfirmation) Y el retorno del
+                        # pago (bridge de /flow/return). En dev: un túnel — ver "Probar Flow en
+                        # local" más abajo. Se recomienda
                         # `cloudflared` sobre `ngrok`: varios antivirus ponen en cuarentena el
                         # binario de ngrok como falso positivo, porque malware real también lo usa
                         # para túneles C2 — ver Bitácora 2026-08-25 parte 3)
@@ -577,36 +649,34 @@ errores diagnosticados en la Bitácora 2026-08-25 parte 3).
 **La cuenta de sandbox y el API Key/Secret Key SÍ se pueden compartir entre todo el equipo** —
 es dinero de mentira, no hay ningún riesgo en que varios usen la misma cuenta de prueba. Lo único
 que es genuinamente por-máquina es el túnel (`BACKEND_PUBLIC_URL`), porque apunta al backend
-local de cada quien. Camino recomendado para un equipo:
+local de cada quien. **Ya no hace falta ningún script de setup** (`setup-flow-plans.ts` se eliminó
+el 2026-09-04, junto con el modelo de suscripción recurrente que lo necesitaba — ver sección 6):
+cada pago de un pase crea su propia orden en Flow al momento, no hay "planes" que precrear.
+Camino recomendado para un equipo:
 
 1. **Una sola persona** crea la cuenta en `sandbox.flow.cl` (Mi Cuenta → API Keys) y comparte
    `FLOW_API_KEY`/`FLOW_SECRET_KEY` con el resto por un canal privado — Slack/Discord DM, gestor
    de contraseñas del equipo — **nunca por commit ni por chat público**.
-2. Esa misma persona corre `npm run setup:flow-plans` **una sola vez** contra esa cuenta y
-   comparte los dos `FLOW_PLAN_ID_...` que imprime junto con las claves de arriba. `setup-flow-plans.ts`
-   usa IDs fijos (`pro-mensual` / `pro-anual`, no un ID generado al azar por corrida) — por eso
-   estos valores son igual de compartibles que las claves, cualquiera que corra el script otra vez
-   contra la misma cuenta se encontrará con que esos planes ya existen.
-3. **Cada desarrollador**, individualmente, levanta su propio túnel:
+2. **Cada desarrollador**, individualmente, levanta su propio túnel:
    ```bash
    cloudflared tunnel --url http://localhost:3000
    ```
    (`winget install --id Cloudflare.cloudflared` si no lo tienes — no ngrok, ver nota de
-   `BACKEND_PUBLIC_URL` arriba) y completa su `backend/.env` con las 4 credenciales compartidas
-   (`FLOW_ENVIRONMENT=sandbox`, `FLOW_API_KEY`, `FLOW_SECRET_KEY`, `FLOW_PLAN_ID_MONTHLY`,
-   `FLOW_PLAN_ID_YEARLY`) más su propia `BACKEND_PUBLIC_URL` (la URL de SU túnel, sin `/` final).
-4. Levantar `npm run dev:backend` y `npm run dev:app` como siempre. Al suscribirse, usar la
+   `BACKEND_PUBLIC_URL` arriba) y completa su `backend/.env` con las 3 credenciales compartidas
+   (`FLOW_ENVIRONMENT=sandbox`, `FLOW_API_KEY`, `FLOW_SECRET_KEY`) más su propia
+   `BACKEND_PUBLIC_URL` (la URL de SU túnel, sin `/` final — la usa `FlowService.createPayment()`
+   como `urlConfirmation`, el webhook de Flow).
+3. Levantar `npm run dev:backend` y `npm run dev:app` como siempre. Al comprar un pase, usar la
    tarjeta de prueba de Flow: `4051885600446623`, cualquier fecha futura, CVV `123` (si pide un
    RUT/PIN de banco simulado: `11111111-1` / `123`).
 
 Si alguien prefiere aislar sus pruebas del resto del equipo, nada impide que en vez de esto se
-cree su propia cuenta de sandbox y corra `setup:flow-plans` por su cuenta — son pasos idénticos,
-solo que sin compartir nada con nadie.
+cree su propia cuenta de sandbox — es un paso idéntico, solo que sin compartir nada con nadie.
 
-Si el túnel de alguien se reinicia, su `BACKEND_PUBLIC_URL` cambia — eso NO afecta a los demás ni
-requiere volver a correr `setup:flow-plans` (el `urlCallback` guardado en el plan solo importa
-para el webhook de cobros recurrentes, no para el ida-y-vuelta del navegador al registrar una
-tarjeta), solo hay que actualizar el `.env` de esa persona.
+Si el túnel de alguien se reinicia, su `BACKEND_PUBLIC_URL` cambia — eso NO afecta a los demás,
+solo hay que actualizar el `.env` de esa persona (y las órdenes de pago que ya estén en curso con
+la URL vieja seguirán confirmándose igual desde el navegador vía `flow/confirm`, aunque el webhook
+a la URL vieja ya no llegue — no es un problema real porque `flow/confirm` es la vía principal).
 
 ---
 
@@ -618,9 +688,14 @@ ensayos PAES en ambos modos, mini ensayos, Mente Veloz, Foco IA en todos sus con
 (preguntas, recursos, bugs, suscripciones, **usuarios** — listar/filtrar/otorgar-extender-revocar Premium,
 2026-08-20), calculadora NEM, buscador de carreras, sistema freemium con
 límites y cooldowns, reglas de Firestore endurecidas, SEO (meta tags dinámicos, canonical, JSON-LD,
-sitemap, robots), accesibilidad, notificaciones, landing con videos, **pagos con Flow probados de
-punta a punta en sandbox** (registro de tarjeta → suscripción → Premium activo, 2026-08-25) y
-transferencia bancaria manual con comprobante subido por el usuario.
+sitemap, robots), accesibilidad, notificaciones, landing con videos, y transferencia bancaria
+manual con comprobante subido por el usuario. **Pagos con Flow reescritos el 2026-09-04** a pago
+único (pases de 1 mes/año, ver sección 6 y Bitácora) porque Flow retiró el producto de suscripción
+recurrente para esta cuenta — el flujo viejo (registro de tarjeta → suscripción recurrente) sí se
+probó de punta a punta en sandbox (2026-08-25), pero el nuevo (`/payment/create` +
+`/payment/getStatus`) **todavía no se ha probado contra Flow real, ni sandbox ni producción** —
+solo se verificó su contrato exacto contra la documentación oficial de Flow (`apiFlow.yaml`).
+Antes de darlo por bueno: comprar un pase de prueba y confirmar que el Premium se activa.
 
 ### 🔴 Bloqueantes para el primer despliegue
 > **El FRONTEND ya está en producción en `https://estudiauni.cl`** (Firebase Hosting, target `app`).
@@ -636,19 +711,21 @@ transferencia bancaria manual con comprobante subido por el usuario.
    dominio: `https://estudiauni.cl/api/...`. `apiUrl` ya apunta ahí. Verificado en producción:
    las rutas del backend responden 401 a través del dominio y no queda ninguna petición a localhost.
    Se despliega con `desplegar-backend.bat`. Ver Bitácora 2026-08-26 (parte 5).
-   > 🟡 Queda un cabo suelto: `TURNSTILE_SECRET_KEY` no está en `backend/.env`, así que el
-   > intercambio de token de App Check devuelve un token vacío. **Desde el 2026-08-27 esto además
-   > tenía un costo de rendimiento real:** el widget de Turnstile interpretaba el token vacío como
-   > fallo y reintentaba sin parar (`TurnstileError 600010`, 14+ por carga), saturando el hilo
-   > principal de cada visitante. Por eso App Check quedó **desactivado en el cliente** tras el flag
-   > `environment.appCheckEnabled`, hoy en `false`. Poner la secret key y volver el flag a `true`
-   > cierra las dos cosas a la vez. Sigue sin bloquear nada mientras App Check esté en
-   > "Supervisión" — pero rompería el sitio entero si alguien lo pasa a "Aplicar" sin resolverlo.
+   > 🟢 **App Check / Turnstile — resuelto (2026-09-04).** `TURNSTILE_SECRET_KEY` está cargada y
+   > desplegada. El widget fallaba en Firefox (retry loop) por un problema de configuración en el
+   > propio dashboard de Cloudflare Turnstile: solo tenía 1 de 3 hostnames en la allowlist y el
+   > modo estaba en "Invisible" en vez de "Managed". Corregido en Cloudflare por el usuario;
+   > `appCheckEnabled` vuelto a `true`. **Sigue en modo "Supervisión"** en Firebase (no bloquea
+   > nada todavía) — pasar a "Aplicar" es una decisión aparte, pendiente de mirar el % de
+   > solicitudes verificadas unos días. Detalle completo en §7.6.
 
-2. **Flow en producción.** El sandbox ya se probó de punta a punta con éxito (2026-08-25). Falta
-   pasar `FLOW_ENVIRONMENT=production` con credenciales reales de `www.flow.cl` (no las de
-   sandbox — son cuentas distintas, ver sección 10) y ejecutar `setup:flow-plans` contra
-   producción para generar los planes reales.
+2. **Flow en producción, con el modelo de pago único nuevo (2026-09-04) — pendiente de probar.**
+   `backend/.env` ya tiene `FLOW_ENVIRONMENT=production` con lo que parecen credenciales reales de
+   `www.flow.cl` (encontrado al hacer este cambio, no confirmado si alguien ya las probó) — ya no
+   hace falta `setup:flow-plans` (eliminado, ver sección 6/9). Falta: comprar un pase real (o en
+   `sandbox.flow.cl` primero, cambiando `FLOW_ENVIRONMENT` temporalmente) y confirmar que
+   `POST /payment/create` → pago → `flow/confirm`/webhook → `activateSubscription()` activa el
+   Premium de punta a punta contra Flow real, no solo contra la documentación.
 3. **Rotar la API secret de Cloudinary.** Ya se quitó del código (2026-08-18), pero **sigue en el
    historial de git**, así que hay que generar una nueva en
    https://console.cloudinary.com/ (Settings → API Keys) y ponerla en `backend/.env`.
@@ -716,6 +793,495 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-09-05 — 🔴 El login con Google se colgaba porque un widget de bots (Turnstile) puede quedarse pendiente PARA SIEMPRE y el SDK de Firebase lo espera antes de navegar. Dos causas encadenadas, las dos corregidas; + una regresión propia en el registro cazada al revisar
+`tsc --noEmit -p tsconfig.app.json` ✅ · `ng build --configuration production` ✅ (6 rutas
+prerenderizadas) · **desplegado y verificado en el bundle servido** (`main-WNLCE3UH.js` en vivo
+contiene el tope) · `/login` carga sin errores de consola. **La prueba final del viaje completo a
+Google la tiene que hacer un humano**: el panel de navegador de estas sesiones no alcanza
+`identitytoolkit.googleapis.com`, así que ahí cualquier login falla con
+`auth/network-request-failed` sin emitir una sola petición — **eso NO es un fallo del sitio, es del
+entorno de pruebas; no perseguirlo.**
+
+**Causa #1 (corregida el 2026-09-05, más temprano): `authDomain` de otro origen.** Ver el comentario
+largo en `environment.ts`. Resumen: la app corre en `estudiauni.cl` pero el handler/iframe de auth
+vivían en `estudiauni.firebaseapp.com`, así que la credencial quedaba en el storage de un tercero que
+Firefox (Total Cookie Protection) particiona y Chrome está eliminando. Arreglado usando el host actual
+como `authDomain` (lista explícita `SAME_ORIGIN_AUTH_HOSTS`). **Requiere que cada host tenga su URI de
+redirección `https://<host>/__/auth/handler` en el cliente OAuth web de Google Cloud Console** — ya
+agregadas por el usuario. Verificado: `/__/auth/iframe` en el dominio propio devuelve el relay real de
+Firebase (no el cascarón del SPA — ojo, un 200 no basta, hay que mirar el contenido, porque el rewrite
+comodín de `firebase.json` también responde 200). Con esto **Chrome quedó funcionando**.
+
+**Causa #2 — la que dejaba Firefox roto igual, y la más importante de entender.**
+`CloudflareProviderOptions` (paquete `@cloudflare/turnstile-firebase-app-check`) construye así su
+promesa de "Turnstile ya está listo":
+
+```ts
+let promiseResolve;
+const readyTurnstile = new Promise(resolve => { promiseResolve = resolve; });
+// ...
+await readyTurnstile;   // dentro de getToken()
+```
+
+**Solo tiene rama de resolución.** `promiseResolve` se llama únicamente dentro del callback de ÉXITO
+de `turnstile.render(...)`. No hay `reject` ni tiempo límite en ninguna parte del paquete. Si el
+desafío de Turnstile no se completa —Firefox frenando el iframe, una extensión bloqueando
+`challenges.cloudflare.com`, o simple lentitud— ese promise queda **pendiente para siempre. No falla:
+se cuelga.**
+
+Eso sería inofensivo si App Check estuviera fuera del camino crítico, pero **no lo está**:
+- `@firebase/auth` (`index-*.js` ~línea **10095**) hace `await auth._getAppCheckToken()` dentro de
+  `_getRedirectUrl()`, o sea **antes de `_setWindowLocation(url)`** → `signInWithRedirect` nunca navega.
+- `@firebase/firestore` (`__PRIVATE_FirebaseAppCheckTokenProvider`, ~línea 591) hace lo mismo antes de
+  su primera petición → la primera carga de datos también se queda esperando.
+
+Los dos manejan bien un **error** del proveedor (Auth devuelve un token ficticio vía
+`makeDummyTokenResult`, línea ~792 de `@firebase/app-check`, y su `getToken()` "nunca lanza";
+Firestore registra "using placeholder token instead") — pero **ninguno maneja un cuelgue**, porque un
+promise pendiente no es un error.
+
+Eso explica los 3 síntomas reportados a la vez, que parecían no tener relación:
+1. El botón "Continuar con Google" se queda cargando y la pestaña nunca navega.
+2. Salta nuestro aviso de 10 s ("está tardando más de lo normal").
+3. **La "cuenta fantasma"**: si Turnstile resuelve un minuto después, el redirect se dispara solo y
+   mete al usuario al dashboard "de la nada" mientras navegaba por otro lado. Nunca hubo una segunda
+   cuenta — era su propia sesión completándose tarde.
+4. Y explica la asimetría que despistaba: **el login por correo/contraseña sí funcionaba** en Firefox,
+   porque para cuando el usuario termina de escribir correo + contraseña, Turnstile ya alcanzó a
+   resolver. Con Google el clic es inmediato tras cargar la página, y ahí todavía está pendiente.
+
+**Arreglo (`app.config.ts`):** el proveedor ya no se pasa tal cual a `CustomProvider`; va envuelto en
+`conTopeDeTiempo(cpo.getToken(), 5000)`. Si Turnstile no responde en 5 s, **rechaza** — que es
+justamente el camino que Firebase sí sabe manejar (token ficticio + aviso, y sigue). No baja la
+seguridad: App Check está en modo "Supervisión", así que hoy ningún token se valida igual.
+
+> **Regla general que conviene no re-derivar:** ninguna verificación antibot de terceros puede estar
+> en el camino de un `await` sin tope. Si alguien agrega otro proveedor de App Check, envolverlo igual.
+
+**Segunda pasada del mismo día: el tope SOLO no alcanzaba.** Con el tope puesto, Firefox por fin
+llegaba al selector de cuenta de Google — pero "se tardaba un poco" en cada paso y, al volver, el
+dashboard aparecía **vacío y tardaba ~10 s en mostrar los datos** (lo que el usuario describió como
+"cuenta fantasma"; insisto, nunca fue otra cuenta: era la suya sin perfil cargado todavía). Motivo:
+un tope por llamada hace que **cada llamada pague sus propios 5 s y se encadenen**, y el login con
+Google hace varias seguidas — navegar, procesar la vuelta, `findUidByEmail`, `saveUserProfile`, y la
+carga del dashboard. 4-5 operaciones × 5 s ≈ los 20 s que se sentían.
+
+Se agregaron dos cosas a `tokenDeAppCheck()` (`app.config.ts`):
+1. **Un solo intento compartido con UN plazo común** (no uno por llamada). En cuanto ese plazo vence,
+   cualquier llamada nueva falla al instante. Costo máximo por carga de página: 5 s, no 5 s × N.
+2. **Memoria corta entre cargas** (`localStorage`, clave `appcheck_turnstile_lento_hasta`, ventana de
+   10 min). Si Turnstile ya falló hace poco en ese navegador, la carga siguiente no vuelve a esperar.
+   Es lo que hace que la vuelta desde Google sea instantánea. **Auto-reparable y en el sentido
+   seguro**: el intento real se lanza igual en segundo plano, así que apenas Turnstile funcione la
+   marca se borra sola. Todo el acceso a `localStorage` va en `try/catch` (modo privado).
+3. **Calentamiento** justo después de `initializeAppCheck`: el primer intento se dispara en el
+   arranque de la app, no cuando el usuario hace clic, así el plazo se consume en segundo plano.
+
+> **🔴 Detalle que costó un ciclo entero y es fácil de reintroducir:** la marca de `localStorage` hay
+> que consultarla **siempre**, no solo cuando no hay intento en vuelo. El primer borrador hacía
+> `intentoDeToken?.vencido || (!intentoDeToken && turnstileMarcadoLento())`, y eso devolvía el
+> problema completo: la primera llamada fallaba rápido pero dejaba un intento de fondo *recién
+> nacido* (aún sin vencer), así que la SIGUIENTE se colgaba de él y volvía a esperar los 5 s.
+
+**Verificado simulando la cadena real** (calentamiento → clic → vuelta de Google → leer perfil →
+guardar perfil) con un Turnstile que nunca resuelve:
+
+| Escenario | Antes | Ahora |
+|---|---|---|
+| 4 operaciones encadenadas, 1ª carga | 20.000 ms | **5.004 ms** (plazo compartido) |
+| Vuelta desde Google (2ª carga) | 20.000 ms | **0 ms** (marca de localStorage) |
+| Turnstile vuelve a funcionar | — | token real + marca borrada sola |
+
+Y verificado **en vivo sobre el sitio desplegado en un navegador sano**: `localStorage` queda en
+`null` (o sea Turnstile resolvió y NO se marca nada), widget inyectado, 0 errores de consola — el
+camino normal no se degrada.
+
+**Regresión propia, encontrada al revisar el diff (no la reportó nadie).** Al migrar de
+`signInWithPopup` a `signInWithRedirect` se agregó una suscripción persistente a `user$` en
+`login.component.ts` y `register.component.ts` para recoger al usuario cuando vuelve del redirect.
+Pero `register.component.ts` **no tenía `ngOnInit` antes**, y `onSubmit()` hace
+`createUserWithEmailAndPassword` → `authState` emite la cuenta recién creada **de inmediato**, mucho
+antes de enviar el correo de verificación, mostrar la pantalla "revisa tu bandeja" y hacer el
+`signOut()` final. La suscripción sacaba al usuario a `/dashboard`, `emailVerifiedGuard` lo mandaba a
+`/verify-email`, el `signOut()` lo dejaba sin sesión y terminaba en `/login` **sin haber visto nunca
+la pantalla de verificación**. Corregido exigiendo `user?.emailVerified` en la condición de ambos
+componentes (una cuenta de Google siempre llega verificada, así que el caso que la suscripción sí debe
+cubrir no se toca). En `login.component.ts` además elimina una carrera real: esa suscripción tiraba a
+`/dashboard` mientras `onSubmit()` tiraba a `/verify-email` para el mismo usuario sin verificar.
+
+**Ruido de consola diagnosticado — nada de esto es un bug nuestro, no perseguirlo:**
+- **Chrome, "CSP blocks the use of `eval`", recurso `normal?lang=auto`.** El proyecto **no define
+  ninguna CSP** (verificado en `firebase.json` e `index.html`). Ese recurso es el iframe interno de
+  Cloudflare Turnstile — URL completa capturada en vivo:
+  `https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/av0/rch/.../normal?lang=auto`.
+  Es la CSP **de Cloudflare** bloqueando el `eval` **del propio código de Cloudflare**, dentro de su
+  frame. Cosmético.
+- **Firefox, "Cambria Math / invalid URI"** — ya documentado el 2026-09-04: ruido del motor MathML de
+  Firefox sobre el `<math>` oculto que KaTeX genera para lectores de pantalla. Las fórmulas visibles
+  usan `KaTeX_*` y se ven bien.
+- **Firefox, beacon de Cloudflare Web Analytics (CORS + hash SRI)** — ya documentado en §7.6. El
+  "Código de estado: (null)" indica que la petición ni se completó: **es uBlock Origin bloqueándola**,
+  además del hash viejo que Cloudflare inyecta en el borde. Inofensivo.
+- **Firefox, "preload no usado en unos pocos segundos"** (outfit/inter woff2) y **"WebGL context was
+  lost"** — avisos, no errores.
+
+### 2026-09-04 (parte 3) — Flow deja de ser suscripción recurrente y pasa a ser pago único ("pase" de 1 mes/año): backend reescrito contra `/payment/create`+`/payment/getStatus`, "Cancelar Suscripción" eliminado (ya no aplica), aviso de vencimiento a 5 días, y Términos de Servicio corregidos
+Backend `tsc --noEmit` ✅ · frontend `tsc --noEmit -p tsconfig.app.json` ✅ · `ng build --configuration production` ✅ (6 rutas prerenderizadas, sin errores de plantilla) · **contrato de la API de Flow verificado contra la documentación oficial real** (`https://www.flow.cl/docs/apiFlow.yaml`, no contra memoria/suposición): parámetros de `/payment/create`, forma de la respuesta, y los 4 valores del enum `status` de `/payment/getStatus` (1 pendiente, 2 pagada, 3 rechazada, 4 anulada) confirmados byte a byte contra el YAML real. **No probado contra Flow real** (ni sandbox ni producción) — comprar un pase de prueba es el primer paso pendiente, ver bloqueante #2 de la sección 11.
+
+**Motivo:** Flow le informó al dueño de la cuenta que ya no puede usar el producto de
+**suscripción con cobro recurrente** (`/customer/register` + `/subscription/create`, lo que este
+proyecto usaba desde el 2026-08-25). Plan B, pedido explícitamente: Plan PRO pasa a comprarse como
+un **pase de acceso de 1 mes o 1 año, pagado con un cargo único** — nada se cobra de nuevo solo;
+para seguir siendo PRO hay que volver a comprar.
+
+**Backend (`backend/src/subscriptions/`) — `flow.service.ts` reescrito de punta a punta:**
+- Eliminados: `getOrCreateCustomer`, `startCardRegistration`, `confirmRegistrationAndSubscribe`,
+  `handleRecurringWebhook`, y las colecciones `flow_registrations`/`flow_subscriptions`/
+  `flow_invoices` que usaban.
+- Nuevos: `createPayment()` (llama `/payment/create` con `commerceOrder`, `subject`, `amount`,
+  `email`, `urlConfirmation`, `urlReturn` — sin `paymentMethod`, así Flow le muestra al usuario el
+  selector de medio de pago) y `confirmPayment()`/`handlePaymentWebhook()` (verifican el pago real
+  contra `/payment/getStatus`, nunca confían en el body del navegador ni del webhook). Todo se
+  registra en una colección nueva, `flow_payments/{token}` (doc id = el token de Flow, porque es lo
+  único que tanto el retorno del navegador como el webhook tienen para buscar el pago).
+- **El webhook (urlConfirmation) y la confirmación desde el navegador (`flow/confirm`) ahora
+  compiten por el MISMO pago** (antes no competían: el webhook solo manejaba renovaciones
+  posteriores). Se resuelve con una transacción de Firestore que pone el doc en `processing` — el
+  primero en llegar activa el pase, el otro ve `processing`/`completed` y no hace nada.
+- `SubscriptionsService.activateSubscription()` **no necesitó ningún cambio** para la regla de
+  negocio pedida ("si compras de nuevo con 5 días restantes, quedas con 35"): ya sumaba el período
+  nuevo sobre el `endDate` existente si todavía no vencía — se escribió originalmente para el caso
+  "te regalan Pro estando ya Pro" (bitácora 2026-08-25 parte 4), y resulta que es exactamente la
+  misma lógica que "comprar tu próximo pase antes de que termine el actual" necesita.
+- Eliminados por quedar sin sentido en un modelo sin cobro recurrente: `cancel()`,
+  `cancelGift()` (`SubscriptionsService`), `cancelFlowSubscription()` (`FlowService`), los
+  endpoints `POST /subscriptions/cancel` y `POST /subscriptions/gift/cancel`, y `CancelGiftDto`.
+  Con un pago único no hay nada que "cancelar": el pase simplemente expira solo en su `endDate`.
+- `extendSubscriptionPeriod()` eliminado (era solo para el webhook de renovación recurrente, que
+  ya no existe — cada pago ahora es su propia activación completa vía `activateSubscription()`).
+- `providerInfo` de `activateSubscription()` cambia de `{flowCustomerId, flowSubscriptionId}` a
+  `{flowPaymentToken}` — ya no hay "cliente" ni "suscripción" en Flow que registrar, solo el token
+  del pago puntual, guardado para auditoría.
+- `getAllTransactions()` (admin) ahora lee de `flow_payments` en vez de `flow_invoices`; el panel
+  admin (`admin-subscriptions.component.ts`) no necesitó cambios — sigue mostrando `subscriptionId`
+  como nombre de campo, ahora poblado con el `commerceOrder` (más corto y legible que el token).
+- **Eliminado `backend/src/scripts/setup-flow-plans.ts`** (y el script `npm run setup:flow-plans`
+  de `package.json`) — no hay "planes" de Flow que precrear en un modelo de pago único; cada compra
+  crea su propia orden al momento. Esto además simplifica el onboarding de un dev nuevo al equipo
+  (un paso menos, ver sección 10).
+- Endpoints renombrados para que el nombre refleje lo que hacen: `flow/register-card` →
+  `flow/create-payment`, `StartFlowRegistrationDto` → `CreateFlowPaymentDto`,
+  `ConfirmFlowSubscriptionDto` → `ConfirmFlowPaymentDto`. `flow/confirm` y el bridge `flow/return`
+  (para el POST-con-token que Flow manda a `urlReturn`) mantienen su ruta, solo cambia qué llaman
+  internamente.
+
+**Frontend — `payment.service.ts`, `pricing-modal.component.ts`, `payment-result.component.ts`:**
+métodos y tipos renombrados a juego con el backend (`createFlowPayment`, `confirmFlowPayment`,
+`FlowPaymentResult`), y todo el texto que prometía "suscripción"/"renovación automática"/"cancela
+cuando quieras" corregido a lenguaje de pase/pago único ("Comprar pase con Flow", "Pago único por 1
+mes/año — no se renueva automáticamente, vuelve a comprar cuando lo necesites"). El aviso de
+regalo (antes solo bajo Flow, con lenguaje de "suscripción con renovación automática... cancélalo
+desde tu perfil") ahora es un solo aviso para ambos métodos de pago: "esto es un pago único, la
+persona recibe los días ahora mismo". El bloque de transferencia bancaria (`transfer-warning-box`)
+**ya usaba lenguaje de pago único desde antes** — no necesitó cambios, solo sirvió de referencia
+para el texto nuevo de Flow.
+
+**`RenewalNoticeBannerComponent` (dashboard) — reescrito.** Antes solo avisaba para
+`provider==='flow'` con `!cancelAtPeriodEnd` ("se te cobrará a tu tarjeta si no cancelas", 3 días
+antes) — ya no tiene sentido: nada se cobra solo, sin importar el proveedor. Ahora avisa **para
+cualquier proveedor** (`flow`/`manual`/`transfer`) con **5 días de ventana** (pedido explícito del
+usuario, antes eran 3), con el mensaje "Tu Membresía PRO vence el [fecha] (quedan N días) — cómprala
+de nuevo antes de esa fecha", y el botón abre directo el modal de precios en el plan actual del
+usuario (`paymentService.openPricingModal(true, planType)`) en vez de mandarlo a `/settings` a
+buscar un botón de cancelar que ya no existe.
+
+**Perfil (`profile-modal.component.ts`) — sección "Plan de Cuenta" renombrada a "Membresía".**
+Se eliminó por completo el flujo de "Cancelar Suscripción" (2 modales de doble confirmación con
+cuenta regresiva de 5s, `showCancelSubStep1/2`, `cancelCountdown`, `executeCancelSubscription()`)
+y la sección "Regalos de Plan Pro que pagas" (`giftedProSubscriptions()`, `cancelGiftedPro()`) —
+ambas dependían de que existiera algo recurrente que cortar, y ya no lo hay: un regalo por pase es
+un pago único, sin nada que gestionar después. En su lugar, un texto explicando que es un pase sin
+renovación automática y un botón "🔁 Comprar otro pase" que abre el modal de precios ya posicionado
+en el plan actual del usuario — mismo mecanismo que el banner de vencimiento.
+
+**Términos de Servicio (`legal-modal.component.ts`, sección V y VI) — corregidos, no solo
+cosméticos.** El texto anterior decía literalmente "autorizas el cobro periódico... los cargos se
+renuevan automáticamente al finalizar cada ciclo, salvo cancelación previa" — **eso ya no es
+cierto** con el modelo de pase único, y dejarlo así habría sido una promesa legal falsa sobre cómo
+funciona el cobro. Reescrito para describir el pase de tiempo definido, el pago único, y que
+comprar de nuevo con días vigentes los suma en vez de reemplazarlos. La sección VI
+("Cancelación y reembolsos") pasa a ser solo "Reembolsos" — ya no hay nada que cancelar.
+
+**Verificación del contrato de Flow contra la documentación oficial real (no contra memoria):**
+se navegó `https://www.flow.cl/docs/api.html` (ReDoc, requiere JS) y se descargó el YAML real
+(`https://www.flow.cl/docs/apiFlow.yaml?v=7`) para confirmar, texto por texto:
+- `/payment/create` (POST): requeridos `apiKey, commerceOrder, subject, amount, email,
+  urlConfirmation, urlReturn, s`; `currency` es **opcional** (se sigue enviando `CLP` explícito,
+  no cambia nada, solo confirma que no hace falta). Respuesta: `{url, token, flowOrder}`. El patrón
+  de redirección documentado es literalmente `url + "?token=" + token` — coincide exacto con
+  `window.location.href` en `pricing-modal.component.ts`.
+- `/payment/getStatus` (GET): `apiKey, token, s`. El objeto `PaymentStatus` de respuesta trae
+  `paymentData.media` (medio de pago usado, ej. `"webpay"`) — es el campo que se usa para
+  `cardType` en el recibo de éxito.
+- **El enum de `status` — el dato más crítico de verificar, porque de ahí depende cuándo se activa
+  el Premium — se confirmó exacto contra el YAML**: `1 pendiente de pago, 2 pagada, 3 rechazada,
+  4 anulada`. El código usa `Number(status.status) === 2` como "pagado" — correcto.
+- Confirmado también en el propio YAML: "Cada vez que el pagador efectúe un pago, Flow enviará vía
+  POST una llamada a la página del comercio [urlConfirmation], pasando como parámetro un token" —
+  exactamente el contrato que implementa `handlePaymentWebhook()` (lee `body.token`).
+
+**🔴 Hallazgo durante esta sesión, sin tocar: `backend/.env` ya tiene `FLOW_ENVIRONMENT=production`
+con lo que aparentan ser credenciales reales de `www.flow.cl`**, distinto a lo que documentaba el
+bloqueante #2 de la sección 11 ("nunca se ha configurado producción"). No se investigó más a fondo
+ni se tocó — no se pudo determinar desde este cambio si esas credenciales ya se probaron con un
+pago real. Ver el bloqueante #2 actualizado.
+
+**Datos bancarios de la transferencia manual — resuelto el mismo día.** El usuario entregó los
+datos reales y se reemplazó el placeholder en `pricing-modal.component.ts`: BancoEstado, Cuenta
+Vista, cuenta `00026110472`, RUT `26.110.472-5`, titular "Angel Gabriel Pino Cardenas", correo
+`contacto.estudiauni@gmail.com`.
+
+**Pendiente real de verificar, no solo de código:** comprar un pase de prueba (sandbox o
+producción) de punta a punta contra Flow real — ver bloqueante #2 de la sección 11. También
+convendría, si el equipo lo pide, limpiar de `backend/.env` las variables `FLOW_PLAN_ID_MONTHLY`/
+`FLOW_PLAN_ID_YEARLY` que quedaron sin uso (no rompen nada estando ahí, `ConfigService` simplemente
+no las lee más).
+
+### 2026-09-04 (parte 2) — Los 2 cambios de arquitectura pendientes: `pool_preguntas` y las secciones de la Ruta ya NO se leen enteros. Efecto destellante + ícono en la tarjeta "Recomendación IA" del dashboard
+`tsc --noEmit -p tsconfig.app.json` ✅ · `ng build` ✅ (6 rutas prerenderizadas) · **`tools/meta/verify-meta`
+contra Firestore real: 15/15 checks** (la query `where('materiaId','in',[...])`, las lecturas de
+secciones por capítulo, el cursor de paginación admin y `getCountFromServer` dan exactamente los
+números esperados) · harness `/dev/ruta/comp-lectora` (91 nodos) y `/dev/ruta/historia` (65 nodos) OK
+tras los cambios (camino de seeds intacto). **El flujo logueado real (Ruta con Firestore, Mini
+Ensayo, Mente Veloz, dashboard) NO se pudo probar end-to-end** (no se ingresan contraseñas en
+formularios; el dev server además tiene un `Firestore` roto preexistente que cae a seeds — verificado
+que ese error ya estaba en baseline).
+
+**🔴 Se agregó `angapicar@gmail.com` a `admins/{k12anxgEWcaDOd2eQup5nIsAE7l1}`** (`{active:true}`, a
+pedido explícito del usuario) para poder verificar el panel admin y el flujo logueado en próximas
+sesiones. Revocar desde la consola de Firebase cuando ya no haga falta.
+
+**Se desplegó `firestore.rules`** (`firebase deploy --only firestore:rules`): bloque nuevo
+`match /pool_preguntas_meta/{docId} { allow read: if isAuthenticated(); allow write: if isAdmin(); }`
+— aditivo, no toca ninguna regla existente. **Sin este deploy el resumen no se puede leer (deny por
+defecto) y todo cae al fallback = comportamiento de antes.**
+
+#### `pool_preguntas` (1.172 docs) — resumen de conteos + carga por materia
+
+- **Nuevo doc `pool_preguntas_meta/summary`**: `{ updatedAt, total, byMateria: { <materiaId>: { total,
+  temas: {} } } }`. Lo escriben: **`tools/meta/build-meta.js`** (script nuevo, mismo patrón que
+  `tools/pool-preguntas/upload.js`, usa `backend/.env`) y el **panel admin** tras cada mutación de
+  `pool_preguntas` (`AdminService.rebuildPoolMeta()` — 1 lectura completa, solo admin).
+- **`PaesContentService`** (`features/learning-path/services/paes-content.service.ts`):
+  - `ensurePoolMetaLoaded()` — 1 `getDoc`, cache en sessionStorage 30 min. Si falla → `poolMeta()`
+    queda null y todo cae a `ensurePoolPreguntasLoaded()` (el pool completo de siempre).
+  - `loadPoolForMaterias(ids)` — **cache POR MATERIA** (memoria + `localStorage` `pool_by_materia_<m>`,
+    TTL 6 h). Solo las materias que faltan se piden, en UNA query `where('materiaId','in',[...])` (máx
+    8, **sin índice**). El resultado además se vuelca (dedup por id) en el signal `poolPreguntas()`
+    para que los consumidores síncronos que aún lo leen (infinite-mastery) funcionen.
+    **2ª ronda de Mente Veloz / re-entrada a la misma materia dentro de 6 h ⇒ 0 lecturas.**
+  - `toPoolMateriaId(id)` — normaliza `comp-lectora`↔`competencia-lectora`, `mat1`↔`matematicas-m1`,
+    etc. (el pool usa ids "pool-style", la Ruta usa "ruta-style" — ojo con esto).
+- **Consumidores:** `mini-ensayo.service` (`getAvailableTopics` desde meta; `generateSession` pasa a
+  `async` + `loadPoolForMaterias`), `mente-veloz` (`getPoolCount` suma meta; `startGame` carga solo
+  las materias seleccionadas), `infinite-mastery-modal` (`loadPoolForMaterias([materiaId])`),
+  `mini-ensayo-review` (ahora el resultado guarda `questions` completas — el `MiniEnsayoResult` lleva
+  `questions?: PoolPregunta[]`; fallback a `loadPoolForMaterias` para resultados viejos).
+- **Coste:** Mini Ensayo/Modo Infinito ≈ 1 (meta) + ~180 (una materia) en frío, **0 en caliente**.
+  Antes: ~1.172 en cada cache-miss de 6 h.
+
+#### Secciones de la Ruta (401 docs) — conteos en `lp_materias` + carga por materia
+
+- **`tools/meta/build-meta.js`** escribe en cada `lp_materias/{id}`: `{ chapterCount, sectionCount,
+  sectionCountByChapter }` (sin colección nueva → sin cambio de rules; `lp_materias` ya es
+  `allow read: if isAuthenticated()`).
+- **`doLoadDataFromFirestore()`**: si TODOS los `lp_materias` activos traen `sectionCount` →
+  **`sectionsLazyMode = true`** y se **omite `getDocs(collectionGroup('secciones'))`** (las 401).
+  `_capitulos` se arma con `secciones: []` para mat1/mat2/bio/fís/quím; comp-lectora e historia
+  siguen viniendo de seeds vía `syncLocalChapters` (0 lecturas). Si falta algún `sectionCount` →
+  **fallback**: el `collectionGroup` de siempre. El flag va en el cache de `LEARNING_PATH_CACHE_KEY`.
+- **`ensureMateriaSeccionesLoaded(materiaId)`** (idempotente + coalesce): lee las subcolecciones
+  `lp_capitulos/{capId}/secciones` de esa materia (~30-97 docs, **sin índice**), cache en
+  `localStorage` `lp_secciones_<m>` (6 h), merge inmutable en `_capitulos`. No-op para
+  comp-lectora/historia (ya tienen secciones de seeds) y en `!sectionsLazyMode`.
+  - Lo llama un `effect()` (helper nuevo `autoLoadMateriaSecciones()`, junto a `autoLoadTest()`) en
+    el constructor de los **6 `materia-*-path.component.ts`** y los **3 `capitulo-*-detail.component.ts`**.
+  - `autoLoadTest()` ahora también llama a `ensureSeccionAvailable(id)` antes de `ensureTestLoaded`:
+    para deep-links a una sección cuya materia no se abrió, `ensureSeccionAvailable` → si no está →
+    `ensureAllSeccionesLoaded()` (fuerza el `collectionGroup` completo — caso raro, queda cacheado).
+- **`getMateriaProgress()`**: si las secciones están cargadas → itera secciones (exacto, como antes).
+  Si no (índice `/ruta` + dashboard, materia sin abrir) → `total` del `sectionCount` del resumen,
+  `completed` filtrando `_progress` por `materiaId` (que en las secciones es "ruta-style"). El
+  dashboard y el índice calculan progreso **sin cargar una sola sección**.
+- `learning-path.component.ts` `getSectionCount()` → conteo en memoria si hay, si no `sectionCount`.
+- **Coste:** entrar a `/ruta` (índice) ≈ 2 lecturas (`lp_materias` + `lp_capitulos`). Abrir una
+  materia ≈ +30-97, **0 la 2ª vez en 6 h**. Antes: 401 siempre.
+
+#### Dashboard — sección "Recomendación IA" (`features/dashboard/`)
+
+- **Emoji grande → ícono AVIF de la marca.** `AIRecommendation` gana `iconSrc`; `DashboardService`
+  lo setea por recomendación (materia → `P_<Materia>`, ensayo → `P_EnsayosPaes`, récord → `P_Logro`,
+  racha → `P_MenteVeloz`, default → `P_RutaDeAprendizaje`). `.ai-hero-icon` pasa a `<img>` 2.6rem.
+- **Efecto destellante** en los 2 botones (`dashboard.component.ts`): `.btn-foco-glow` ("Hablar con
+  Foco", PRO) — barrido de luz blanca (`::after` transform+opacity) + glow morado/marca que late
+  (`@keyframes` sobre `box-shadow`, patrón de `.btn-upgrade-pro`); `.btn-pro-shimmer` (básico) —
+  mismo efecto en dorado, fondo dorado, y el 🔒 pasa a `P_Pro.avif`. Ambos congelados con
+  `prefers-reduced-motion`.
+
+#### Auditoría de rendimiento
+
+Home y sistema ya muy optimizados (ver partes previas). Los 2 cambios de arriba **son** la mayor
+optimización de carga de pantallas que quedaba. Lo que sigue pendiente sigue siendo cambio de
+arquitectura con QA dedicado: `content-visibility`/`OnPush` en las páginas logueadas largas, y el chunk
+del SDK de Firestore (~452 KB) precargado. (`getLatestCompletedIntento` — ver más abajo, ya se arregló
+el mismo día.)
+
+#### Extras del mismo día (2ª pasada)
+
+- **`tools/pool-preguntas/upload.js --commit` ahora reconstruye `pool_preguntas_meta/summary` solo**
+  al terminar (antes había que correr `build-meta.js` aparte). El de secciones (`sectionCount` de
+  `lp_materias`) sigue necesitando `build-meta.js` — solo si se re-siembra la Ruta.
+- Dashboard "Recomendación IA": íconos a **3.5rem** (antes 2.6), **contorno dorado (`#FFD75E`)** en
+  "Hablar con Foco".
+- **Mini Ensayo: se quitó "Ciencias TP"** del selector de materias (`mini-ensayo-setup.component.ts`,
+  el pool tiene 0 preguntas de esa materia). El admin y el importador la conservan.
+- Botón básico ("Recomendaciones IA (PRO)"): fondo dorado + **contorno morado** (`--accent-primary`).
+
+**🔍 Revisión de producción — hallazgos + acciones:**
+- **`getLatestCompletedIntento`** (`firestore.service.ts`) — **ARREGLADO.** Antes: `limit(10)`
+  **sin `orderBy`** podía no traer el intento más nuevo si el usuario tenía >10 completados (bug de
+  correctitud, no solo de rendimiento). Ahora: `where('odId','==') where('status','==','completed')
+  orderBy('finishedAt','desc') limit(1)`, con fallback a `limit(20)` + orden en memoria si el índice
+  aún se está construyendo. Índice nuevo `intentos (odId ASC, status ASC, finishedAt DESC)` en
+  `firestore.indexes.json` — **desplegado y construido** (`firebase deploy --only firestore:indexes`,
+  verificado con la query real contra un `odId` real).
+- **App Check / Turnstile — resuelto.** Ver §7.6 para la cronología completa: la causa real no era
+  la secret key (esa ya estaba bien) sino que el **widget de Turnstile en Cloudflare solo tenía 1 de
+  3 hostnames configurados** (faltaban `www.estudiauni.cl` y `estudiauni.web.app`) y el modo estaba
+  en "Invisible" en vez de "Managed". El usuario lo corrigió en Cloudflare; `appCheckEnabled` quedó
+  en **`true`** (`environment.ts`) — falta desplegar (`actualizar.bat`). Sigue en "Supervisión" en
+  Firebase (no bloquea nada hasta pasar los servicios a "Aplicar", decisión aparte y pendiente).
+- **Beacon de Cloudflare Web Analytics** falla SRI en Firefox — apagar/reactivar Web Analytics en
+  el dashboard de Cloudflare. No es código nuestro. §7.6.
+- Fuentes de KaTeX: **se sirven bien en prod (200)**. El error "Cambria Math / invalid URI" de
+  Firefox es ruido del motor MathML de Firefox sobre el `<math>` oculto que KaTeX genera para
+  lectores de pantalla — no afecta el render de las fórmulas (la parte visible usa `KaTeX_*`).
+- Los 6 `materia-*-path.component.ts` en el build: math 192 KB (34 KB gz), los otros 5 ~135 KB
+  (~27 KB gz) — **son lazy chunks** (solo se baja el de la materia que abres), pero ~90 % código
+  idéntico entre sí. Deduplicar es refactor grande (deuda estructural ya documentada en §8/§11), no
+  un ajuste. Un alumno que ve 3 materias en una sesión baja ~90 KB gz de código casi repetido.
+
+**🔒 Revisitado y reconfirmado: la exposición de `respuesta_correcta` en `pool_preguntas`/`preguntas`
+sigue sin arreglarse, a propósito.** Se le explicó al usuario que App Check no cierra este hueco por
+completo (protege contra bots que nunca pasan por un navegador real; no contra un usuario real, en su
+propia sesión ya verificada, leyendo la colección desde la consola del navegador) y que el arreglo
+real sería mover la corrección de preguntas al backend — un cambio de arquitectura, no un ajuste de
+reglas. **El usuario evaluó el riesgo y decidió explícitamente no priorizarlo** ("siento que no es
+nada sensible"). Ver también la entrada de la sección 11 sobre este mismo hallazgo (2026-08-18).
+
+#### Pendiente / a verificar tras desplegar
+
+- `node tools/meta/build-meta.js --commit` solo si se re-siembra el contenido de la **Ruta**
+  (`backend/scratch/push-mock-to-firestore.js`). El pool ya se auto-actualiza. Ya se corrió esta
+  sesión: los 2 resúmenes están en Firestore.
+- Verificar con una **cuenta real** (idealmente la admin que se agregó): Mini Ensayo arma sesión y
+  muestra conteos correctos; Mente Veloz 2ª ronda no re-lee; la Ruta abre cada materia y el progreso
+  del dashboard cuadra; el panel admin pagina de 20 en 20 y "Actualizar" reconstruye el resumen.
+- El mock local `frontend-app/src/assets/mocks/pool-preguntas-mock-local.json` se regeneró
+  (`node tools/pool-preguntas/build.js`) — no va en git.
+
+### 2026-09-04 — Panel admin: paginación con cursor real en el Pool de Preguntas (de ~1.150 lecturas por entrada a ~30) + 3 ajustes de lag del hero en móvil + auditoría del sistema logueado
+`tsc --noEmit -p tsconfig.app.json` ✅ · `ng build` ✅ (6 rutas prerenderizadas) · home verificado en
+el navegador (móvil 375px y escritorio, sin errores de consola). **El panel admin NO se pudo probar
+en vivo**: `/admin` está detrás de `authGuard`+`adminGuard`, la cuenta de prueba no es admin, y
+escribir contraseñas en formularios queda fuera de lo permitido. Verificado: `/admin` redirige limpio
+a `/login`, el chunk lazy compila en AOT, y revisión de lógica de la paginación. **Probar de punta a
+punta con una cuenta admin real.**
+
+**El problema:** `AdminService.loadPreguntas()` hacía `getDocs(collection('pool_preguntas'))` —
+traía TODA la colección (~1.150 docs = ~1.150 lecturas de Firestore) en cada entrada al panel o clic
+en "Actualizar", y `admin-panel.component.ts` renderizaba las ~1.150 tarjetas de golpe.
+
+**Ahora `admin.service.ts` tiene 3 modos de obtención de datos** (`PAGE_SIZE = 20`):
+- **Navegación normal** (sin buscador, tema = "todos"): **cursor real en Firestore** —
+  `query(collection('pool_preguntas'), [where('materiaId','==',m)], orderBy(documentId()),
+  [startAfter(cursor)], limit(21))`. Se pide 21 para saber si hay página siguiente. Coste por página
+  nueva: **21 lecturas**. Ir "atrás" usa la caché en memoria (`pageCache`) → **0 lecturas**.
+  `where('materiaId','==') + orderBy(documentId())` **no requiere índice compuesto**.
+- **Filtro de tema activo** (solo aparece con una materia elegida): carga scoped
+  `where('materiaId','==',m)` UNA vez (~135–200 docs), se cachea (`materiaCorpus`) y se filtra por
+  tema + pagina en cliente. Evita el índice compuesto `(materiaId, tema)`.
+- **Buscador activo**: carga completa `getDocs(collection('pool_preguntas'))` UNA vez, cacheada toda
+  la sesión (`searchCorpus`), y se filtra (materia + tema + texto sobre `enunciado`/`tema`) + pagina
+  en cliente — **el buscador sigue buscando en TODO el banco**. Input con debounce de 250 ms.
+- **Contadores del stats-bar**: `getCountFromServer` por materia (~1 lectura c/u → ~8 en total), en
+  `refreshCounts()`. Se llama en `initPool()` y tras cada mutación.
+
+**Total en una carga normal del panel: ~1 query de 21 docs + ~8 de conteo ≈ 30 lecturas** (antes ~1.150).
+
+**Cambios de API de `AdminService`** (blast radius mínimo — solo `admin-panel.component.ts` y el badge
+de `admin-sidebar.component.ts` consumían la lista; `question-editor` y el resto solo usan
+`isAdmin()`/`getPreguntaById`/`materiasDisponibles`/`getTemasForMateria`):
+- **Eliminado:** `_preguntas`, `preguntas`, `allPreguntas`, `totalPreguntas`, `loadPreguntas()`.
+- **Nuevo:** `pageItems`, `pageIndex`, `hasNextPage`, `pageLoading`, `totalCount`, `materiaCounts`;
+  `initPool()`, `refreshPool()`, `nextPage()`/`prevPage()`, `setMateriaFilter()`/`setTemaFilter()`/
+  `setSearch()`, `countForMateria()`. `setFilter()` se conserva como alias de `setMateriaFilter()`.
+- El `<span>` del badge del sidebar (`admin-sidebar.component.ts`) pasó de `totalPreguntas()` a
+  `@if (totalCount() > 0) { totalCount() }`.
+- El filtro de tema y la búsqueda se movieron del componente al servicio (para decidir el modo de
+  query). El `computed` `temasDisponibles` del componente ya no deriva los temas iterando toda la
+  lista: usa el mapa canónico `adminSvc.getTemasForMateria()`.
+- Selección múltiple: `selectedIds: Set<string>` → `selectedItems: Map<string, PoolPregunta>` (el
+  desglose por materia y el borrado en lote ya no necesitan la lista completa). Persiste entre
+  páginas. "Seleccionar las N" opera sobre la página visible.
+- Barra de paginación nueva bajo la lista (`‹ Anterior · Página X · Siguiente ›`).
+
+**🔴 Tradeoff:** el orden de la lista pasa de **"más nuevas primero"** (`createdAt desc`, en memoria)
+a **por ID** (`orderBy(documentId())`). A propósito: buena parte del banco no tiene `createdAt` y un
+`orderBy('createdAt')` en Firestore **excluiría** esos docs de la query. Recuperar "más nuevas
+primero" necesitaría un backfill de `createdAt` — fuera de alcance.
+
+**Otros módulos admin — sin cambios:** `recursos` (catálogo curado, decenas de items, caché 1 h),
+`news`/`bugs`/`subscriptions` (`limit(100)`), `users` (ya tiene cursor). El único con carga masiva
+real era el Pool.
+
+**Home — lag del hero al scrollear en móvil (`home.component.ts`, 3 ajustes):**
+1. **Parallax del hero desactivado en teléfonos.** `onScroll` (rAF por frame de scroll) escribía
+   `transform` en `.hero-grid-overlay` (layer enmascarado > viewport, con `will-change`) + 2 blobs.
+   Ahora esos 3 writes van tras `if (parallaxOn)`, con `parallaxOn = !matchMedia('(hover: none) and
+   (pointer: coarse)') && !matchMedia('(prefers-reduced-motion: reduce)')` (calculado 1 vez en
+   `ngAfterViewInit`). El estado del navbar y el barrido de revelado siguen corriendo. Verificado en
+   el navegador: bajo emulación móvil `.hero-blob-purple`/`.hero-grid-overlay` no cambian su
+   `transform` al scrollear.
+2. **Cadencia del typewriter del hero baja en puntero grueso.** En `runHeroSimCycle` el `setInterval`
+   del tipeo iba a 32 ms + `markForCheck` cada 4 chars (~8 pasadas de CD/s sobre un template OnPush
+   de ~1.400 líneas, TODO el tiempo que el hero esté aunque sea parcialmente visible). Con
+   `(hover: none) and (pointer: coarse)`: 60 ms + cada 6 chars (~2,7/s). Sigue leyéndose fluido.
+3. **`barrerRevelado()` throttleado a ≥250 ms.** Corría en cada frame de rAF de scroll haciendo
+   `getBoundingClientRect()` sobre todos los elementos pendientes de revelar — varios en secciones
+   con `content-visibility: auto` (medirlos fuerza su render). Un usuario rebotando dentro del hero
+   sin bajar del todo nunca apagaba `barridoActivo`. Ahora `if (performance.now() - ultimoBarrido <
+   250) return;`. El IntersectionObserver de revelado es el mecanismo primario; esto es red de
+   seguridad.
+- **Limpieza:** borrado el CSS muerto `.flow-pulse-node` + `@keyframes flow-node-pulse` (animaba `r`
+  de un `<circle>`, no compositable; ninguna clase del template lo usa — ya confirmado 2026-08-27).
+
+**Área de videos — ya optimizada, sin cambios funcionales (verificado):** `<video preload="none"
+[muted] playsinline>` + play/pausa por IntersectionObserver sobre `.videos-section`;
+`content-visibility: auto`; rotación del `<g>` orbital congelada desde 2026-08-29; un solo `<video>`
+en el DOM a la vez.
+
+**Auditoría del sistema logueado (solo reporte, a pedido — nada ejecutado):** ya muy optimizado —
+**0 `onSnapshot`/`collectionData` en toda la app**, todo lecturas únicas con caché; perfil = 1
+`getDoc` cacheado en signal; respuestas de ensayo agrupadas cada 4 s en 1 transacción; catálogos de
+ensayos/recursos con caché de sesión (1 h); actividad/intentos `limit(10)`; noticias `limit(20)` +
+caché 10 min; contenido de la Ruta cacheado 6 h. Lo que queda son **cambios de arquitectura ya
+documentados** (no ajustes): `pool_preguntas` se lee entero en cache-miss de Mini Ensayo/Mente
+Veloz/Modo Infinito (`ensurePoolPreguntasLoaded`, ~1.150 docs, TTL 6 h) → necesita un doc resumen
+`pool_preguntas_meta` mantenido por script de backend; `collectionGroup('secciones')` ≈ 401 lecturas
+en carga en frío de la Ruta → cargar secciones por materia. Ninguno es un listener que se recargue
+solo; el coste es 1 vez cada 6 h por usuario.
 
 ### 2026-08-30 — Banco de preguntas: de 29 a 1.154 preguntas, con el contenido versionado en git en vez de solo en Firestore. Y el mock de 1,6 MB con TODAS las respuestas correctas dejaba de publicarse en producción
 Typecheck ✅ · `ng build --configuration production` ✅ · verificado en el navegador sobre el
@@ -1229,14 +1795,12 @@ auditar que ningún observer de progreso ni drawer de simulador lea `getBounding
 `scrollWidth` de secciones fuera de pantalla en el arranque (trampa del 2026-08-27 p5).
 
 **Estado de las consultas Firestore tras la revisión (lo que queda, por orden de impacto):**
-- `pool_preguntas` se lee **entero** en cache-miss (mini-ensayo + mente-veloz), 6h TTL. Con el
-  catálogo creciendo, cada usuario paga cientos-miles de lecturas cada 6h. Mitigación real: un doc
-  resumen `pool_preguntas_meta` (conteos por materia/tema) para la pantalla de armado, y cargar
-  preguntas reales solo al iniciar sesión con `where('materiaId','in',[...])`. Necesita script de
-  backend que mantenga el resumen — no es un ajuste.
-- `collectionGroup('secciones')` = 401 lecturas en cada carga en frío de la Ruta (6h TTL). Para
-  bajarlo habría que cargar secciones **por materia** al abrir esa materia, no todas de golpe —
-  cambio de arquitectura del `PaesContentService`.
+- ~~`pool_preguntas` se lee **entero** en cache-miss~~ — **RESUELTO 2026-09-04 p2.** Doc resumen
+  `pool_preguntas_meta/summary` para los conteos + `loadPoolForMaterias(ids)` con
+  `where('materiaId','in',[...])`, cache por materia 6 h. Ver esa bitácora.
+- ~~`collectionGroup('secciones')` = 401 lecturas~~ — **RESUELTO 2026-09-04 p2.** `sectionCount` en
+  `lp_materias` para el índice/dashboard + `ensureMateriaSeccionesLoaded()` por materia al abrirla.
+  Ambos con fallback al camino viejo si falta el resumen.
 - `admin.service.ts`: `pool_preguntas` y `bug_reports` sin `limit()` — solo afecta a admins, baja
   prioridad; un `limit(100)` en `bug_reports` sería prudente.
 - Lo demás está bien: **0 `onSnapshot`/`collectionData` en toda la app** (todo lectura única, sin

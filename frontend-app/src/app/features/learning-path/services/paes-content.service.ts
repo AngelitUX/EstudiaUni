@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject, Injector, effect, untracked } from '@angular/core';
 import { Materia, Capitulo, Seccion, TestPaes, SeccionProgress, TestResult, TestAnswer } from '../models/paes.models';
-import { Firestore, collection, getDocs, collectionGroup, doc, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, collectionGroup, doc, getDoc, where, query } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { DashboardService } from '../../../core/services/dashboard.service';
 
@@ -33,6 +33,25 @@ export const LEARNING_PATH_CACHE_KEY = 'learning_path_cache';
 export const LEARNING_PATH_CACHE_TIME_KEY = 'learning_path_cache_timestamp';
 export const POOL_PREGUNTAS_CACHE_KEY = 'pool_preguntas_cache';
 export const POOL_PREGUNTAS_CACHE_TIME_KEY = 'pool_preguntas_cache_timestamp';
+
+// Resumen de conteos del banco de preguntas (doc `pool_preguntas_meta/summary`).
+// Permite a Mini Ensayo / Mente Veloz mostrar "N preguntas por tema/materia" sin
+// leer las ~1.200 preguntas. Se cachea en sessionStorage (vive lo que la pestaña).
+export const POOL_META_CACHE_KEY = 'pool_preguntas_meta_v1';
+const POOL_META_TTL_MS = 30 * 60 * 1000; // 30 min
+// Preguntas reales ya cargadas, particionadas POR MATERIA (localStorage, TTL 6 h).
+// Clave: `pool_by_materia_<materiaIdCanonico>`. Que sea por materia (no por
+// combinación) es lo que hace que una 2ª ronda de Mente Veloz con las mismas
+// materias no vuelva a leer nada.
+const POOL_BY_MATERIA_PREFIX = 'pool_by_materia_';
+// Secciones de la Ruta cargadas por materia (localStorage, TTL 6 h).
+const LP_SECCIONES_PREFIX = 'lp_secciones_';
+
+export interface PoolMeta {
+  updatedAt: string;
+  total: number;
+  byMateria: Record<string, { total: number; temas: Record<string, number> }>;
+}
 
 /**
  * Vigencia de la cache de contenido.
@@ -311,6 +330,22 @@ export class PaesContentService {
   private poolPreguntasLoaded = false;
   private poolPreguntasLoadingPromise: Promise<void> | null = null;
 
+  // ─── Resumen de conteos del banco (pool_preguntas_meta) ───
+  private _poolMeta = signal<PoolMeta | null>(null);
+  readonly poolMeta = this._poolMeta.asReadonly();
+  private poolMetaLoadingPromise: Promise<void> | null = null;
+
+  // Preguntas reales por materia (segunda capa: memoria; primera: localStorage 6 h).
+  private poolByMateria = new Map<string, any[]>();
+  private poolMateriaEnVuelo = new Map<string, Promise<any[]>>();
+
+  // Secciones de la Ruta cargadas por materia (lazy, cuando el `sectionCount` de
+  // lp_materias permite saltarse el getDocs(collectionGroup('secciones')) de 401).
+  private seccionesLoadedMaterias = new Set<string>();
+  private seccionesMateriaEnVuelo = new Map<string, Promise<void>>();
+  private sectionsLazyMode = false; // true = las secciones se cargan por materia
+  private allSeccionesPromise: Promise<void> | null = null;
+
   // Carga de contenido en vuelo. `onAuthStateChanged` puede dispararse varias
   // veces (refresco de token, reconexión, hot-reload), y cada llamada a
   // loadDataFromFirestore() hace 4 getDocs de colecciones completas. Sin este
@@ -452,6 +487,196 @@ export class PaesContentService {
     localStorage.removeItem(POOL_PREGUNTAS_CACHE_KEY);
     localStorage.removeItem(POOL_PREGUNTAS_CACHE_TIME_KEY);
     this.poolPreguntasLoaded = false;
+    // Resumen de conteos + preguntas cacheadas por materia.
+    try { sessionStorage.removeItem(POOL_META_CACHE_KEY); } catch { /* SSR / modo privado */ }
+    this._poolMeta.set(null);
+    this.poolMetaLoadingPromise = null;
+    this.poolByMateria.clear();
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(POOL_BY_MATERIA_PREFIX)) localStorage.removeItem(k);
+      }
+    } catch { /* ignore */ }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Banco de preguntas: resumen de conteos + carga por materia
+  //
+  // Antes `ensurePoolPreguntasLoaded()` traía las ~1.200 preguntas enteras en
+  // cada cache-miss de Mini Ensayo / Mente Veloz / Modo Infinito. Ahora:
+  //  · `ensurePoolMetaLoaded()` trae 1 doc con los conteos (para las pantallas
+  //    de armado), y
+  //  · `loadPoolForMaterias([...])` trae solo las materias que se van a usar,
+  //    cacheadas POR MATERIA (memoria + localStorage 6 h) — una 2ª ronda con
+  //    las mismas materias no lee nada.
+  // Si el doc resumen no existe, todo cae a `ensurePoolPreguntasLoaded()`.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /** Normaliza cualquier id de materia (estilo Ruta o alias) al id que usa
+   *  `pool_preguntas.materiaId` / `poolMeta.byMateria`. */
+  toPoolMateriaId(id: string): string {
+    const n = (id || '').toLowerCase().trim();
+    if (['comp-lectora', 'competencia-lectora', 'lectura', 'lenguaje'].includes(n)) return 'competencia-lectora';
+    if (['mat1', 'matematicas-m1', 'matematica-1', 'matematica1', 'math-m1', 'm1'].includes(n)) return 'matematicas-m1';
+    if (['mat2', 'matematicas-m2', 'matematica-2', 'matematica2', 'm2'].includes(n)) return 'matematicas-m2';
+    if (['historia', 'ciencias-historia'].includes(n)) return 'historia';
+    if (['biologia', 'ciencias-biologia'].includes(n)) return 'ciencias-biologia';
+    if (['fisica', 'ciencias-fisica'].includes(n)) return 'ciencias-fisica';
+    if (['quimica', 'ciencias-quimica'].includes(n)) return 'ciencias-quimica';
+    if (['ciencias-tp', 'tp'].includes(n)) return 'ciencias-tp';
+    return n;
+  }
+
+  /** Trae `pool_preguntas_meta/summary` (1 lectura), cacheado en sessionStorage
+   *  30 min. Si falla, deja `poolMeta()` en null y los consumidores caen al
+   *  camino completo (`ensurePoolPreguntasLoaded`). */
+  async ensurePoolMetaLoaded(): Promise<void> {
+    if (this._poolMeta() || this.useMocksMode) return;
+    if (this.poolMetaLoadingPromise) return this.poolMetaLoadingPromise;
+
+    this.poolMetaLoadingPromise = (async () => {
+      try {
+        const raw = sessionStorage.getItem(POOL_META_CACHE_KEY);
+        if (raw) {
+          const { data, cachedAt } = JSON.parse(raw);
+          if (data && Date.now() - cachedAt < POOL_META_TTL_MS) {
+            this._poolMeta.set(data as PoolMeta);
+            return;
+          }
+        }
+      } catch { /* caché ilegible */ }
+
+      try {
+        const snap = await getDoc(doc(this.firestore, 'pool_preguntas_meta', 'summary'));
+        if (snap.exists()) {
+          const data = snap.data() as PoolMeta;
+          this._poolMeta.set(data);
+          try { sessionStorage.setItem(POOL_META_CACHE_KEY, JSON.stringify({ data, cachedAt: Date.now() })); } catch { /* ignore */ }
+        } else {
+          console.warn('[PaesContentService] pool_preguntas_meta/summary no existe — usando el pool completo como fallback.');
+        }
+      } catch (e) {
+        console.warn('[PaesContentService] Error leyendo pool_preguntas_meta/summary (fallback al pool completo):', e);
+      } finally {
+        this.poolMetaLoadingPromise = null;
+      }
+    })();
+
+    return this.poolMetaLoadingPromise;
+  }
+
+  /** Conteo de preguntas de una materia según el resumen (0 si no hay resumen). */
+  poolCountForMateria(materiaId: string): number {
+    return this._poolMeta()?.byMateria[this.toPoolMateriaId(materiaId)]?.total ?? 0;
+  }
+
+  /** Conteos por tema de una materia según el resumen (map vacío si no hay). */
+  poolTemasForMateria(materiaId: string): Record<string, number> {
+    return this._poolMeta()?.byMateria[this.toPoolMateriaId(materiaId)]?.temas ?? {};
+  }
+
+  /**
+   * Devuelve las preguntas de las materias pedidas. Cache POR MATERIA en dos
+   * capas (memoria + localStorage 6 h): solo las materias que faltan se piden a
+   * Firestore, en UNA query `where('materiaId','in',[...])`.
+   */
+  async loadPoolForMaterias(materiaIds: string[]): Promise<any[]> {
+    const canon = Array.from(new Set(materiaIds.map(id => this.toPoolMateriaId(id)).filter(Boolean)));
+
+    // Modo mocks: el pool completo ya está en memoria.
+    if (this.useMocksMode) {
+      await this.ensurePoolPreguntasLoaded();
+      const set = new Set(canon);
+      return this._poolPreguntas().filter(q => set.has(this.toPoolMateriaId(q.materiaId)));
+    }
+
+    const result = await this.loadPoolForMateriasInner(canon);
+    // También lo volcamos en el signal global `_poolPreguntas` (dedup por id, sin
+    // marcar poolPreguntasLoaded) para que los consumidores síncronos que aún
+    // leen `poolPreguntas()` (infinite-mastery, fallbacks) vean estas preguntas.
+    this.mergeIntoPoolSignal(result);
+    return result;
+  }
+
+  private mergeIntoPoolSignal(nuevas: any[]): void {
+    if (!nuevas.length) return;
+    this._poolPreguntas.update(actual => {
+      const ids = new Set(actual.map(q => q.id));
+      const extra = nuevas.filter(q => !ids.has(q.id));
+      return extra.length ? [...actual, ...extra] : actual;
+    });
+  }
+
+  private async loadPoolForMateriasInner(canon: string[]): Promise<any[]> {
+
+    const out: any[] = [];
+    const faltantes: string[] = [];
+
+    for (const m of canon) {
+      // Capa 1: memoria.
+      if (this.poolByMateria.has(m)) { out.push(...this.poolByMateria.get(m)!); continue; }
+      // Capa 2: localStorage fresco.
+      try {
+        const raw = localStorage.getItem(POOL_BY_MATERIA_PREFIX + m);
+        if (raw) {
+          const { data, cachedAt } = JSON.parse(raw);
+          if (Array.isArray(data) && Date.now() - cachedAt < CONTENT_CACHE_TTL_MS) {
+            this.poolByMateria.set(m, data);
+            out.push(...data);
+            continue;
+          }
+        }
+      } catch { /* caché ilegible */ }
+      faltantes.push(m);
+    }
+
+    if (faltantes.length === 0) return out;
+
+    // Coalescer: si ya hay una petición en vuelo para alguna materia faltante,
+    // esperarla en vez de lanzar otra.
+    const yaEnVuelo = faltantes.filter(m => this.poolMateriaEnVuelo.has(m));
+    if (yaEnVuelo.length) {
+      await Promise.all(yaEnVuelo.map(m => this.poolMateriaEnVuelo.get(m)!));
+      // Reintentar desde caché (ya poblada) — recursión de una sola pasada.
+      return this.loadPoolForMateriasInner(canon);
+    }
+
+    const pedir = faltantes.slice(0, 30); // límite de `in` en Firestore
+    const promesa = (async (): Promise<any[]> => {
+      try {
+        const snap = await getDocs(query(
+          collection(this.firestore, 'pool_preguntas'),
+          where('materiaId', 'in', pedir),
+        ));
+        const porMateria = new Map<string, any[]>();
+        for (const m of pedir) porMateria.set(m, []);
+        snap.docs.forEach(d => {
+          const data = { id: d.id, ...d.data() } as any;
+          const key = this.toPoolMateriaId(data.materiaId);
+          if (!porMateria.has(key)) porMateria.set(key, []);
+          porMateria.get(key)!.push(data);
+        });
+        for (const [m, arr] of porMateria) {
+          this.poolByMateria.set(m, arr);
+          try {
+            localStorage.setItem(POOL_BY_MATERIA_PREFIX + m, JSON.stringify({ data: arr, cachedAt: Date.now() }));
+          } catch { /* sin espacio */ }
+        }
+        return pedir.flatMap(m => porMateria.get(m) || []);
+      } catch (e) {
+        console.error('[PaesContentService] Error cargando pool por materia (fallback al pool completo):', e);
+        await this.ensurePoolPreguntasLoaded();
+        const set = new Set(pedir);
+        return this._poolPreguntas().filter(q => set.has(this.toPoolMateriaId(q.materiaId)));
+      } finally {
+        for (const m of pedir) this.poolMateriaEnVuelo.delete(m);
+      }
+    })();
+
+    for (const m of pedir) this.poolMateriaEnVuelo.set(m, promesa);
+    const nuevas = await promesa;
+    return [...out, ...nuevas];
   }
 
   /**
@@ -557,12 +782,13 @@ export class PaesContentService {
       const cachedDataRaw = localStorage.getItem(CACHE_KEY);
       const cachedTimeRaw = localStorage.getItem(cacheTimeKey);
 
-      if (cachedDataRaw && cachedTimeRaw) {
+      if (cachedDataRaw && cachedTimeRaw && !this.forceEagerSections) {
         const cachedTime = parseInt(cachedTimeRaw, 10);
         if (Date.now() - cachedTime < cacheTTL) {
           const cached = JSON.parse(cachedDataRaw);
           if (cached.materias && cached.capitulos) {
 
+            this.sectionsLazyMode = cached.sectionsLazy === true;
             this._materias.set(cached.materias);
             this._capitulos.set(await this.syncLocalChapters(cached.capitulos));
             this.loading.set(false);
@@ -619,37 +845,55 @@ export class PaesContentService {
       // resolverlo despues. El contenido servido desde los seeds locales
       // (comp-lectora, historia) trae el test embebido y no gasta ninguna lectura.
       const testsMap = new Map<string, TestPaes>();
-      // 5. Cargar todas las secciones de una sola vez con un Collection Group
-      let seccionesSnap;
-      try {
-        seccionesSnap = await getDocs(collectionGroup(this.firestore, 'secciones'));
-      } catch (err) {
-        console.error('[PaesContentService] Error cargando secciones (collectionGroup) desde Firestore:', err);
-        throw err;
-      }
       const seccionesByCapitulo = new Map<string, Seccion[]>();
 
-      seccionesSnap.docs.forEach(secDoc => {
-        const secData = secDoc.data() as any;
-        const test = testsMap.get(secData.testId);
+      // 5. Secciones.
+      //
+      // CAMINO RÁPIDO: si los docs `lp_materias` traen `sectionCount` (lo escribe
+      // `tools/meta/build-meta.js`), NO leemos las 401 secciones acá. Cada materia
+      // carga solo las suyas al abrirse, vía `ensureMateriaSeccionesLoaded()`.
+      // comp-lectora e historia se sirven de seeds (syncLocalChapters), así que ni
+      // siquiera pagan lecturas.
+      //
+      // FALLBACK: si falta el `sectionCount` en algún doc (aún no se corrió el
+      // script), se hace el `getDocs(collectionGroup('secciones'))` de siempre —
+      // comportamiento actual íntegro.
+      const activeMaterias = materias.filter(m => m.isActive);
+      const sectionsLazy = !this.forceEagerSections
+        && activeMaterias.length > 0
+        && activeMaterias.every(m => typeof (m as any).sectionCount === 'number');
+      this.sectionsLazyMode = sectionsLazy;
 
-        let imageUrl = secData.imageUrl || this.getHistoriaImageUrl(secDoc.id, secData);
-
-        const seccion = {
-          ...secData,
-          id: secDoc.id,
-          imageUrl,
-          test
-        } as Seccion;
-
-        const capId = secData.capituloId;
-        if (capId) {
-          if (!seccionesByCapitulo.has(capId)) {
-            seccionesByCapitulo.set(capId, []);
-          }
-          seccionesByCapitulo.get(capId)!.push(seccion);
+      if (!sectionsLazy) {
+        let seccionesSnap;
+        try {
+          seccionesSnap = await getDocs(collectionGroup(this.firestore, 'secciones'));
+        } catch (err) {
+          console.error('[PaesContentService] Error cargando secciones (collectionGroup) desde Firestore:', err);
+          throw err;
         }
-      });
+        seccionesSnap.docs.forEach(secDoc => {
+          const secData = secDoc.data() as any;
+          const test = testsMap.get(secData.testId);
+
+          let imageUrl = secData.imageUrl || this.getHistoriaImageUrl(secDoc.id, secData);
+
+          const seccion = {
+            ...secData,
+            id: secDoc.id,
+            imageUrl,
+            test
+          } as Seccion;
+
+          const capId = secData.capituloId;
+          if (capId) {
+            if (!seccionesByCapitulo.has(capId)) {
+              seccionesByCapitulo.set(capId, []);
+            }
+            seccionesByCapitulo.get(capId)!.push(seccion);
+          }
+        });
+      }
 
       // Los seeds locales (CAPITULOS / HISTORIA_CAPITULOS) se consultan dentro
       // del forEach de abajo, que es un callback SINCRONO y por lo tanto no
@@ -762,7 +1006,8 @@ export class PaesContentService {
         try {
           const cacheData = {
             materias: sortedMaterias,
-            capitulos: syncedCapitulos
+            capitulos: syncedCapitulos,
+            sectionsLazy,
           };
           localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
           localStorage.setItem(cacheTimeKey, Date.now().toString());
@@ -1036,6 +1281,128 @@ export class PaesContentService {
     this._capitulos.set(await this.syncLocalChapters(capitulos));
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Secciones de la Ruta: carga por materia (camino rápido) / completa (fallback)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /** true = la carga inicial trajo los conteos pero NO las 401 secciones; hay que
+   *  pedirlas por materia con ensureMateriaSeccionesLoaded(). */
+  private forceEagerSections = false;
+
+  /**
+   * Carga las secciones de UNA materia (sus ~30-97 docs) si aún no están.
+   * Idempotente + coalesce. No hace nada si:
+   *  · no estamos en modo lazy (la carga inicial ya trajo todo),
+   *  · la materia ya tiene secciones (comp-lectora / historia vienen de seeds),
+   *  · modo mocks.
+   * Si la lectura falla, deja la materia como estaba y NO lanza.
+   */
+  async ensureMateriaSeccionesLoaded(materiaId: string): Promise<void> {
+    if (!materiaId || this.useMocksMode || !this.sectionsLazyMode) return;
+
+    const caps = this.getCapitulosByMateria(materiaId);
+    if (caps.length === 0) return;
+
+    // comp-lectora / historia (u otra materia servida de seeds) ya traen secciones.
+    if (caps.some(c => (c.secciones?.length ?? 0) > 0)) {
+      this.seccionesLoadedMaterias.add(materiaId);
+      return;
+    }
+
+    const canonId = caps[0].materiaId || materiaId;
+    if (this.seccionesLoadedMaterias.has(canonId)) return;
+
+    const enVuelo = this.seccionesMateriaEnVuelo.get(canonId);
+    if (enVuelo) return enVuelo;
+
+    const capIds = caps.map(c => c.id);
+    const cacheKey = LP_SECCIONES_PREFIX + canonId;
+
+    const promesa = (async () => {
+      try {
+        let byCapId: Record<string, any[]> | null = null;
+
+        // Caché de sesión previa (localStorage 6 h).
+        try {
+          const raw = localStorage.getItem(cacheKey);
+          if (raw) {
+            const { data, cachedAt } = JSON.parse(raw);
+            if (data && Date.now() - cachedAt < CONTENT_CACHE_TTL_MS) byCapId = data;
+          }
+        } catch { /* caché ilegible */ }
+
+        if (!byCapId) {
+          byCapId = {};
+          const snaps = await Promise.all(
+            capIds.map(capId => getDocs(collection(this.firestore, 'lp_capitulos', capId, 'secciones'))),
+          );
+          snaps.forEach((snap, i) => {
+            byCapId![capIds[i]] = snap.docs.map(d => {
+              const secData = d.data() as any;
+              return {
+                ...secData,
+                id: d.id,
+                imageUrl: secData.imageUrl || this.getHistoriaImageUrl(d.id, secData),
+              };
+            });
+          });
+          try { localStorage.setItem(cacheKey, JSON.stringify({ data: byCapId, cachedAt: Date.now() })); } catch { /* sin espacio */ }
+        }
+
+        this.mergeSeccionesForCapitulos(byCapId);
+        this.seccionesLoadedMaterias.add(canonId);
+      } catch (e: any) {
+        console.error(`[PaesContentService] No se pudieron cargar las secciones de "${materiaId}": ${e?.message || e}`);
+      } finally {
+        this.seccionesMateriaEnVuelo.delete(canonId);
+      }
+    })();
+
+    this.seccionesMateriaEnVuelo.set(canonId, promesa);
+    return promesa;
+  }
+
+  /** Mete las secciones de cada capítulo en `_capitulos` de forma inmutable
+   *  (mismo patrón que attachTestToSeccion). Solo toca capítulos que reciben
+   *  secciones; no pisa comp-lectora/historia (que ya vienen de seeds y no
+   *  aparecen en `byCapId` porque su materia se saltó la lectura). */
+  private mergeSeccionesForCapitulos(byCapId: Record<string, any[]>): void {
+    this._capitulos.update(capitulos => capitulos.map(cap => {
+      const secs = byCapId[cap.id];
+      if (!secs || secs.length === 0) return cap;
+      const ordered = secs.slice().sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      return { ...cap, secciones: ordered as Seccion[] };
+    }));
+  }
+
+  /**
+   * Asegura que una sección esté en memoria. Se usa en enlaces directos
+   * (deep-link) a una sección cuya materia no se abrió antes. Como no se puede
+   * resolver la materia solo con el seccionId, cae a la carga completa —
+   * es un caso raro y queda cacheado.
+   */
+  async ensureSeccionAvailable(seccionId: string): Promise<void> {
+    if (!seccionId || this.useMocksMode) return;
+    if (this.getSeccionById(seccionId)) return;
+    if (!this.sectionsLazyMode) return; // ya se cargó todo
+    await this.ensureAllSeccionesLoaded();
+  }
+
+  /** Fallback de última instancia: re-carga el contenido de la Ruta trayendo
+   *  TODAS las secciones (el getDocs(collectionGroup) de siempre). */
+  async ensureAllSeccionesLoaded(): Promise<void> {
+    if (this.useMocksMode || !this.sectionsLazyMode) return;
+    if (this.allSeccionesPromise) return this.allSeccionesPromise;
+    this.allSeccionesPromise = (async () => {
+      this.forceEagerSections = true;
+      this.clearCache();
+      this.contentLoadingPromise = null;
+      try { await this.loadDataFromFirestore(); }
+      finally { this.forceEagerSections = false; this.allSeccionesPromise = null; }
+    })();
+    return this.allSeccionesPromise;
+  }
+
   // ─── Queries ───
 
   getMateriaById(id: string): Materia | undefined {
@@ -1216,16 +1583,40 @@ export class PaesContentService {
 
   getMateriaProgress(materiaId: string): { completed: number; total: number; percentage: number } {
     const caps = this.getCapitulosByMateria(materiaId);
-    let totalSec = 0;
-    let completedSec = 0;
-    for (const cap of caps) {
-      for (const sec of cap.secciones) {
-        totalSec++;
-        const p = this._progress().get(sec.id);
-        if (p && p.completed) completedSec++;
+    const seccionesCargadas = caps.some(c => (c.secciones?.length ?? 0) > 0);
+
+    if (seccionesCargadas || !this.sectionsLazyMode) {
+      // Camino exacto: iterar las secciones reales (como siempre).
+      let totalSec = 0;
+      let completedSec = 0;
+      for (const cap of caps) {
+        for (const sec of cap.secciones) {
+          totalSec++;
+          const p = this._progress().get(sec.id);
+          if (p && p.completed) completedSec++;
+        }
       }
+      return { completed: completedSec, total: totalSec, percentage: totalSec > 0 ? Math.round((completedSec / totalSec) * 100) : 0 };
     }
-    return { completed: completedSec, total: totalSec, percentage: totalSec > 0 ? Math.round((completedSec / totalSec) * 100) : 0 };
+
+    // Camino aproximado (índice /ruta + dashboard, antes de abrir la materia):
+    // `total` del resumen en lp_materias, `completed` filtrando el progreso local
+    // por materiaId. Se corrige al valor exacto en cuanto se abre la materia.
+    const total = (this.getMateriaById(materiaId) as any)?.sectionCount ?? 0;
+    let completed = 0;
+    for (const p of this._progress().values()) {
+      if (p.completed && this.matchMateriaId(p.materiaId, materiaId)) completed++;
+    }
+    completed = Math.min(completed, total || completed);
+    return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+  }
+
+  private matchMateriaId(a: string, b: string): boolean {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    const na = a.replace(/^ciencias-/, '');
+    const nb = b.replace(/^ciencias-/, '');
+    return na === b || a === nb || na === nb;
   }
 
   // ─── Submitting test ───
@@ -1375,7 +1766,31 @@ export function autoLoadTest(seccionId: () => string): void {
       const id = seccionId();
       const cargando = paes.loading();
       if (!id || cargando) return;
-      untracked(() => { void paes.ensureTestLoaded(id); });
+      untracked(() => {
+        // En modo lazy, si se llegó por deep-link a una sección cuya materia no
+        // se abrió antes, primero hay que traerla; después el test.
+        void paes.ensureSeccionAvailable(id).then(() => paes.ensureTestLoaded(id));
+      });
+    },
+    { allowSignalWrites: true },
+  );
+}
+
+/**
+ * Pide las secciones de una materia en cuanto se conoce su id y el contenido
+ * base (materias + capítulos) está cargado. Llamar desde el constructor del
+ * componente de la materia (contexto de inyección). Idempotente y sin coste si
+ * la materia ya tiene secciones (comp-lectora / historia, servidas de seeds).
+ */
+export function autoLoadMateriaSecciones(materiaId: () => string): void {
+  const paes = inject(PaesContentService);
+
+  effect(
+    () => {
+      const id = materiaId();
+      const cargando = paes.loading();
+      if (!id || cargando) return;
+      untracked(() => { void paes.ensureMateriaSeccionesLoaded(id); });
     },
     { allowSignalWrites: true },
   );

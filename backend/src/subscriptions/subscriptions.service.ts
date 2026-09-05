@@ -297,14 +297,21 @@ export class SubscriptionsService {
   }
 
   /**
-   * Activate (or extend) a user's Premium subscription. Used for the first
-   * charge of a Flow subscription, a manual bank-transfer approval, or any
-   * other verified-payment path.
+   * Activate (or extend) a user's Plan Pro. Used for a one-time Flow "pase"
+   * payment, a manual bank-transfer approval, or any other verified-payment
+   * path. If the user still has unexpired days left (e.g. they buy their
+   * next pass a few days before the current one runs out, or they're
+   * gifted one while already Pro), the new period is stacked ON TOP of the
+   * existing `endDate` instead of resetting it from today — this is what
+   * makes "5 días restantes + comprar 1 mes = ~35 días" work, and it
+   * predates this comment: it was originally written for the
+   * already-Pro-gift case, so the "buy your next pass early" requirement
+   * needed no changes here at all.
    */
   async activateSubscription(
     uid: string,
     planType: 'monthly' | 'yearly' = 'monthly',
-    providerInfo: { provider: 'flow' | 'manual' | 'transfer'; flowCustomerId?: string; flowSubscriptionId?: string } = { provider: 'manual' },
+    providerInfo: { provider: 'flow' | 'manual' | 'transfer'; flowPaymentToken?: string } = { provider: 'manual' },
   ) {
     const userRef = this.firebaseService.firestore.collection('users').doc(uid);
 
@@ -312,7 +319,7 @@ export class SubscriptionsService {
     // { success: true } regardless of whether the Firestore write actually
     // happened. That meant a paying user could get "Pago aprobado y cuenta
     // actualizada a premium" while their account silently stayed Free. Any
-    // failure here MUST propagate to the caller (FlowService.confirmRegistrationAndSubscribe)
+    // failure here MUST propagate to the caller (FlowService.confirmPayment/handlePaymentWebhook)
     // so it can report the real outcome instead of a false success.
 
     // Transaction: prevents two near-simultaneous grants (e.g. a Flow confirm racing
@@ -361,9 +368,7 @@ export class SubscriptionsService {
           status: 'active',
           provider: providerInfo.provider,
           planType,
-          flowCustomerId: providerInfo.flowCustomerId || null,
-          flowSubscriptionId: providerInfo.flowSubscriptionId || null,
-          cancelAtPeriodEnd: false,
+          flowPaymentToken: providerInfo.flowPaymentToken || null,
           startDate,
           endDate,
         },
@@ -373,61 +378,6 @@ export class SubscriptionsService {
     });
 
     return { success: true, message: `Upgraded to premium (${planType})` };
-  }
-
-  /**
-   * Extend the current period by one billing cycle after a successful Flow
-   * renewal charge (called from the recurring webhook). Never called for the
-   * first charge of a subscription — that's activateSubscription()'s job.
-   */
-  async extendSubscriptionPeriod(uid: string, planType: 'monthly' | 'yearly' = 'monthly') {
-    const userRef = this.firebaseService.firestore.collection('users').doc(uid);
-
-    await this.firebaseService.firestore.runTransaction(async (t) => {
-      const userDoc = await t.get(userRef);
-      if (!userDoc.exists) return;
-
-      const userData = userDoc.data()!;
-      const sub = userData.subscription || {};
-
-      // The user already asked to cancel — a renewal charge racing the
-      // cancellation must not resurrect access for another period.
-      if (sub.cancelAtPeriodEnd) return;
-
-      const now = new Date();
-      const currentEndDate = sub.endDate
-        ? (typeof sub.endDate.toDate === 'function' ? sub.endDate.toDate() : new Date(sub.endDate))
-        : null;
-
-      // Flow's webhook fires for every charge, including the very first one
-      // that activateSubscription() already granted access for synchronously
-      // right after subscribing. If the stored endDate is still comfortably
-      // in the future, this webhook call is that same first-charge
-      // confirmation arriving a few seconds later — skip it so one charge
-      // doesn't grant two periods.
-      const RENEWAL_DUE_WINDOW_MS = 2 * 24 * 3600 * 1000;
-      if (currentEndDate && currentEndDate.getTime() - now.getTime() > RENEWAL_DUE_WINDOW_MS) {
-        return;
-      }
-
-      const newEndDate = currentEndDate && currentEndDate > now ? new Date(currentEndDate) : new Date(now);
-      if (planType === 'yearly') {
-        newEndDate.setFullYear(newEndDate.getFullYear() + 1);
-      } else {
-        newEndDate.setMonth(newEndDate.getMonth() + 1);
-      }
-
-      t.set(userRef, {
-        subscription: {
-          tier: 'premium',
-          status: 'active',
-          planType,
-          endDate: newEndDate,
-        },
-        plan: 'premium',
-        updatedAt: new Date(),
-      }, { merge: true });
-    });
   }
 
   /**
@@ -711,20 +661,26 @@ export class SubscriptionsService {
     const transactions: any[] = [];
 
     try {
-      const invSnapshot = await this.firebaseService.firestore
-        .collection('flow_invoices')
+      const paySnapshot = await this.firebaseService.firestore
+        .collection('flow_payments')
         .orderBy('createdAt', 'desc')
         .limit(100)
         .get();
 
-      invSnapshot.forEach(doc => {
+      paySnapshot.forEach(doc => {
         const d = doc.data();
         transactions.push({
           id: doc.id,
           type: 'flow',
-          subscriptionId: d.subscriptionId || '---',
-          payerUid: d.uid,
-          recipientUid: d.uid,
+          // "subscriptionId" is a legacy field name the admin panel already
+          // knows how to display — for a one-time payment it's really the
+          // Flow commerceOrder (a short, human-readable order id).
+          subscriptionId: d.commerceOrder || doc.id,
+          payerUid: d.payerUid,
+          payerEmail: d.payerEmail || null,
+          recipientUid: d.recipientUid || d.payerUid,
+          recipientEmail: d.recipientEmail || null,
+          isGift: !!d.isGift,
           amount: d.amount,
           planType: d.planType || 'monthly',
           status: d.status,
@@ -900,112 +856,6 @@ export class SubscriptionsService {
     } catch (e) {
       this.logger.warn(`[SubscriptionsService] Could not write admin audit log for "${action}": ${e.message}`);
     }
-  }
-
-  /**
-   * Cancel premium subscription. Access is kept until the already-paid
-   * `endDate` — we only stop future renewals (mirrors standard SaaS
-   * cancel-at-period-end UX). The actual downgrade to Free happens lazily,
-   * the same way it already does for expiry: checkCredits()/normalizeProfile()
-   * flip tier/status once `endDate` is in the past — no extra write needed here.
-   */
-  async cancel(uid: string) {
-    const userRef = this.firebaseService.firestore.collection('users').doc(uid);
-    let flowSubscriptionId: string | null = null;
-    let endDateJs: Date | null = null;
-
-    try {
-      const userDoc = await userRef.get();
-      if (userDoc.exists) {
-        const sub = userDoc.data()?.subscription;
-        flowSubscriptionId = sub?.flowSubscriptionId || null;
-        const endDateVal = sub?.endDate;
-        if (endDateVal) {
-          endDateJs = typeof endDateVal.toDate === 'function' ? endDateVal.toDate() : new Date(endDateVal);
-        }
-      }
-
-      await userRef.update({
-        'subscription.cancelAtPeriodEnd': true,
-        'subscription.status': 'cancelled',
-        updatedAt: new Date(),
-      });
-    } catch (e) {
-      this.logger.warn(`[SubscriptionsService] cancel error: ${e.message}`);
-    }
-
-    return {
-      success: true,
-      message: endDateJs
-        ? `Tu suscripción fue cancelada. Mantendrás acceso Premium hasta el ${endDateJs.toLocaleDateString('es-CL')}.`
-        : 'Tu suscripción fue cancelada.',
-      endDate: endDateJs,
-      flowSubscriptionId,
-    };
-  }
-
-  /**
-   * Cancelar un REGALO de Plan Pro por Flow que este usuario esta pagando.
-   * Solo puede hacerlo el pagador (el flowSubscriptionId tiene que estar en SU
-   * `giftedSubscriptions`). Corta los cobros en Flow (lo hace el controlador con
-   * el flowSubscriptionId que devolvemos) y marca la suscripcion del recipiente
-   * como cancelada — el amigo mantiene el acceso hasta su endDate ya pagado.
-   */
-  async cancelGift(payerUid: string, flowSubscriptionId: string) {
-    const payerRef = this.firebaseService.firestore.collection('users').doc(payerUid);
-    const payerDoc = await payerRef.get();
-    const gift = payerDoc.exists
-      ? payerDoc.data()?.giftedSubscriptions?.[flowSubscriptionId]
-      : null;
-
-    if (!gift || gift.status !== 'active') {
-      throw new BadRequestException('No encontramos un regalo activo con ese identificador en tu cuenta.');
-    }
-
-    const recipientUid: string = gift.recipientUid;
-    let recipientEndDate: Date | null = null;
-
-    // Marcar la suscripcion del recipiente para que no renueve (mantiene acceso
-    // hasta endDate, igual que un cancel normal).
-    try {
-      const recRef = this.firebaseService.firestore.collection('users').doc(recipientUid);
-      const recDoc = await recRef.get();
-      const sub = recDoc.exists ? recDoc.data()?.subscription : null;
-      const endVal = sub?.endDate;
-      if (endVal) {
-        recipientEndDate = typeof endVal.toDate === 'function' ? endVal.toDate() : new Date(endVal);
-      }
-      // Solo si esa suscripcion sigue siendo la del regalo (no si el amigo ya
-      // se pago su propio Pro por otra via encima).
-      if (sub?.flowSubscriptionId === flowSubscriptionId) {
-        await recRef.update({
-          'subscription.cancelAtPeriodEnd': true,
-          'subscription.status': 'cancelled',
-          updatedAt: new Date(),
-        });
-      }
-    } catch (e) {
-      this.logger.warn(`[SubscriptionsService] cancelGift: could not update recipient ${recipientUid}: ${e.message}`);
-    }
-
-    // Marcar el regalo como cancelado en el doc del pagador.
-    try {
-      await payerRef.set({
-        giftedSubscriptions: {
-          [flowSubscriptionId]: { ...gift, status: 'cancelled', cancelledAt: new Date() },
-        },
-      }, { merge: true });
-    } catch (e) {
-      this.logger.warn(`[SubscriptionsService] cancelGift: could not mark gift cancelled: ${e.message}`);
-    }
-
-    return {
-      success: true,
-      message: recipientEndDate
-        ? `Regalo cancelado. Ya no se cobrará a tu tarjeta. La persona mantiene el Plan Pro hasta el ${recipientEndDate.toLocaleDateString('es-CL')}.`
-        : 'Regalo cancelado. Ya no se cobrará a tu tarjeta.',
-      flowSubscriptionId,
-    };
   }
 
   private async getResetCredits(uid: string, userData: any) {

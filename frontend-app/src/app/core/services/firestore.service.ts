@@ -475,25 +475,32 @@ export class FirestoreService {
   }
 
   async getLatestCompletedIntento(uid: string): Promise<any | null> {
+    const col = collection(this.firestore, 'intentos');
+    const base = [where('odId', '==', uid), where('status', '==', 'completed')];
+
+    // Camino correcto: ordena en el servidor por finishedAt y trae 1.
+    // Necesita el índice `intentos (odId ASC, status ASC, finishedAt DESC)`
+    // (firestore.indexes.json). `finishedAt` siempre existe en los completados
+    // (lo pone finishIntento()), así que no se pierde ninguno.
     try {
-      const q = query(
-        collection(this.firestore, 'intentos'),
-        where('odId', '==', uid),
-        where('status', '==', 'completed'),
-        limit(10)
-      );
-      const snap = await getDocs(q);
-      if (snap.empty) return null;
-      // Return the one with highest finishedAt / startedAt timestamp
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      docs.sort((a: any, b: any) => {
-        const tA = (a.finishedAt?.toDate ? a.finishedAt.toDate() : new Date(a.finishedAt || 0)).getTime();
-        const tB = (b.finishedAt?.toDate ? b.finishedAt.toDate() : new Date(b.finishedAt || 0)).getTime();
-        return tB - tA;
-      });
-      return docs[0];
-    } catch (e) {
-      return null;
+      const snap = await getDocs(query(col, ...base, orderBy('finishedAt', 'desc'), limit(1)));
+      return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+    } catch {
+      // El índice puede tardar unos minutos en construirse tras `deploy:firestore`.
+      // Mientras tanto: traer un puñado y ordenar en memoria (comportamiento previo;
+      // no garantiza el más nuevo si hay >20 completados, pero es transitorio).
+      try {
+        const snap = await getDocs(query(col, ...base, limit(20)));
+        if (snap.empty) return null;
+        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        docs.sort((a: any, b: any) => {
+          const t = (x: any) => (x?.toDate ? x.toDate() : new Date(x || 0)).getTime();
+          return t(b.finishedAt) - t(a.finishedAt);
+        });
+        return docs[0];
+      } catch {
+        return null;
+      }
     }
   }
 

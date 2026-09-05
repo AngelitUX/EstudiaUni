@@ -3,19 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface FlowRegistrationResponse {
+export interface FlowPaymentStartResponse {
   token: string;
   url: string;
 }
 
-export interface FlowSubscriptionResult {
+export interface FlowPaymentResult {
   success: boolean;
   message: string;
   isGift?: boolean;
   planType?: 'monthly' | 'yearly';
-  subscriptionId?: string;
+  amount?: number;
   cardType?: string | null;
-  cardLast4?: string | null;
 }
 
 export interface CouponValidationResponse {
@@ -37,16 +36,6 @@ export interface ManualTransferData {
   targetEmail?: string;
   receiptUrl?: string;
   couponCode?: string;
-}
-
-export interface GiftedSubscription {
-  flowSubscriptionId: string;
-  recipientUid: string;
-  recipientEmail: string;
-  planType: 'monthly' | 'yearly';
-  status: 'active' | 'cancelled';
-  createdAt?: any;
-  cancelledAt?: any;
 }
 
 export interface TransactionRecord {
@@ -100,55 +89,35 @@ export class PaymentService {
   }
 
   /**
-   * Start card registration with Flow for a new subscription. Redirects the
-   * browser to the returned Flow URL; the user comes back to `returnUrl` with
-   * a `token` query param once the card is registered.
+   * Start a ONE-TIME Flow payment for a 1-month or 1-year "pase" of Plan
+   * Pro — no recurring charge is ever created. Redirects the browser to the
+   * returned Flow URL; the user comes back to `returnUrl` with a `token`
+   * query param once they finish (or cancel) paying.
    */
-  startFlowRegistration(
+  createFlowPayment(
     planType: 'monthly' | 'yearly',
     returnUrl: string,
     targetUid?: string,
     couponCode?: string,
     targetEmail?: string,
-  ): Observable<FlowRegistrationResponse> {
+  ): Observable<FlowPaymentStartResponse> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    const url = `${baseUrl}/api/subscriptions/flow/register-card`;
+    const url = `${baseUrl}/api/subscriptions/flow/create-payment`;
     const body: any = { planType, returnUrl };
     if (targetUid) body.targetUid = targetUid;
     if (targetEmail) body.targetEmail = targetEmail;
     if (couponCode) body.couponCode = couponCode;
-    return this.http.post<FlowRegistrationResponse>(url, body);
+    return this.http.post<FlowPaymentStartResponse>(url, body);
   }
 
   /**
-   * Confirm the card registration and subscribe the customer to the plan.
-   * Called from the return page once Flow redirects back with a token.
+   * Confirm the payment and grant the "pase". Called from the return page
+   * once Flow redirects back with a token.
    */
-  confirmFlowSubscription(token: string): Observable<FlowSubscriptionResult> {
+  confirmFlowPayment(token: string): Observable<FlowPaymentResult> {
     const baseUrl = environment.apiUrl || 'http://localhost:3000';
     const url = `${baseUrl}/api/subscriptions/flow/confirm`;
-    return this.http.post<FlowSubscriptionResult>(url, { token });
-  }
-
-  /**
-   * Cancels the current subscription. Unlike the old direct-Firestore write
-   * this replaced, this actually reaches Flow: the backend sets
-   * `cancelAtPeriodEnd` (so the next renewal webhook won't extend `endDate`)
-   * AND calls Flow's `/subscription/cancel` to stop the card from being
-   * charged again — see subscriptions.controller.ts `cancel()`. Access is
-   * kept until the already-paid `endDate`, same as before.
-   */
-  cancelSubscription(): Observable<{ success: boolean; message: string; endDate?: string | Date | null; flowSubscriptionId?: string | null }> {
-    const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    return this.http.post<{ success: boolean; message: string; endDate?: string | Date | null; flowSubscriptionId?: string | null }>(`${baseUrl}/api/subscriptions/cancel`, {});
-  }
-
-  /** Cancela un REGALO de Plan Pro por Flow que el usuario actual está pagando.
-   *  El backend verifica que el flowSubscriptionId esté en SUS giftedSubscriptions,
-   *  corta los cobros en Flow y marca la suscripción del amigo como cancelada. */
-  cancelGift(flowSubscriptionId: string): Observable<{ success: boolean; message: string }> {
-    const baseUrl = environment.apiUrl || 'http://localhost:3000';
-    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/api/subscriptions/gift/cancel`, { flowSubscriptionId });
+    return this.http.post<FlowPaymentResult>(url, { token });
   }
 
   /**
