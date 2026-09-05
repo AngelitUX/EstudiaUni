@@ -859,6 +859,44 @@ seguridad: App Check está en modo "Supervisión", así que hoy ningún token se
 > **Regla general que conviene no re-derivar:** ninguna verificación antibot de terceros puede estar
 > en el camino de un `await` sin tope. Si alguien agrega otro proveedor de App Check, envolverlo igual.
 
+**Segunda pasada del mismo día: el tope SOLO no alcanzaba.** Con el tope puesto, Firefox por fin
+llegaba al selector de cuenta de Google — pero "se tardaba un poco" en cada paso y, al volver, el
+dashboard aparecía **vacío y tardaba ~10 s en mostrar los datos** (lo que el usuario describió como
+"cuenta fantasma"; insisto, nunca fue otra cuenta: era la suya sin perfil cargado todavía). Motivo:
+un tope por llamada hace que **cada llamada pague sus propios 5 s y se encadenen**, y el login con
+Google hace varias seguidas — navegar, procesar la vuelta, `findUidByEmail`, `saveUserProfile`, y la
+carga del dashboard. 4-5 operaciones × 5 s ≈ los 20 s que se sentían.
+
+Se agregaron dos cosas a `tokenDeAppCheck()` (`app.config.ts`):
+1. **Un solo intento compartido con UN plazo común** (no uno por llamada). En cuanto ese plazo vence,
+   cualquier llamada nueva falla al instante. Costo máximo por carga de página: 5 s, no 5 s × N.
+2. **Memoria corta entre cargas** (`localStorage`, clave `appcheck_turnstile_lento_hasta`, ventana de
+   10 min). Si Turnstile ya falló hace poco en ese navegador, la carga siguiente no vuelve a esperar.
+   Es lo que hace que la vuelta desde Google sea instantánea. **Auto-reparable y en el sentido
+   seguro**: el intento real se lanza igual en segundo plano, así que apenas Turnstile funcione la
+   marca se borra sola. Todo el acceso a `localStorage` va en `try/catch` (modo privado).
+3. **Calentamiento** justo después de `initializeAppCheck`: el primer intento se dispara en el
+   arranque de la app, no cuando el usuario hace clic, así el plazo se consume en segundo plano.
+
+> **🔴 Detalle que costó un ciclo entero y es fácil de reintroducir:** la marca de `localStorage` hay
+> que consultarla **siempre**, no solo cuando no hay intento en vuelo. El primer borrador hacía
+> `intentoDeToken?.vencido || (!intentoDeToken && turnstileMarcadoLento())`, y eso devolvía el
+> problema completo: la primera llamada fallaba rápido pero dejaba un intento de fondo *recién
+> nacido* (aún sin vencer), así que la SIGUIENTE se colgaba de él y volvía a esperar los 5 s.
+
+**Verificado simulando la cadena real** (calentamiento → clic → vuelta de Google → leer perfil →
+guardar perfil) con un Turnstile que nunca resuelve:
+
+| Escenario | Antes | Ahora |
+|---|---|---|
+| 4 operaciones encadenadas, 1ª carga | 20.000 ms | **5.004 ms** (plazo compartido) |
+| Vuelta desde Google (2ª carga) | 20.000 ms | **0 ms** (marca de localStorage) |
+| Turnstile vuelve a funcionar | — | token real + marca borrada sola |
+
+Y verificado **en vivo sobre el sitio desplegado en un navegador sano**: `localStorage` queda en
+`null` (o sea Turnstile resolvió y NO se marca nada), widget inyectado, 0 errores de consola — el
+camino normal no se degrada.
+
 **Regresión propia, encontrada al revisar el diff (no la reportó nadie).** Al migrar de
 `signInWithPopup` a `signInWithRedirect` se agregó una suscripción persistente a `user$` en
 `login.component.ts` y `register.component.ts` para recoger al usuario cuando vuelve del redirect.
