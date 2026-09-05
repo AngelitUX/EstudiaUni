@@ -184,12 +184,15 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
               <label class="section-label-sm">Método de Pago:</label>
               <div class="method-tabs">
                 <button class="method-tab" [class.active]="paymentMethod() === 'flow'" (click)="setPaymentMethod('flow')">
-                  💳 Flow <span class="sub-tag">(Tarjetas, pago único)</span>
+                  💳 Flow <span class="sub-tag">(Tarjetas o transferencia — automático)</span>
                 </button>
                 <button class="method-tab" [class.active]="paymentMethod() === 'transfer'" (click)="setPaymentMethod('transfer')">
-                  🏛️ Transferencia <span class="sub-tag">(Manual)</span>
+                  🏛️ Transferencia <span class="sub-tag">(Manual — revisión humana)</span>
                 </button>
               </div>
+              <p class="method-clarify-note">
+                💡 Con <strong>Flow</strong> también puedes pagar por transferencia bancaria (Redcompra, Khipu, etc.) — se procesa al instante, igual que con tarjeta. La opción <strong>"Transferencia"</strong> de al lado es distinta: es directa a nuestra cuenta y la revisa un administrador a mano, por eso tarda más.
+              </p>
             </div>
 
             <!-- ── FLOW SUBSCRIPTION FLOW ── -->
@@ -234,6 +237,15 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                 </div>
               </div>
 
+              <div class="payment-warning-box">
+                <span class="twb-icon">ℹ️</span>
+                <ul>
+                  <li>Esto <strong>no es una suscripción</strong>: es un pago único por {{ billingCycle() === 'monthly' ? '1 mes' : '1 año' }}. No se te cobrará de nuevo automáticamente.</li>
+                  <li *ngIf="recipientMode() === 'self'">Cuando termine ese período, <strong>todas las funciones PRO se bloquean</strong> otra vez hasta que compres otro pase.</li>
+                  <li *ngIf="recipientMode() === 'gift'">Al terminar ese período, el Plan Pro de <strong>{{ giftEmail || 'la persona' }}</strong> se bloquea hasta que se compre otro pase. Este regalo es de una sola vez.</li>
+                </ul>
+              </div>
+
               <button class="btn-checkout big" style="margin-top: 1.5rem;" (click)="proceedCheckout()" [disabled]="loadingCheckout() || (recipientMode() === 'gift' && emailStatus() !== 'found')">
                 <span *ngIf="!loadingCheckout()">
                   {{ couponResult()?.valid
@@ -263,7 +275,7 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
                 </p>
               </div>
 
-              <div class="transfer-warning-box">
+              <div class="payment-warning-box">
                 <span class="twb-icon">⚠️</span>
                 <ul>
                   <li>La activación <strong>no es inmediata</strong> — un administrador revisa tu comprobante a mano, puede tardar algunas horas.</li>
@@ -421,6 +433,8 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .method-tab { padding:0.75rem 0.85rem; border:2px solid var(--glass-border); background:var(--bg-secondary); border-radius:14px; font-weight:700; font-size:0.9rem; color:var(--text-secondary); cursor:pointer; text-align:center; }
     .method-tab.active { border-color:var(--accent-primary); background:rgba(133,92,214,0.08); color:var(--accent-primary); }
     .sub-tag { font-size:0.75rem; font-weight:500; opacity:0.8; }
+    .method-clarify-note { font-size:0.82rem; line-height:1.5; color:var(--text-secondary); background:var(--bg-secondary); border-radius:10px; padding:0.65rem 0.9rem; margin:0 0 0.25rem; }
+    .method-clarify-note strong { color:var(--text-primary); }
 
     /* Bank Details Box */
     .bank-details-box { background:rgba(16,185,129,0.05); border:1.5px solid rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem; }
@@ -428,11 +442,12 @@ type CouponStatus = 'idle' | 'checking' | 'valid' | 'invalid';
     .bank-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; font-size:0.88rem; color:var(--text-primary); }
     .bank-amount-notice { margin:0.85rem 0 0; font-size:0.9rem; color:#065f46; border-top:1px dashed rgba(16,185,129,0.3); padding-top:0.6rem; }
 
-    /* Transfer warning — no subscription, manual review delay, re-lock at period end */
-    .transfer-warning-box { display:flex; gap:0.75rem; background:rgba(245,158,11,0.08); border:1.5px solid rgba(245,158,11,0.3); border-radius:16px; padding:1rem 1.25rem; margin-bottom:1.25rem; }
+    /* Payment warning — no subscription, re-lock at period end. Usado en Flow (sin el punto
+       de "no es inmediata", que no aplica) y en Transferencia manual (con ese punto extra). */
+    .payment-warning-box { display:flex; gap:0.75rem; background:rgba(245,158,11,0.08); border:1.5px solid rgba(245,158,11,0.3); border-radius:16px; padding:1rem 1.25rem; margin-bottom:1.25rem; }
     .twb-icon { flex-shrink:0; font-size:1.3rem; line-height:1.4; }
-    .transfer-warning-box ul { margin:0; padding-left:1.1rem; display:flex; flex-direction:column; gap:0.4rem; font-size:0.85rem; color:#92400e; line-height:1.4; }
-    .transfer-warning-box strong { color:#78350f; }
+    .payment-warning-box ul { margin:0; padding-left:1.1rem; display:flex; flex-direction:column; gap:0.4rem; font-size:0.85rem; color:#92400e; line-height:1.4; }
+    .payment-warning-box strong { color:#78350f; }
 
     /* Form inputs */
     .form-row-sm { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.85rem; }

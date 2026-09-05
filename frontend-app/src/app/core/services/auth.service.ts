@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendPasswordResetEmail } from '@angular/fire/auth';
+import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sendEmailVerification, sendPasswordResetEmail } from '@angular/fire/auth';
 import { User, UserCredential } from 'firebase/auth';
 import { Observable, from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -39,16 +39,43 @@ export class AuthService {
     );
   }
 
-  async loginWithGoogle() {
+  /**
+   * Inicia sesión con Google vía REDIRECCIÓN, no popup. `signInWithPopup` dependía de que
+   * un iframe de terceros (`<project>.firebaseapp.com/__/auth/iframe`) pudiera comunicarse
+   * de vuelta con la ventana que lo abrió usando storage compartido entre ventanas — con
+   * "Total Cookie Protection" de Firefox (partición dinámica de storage de terceros, activa
+   * por defecto) esa comunicación se corta y la ventana de Google nunca llega a abrirse: el
+   * botón se queda cargando para siempre, sin ningún error (confirmado en producción el
+   * 2026-09-04 — un usuario real en Firefox + uBlock Origin). `signInWithRedirect` navega la
+   * MISMA pestaña a Google en vez de depender de esa comunicación entre ventanas, así que no
+   * le afecta el bloqueo de cookies/storage de terceros.
+   *
+   * Esta llamada NO devuelve el resultado del login — la página navega fuera de aquí. El
+   * resultado se recoge después, cuando Google redirige de vuelta y la app se recarga, con
+   * `handleGoogleRedirectResult()` (ver `AppComponent.ngOnInit`).
+   */
+  async startGoogleLogin(): Promise<void> {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
       prompt: 'select_account'
     });
-    
-    const result = await signInWithPopup(this.auth, provider);
+    await signInWithRedirect(this.auth, provider);
+  }
+
+  /**
+   * Se llama UNA VEZ al arrancar la app (`AppComponent.ngOnInit`, solo en el navegador) para
+   * recoger el resultado de un `startGoogleLogin()` anterior, si la app se acaba de recargar
+   * por volver de ese redirect. En un arranque normal (sin redirect pendiente) resuelve a
+   * `null` de inmediato, sin ninguna llamada de red — es el patrón que la propia
+   * documentación de Firebase pide para `signInWithRedirect`.
+   */
+  async handleGoogleRedirectResult(): Promise<UserCredential | null> {
+    const result = await getRedirectResult(this.auth);
+    if (!result) return null;
+
     const googleUser = result.user;
     const googleEmail = googleUser.email?.toLowerCase().trim();
-    
+
     if (googleEmail) {
       // Buscar si existe un perfil con este mismo correo pero diferente UID
       const existingUid = await this.firestoreService.findUidByEmail(googleEmail);
@@ -56,14 +83,14 @@ export class AuthService {
         await this.firestoreService.migrateUserData(existingUid, googleUser.uid);
       }
     }
-    
+
     // Guardar/actualizar perfil en Firestore
     await this.firestoreService.saveUserProfile({
       displayName: googleUser.displayName || '',
       email: googleEmail || '',
       emailVerified: true
     });
-    
+
     return result;
   }
 

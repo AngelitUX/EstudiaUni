@@ -7,6 +7,9 @@ import { PaymentService } from './core/services/payment.service';
 import { PricingModalComponent } from './features/payment/pricing-modal.component';
 import { KeyboardNavigationService } from './core/services/keyboard-navigation.service';
 import { SeoService } from './core/services/seo.service';
+import { AuthService } from './core/services/auth.service';
+import { ToastService } from './core/services/toast.service';
+import { mensajeErrorGoogle } from './core/utils/auth-error';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +25,8 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private keyboardNavService = inject(KeyboardNavigationService);
   private seoService = inject(SeoService);
+  private authService = inject(AuthService);
+  private toast = inject(ToastService);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   @HostListener('document:click', ['$event'])
@@ -51,6 +56,28 @@ export class AppComponent implements OnInit {
     if (!this.isBrowser) return;
 
     this.keyboardNavService.init();
+
+    // Recoge el resultado de un AuthService.startGoogleLogin() anterior, si la app se acaba
+    // de recargar por volver de ese redirect a Google (ver el comentario largo en
+    // AuthService.startGoogleLogin sobre por qué el login con Google usa redirect y no popup).
+    // En un arranque normal (sin redirect pendiente) resuelve a `null` de inmediato, sin
+    // ninguna llamada de red — no hace nada en el 99% de las cargas de la app.
+    this.authService.handleGoogleRedirectResult()
+      .then((result) => {
+        if (result) {
+          // Esto puede resolver bastante después de que la página cargó (confirmado en
+          // Firefox: el redirect a veces tarda varios segundos en completarse "solo" en
+          // segundo plano) — para entonces el usuario puede llevar un rato navegando por
+          // otro lado (ej. el home). Sin este aviso, `router.navigate` lo saca de donde
+          // esté sin ninguna explicación, lo cual se reportó como confuso ("de la nada").
+          this.toast.success('¡Sesión iniciada con Google! 🎉');
+          this.router.navigate(['/dashboard']);
+        }
+      })
+      .catch((e: any) => {
+        const mensaje = mensajeErrorGoogle(e);
+        if (mensaje) this.toast.error(mensaje);
+      });
 
     // Scroll to top on navigation change.
     //

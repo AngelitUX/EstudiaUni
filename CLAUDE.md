@@ -414,6 +414,14 @@ alternativa gratuita a reCAPTCHA Enterprise. Detalle completo en la Bitácora 20
   recuperar-contraseña, que van directo del navegador a Firebase Auth y nunca tocan este
   backend; a esas 3 páginas las protege la aplicación de App Check a nivel de Firebase, sin
   necesidad de ningún guard propio.
+- **🔴 El proveedor va SIEMPRE envuelto en un tope de tiempo (`conTopeDeTiempo`, `app.config.ts`), y
+  eso no es opcional.** `CloudflareProviderOptions.getToken()` hace `await readyTurnstile`, un promise
+  **sin rama de rechazo ni tiempo límite**: si el desafío de Turnstile no se completa queda pendiente
+  para siempre en vez de fallar. Y tanto `@firebase/auth` (dentro de `_getRedirectUrl()`, o sea antes
+  de navegar a Google) como `@firebase/firestore` esperan ese token antes de seguir — los dos manejan
+  bien un **error** del proveedor, ninguno maneja un **cuelgue**. Sin el tope, el login con Google
+  simplemente no navega. Diagnóstico completo en la Bitácora 2026-09-05. Si algún día se cambia de
+  proveedor de App Check, envolverlo igual.
 - **Interruptor del cliente:** `provideAppCheck(...)` solo se registra si `environment.appCheckEnabled`
   es `true`. **Hoy en `true` en prod, `false` en dev** (historial completo abajo).
 - **Cronología del 2026-09-04** (útil si vuelve a fallar):
@@ -785,6 +793,100 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-09-05 — 🔴 El login con Google se colgaba porque un widget de bots (Turnstile) puede quedarse pendiente PARA SIEMPRE y el SDK de Firebase lo espera antes de navegar. Dos causas encadenadas, las dos corregidas; + una regresión propia en el registro cazada al revisar
+`tsc --noEmit -p tsconfig.app.json` ✅ · `ng build --configuration production` ✅ (6 rutas
+prerenderizadas) · **desplegado y verificado en el bundle servido** (`main-WNLCE3UH.js` en vivo
+contiene el tope) · `/login` carga sin errores de consola. **La prueba final del viaje completo a
+Google la tiene que hacer un humano**: el panel de navegador de estas sesiones no alcanza
+`identitytoolkit.googleapis.com`, así que ahí cualquier login falla con
+`auth/network-request-failed` sin emitir una sola petición — **eso NO es un fallo del sitio, es del
+entorno de pruebas; no perseguirlo.**
+
+**Causa #1 (corregida el 2026-09-05, más temprano): `authDomain` de otro origen.** Ver el comentario
+largo en `environment.ts`. Resumen: la app corre en `estudiauni.cl` pero el handler/iframe de auth
+vivían en `estudiauni.firebaseapp.com`, así que la credencial quedaba en el storage de un tercero que
+Firefox (Total Cookie Protection) particiona y Chrome está eliminando. Arreglado usando el host actual
+como `authDomain` (lista explícita `SAME_ORIGIN_AUTH_HOSTS`). **Requiere que cada host tenga su URI de
+redirección `https://<host>/__/auth/handler` en el cliente OAuth web de Google Cloud Console** — ya
+agregadas por el usuario. Verificado: `/__/auth/iframe` en el dominio propio devuelve el relay real de
+Firebase (no el cascarón del SPA — ojo, un 200 no basta, hay que mirar el contenido, porque el rewrite
+comodín de `firebase.json` también responde 200). Con esto **Chrome quedó funcionando**.
+
+**Causa #2 — la que dejaba Firefox roto igual, y la más importante de entender.**
+`CloudflareProviderOptions` (paquete `@cloudflare/turnstile-firebase-app-check`) construye así su
+promesa de "Turnstile ya está listo":
+
+```ts
+let promiseResolve;
+const readyTurnstile = new Promise(resolve => { promiseResolve = resolve; });
+// ...
+await readyTurnstile;   // dentro de getToken()
+```
+
+**Solo tiene rama de resolución.** `promiseResolve` se llama únicamente dentro del callback de ÉXITO
+de `turnstile.render(...)`. No hay `reject` ni tiempo límite en ninguna parte del paquete. Si el
+desafío de Turnstile no se completa —Firefox frenando el iframe, una extensión bloqueando
+`challenges.cloudflare.com`, o simple lentitud— ese promise queda **pendiente para siempre. No falla:
+se cuelga.**
+
+Eso sería inofensivo si App Check estuviera fuera del camino crítico, pero **no lo está**:
+- `@firebase/auth` (`index-*.js` ~línea **10095**) hace `await auth._getAppCheckToken()` dentro de
+  `_getRedirectUrl()`, o sea **antes de `_setWindowLocation(url)`** → `signInWithRedirect` nunca navega.
+- `@firebase/firestore` (`__PRIVATE_FirebaseAppCheckTokenProvider`, ~línea 591) hace lo mismo antes de
+  su primera petición → la primera carga de datos también se queda esperando.
+
+Los dos manejan bien un **error** del proveedor (Auth devuelve un token ficticio vía
+`makeDummyTokenResult`, línea ~792 de `@firebase/app-check`, y su `getToken()` "nunca lanza";
+Firestore registra "using placeholder token instead") — pero **ninguno maneja un cuelgue**, porque un
+promise pendiente no es un error.
+
+Eso explica los 3 síntomas reportados a la vez, que parecían no tener relación:
+1. El botón "Continuar con Google" se queda cargando y la pestaña nunca navega.
+2. Salta nuestro aviso de 10 s ("está tardando más de lo normal").
+3. **La "cuenta fantasma"**: si Turnstile resuelve un minuto después, el redirect se dispara solo y
+   mete al usuario al dashboard "de la nada" mientras navegaba por otro lado. Nunca hubo una segunda
+   cuenta — era su propia sesión completándose tarde.
+4. Y explica la asimetría que despistaba: **el login por correo/contraseña sí funcionaba** en Firefox,
+   porque para cuando el usuario termina de escribir correo + contraseña, Turnstile ya alcanzó a
+   resolver. Con Google el clic es inmediato tras cargar la página, y ahí todavía está pendiente.
+
+**Arreglo (`app.config.ts`):** el proveedor ya no se pasa tal cual a `CustomProvider`; va envuelto en
+`conTopeDeTiempo(cpo.getToken(), 5000)`. Si Turnstile no responde en 5 s, **rechaza** — que es
+justamente el camino que Firebase sí sabe manejar (token ficticio + aviso, y sigue). No baja la
+seguridad: App Check está en modo "Supervisión", así que hoy ningún token se valida igual.
+
+> **Regla general que conviene no re-derivar:** ninguna verificación antibot de terceros puede estar
+> en el camino de un `await` sin tope. Si alguien agrega otro proveedor de App Check, envolverlo igual.
+
+**Regresión propia, encontrada al revisar el diff (no la reportó nadie).** Al migrar de
+`signInWithPopup` a `signInWithRedirect` se agregó una suscripción persistente a `user$` en
+`login.component.ts` y `register.component.ts` para recoger al usuario cuando vuelve del redirect.
+Pero `register.component.ts` **no tenía `ngOnInit` antes**, y `onSubmit()` hace
+`createUserWithEmailAndPassword` → `authState` emite la cuenta recién creada **de inmediato**, mucho
+antes de enviar el correo de verificación, mostrar la pantalla "revisa tu bandeja" y hacer el
+`signOut()` final. La suscripción sacaba al usuario a `/dashboard`, `emailVerifiedGuard` lo mandaba a
+`/verify-email`, el `signOut()` lo dejaba sin sesión y terminaba en `/login` **sin haber visto nunca
+la pantalla de verificación**. Corregido exigiendo `user?.emailVerified` en la condición de ambos
+componentes (una cuenta de Google siempre llega verificada, así que el caso que la suscripción sí debe
+cubrir no se toca). En `login.component.ts` además elimina una carrera real: esa suscripción tiraba a
+`/dashboard` mientras `onSubmit()` tiraba a `/verify-email` para el mismo usuario sin verificar.
+
+**Ruido de consola diagnosticado — nada de esto es un bug nuestro, no perseguirlo:**
+- **Chrome, "CSP blocks the use of `eval`", recurso `normal?lang=auto`.** El proyecto **no define
+  ninguna CSP** (verificado en `firebase.json` e `index.html`). Ese recurso es el iframe interno de
+  Cloudflare Turnstile — URL completa capturada en vivo:
+  `https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/av0/rch/.../normal?lang=auto`.
+  Es la CSP **de Cloudflare** bloqueando el `eval` **del propio código de Cloudflare**, dentro de su
+  frame. Cosmético.
+- **Firefox, "Cambria Math / invalid URI"** — ya documentado el 2026-09-04: ruido del motor MathML de
+  Firefox sobre el `<math>` oculto que KaTeX genera para lectores de pantalla. Las fórmulas visibles
+  usan `KaTeX_*` y se ven bien.
+- **Firefox, beacon de Cloudflare Web Analytics (CORS + hash SRI)** — ya documentado en §7.6. El
+  "Código de estado: (null)" indica que la petición ni se completó: **es uBlock Origin bloqueándola**,
+  además del hash viejo que Cloudflare inyecta en el borde. Inofensivo.
+- **Firefox, "preload no usado en unos pocos segundos"** (outfit/inter woff2) y **"WebGL context was
+  lost"** — avisos, no errores.
 
 ### 2026-09-04 (parte 3) — Flow deja de ser suscripción recurrente y pasa a ser pago único ("pase" de 1 mes/año): backend reescrito contra `/payment/create`+`/payment/getStatus`, "Cancelar Suscripción" eliminado (ya no aplica), aviso de vencimiento a 5 días, y Términos de Servicio corregidos
 Backend `tsc --noEmit` ✅ · frontend `tsc --noEmit -p tsconfig.app.json` ✅ · `ng build --configuration production` ✅ (6 rutas prerenderizadas, sin errores de plantilla) · **contrato de la API de Flow verificado contra la documentación oficial real** (`https://www.flow.cl/docs/apiFlow.yaml`, no contra memoria/suposición): parámetros de `/payment/create`, forma de la respuesta, y los 4 valores del enum `status` de `/payment/getStatus` (1 pendiente, 2 pagada, 3 rechazada, 4 anulada) confirmados byte a byte contra el YAML real. **No probado contra Flow real** (ni sandbox ni producción) — comprar un pase de prueba es el primer paso pendiente, ver bloqueante #2 de la sección 11.

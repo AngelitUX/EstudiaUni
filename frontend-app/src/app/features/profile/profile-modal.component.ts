@@ -106,7 +106,8 @@ import { CareerService, Career } from '../../core/services/career.service';
                     vencer, compra un nuevo pase para sumarle más días.
                   </p>
                   <button *ngIf="isProPlan()" class="btn-renew-membership" (click)="openRenewMembership()">
-                    🔁 Comprar otro pase
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.3M3 12a9 9 0 0 1 15.5-6.3"></path><polyline points="21 3 21 9 15 9"></polyline><polyline points="3 21 3 15 9 15"></polyline></svg>
+                    Comprar otro pase
                   </button>
                 </div>
               </div>
@@ -359,8 +360,10 @@ import { CareerService, Career } from '../../core/services/career.service';
 
     /* MEMBERSHIP (pase de 1 mes/año — sin renovación automática, nada que cancelar) */
     .membership-hint { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; max-width: 420px; }
-    .btn-renew-membership { margin-top: 0.6rem; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid rgba(133,92,214,0.35); background: rgba(133,92,214,0.08); color: var(--accent-primary); font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-renew-membership:hover { background: rgba(133,92,214,0.16); border-color: rgba(133,92,214,0.6); transform: translateY(-1px); }
+    .btn-renew-membership { margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #855cd6 0%, #6d28d9 100%); color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(133,92,214,0.35); transition: transform 0.2s, box-shadow 0.2s, filter 0.2s; }
+    .btn-renew-membership svg { flex-shrink: 0; }
+    .btn-renew-membership:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(133,92,214,0.45); filter: brightness(1.06); }
+    .btn-renew-membership:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(133,92,214,0.35); }
 
     .logout-profile-btn .icon{font-size:1.1rem}
     .profile-main{display:flex;flex-direction:column;gap:1.2rem}

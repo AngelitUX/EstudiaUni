@@ -30,6 +30,49 @@ const isBrowserRuntime = typeof window !== 'undefined';
 // llegue a evaluar esta línea.
 const isLocalDevHost = isBrowserRuntime && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
 
+// ── Tope de tiempo para el proveedor de App Check (Turnstile) ────────────────────────────
+// 🔴 Esto NO es una optimización: sin este tope, el inicio de sesión con Google se cuelga.
+//
+// `CloudflareProviderOptions.getToken()` (paquete @cloudflare/turnstile-firebase-app-check)
+// hace `await readyTurnstile`, y ese promise se crea así:
+//
+//     const readyTurnstile = new Promise(resolve => { promiseResolve = resolve; });
+//
+// o sea, SOLO tiene rama de resolución — se resuelve únicamente dentro del callback de éxito
+// de `turnstile.render(...)`. No hay `reject` ni tiempo límite en ninguna parte. Si el desafío
+// de Turnstile no llega a completarse (Firefox frenando el iframe por su protección estricta
+// de terceros, una extensión bloqueando challenges.cloudflare.com, o simplemente lentitud),
+// ese promise queda PENDIENTE PARA SIEMPRE. No falla: se cuelga.
+//
+// Eso sería inofensivo si App Check estuviera fuera del camino crítico, pero no lo está: el
+// SDK de Firebase Auth hace `await auth._getAppCheckToken()` DENTRO de `_getRedirectUrl()`,
+// es decir ANTES de navegar a Google (@firebase/auth, index-*.js ~línea 10095). Diagnosticado
+// en producción el 2026-09-05 sobre un usuario real en Firefox: el botón "Continuar con
+// Google" se quedaba cargando y la pestaña NUNCA navegaba; y cuando Turnstile terminaba
+// resolviendo mucho después, el redirect se disparaba solo y lo metía al dashboard "de la
+// nada" mientras navegaba por otro lado. El login por correo/contraseña no se veía afectado
+// porque para cuando el usuario termina de escribir, Turnstile ya alcanzó a resolver.
+//
+// Con el tope, si Turnstile no responde en 5 s el proveedor RECHAZA. App Check está diseñado
+// exactamente para eso: captura el error, registra un aviso y devuelve un token ficticio
+// (`makeDummyTokenResult`) — su `getToken()` nunca propaga la excepción. El login sigue de
+// inmediato. No baja la seguridad: App Check está en modo "Supervisión" (ver environment.ts),
+// así que hoy ningún token se valida de todos modos.
+const APP_CHECK_TIMEOUT_MS = 5000;
+
+function conTopeDeTiempo<T>(promesa: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const temporizador = setTimeout(
+      () => reject(new Error(`Turnstile no respondio en ${ms} ms; se continua sin token de App Check.`)),
+      ms
+    );
+    promesa.then(
+      (valor) => { clearTimeout(temporizador); resolve(valor); },
+      (error) => { clearTimeout(temporizador); reject(error); }
+    );
+  });
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -65,7 +108,12 @@ export const appConfig: ApplicationConfig = {
           environment.turnstileSiteKey
         );
         return initializeAppCheck(getApp(), {
-          provider: new CustomProvider(cpo),
+          // El proveedor NO se pasa tal cual: va envuelto en un tope de tiempo, porque tal
+          // como viene se puede colgar para siempre y bloquear el login. Ver el comentario
+          // largo de conTopeDeTiempo() arriba.
+          provider: new CustomProvider({
+            getToken: () => conTopeDeTiempo(cpo.getToken(), APP_CHECK_TIMEOUT_MS)
+          }),
           isTokenAutoRefreshEnabled: true
         });
       })
