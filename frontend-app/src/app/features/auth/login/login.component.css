@@ -39,6 +39,10 @@
   }
 }
 
+@keyframes spinGoogle {
+  to { transform: rotate(360deg); }
+}
+
 /* ===== PREMIUM BACKGROUND PATTERN & ANIMATIONS ===== */
 .hero-tech-background {
   position: absolute;

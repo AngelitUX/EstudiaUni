@@ -120,7 +120,7 @@ import { ReportBugModalComponent } from './report-bug-modal.component';
               </div>
             </div>
             <div class="keyboard-info-banner">
-              <span>💡 <strong>Nota:</strong> Los atajos clásicos (<kbd>1</kbd> al <kbd>5</kbd> para responder, y <kbd>↵ Enter</kbd>, <kbd>␣ Espacio</kbd>, <kbd>←</kbd> / <kbd>→</kbd> para navegar) se mantendrán siempre activos como alternativa en segundo plano, incluso si cambias tus atajos.</span>
+              <span>💡 <strong>Nota:</strong> Los atajos clásicos (<kbd>1</kbd> al <kbd>5</kbd> para responder, y <kbd>␣ Espacio</kbd>, <kbd>←</kbd> / <kbd>→</kbd> para navegar) se mantendrán siempre activos como alternativa en segundo plano, incluso si cambias tus atajos.</span>
             </div>
             <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
               <button type="button" class="btn-reset-keys" (click)="resetDefaultKeys()">
@@ -327,7 +327,7 @@ export class SettingsModalComponent implements OnInit {
     keyAnsC: 'c',
     keyAnsD: 'v',
     keyAnsE: 'b',
-    keyNext: 'enter',
+    keyNext: 'arrowright',
     keyPrev: 'arrowleft',
     keyExit: 'escape'
   };
@@ -366,7 +366,9 @@ export class SettingsModalComponent implements OnInit {
           this.settingsForm.keyAnsC = p.keyAnsC || 'c';
           this.settingsForm.keyAnsD = p.keyAnsD || 'v';
           this.settingsForm.keyAnsE = p.keyAnsE || 'b';
-          this.settingsForm.keyNext = p.keyNext || 'enter';
+          // 'enter' ya no se admite como atajo de "siguiente" (se pisaba con el
+          // chat de Foco y con pulsaciones accidentales). Se migra a la flecha.
+          this.settingsForm.keyNext = (p.keyNext && p.keyNext !== 'enter') ? p.keyNext : 'arrowright';
           this.settingsForm.keyPrev = p.keyPrev || 'arrowleft';
           this.settingsForm.keyExit = p.keyExit || 'escape';
           
@@ -391,6 +393,12 @@ export class SettingsModalComponent implements OnInit {
     event.preventDefault();
     const key = event.key.toLowerCase();
     if (key === 'escape' && field !== 'keyExit') return; // permitimos escape para cancelar, a menos que configuremos escape mismo
+    // 'enter' no puede asignarse a "siguiente": choca con el chat de Foco en el
+    // Ensayo PAES asistido y con pulsaciones accidentales al responder.
+    if (key === 'enter' && field === 'keyNext') {
+      this.toast.info('La tecla Enter no puede usarse para avanzar de pregunta.');
+      return;
+    }
     this.settingsForm[field] = key;
   }
 
@@ -412,7 +420,7 @@ export class SettingsModalComponent implements OnInit {
     this.settingsForm.keyAnsC = 'c';
     this.settingsForm.keyAnsD = 'v';
     this.settingsForm.keyAnsE = 'b';
-    this.settingsForm.keyNext = 'enter';
+    this.settingsForm.keyNext = 'arrowright';
     this.settingsForm.keyPrev = 'arrowleft';
     this.settingsForm.keyExit = 'escape';
     this.toast.info('Atajos restablecidos. Recuerda guardar los cambios 🔄');

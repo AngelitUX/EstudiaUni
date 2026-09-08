@@ -57,7 +57,7 @@ import { AdminService } from './services/admin.service';
           <span class="admin-nav-text">Usuarios</span>
         </a>
         <a routerLink="/admin/recursos" routerLinkActive="active" class="admin-nav-item">
-          <img src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="admin-nav-icon-img"/>
+          <img decoding="async" src="assets/images/iconosParaElementos/P_RecursosAdicionales.png" alt="Recursos Adicionales" class="admin-nav-icon-img"/>
           <span class="admin-nav-text">Recursos</span>
         </a>
         <a routerLink="/admin/bugs" routerLinkActive="active" class="admin-nav-item">
@@ -78,7 +78,7 @@ import { AdminService } from './services/admin.service';
 
       <div class="admin-sidebar-footer" style="padding: 1.25rem 0.75rem; margin-top: auto;">
         <a class="admin-nav-item admin-logout-btn" routerLink="/dashboard">
-          <img src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="admin-nav-icon-img"/>
+          <img decoding="async" src="assets/images/iconosParaElementos/P_Inicio.png" alt="Inicio" class="admin-nav-icon-img"/>
           <span class="admin-nav-text">Dashboard</span>
         </a>
       </div>

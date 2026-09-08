@@ -313,21 +313,21 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         <div class="hero-strip-inner">
           <div class="hero-benefits-bar">
             <div class="benefit-chip">
-              <div class="chip-icon"><img decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Adaptativo"></div>
+              <div class="chip-icon"><img decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_MiniEnsayos.avif" alt="Adaptativo"></div>
               <div class="chip-info">
                 <strong>Adaptativo</strong>
                 <span>La IA crea tu plan de estudio</span>
               </div>
             </div>
             <div class="benefit-chip">
-              <div class="chip-icon"><img decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="En tiempo real"></div>
+              <div class="chip-icon"><img decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_MenteVeloz.avif" alt="En tiempo real"></div>
               <div class="chip-info">
                 <strong>En tiempo real</strong>
                 <span>Explicaciones al instante mientras ensayas</span>
               </div>
             </div>
             <div class="benefit-chip">
-              <div class="chip-icon"><img decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Logro.avif" alt="100% enfocado"></div>
+              <div class="chip-icon"><img decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_Logro.avif" alt="100% enfocado"></div>
               <div class="chip-info">
                 <strong>100% enfocado</strong>
                 <span>Solo contenido oficial PAES</span>
@@ -402,7 +402,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
           <div class="bento-grid">
             <!-- Large Card 1 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_RutaDeAprendizaje.avif" alt="Rutas de Aprendizaje"></div>
               <h3>Rutas de Aprendizaje</h3>
               <p>Sigue un plan de estudio estructurado y personalizado. Avanza paso a paso dominando cada tema hasta alcanzar tu puntaje ideal.</p>
               <div class="bento-visual">
@@ -427,7 +427,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
 
             <!-- Large Card 2 -->
             <div class="bento-card bento-large glass-card">
-              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Lenguaje.avif" alt="Ensayos PAES"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_Lenguaje.avif" alt="Ensayos PAES"></div>
               <h3>Ensayos PAES (Reales y Asistidos)</h3>
               <p>Mídete con ensayos oficiales del DEMRE. Practica en modo real con tiempo límite o en modo asistido con apoyo y feedback al instante.</p>
               <div class="bento-visual">
@@ -452,28 +452,28 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             
             <!-- Small Card 1 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_MiniEnsayos.avif" alt="Práctica Adaptativa"></div>
               <h3>Práctica Adaptativa</h3>
               <p>Nuestro algoritmo inteligente analiza tus respuestas y genera nuevas preguntas enfocadas exactamente en las áreas que necesitas reforzar.</p>
             </div>
 
             <!-- Small Card 2 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_m2.avif" alt="Visualiza tu Progreso"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_m2.avif" alt="Visualiza tu Progreso"></div>
               <h3>Visualiza tu Progreso</h3>
               <p>Mide tu avance diario e identifica áreas de mejora al instante.</p>
             </div>
             
             <!-- Small Card 3 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_EnncuentraTuCarrera.avif" alt="Explora tu Futuro"></div>
               <h3>Explora tu Futuro</h3>
               <p>Descubre universidades y carreras según tu ubicación e intereses.</p>
             </div>
 
             <!-- Small Card 4 -->
             <div class="bento-card glass-card">
-              <div class="bento-icon"><img loading="lazy" decoding="async" width="320" height="320" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
+              <div class="bento-icon"><img loading="lazy" decoding="async" width="168" height="168" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/w168/P_CerrarSesion.avif" alt="Acceso Inmediato"></div>
               <h3>Acceso Inmediato</h3>
               <p>Comienza gratis hoy. Sin ingresar tarjeta de crédito.</p>
             </div>
@@ -793,8 +793,32 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   width="800"
                   height="450"
                   class="real-video-player"
+                  (click)="toggleDemoVideo()"
+                  (play)="demoPlaying = true"
+                  (pause)="demoPlaying = false"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
+                <!-- Boton de play central. Los 3 videos ya NO arrancan solos al entrar la seccion
+                     en pantalla: ver el comentario de .video-play-overlay en los estilos. -->
+                <button type="button" class="video-play-overlay" [class.is-playing]="demoPlaying"
+                        (click)="toggleDemoVideo()"
+                        [attr.aria-label]="demoPlaying ? 'Pausar el video' : 'Reproducir el video'">
+                  <span class="vpo-btn" aria-hidden="true">
+                    <span class="vpo-ring"></span>
+                    <svg class="vpo-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <!-- El triangulo NO esta centrado en su propio viewBox: su caja va de x=8 a
+                           x~20.9, o sea centrada en 14.45 y no en 12. Se corrige aqui, en unidades
+                           del viewBox, en vez de con un margin en px (que dependia del tamaño del
+                           icono y descuadraba el circulo en escritorio). El -1.2 deja un empujon
+                           optico de ~1,25 unidades a la derecha, que es lo que un triangulo
+                           necesita para VERSE centrado dentro de un circulo. -->
+                      <g transform="translate(-1.2 0)">
+                        <path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11.14-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14Z"/>
+                      </g>
+                    </svg>
+                  </span>
+                  <span class="vpo-label">Ver demostraci&oacute;n</span>
+                </button>
               </div>
             </div>
             
@@ -811,8 +835,32 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   width="800"
                   height="450"
                   class="real-video-player"
+                  (click)="toggleDemoVideo()"
+                  (play)="demoPlaying = true"
+                  (pause)="demoPlaying = false"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
+                <!-- Boton de play central. Los 3 videos ya NO arrancan solos al entrar la seccion
+                     en pantalla: ver el comentario de .video-play-overlay en los estilos. -->
+                <button type="button" class="video-play-overlay" [class.is-playing]="demoPlaying"
+                        (click)="toggleDemoVideo()"
+                        [attr.aria-label]="demoPlaying ? 'Pausar el video' : 'Reproducir el video'">
+                  <span class="vpo-btn" aria-hidden="true">
+                    <span class="vpo-ring"></span>
+                    <svg class="vpo-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <!-- El triangulo NO esta centrado en su propio viewBox: su caja va de x=8 a
+                           x~20.9, o sea centrada en 14.45 y no en 12. Se corrige aqui, en unidades
+                           del viewBox, en vez de con un margin en px (que dependia del tamaño del
+                           icono y descuadraba el circulo en escritorio). El -1.2 deja un empujon
+                           optico de ~1,25 unidades a la derecha, que es lo que un triangulo
+                           necesita para VERSE centrado dentro de un circulo. -->
+                      <g transform="translate(-1.2 0)">
+                        <path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11.14-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14Z"/>
+                      </g>
+                    </svg>
+                  </span>
+                  <span class="vpo-label">Ver demostraci&oacute;n</span>
+                </button>
               </div>
             </div>
             
@@ -829,8 +877,32 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
                   width="800"
                   height="450"
                   class="real-video-player"
+                  (click)="toggleDemoVideo()"
+                  (play)="demoPlaying = true"
+                  (pause)="demoPlaying = false"
                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);"
                 ></video>
+                <!-- Boton de play central. Los 3 videos ya NO arrancan solos al entrar la seccion
+                     en pantalla: ver el comentario de .video-play-overlay en los estilos. -->
+                <button type="button" class="video-play-overlay" [class.is-playing]="demoPlaying"
+                        (click)="toggleDemoVideo()"
+                        [attr.aria-label]="demoPlaying ? 'Pausar el video' : 'Reproducir el video'">
+                  <span class="vpo-btn" aria-hidden="true">
+                    <span class="vpo-ring"></span>
+                    <svg class="vpo-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <!-- El triangulo NO esta centrado en su propio viewBox: su caja va de x=8 a
+                           x~20.9, o sea centrada en 14.45 y no en 12. Se corrige aqui, en unidades
+                           del viewBox, en vez de con un margin en px (que dependia del tamaño del
+                           icono y descuadraba el circulo en escritorio). El -1.2 deja un empujon
+                           optico de ~1,25 unidades a la derecha, que es lo que un triangulo
+                           necesita para VERSE centrado dentro de un circulo. -->
+                      <g transform="translate(-1.2 0)">
+                        <path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11.14-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14Z"/>
+                      </g>
+                    </svg>
+                  </span>
+                  <span class="vpo-label">Ver demostraci&oacute;n</span>
+                </button>
               </div>
             </div>
           </div>
@@ -3900,7 +3972,12 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       position: relative;
       overflow: hidden;
       background: linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(133, 92, 214, 0.04) 30%, rgba(255,255,255,0.42) 70%, rgba(255,255,255,0.55) 100%);
-      transition: background 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      /* RENDIMIENTO (2026-09-07): tenia 'transition: background 1.2s'. Al pulsar Mensual/Anual
+         se interpolaba un degradado a lo largo de TODA la seccion (~1000 px de alto) durante
+         1,2 s = repintado de pantalla completa por frame, y encima al mismo tiempo que las otras
+         ~8 transiciones de 1,2-1,5 s que dispara ese mismo toggle (nebulosas, orbitas, nodos,
+         borde de la tarjeta premium, insignia). El tinte es de 4-7% de alfa: cambiarlo de golpe
+         no se nota, y el resto de las transiciones sigue dando la sensacion de cambio suave. */
     }
     
     /* Estado Dorado de Ahorro Anual Activo */
@@ -3924,23 +4001,29 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
     }
     .pricing-nebula {
-      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
       transform-origin: center;
       opacity: 0.45;
     }
     .basic-nebula { transform-origin: 360px 300px; }
     .premium-nebula { transform-origin: 1080px 300px; }
     
+    /* RENDIMIENTO (2026-09-07): estas nebulosas escalaban (transform) durante 1,5 s al pasar el
+       mouse por una tarjeta y al alternar mensual/anual. Un <circle> de SVG NO obtiene capa
+       propia: cualquier transform sobre el es un REPINTADO, y aca ademas vive dentro de
+       .pricing-flow-bg, que lleva 'mask-image' -> al repintar hay que volver a aplicar la
+       mascara sobre una capa del tamaño de la seccion, en cada frame. Con radios de r=300..380
+       eso es regenerar un degradado radial gigante ~90 veces por transicion. Era el tiron de la
+       seccion de precios al pasar el mouse por las tarjetas.
+       Se conserva el efecto (la nebulosa aparece/desaparece) pero SOLO con opacity. */
     .yearly-nebula {
       transform-origin: 720px 300px;
       opacity: 0;
-      transform: scale(0.6);
     }
 
     /* Mostrar Nebulosa Dorada y atenuar básicas cuando Anual está activo */
     .pricing-section.yearly-active .yearly-nebula {
       opacity: 0.95;
-      transform: scale(1.1);
     }
     .pricing-section.yearly-active .basic-nebula,
     .pricing-section.yearly-active .premium-nebula {
@@ -3950,11 +4033,9 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     /* Modern CSS :has Selector for high-fidelity pricing interactions */
     .pricing-section:not(.yearly-active):has(.basic-card:hover) .basic-nebula {
       opacity: 0.96;
-      transform: scale(1.35);
     }
     .pricing-section:not(.yearly-active):has(.premium-card:hover) .premium-nebula {
       opacity: 0.98;
-      transform: scale(1.35);
     }
 
     /* Constellation Dynamic Orbits */
@@ -4156,7 +4237,13 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      /* RENDIMIENTO (2026-09-07): era 'transition: all'. Con 'all' el navegador vigila e
+         interpola CUALQUIER propiedad que cambie entre estados, incluidas las de layout. Se
+         listan las 4 reales que cambian en :hover. */
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .pricing-card::before {
       content: '';
@@ -4947,8 +5034,16 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       border: 1px solid rgba(133, 92, 214, 0.15);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
     }
+    /* RENDIMIENTO (2026-09-07): era 'transition: all' y, por ir MAS ABAJO en la hoja con la
+       misma especificidad, le ganaba a la transicion explicita de .pricing-card (unas 900 lineas
+       mas arriba) -- o sea que la tarjeta de precios seguia interpolando 'all' pese a esa
+       correccion. Se listan las 4 propiedades reales que cambian en los :hover de las tres
+       tarjetas. .pricing-card.premium-card tiene mayor especificidad y conserva la suya. */
     .bento-card, .testimonial-card, .pricing-card {
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                  background-color 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                  border-color 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                  box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .bento-card:hover, .testimonial-card:hover {
       transform: translateY(-8px) scale(1.02);
@@ -4984,7 +5079,12 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         rgba(255, 255, 255, 0.42) 75%, 
         rgba(255, 255, 255, 0.55) 100%
       );
-      transition: background 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+      /* RENDIMIENTO (2026-09-07): antes habia 'transition: background 1.5s'. Los 3 gradientes
+         de tema solo se diferencian en un tinte del 5% de alfa, pero interpolarlos REPINTA el
+         fondo de una seccion del ancho completo en cada frame durante 1,5 s, en cada cambio de
+         pestaña. El cambio instantaneo es imperceptible (5% de alfa) y cuesta un solo repintado.
+         Ademas las variables --theme-* nunca transicionaron (las custom properties no interpolan
+         sin @property), asi que el color de las pestañas ya cambiaba de golpe. */
     }
     .videos-section.theme-tab-0 {
       --theme-primary: #855cd6;
@@ -5300,8 +5400,103 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       padding: 0;
       border: 2.5px solid var(--theme-primary);
       box-shadow: 0 25px 65px var(--theme-glow);
-      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      /* RENDIMIENTO (2026-09-07): era 'transition: all' sobre la caja mas grande de la seccion.
+         Lo unico que cambia entre temas de pestaña es el color del borde y el resplandor. */
+      transition: border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    /* ===== BOTON DE PLAY DE "MIRA COMO FUNCIONA" (2026-09-07) =====
+       Antes los 3 videos arrancaban SOLOS en cuanto la seccion entraba en pantalla. Decodificar
+       video es trabajo constante del hilo principal + GPU aunque el usuario solo este pasando de
+       largo, y ademas empieza a bajar megas de datos moviles sin que nadie lo haya pedido. Ahora
+       arrancan unicamente cuando el usuario pulsa play; hasta entonces se ve el 'poster' (una
+       imagen) y 'preload="none"' evita descargar un solo byte de video.
+       El anillo que late anima SOLO transform+opacity (se compone en GPU) y se detiene de verdad
+       con animation-play-state cuando el overlay se oculta, para no dejar una animacion corriendo
+       invisible mientras el video se reproduce. */
+    .video-play-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 0;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      background: radial-gradient(ellipse at center,
+        rgba(17, 12, 34, 0.30) 0%,
+        rgba(17, 12, 34, 0.16) 55%,
+        rgba(17, 12, 34, 0.05) 100%);
+      transition: opacity 0.35s ease;
+    }
+    .video-play-overlay.is-playing {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .video-play-overlay.is-playing .vpo-ring { animation-play-state: paused; }
+    .vpo-btn {
+      position: relative;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.97);
+      color: var(--theme-primary, #855cd6);
+      box-shadow: 0 16px 38px rgba(17, 12, 34, 0.30),
+                  inset 0 0 0 2px var(--theme-primary, #855cd6);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.28s ease;
+    }
+    .vpo-icon {
+      width: 34px;
+      height: 34px;
+      /* Sin margin: el ajuste optico va dentro del propio SVG (<g transform>), asi escala solo
+         con el icono en vez de descuadrarse segun el tamaño. */
+    }
+    .vpo-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--theme-primary, #855cd6);
+      pointer-events: none;
+      animation: vpo-ring-pulse 2.6s ease-out infinite;
+    }
+    @keyframes vpo-ring-pulse {
+      0%   { transform: scale(1);    opacity: 0.7; }
+      70%  { transform: scale(1.5);  opacity: 0; }
+      100% { transform: scale(1.5);  opacity: 0; }
+    }
+    .vpo-label {
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+    }
+    .video-play-overlay:hover .vpo-btn,
+    .video-play-overlay:focus-visible .vpo-btn {
+      transform: scale(1.09);
+      background-color: #fff;
+    }
+    .video-play-overlay:focus-visible {
+      outline: 3px solid var(--theme-primary, #855cd6);
+      outline-offset: -5px;
+    }
+    /* Ya reproduciendo, un clic sobre el propio video lo pausa (el overlay esta en
+       pointer-events: none, asi que el clic le llega al <video>). */
+    .tab-visual .real-video-player { cursor: pointer; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .vpo-ring { animation: none; opacity: 0.55; }
+      .video-play-overlay:hover .vpo-btn { transform: none; }
+    }
+
     .tab-dashboard-wrapper { background: linear-gradient(135deg, #fef3c7, #ffedd5); }
     .tab-exam-wrapper { background: linear-gradient(135deg, #e0e7ff, #ede9fe); }
     .tab-chat-wrapper { background: linear-gradient(135deg, #dcfce7, #dbeafe); }
@@ -5319,6 +5514,16 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         min-height: 0;
         aspect-ratio: 16 / 9;
         border-radius: 20px;
+        /* 🔴 FIREFOX (2026-09-07): sin esto el video DESAPARECE en movil.
+           La regla base de .tab-visual trae 'flex: 1', que es 'flex-basis: 0%'. En un contenedor
+           flex en columna (.tab-pane) con altura indeterminada, Chrome deja que 'aspect-ratio'
+           aporte el tamaño base, pero FIREFOX hace caso al flex-basis de 0 y la caja colapsa a
+           0 px de alto -> como el <video> de dentro es 'position: absolute; inset: 0', se queda
+           sin nada que rellenar y no se ve nada.
+           Con 'flex: 0 0 auto' el item se dimensiona por sus propias propiedades y el
+           aspect-ratio manda en los dos motores. */
+        flex: 0 0 auto;
+        width: 100%;
       }
       /* Con .tab-pane sin altura definida en el layout apilado, el video (height:100% inline)
          colapsaria; en absoluto llena el .tab-visual (que ahora tiene su ratio). */
@@ -5329,6 +5534,10 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
         height: 100%;
         object-fit: cover;
       }
+      .vpo-btn { width: 68px; height: 68px; }
+      .vpo-icon { width: 27px; height: 27px; }
+      .vpo-label { font-size: 0.85rem; }
+      .video-play-overlay { gap: 0.75rem; }
     }
 
     /* ===== PRICING HIERARCHY ===== */
@@ -5684,19 +5893,47 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       width: 100%;
     }
     
+    /* RENDIMIENTO (2026-09-07): .foco-mascot llevaba 'filter: drop-shadow(...)' mas OTRO filtro
+       distinto en :hover con 'transition: filter'. El elemento es un <video> WebM con canal alfa
+       que esta REPRODUCIENDOSE, y ademas recibe una escritura de 'transform' en cada frame de
+       rAF mientras el mouse se mueve por la seccion (el parallax de ngAfterViewInit).
+       Un drop-shadow se deriva del canal alfa del contenido pintado, asi que el navegador tenia
+       que RECALCULAR la sombra en cada frame decodificado del video Y en cada frame del parallax.
+       Ese era el tiron de "Conoce a Foco" en escritorio.
+       La sombra pasa a un ::after estatico con radial-gradient (se pinta una vez y queda
+       cacheado) y el realce del hover se hace con 'opacity', que si se compone en GPU. */
     .foco-mascot {
       width: 100%;
       height: auto;
       position: relative;
       z-index: 2;
-      filter: drop-shadow(0 20px 40px rgba(133, 92, 214, 0.15));
       cursor: pointer;
-      transition: transform 0.18s ease-out, filter 0.4s ease;
+      transition: transform 0.18s ease-out;
     }
-    
-    .foco-mascot:hover {
-      filter: drop-shadow(0 25px 50px rgba(133, 92, 214, 0.4)) brightness(1.05);
+
+    .foco-mascot-float-container::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      /* Estas medidas NO son a ojo: el .webm es un lienzo cuadrado con mucho relleno
+         transparente, y el dibujo del pulpo ocupa el 26,9%-76,5% vertical y el 26,3%-73,5%
+         horizontal (medido leyendo el canal alfa del primer fotograma). El brillo se centra en
+         el 20% inferior para quedar justo bajo los tentaculos, no pegado al borde del lienzo. */
+      bottom: 15%;
+      width: 52%;
+      height: 10%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center,
+        rgba(133, 92, 214, 0.34) 0%,
+        rgba(133, 92, 214, 0.18) 45%,
+        rgba(133, 92, 214, 0) 72%);
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.75;
+      transition: opacity 0.4s ease;
     }
+    .foco-mascot-float-container:hover::after { opacity: 1; }
     
     @keyframes mascot-float {
       0%, 100% { transform: translateY(0); }
@@ -6389,16 +6626,17 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
        contain-intrinsic-size: auto <alto> le da un alto estimado para que la barra de scroll
        no salte, y el "auto" hace que recuerde el alto real una vez que la midio de verdad.
 
-       Los valores son los altos REALES medidos a 412 px de ancho (el viewport que usa
-       Lighthouse para movil). No necesitan ser exactos -- el "auto" hace que el navegador
-       recuerde el alto real tras el primer render -- pero cuanto mas cerca esten, menos
-       salto de layout hay la primera vez que cada seccion entra en pantalla. Medir a 375 px
-       daba desfases de hasta 168 px y eso costaba CLS.
-
-       Dos decisiones a proposito:
-        - NO se aplica al hero: esta sobre la linea de flotacion, saltarselo no ahorra nada.
-        - Las 9 secciones de abajo ya declaraban overflow: hidden, asi que la contencion de
-          pintado que implica esta propiedad no introduce ningun recorte nuevo.
+       FIREFOX (Gecko) MOVIL:
+       Firefox implementa scroll anchoring y content-visibility de forma distinta a Chromium:
+       cuando el usuario hace scroll hacia abajo en movil (especialmente con flexbox apilado),
+       al entrar cada seccion diferida en el rango de renderizado su transicion de intrinsic-size
+       a geometria calculada produce correcciones de anclaje de scroll (scroll anchoring)
+       bruscas, perceptibles como "microsaltos" continuos o tirones a lo largo de la pagina.
+       Chromium maneja esto suavemente gracias a su algoritmo de render diferido asincrono.
+       Para eliminar por completo los microsaltos en Firefox, se anula content-visibility y
+       contain-intrinsic-size exclusivamente en Firefox via @supports (-moz-appearance: none).
+       Como el home ya fue despojado de filtros blur pesados y animaciones de layout, en
+       Firefox el scroll fluye 100% solido a 60 fps sin saltos.
     */
     .features-section,
     .foco-section,
@@ -6411,15 +6649,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
     .footer {
       content-visibility: auto;
     }
-    /* Alturas estimadas para la barra de scroll mientras la seccion no se ha renderizado.
-       Re-medidas el 2026-08-29 (parte 9) sobre el build REAL, seccion por seccion, tras la
-       reestructura: las viejas estaban MUY desfasadas (features declaraba 2445 y mide ~1300
-       en escritorio / ~1060 en movil) y al renderizarse la seccion cambiaba de tamano de
-       golpe -> el navegador re-anclaba el scroll y "te devolvia" o saltaba. Ahora coinciden
-       con la altura real (+ ~6% de colchon) y ESCRITORIO vs MOVIL van por separado, porque
-       varias secciones tienen alturas muy distintas segun el layout (1 vs varias columnas).
-       El keyword auto de contain-intrinsic-size hace que tras el primer render el navegador
-       use el tamano real igual; esto solo minimiza el salto de la PRIMERA vez. */
+    /* Alturas estimadas para la barra de scroll mientras la seccion no se ha renderizado. */
     .features-section     { contain-intrinsic-size: auto 1390px; }
     .foco-section         { contain-intrinsic-size: auto 960px; }
     .videos-section       { contain-intrinsic-size: auto 970px; }
@@ -6439,6 +6669,23 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
       .faq-section          { contain-intrinsic-size: auto 860px; }
       .cta-section          { contain-intrinsic-size: auto 490px; }
       .footer               { contain-intrinsic-size: auto 820px; }
+    }
+
+    /* Anulacion de content-visibility para Firefox: elimina los microsaltos por recalculo
+       de anclaje de scroll en Gecko sin afectar Chromium/Safari. */
+    @supports (-moz-appearance: none) {
+      .features-section,
+      .foco-section,
+      .videos-section,
+      .testimonials-section,
+      .pricing-section,
+      .news-section,
+      .faq-section,
+      .cta-section,
+      .footer {
+        content-visibility: visible !important;
+        contain-intrinsic-size: none !important;
+      }
     }
   `]
 })
@@ -6487,6 +6734,13 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
   activeTab = 0;
   videosSectionInView = false;
+
+  /** true mientras el video de la pestaña activa se reproduce. Lo sincronizan los eventos
+   *  (play)/(pause) del propio <video>, no se escribe a mano en ningun otro sitio. */
+  demoPlaying = false;
+  /** El usuario pulso play alguna vez en esta visita. Es lo UNICO que autoriza a reanudar la
+   *  reproduccion al volver a la seccion o al cambiar de pestaña: sin esto nada arranca solo. */
+  private demoUserStarted = false;
   billingPeriod: 'monthly' | 'yearly' = 'monthly';
   /** Se pone en true al primer cambio de plan (no se usa para animar, solo por si algo del CSS
    *  quisiera distinguir "ya interactuaron"). */
@@ -7658,8 +7912,9 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
       this.observers.push(obsNoticias);
     }
 
-    // Demo video: only fetch/play while the "Mira cómo funciona" section is in view, like an auto-looping gif.
-    // Pausing off-screen avoids wasted bandwidth/CPU on a video the user isn't looking at.
+    // Video de demostracion: se PAUSA al salir de pantalla (no tiene sentido decodificar frames
+    // que nadie mira) y se reanuda al volver, pero SOLO si el usuario ya habia pulsado play.
+    // Hasta 2026-09-07 este observer lo arrancaba solo con que la seccion entrara en pantalla.
     const videosSection = document.querySelector('.videos-section');
     if (videosSection) {
       const videoObserver = new IntersectionObserver((entries) => {
@@ -7668,9 +7923,9 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
           const video = entry.target.querySelector('video.real-video-player') as HTMLVideoElement | null;
           if (!video) return;
           if (entry.isIntersecting) {
-            // Belt-and-suspenders: the [muted] property binding should already cover this,
-            // but Chrome's autoplay policy silently rejects play() on any video whose live
-            // '.muted' property isn't true, so we force it right before playing.
+            if (!this.demoUserStarted) return;
+            // Chrome rechaza en silencio play() sobre un video cuya propiedad viva '.muted' no
+            // sea true, aunque el atributo este puesto: se fuerza justo antes de reproducir.
             video.muted = true;
             video.play().catch(() => {});
           } else {
@@ -7726,13 +7981,41 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
   selectDemoTab(i: number) {
     this.activeTab = i;
-    if (this.videosSectionInView) {
+    // El *ngIf monta un <video> nuevo: nace pausado y con preload="none".
+    this.demoPlaying = false;
+    // Se reanuda solo si el usuario ya habia pulsado play. Si nunca lo hizo, cambiar de
+    // pestaña no descarga ni reproduce nada.
+    // NO se consulta videosSectionInView aca a proposito: cambiar de pestaña ES un clic del
+    // usuario sobre esta misma seccion, asi que por definicion la esta mirando. Depender del
+    // IntersectionObserver haria que el cambio de pestaña no reanudara nada si el observer
+    // todavia no habia disparado.
+    if (this.demoUserStarted) {
       setTimeout(() => {
-        const video = document.querySelector('.videos-section video.real-video-player') as HTMLVideoElement | null;
+        const video = this.demoVideoEl();
         if (!video) return;
         video.muted = true;
         video.play().catch(() => {});
       }, 0);
+    }
+  }
+
+  private demoVideoEl(): HTMLVideoElement | null {
+    return document.querySelector('.videos-section video.real-video-player') as HTMLVideoElement | null;
+  }
+
+  /** Play/pausa del video de demostracion. Lo llaman el boton central y tambien un clic sobre
+   *  el propio video: mientras reproduce, el overlay esta en pointer-events:none y el clic le
+   *  llega al <video>, asi que no hay doble alternancia. */
+  toggleDemoVideo() {
+    const video = this.demoVideoEl();
+    if (!video) return;
+    if (video.paused) {
+      this.demoUserStarted = true;
+      video.muted = true;
+      video.play().catch(() => {});
+    } else {
+      this.demoUserStarted = false;
+      video.pause();
     }
   }
 

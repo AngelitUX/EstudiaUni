@@ -28,6 +28,15 @@ export class KeyboardNavigationService {
       return;
     }
 
+    // Never hijack keys while the user is interacting with the Foco tutor chat
+    // panel (Ensayo PAES asistido). Even when focus has slipped off the chat
+    // textarea — right after sending a message, while Foco is "thinking", or
+    // after reading a reply — pressing keys near that panel must not navigate
+    // questions.
+    if ((activeEl as HTMLElement)?.closest?.('.ai-panel')) {
+      return;
+    }
+
     const key = event.key.toLowerCase();
 
     // Fetch shortcuts from localStorage (fall back to default keys)
@@ -36,11 +45,13 @@ export class KeyboardNavigationService {
     const keyC = localStorage.getItem('KEY_SHORTCUT_C') || 'c';
     const keyD = localStorage.getItem('KEY_SHORTCUT_D') || 'v';
     const keyE = localStorage.getItem('KEY_SHORTCUT_E') || 'b';
-    // No 'enter' default: it's the key most likely to be pressed by accident
-    // (e.g. right after answering, or just resting on the keyboard) and was
-    // silently skipping to the next question. Still honors an explicit user
-    // override from settings, just doesn't default to it.
-    const keyNext = localStorage.getItem('KEY_SHORTCUT_NEXT') || 'arrowright';
+    // 'enter' is never accepted as the "next question" shortcut: it's the key
+    // most likely to be pressed by accident (right after answering, resting on
+    // the keyboard, or while chatting with the Foco tutor) and it was silently
+    // skipping to the next question. Any stored/legacy 'enter' is treated as the
+    // default arrow key instead.
+    const storedNext = localStorage.getItem('KEY_SHORTCUT_NEXT') || 'arrowright';
+    const keyNext = storedNext === 'enter' ? 'arrowright' : storedNext;
     const keyPrev = localStorage.getItem('KEY_SHORTCUT_PREV') || 'arrowleft';
     const keyExit = localStorage.getItem('KEY_SHORTCUT_EXIT') || 'escape';
 
@@ -64,8 +75,8 @@ export class KeyboardNavigationService {
     }
 
     // 2. Next / Submit / Confirm navigation (supports custom key, spacebar, or arrowright —
-    // deliberately NOT 'enter' by default, see keyNext above)
-    else if (key === keyNext || key === 'arrowright' || key === ' ' || key === 'spacebar') {
+    // 'enter' is deliberately excluded, see keyNext above)
+    else if ((key === keyNext && key !== 'enter') || key === 'arrowright' || key === ' ' || key === 'spacebar') {
       // Avoid preventing default on Space when focusing on clickable elements natively
       if ((key === ' ' || key === 'spacebar') && activeEl instanceof HTMLButtonElement) {
         return;

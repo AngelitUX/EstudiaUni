@@ -41,7 +41,7 @@ import { RouterModule } from '@angular/router';
           Comparte la plataforma con tu comunidad y genera ingresos reales por cada estudiante que se una gracias a ti. Sin límite de ganancias.
         </p>
         <div class="hero-cta">
-          <a href="mailto:contacto@estudiauni.cl?subject=Quiero ser Embajador EstudiaUni" class="btn-primary-cta">
+          <a href="mailto:contacto.estudiauni@gmail.com?subject=Quiero ser Embajador EstudiaUni" class="btn-primary-cta">
             Postular ahora →
           </a>
           <p class="cta-note">El proceso toma menos de 2 minutos</p>
@@ -122,7 +122,7 @@ import { RouterModule } from '@angular/router';
       <section class="final-cta-section">
         <h2>¿Listo para empezar?</h2>
         <p>Escríbenos y te contamos todos los detalles del programa</p>
-        <a href="mailto:contacto@estudiauni.cl?subject=Quiero ser Embajador EstudiaUni" class="btn-primary-cta">
+        <a href="mailto:contacto.estudiauni@gmail.com?subject=Quiero ser Embajador EstudiaUni" class="btn-primary-cta">
           Contactar al equipo 🎯
         </a>
       </section>

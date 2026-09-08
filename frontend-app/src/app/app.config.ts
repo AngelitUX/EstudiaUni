@@ -1,6 +1,6 @@
 import { ApplicationConfig, PLATFORM_ID, inject, provideZoneChangeDetection } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withPreloading, PreloadAllModules } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
 import { initializeApp, provideFirebaseApp, getApp } from '@angular/fire/app';
 import { getAuth, provideAuth, initializeAuth, inMemoryPersistence } from '@angular/fire/auth';
@@ -153,7 +153,8 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       routes,
-      withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' })
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
+      withPreloading(PreloadAllModules)
     ),
     provideHttpClient(withInterceptors([authInterceptor]), withFetch()),
     provideFirebaseApp(() => initializeApp(environment.firebase)),

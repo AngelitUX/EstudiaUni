@@ -23,19 +23,39 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private stuckGoogleLoginTimer: ReturnType<typeof setTimeout> | null = null;
   private authSub: Subscription | null = null;
 
+  isGoogleRedirectPending = false;
+
+  private onRedirectDone = (ev: any) => {
+    if (!ev?.detail?.success && !this.auth.currentUser) {
+      this.isGoogleRedirectPending = false;
+      this.loading = false;
+    }
+  };
+
   ngOnInit() {
-    // Suscripción persistente, no un chequeo de una sola pasada — ver el comentario largo
-    // en LoginComponent.ngOnInit para el porqué exacto.
-    //
-    // 🔴 El `user.emailVerified` NO es opcional aquí, es lo que evita romper el registro por
-    // correo: `onSubmit()` llama a `createUserWithEmailAndPassword`, y en cuanto eso resuelve
-    // `authState` YA emite la cuenta recién creada — mucho antes de que el método termine de
-    // enviar el correo de verificación, mostrar la pantalla de "revisa tu bandeja" y hacer el
-    // `signOut()` final. Sin este filtro, la suscripción sacaba al usuario a /dashboard en ese
-    // instante; `emailVerifiedGuard` lo mandaba a /verify-email, el `signOut()` lo dejaba sin
-    // sesión y terminaba en /login sin haber visto nunca la pantalla de verificación. Una
-    // cuenta de Google siempre llega con `emailVerified: true`, así que el camino que esta
-    // suscripción sí debe cubrir (volver del redirect de Google) no se ve afectado.
+    if (typeof window !== 'undefined') {
+      const isLocalhost = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+      if (isLocalhost) {
+        try { sessionStorage.removeItem('google_login_pending'); } catch {}
+        this.isGoogleRedirectPending = false;
+      } else {
+        try {
+          if (sessionStorage.getItem('google_login_pending') === 'true') {
+            this.isGoogleRedirectPending = true;
+            this.loading = true;
+            setTimeout(() => {
+              if (this.isGoogleRedirectPending && !this.auth.currentUser) {
+                this.isGoogleRedirectPending = false;
+                this.loading = false;
+                try { sessionStorage.removeItem('google_login_pending'); } catch {}
+              }
+            }, 7000);
+          }
+        } catch {}
+        window.addEventListener('google_redirect_done', this.onRedirectDone);
+      }
+    }
+
     this.authSub = this.authService.user$.subscribe((user) => {
       if (user?.emailVerified) {
         this.router.navigate(['/dashboard']);
@@ -46,6 +66,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
     this.authSub?.unsubscribe();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('google_redirect_done', this.onRedirectDone);
+    }
   }
 
   name = '';
@@ -264,17 +287,21 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
     this.loading = true;
 
-    // Ver el comentario largo en LoginComponent.loginWithGoogle() — mismo mecanismo, mismo
-    // problema en Firefox con protección estricta de cookies de terceros.
-    this.stuckGoogleLoginTimer = setTimeout(() => {
-      this.loading = false;
-      this.error = 'Esto está tardando más de lo normal — tu navegador podría estar bloqueando el inicio de sesión con Google (pasa seguido en Firefox, por su protección de cookies de terceros). Si no avanza solo en unos segundos más, prueba crear tu cuenta con correo y contraseña, o usa Chrome.';
-    }, 10000);
+    const isLocalhost = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+    if (!isLocalhost) {
+      this.stuckGoogleLoginTimer = setTimeout(() => {
+        this.loading = false;
+        this.error = 'Esto está tardando más de lo normal — tu navegador podría estar bloqueando el inicio de sesión con Google (pasa seguido en Firefox, por su protección de cookies de terceros). Si no avanza solo en unos segundos más, prueba crear tu cuenta con correo y contraseña, o usa Chrome.';
+      }, 10000);
+    }
 
     try {
-      // Navega a Google — no vuelve a este método. El resultado (éxito o error) se
-      // recoge en AppComponent.ngOnInit cuando la app se recarga de vuelta.
-      await this.authService.startGoogleLogin();
+      const cred = await this.authService.startGoogleLogin();
+      if (cred) {
+        if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
+        this.loading = false;
+        this.router.navigate(['/dashboard']);
+      }
     } catch (e: any) {
       if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
       this.error = mensajeErrorGoogle(e);

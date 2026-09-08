@@ -42,24 +42,24 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
         </div>
         <nav class="sidebar-nav">
           <a class="nav-item active" routerLink="/dashboard" id="tour-nav-inicio">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/>
             <span class="nav-text">Inicio</span>
           </a>
           <a class="nav-item" routerLink="/ruta" id="tour-nav-ruta">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
             <span class="nav-text">Ruta de Aprendizaje</span>
           </a>
 
           <a class="nav-item" routerLink="/ensayos" id="tour-nav-ensayos">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/>
             <span class="nav-text">Ensayos PAES</span>
           </a>
           <a class="nav-item" routerLink="/mini-ensayo" id="tour-nav-mini">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/>
             <span class="nav-text">Mini Ensayos</span>
           </a>
           <a class="nav-item" routerLink="/mente-veloz" id="tour-nav-mente">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/>
             <span class="nav-text">Mente Veloz</span>
           </a>
 
@@ -69,15 +69,15 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
             <a class="nav-item" routerLink="/encuentra-tu-carrera">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/>
               <span class="nav-text">Encuentra tu Carrera</span>
             </a>
             <a class="nav-item" routerLink="/calculadora-nem">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/>
               <span class="nav-text">Calculadora NEM</span>
             </a>
             <a class="nav-item" routerLink="/recursos">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/>
               <span class="nav-text">Recursos Adicionales</span>
             </a>
           </div>
@@ -91,11 +91,11 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -135,24 +135,24 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
           </div>
           <nav class="sidebar-nav">
             <a class="nav-item active" routerLink="/dashboard" (click)="mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/>
               <span class="nav-text">Inicio</span>
             </a>
             <a class="nav-item" routerLink="/ruta" (click)="mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/>
               <span class="nav-text">Ruta de Aprendizaje</span>
             </a>
 
             <a class="nav-item" routerLink="/ensayos" (click)="mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/>
               <span class="nav-text">Ensayos PAES</span>
             </a>
             <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/>
               <span class="nav-text">Mini Ensayos</span>
             </a>
             <a class="nav-item" routerLink="/mente-veloz" (click)="mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/>
               <span class="nav-text">Mente Veloz</span>
             </a>
 
@@ -162,15 +162,15 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
               <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileMenuOpen = false">
-                <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/>
+                <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/>
                 <span class="nav-text">Encuentra tu Carrera</span>
               </a>
               <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileMenuOpen = false">
-                <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/>
+                <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/>
                 <span class="nav-text">Calculadora NEM</span>
               </a>
               <a class="nav-item" routerLink="/recursos" (click)="mobileMenuOpen = false">
-                <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/>
+                <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/>
                 <span class="nav-text">Recursos Adicionales</span>
               </a>
             </div>
@@ -185,11 +185,11 @@ import { RenewalNoticeBannerComponent } from '../payment/renewal-notice-banner.c
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileMenuOpen = false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>

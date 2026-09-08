@@ -5,7 +5,7 @@
 > cambio de precios/límites), **actualiza este archivo en el mismo commit**.
 > Al final está la **Bitácora de avances** — anota ahí lo que vayas completando.
 >
-> Última actualización: 2026-09-04 · Rama en la que se escribió: `Flow-Admin-Arreglos`
+> Última actualización: 2026-09-07 · Rama en la que se escribió: `Revision`
 
 ---
 
@@ -793,6 +793,175 @@ siguen presentes.
 
 > Anota aquí cada avance relevante, con fecha, para que la próxima conversación sepa dónde quedó todo.
 > Formato: `### AAAA-MM-DD — Título` + qué se hizo + qué quedó pendiente.
+
+### 2026-09-07 — Los 3 tirones del home en escritorio, con causa concreta cada uno: un `drop-shadow` recalculándose por frame sobre el vídeo de Foco, `transform` sobre nebulosas gigantes dentro de una capa enmascarada en Precios, y los vídeos de demo autoreproduciéndose. Ahora los vídeos llevan botón de play. + 37 KB menos de iconos en móvil
+`tsc --noEmit -p tsconfig.app.json` ✅ · `ng build --configuration production` ✅ (6 rutas
+prerenderizadas) · verificado sobre el **build real** servido en local (config `dist-produccion`,
+puerto 4320), no sobre `ng serve` · el cableado del botón de play se comprobó **espiando
+`HTMLMediaElement.prototype.play/pause`**, no a ojo (ver la tabla más abajo).
+
+**Origen:** el usuario trajo un informe de PageSpeed móvil y, aparte, reportó que en una
+computadora ajena el home **se trababa en tres sitios concretos: el gif de "Conoce a Foco", el
+vídeo que se reproduce solo, y la sección de precios.** Los tres resultaron tener causa distinta.
+
+#### 1. 🔴 "Conoce a Foco": un `drop-shadow` sobre un `<video>` que se reproduce Y que además se mueve
+
+`.foco-mascot` llevaba `filter: drop-shadow(0 20px 40px ...)`, **otro** filtro distinto en `:hover`
+(`drop-shadow(...) brightness(1.05)`) y `transition: filter 0.4s`. Ese elemento es a la vez:
+
+- un **`<video>` WebM con canal alfa reproduciéndose** (30 fps), y
+- el objetivo de una escritura de `transform` **en cada frame de rAF** mientras el ratón se mueve
+  por la sección (el parallax de la mascota, que solo existe con puntero fino → **solo escritorio**).
+
+Un `drop-shadow` se deriva del canal alfa de lo que se pinta, así que el navegador tenía que
+**recalcular la sombra en cada frame decodificado del vídeo y en cada frame del parallax**. Esa
+combinación —filtro + contenido que cambia + transform por frame— es la variante peor del patrón que
+ya hundió el FAQ y la sección de precios en 2026-08-29, y explica por qué solo se notaba con ratón
+encima (en móvil el parallax ni se registra).
+
+**Arreglo:** fuera los dos `filter`. La sombra pasa a un `::after` estático con `radial-gradient`
+(se pinta una vez y queda cacheado) sobre `.foco-mascot-float-container`, y el realce de `:hover`
+se hace con `opacity`, que sí se compone en GPU.
+
+> Las medidas del brillo **no son a ojo**: el `.webm` es un lienzo cuadrado con mucho relleno
+> transparente. Se descargó el primer fotograma como PNG por el endpoint de imagen de Cloudinary
+> (`f_png,pg_1`) y se midió el canal alfa con `sharp`: **el pulpo ocupa el 26,9 %–76,5 % vertical y
+> el 26,3 %–73,5 % horizontal**. De ahí salen `bottom: 15%` / `width: 52%` / `height: 10%`, para que
+> el brillo quede bajo los tentáculos y no pegado al borde del lienzo. Si algún día se cambia ese
+> asset, hay que volver a medirlo (el método está en esta misma entrada).
+
+#### 2. 🔴 Precios: escalar una nebulosa de r=380 dentro de una capa con `mask-image`
+
+Las 3 `.pricing-nebula` transicionaban `transform: scale()` durante **1,5 s** al pasar el ratón por
+una tarjeta (reglas `:has()`) y al alternar Mensual/Anual. Dos cosas se suman ahí:
+
+- Un `<circle>` de SVG **no obtiene capa propia**: cualquier `transform` sobre él es un repintado,
+  y con `r=300..380` significa **regenerar un degradado radial enorme ~90 veces por transición**.
+- Viven dentro de `.pricing-flow-bg`, que lleva `mask-image` → cada repintado obliga además a
+  volver a aplicar la máscara sobre una capa del tamaño de la sección.
+
+En 2026-08-29 se quitó el `feGaussianBlur` de esos mismos círculos, que era lo más caro, pero **se
+dejaron las transiciones de `transform` intactas** ("el hover y el toggle anual se conservan
+intactos"). Eran el resto del problema.
+
+**Arreglo:** las nebulosas conservan el efecto (aparecen/desaparecen) pero **solo con `opacity`**;
+`transform` fuera de la transición y de los estados.
+
+Además, en la misma sección:
+- **`.pricing-section` tenía `transition: background 1.2s`** sobre un degradado que cubre TODA la
+  sección (~1000 px de alto) → repintado de pantalla completa por frame durante 1,2 s, y encima
+  simultáneo con las otras ~8 transiciones de 1,2-1,5 s que dispara el mismo toggle. El tinte es de
+  4-7 % de alfa: cambiarlo de golpe no se nota. Eliminada.
+- **`.videos-section` tenía lo mismo (`transition: background 1.5s`)**, disparándose en cada cambio
+  de pestaña. Eliminada por el mismo motivo (los 3 gradientes de tema difieren en un 5 % de alfa, y
+  las variables `--theme-*` nunca transicionaron de todos modos).
+
+#### 3. 🔴 `transition: all` sobre `.pricing-card`, y por qué el primer intento no sirvió
+
+`.pricing-card` tenía `transition: all 0.4s`. Se cambió por las 4 propiedades reales… **y no pasó
+nada**, porque ~900 líneas más abajo hay otra regla, `.bento-card, .testimonial-card, .pricing-card
+{ transition: all }`, con **la misma especificidad pero posterior en la hoja**, que le gana. Es la
+misma trampa que ya costó un rato con las 4 reglas `.footer` (bitácora 2026-08-29, quinta vuelta).
+
+Se corrigieron **las dos**. `.pricing-card.premium-card` tiene mayor especificidad y conserva la
+suya. También `.tab-visual` (la caja más grande de la sección de vídeos) pasó de `all 0.6s` a
+`border-color, box-shadow`.
+
+> Comprobado en el navegador tras el cambio, no solo en el código:
+> `getComputedStyle(.pricing-card).transitionProperty` → `transform, background-color, border-color,
+> box-shadow`. Si vuelve a decir `all`, es que alguien reintrodujo la regla tardía.
+
+#### 4. Los vídeos de "Mira cómo funciona" ya NO se reproducen solos: botón de play
+
+Pedido explícito del usuario. Antes, un `IntersectionObserver` los arrancaba en cuanto la sección
+entraba en pantalla: decodificar vídeo es trabajo constante de hilo principal + GPU aunque el
+usuario solo esté pasando de largo, y empieza a bajar megas de datos móviles sin que nadie lo pida.
+
+- Overlay `.video-play-overlay` sobre cada `.tab-visual`: círculo blanco de 88 px (68 en móvil) con
+  el triángulo de play en `var(--theme-primary)` — **cambia de color con la pestaña**, igual que el
+  resto de la sección— anillo que late, y la etiqueta "Ver demostración". `preload="none"` sigue
+  puesto, así que hasta el clic solo se ve el `poster` (una imagen).
+- **El anillo se detiene de verdad** (`animation-play-state: paused`) cuando el overlay se oculta;
+  no queda una animación corriendo invisible detrás del vídeo.
+- Estando en reproducción, el overlay pasa a `pointer-events: none` y **un clic sobre el propio
+  vídeo lo pausa** (el clic le llega al `<video>`, no hay doble alternancia).
+- `demoUserStarted` es lo único que autoriza a reanudar: al volver a la sección o al cambiar de
+  pestaña se sigue reproduciendo **solo si el usuario ya había pulsado play alguna vez**.
+- `selectDemoTab()` a propósito **ya no consulta `videosSectionInView`**: cambiar de pestaña es un
+  clic del usuario sobre esa misma sección, así que depender del observer solo añadía una forma de
+  que no reanudara nada.
+- `prefers-reduced-motion: reduce` congela el anillo y el hover.
+
+**Verificado espiando `HTMLMediaElement.prototype.play/pause`** (el navegador de estas sesiones no
+produce frames, así que la reproducción real no siempre avanza — ver la trampa de abajo):
+
+| Acción | Resultado |
+|---|---|
+| Clic en el botón central | `play()` sobre el vídeo de la pestaña activa |
+| Clic en el vídeo reproduciéndose | `pause()` |
+| Cambiar de pestaña **tras pausar** | **ningún `play()`** — nada arranca solo |
+| Cambiar de pestaña **tras pulsar play** | `play()` sobre el vídeo nuevo |
+
+Y en carga en frío sin hacer scroll: **0 peticiones de vídeo de demo** (antes bastaba con bajar
+hasta la sección para empezar a descargar el `.mp4`).
+
+#### 5. PageSpeed móvil: lo que sí era accionable
+
+**"Mejorar la entrega de imágenes — 79 KiB":** los 8 iconos AVIF del home eran de 320×320 y se
+muestran a 84 px como mucho (50 px en las chips, 66 px en móvil). Se generaron variantes de
+**168×168 (= 84 px a 2x, exacto) con `quality: 55, effort: 7`** en
+`IconosAVIF/w168/`, y el home apunta ahí. **84,3 KB → 47,4 KB (−44 %, −36,9 KB)**, y los
+`width`/`height` declarados pasan de 320 a 168 para que coincidan con lo intrínseco.
+
+> **Se creó una carpeta aparte en vez de reemplazar los originales, a propósito**: esos 8 archivos
+> los comparten ~20 componentes (sidebars, tarjeta de Recomendación IA del dashboard) donde se usan
+> hasta a 160 px. Cambiarlos globalmente es otra decisión.
+>
+> Método de elección del tamaño, por si hay que repetirlo: se midió la diferencia media contra el
+> original **renderizando ambos al tamaño real de uso (168 px)**, no al tamaño del archivo. 168 px
+> q=55 da **2,80/255 (1,1 %)**; 176 px q=55 da 3,82 — **peor pese a ser más pesado**, porque a 176
+> el navegador reescala otra vez. El suelo que impone el propio redimensionado (control a q=92) es
+> 2,66, así que la compresión solo aporta 0,14 encima. Es la misma lección de 2026-08-27 parte 6:
+> *elegir mal el tamaño de referencia lleva a la decisión equivocada.*
+
+**Lo que NO es código nuestro y no se puede arreglar desde el repo — no perseguirlo:**
+- `__/auth/iframe.js` (93 KiB, caché de 4 h): lo sirve Firebase Auth desde su propio origen. Ni la
+  caché ni su peso son configurables desde aquí.
+- **Los dos `beacon.min.js` de `static.cloudflareinsights.com`** (20 KiB de caché + los 11 KiB de
+  "JavaScript antiguo" por `Array.prototype.at`/`findLast`): es **Cloudflare Web Analytics**,
+  inyectado en el borde. Se quita apagando Web Analytics en el dashboard de Cloudflare de la zona —
+  que además arreglaría el fallo de SRI en Firefox ya documentado en §7.6.
+- "Reduce el JavaScript que no se use — 153 KiB": 97 KiB son el chunk del **SDK de Firestore**
+  precargado por `provideFirestore()`, ya documentado como el mayor peso restante y un cambio
+  arquitectónico, no un ajuste; los otros 56 KiB son `iframe.js`.
+- "Redistribución forzada 111 ms" sale **`[sin asignación]`**, sin pila atribuible: nuestros reflows
+  de arranque se eliminaron en 2026-08-27 parte 5 y no se reintrodujo ninguno aquí.
+
+#### Estado tras los cambios, medido en el build de producción
+
+| | Valor |
+|---|---|
+| Elementos animados dentro de un subárbol con `filter` | **0** |
+| Elementos con `filter` que se animen ellos mismos | **0** |
+| `backdrop-filter` | **0** |
+| Propiedades no compositables animándose | `background-position` (degradado de marca), `clip-path` (glitch de "IA"), `stroke-dashoffset` (líneas ambientales) — las 3 ya documentadas como identidad visual y gateadas por `prefers-reduced-motion` |
+| Vídeos de demo pedidos en carga en frío | **0** |
+| Errores de consola | **0** |
+
+> ⚠️ **Trampa del entorno, otra vez** (ya documentada el 2026-08-27 y el 2026-08-29, conviene no
+> re-derivarla): en el panel de navegador de estas sesiones **`requestAnimationFrame` no se ejecuta**
+> (`rafCorre: false`). Consecuencias que parecen bugs y no lo son: las transiciones **no avanzan**
+> (el overlay se queda con `opacity: 1` aunque su transición apunte correctamente a 0 — se comprueba
+> con `anim.effect.getKeyframes()` o forzando `anim.finish()`), **los `IntersectionObserver` no
+> disparan** (se entregan durante el paso de renderizado, así que `videosSectionInView` se queda en
+> `false` y las rutas que dependen del observer no se pueden ejercitar aquí), y la reproducción de
+> vídeo no siempre avanza (`play()` resuelve OK pero `currentTime` se queda en 0 — pasa igual
+> llamándolo a mano desde la consola, o sea que **no es del código**). Por eso el botón de play se
+> verificó espiando `play`/`pause` en el prototipo, que sí es determinista.
+
+**Pendiente de confirmar por el usuario, y es lo que cierra el círculo:** probar el home en la misma
+computadora ajena donde se trababa, y correr PageSpeed **3 veces quedándose con la mediana** (una
+sola corrida no distingue una mejora del ruido, ver 2026-08-27 parte 4). Línea base: móvil 64.
 
 ### 2026-09-05 — 🔴 El login con Google se colgaba porque un widget de bots (Turnstile) puede quedarse pendiente PARA SIEMPRE y el SDK de Firebase lo espera antes de navegar. Dos causas encadenadas, las dos corregidas; + una regresión propia en el registro cazada al revisar
 `tsc --noEmit -p tsconfig.app.json` ✅ · `ng build --configuration production` ✅ (6 rutas
