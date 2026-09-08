@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sendEmailVerification, sendPasswordResetEmail } from '@angular/fire/auth';
-import { User, UserCredential } from 'firebase/auth';
+import { Auth, authState, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, sendEmailVerification, sendPasswordResetEmail } from '@angular/fire/auth';
+import { User, UserCredential, getAdditionalUserInfo } from 'firebase/auth';
 import { Observable, from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { FirestoreService } from './firestore.service';
@@ -54,12 +54,62 @@ export class AuthService {
    * resultado se recoge después, cuando Google redirige de vuelta y la app se recarga, con
    * `handleGoogleRedirectResult()` (ver `AppComponent.ngOnInit`).
    */
-  async startGoogleLogin(): Promise<void> {
+  async startGoogleLogin(): Promise<UserCredential | null> {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
       prompt: 'select_account'
     });
+
+    const isLocalhost = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+
+    if (isLocalhost) {
+      // En localhost (http://), signInWithRedirect está bloqueado por el particionamiento de storage
+      // y políticas de seguridad del navegador (getRedirectResult siempre retorna null).
+      // Se utiliza signInWithPopup que resuelve directamente en la misma ventana sin perder sesión.
+      const result = await signInWithPopup(this.auth, provider);
+      await this.processSuccessfulGoogleLogin(result);
+      return result;
+    }
+
+    if (typeof window !== 'undefined') {
+      try { sessionStorage.setItem('google_login_pending', 'true'); } catch {}
+    }
     await signInWithRedirect(this.auth, provider);
+    return null;
+  }
+
+  /**
+   * Lógica unificada para procesar el perfil tras un login exitoso con Google.
+   */
+  async processSuccessfulGoogleLogin(result: UserCredential): Promise<void> {
+    const googleUser = result.user;
+    const googleEmail = googleUser.email?.toLowerCase().trim();
+    const addInfo = getAdditionalUserInfo(result);
+    const isNewUser = addInfo?.isNewUser ?? false;
+
+    // Solo para usuarios NUEVOS en Auth buscamos si existía un perfil previo con diferente UID para migrar
+    if (isNewUser && googleEmail) {
+      try {
+        const existingUid = await this.firestoreService.findUidByEmail(googleEmail);
+        if (existingUid && existingUid !== googleUser.uid) {
+          await this.firestoreService.migrateUserData(existingUid, googleUser.uid);
+        }
+      } catch (migErr) {
+        console.error('Error durante migración de usuario:', migErr);
+      }
+    }
+
+    // Guardar/actualizar perfil en Firestore.
+    // Para usuarios existentes se ejecuta en segundo plano sin retrasar el paso al Dashboard.
+    const savePromise = this.firestoreService.saveUserProfile({
+      displayName: googleUser.displayName || '',
+      email: googleEmail || '',
+      emailVerified: true
+    }).catch(err => console.error('Error guardando perfil post-login:', err));
+
+    if (isNewUser) {
+      await savePromise;
+    }
   }
 
   /**
@@ -70,28 +120,21 @@ export class AuthService {
    * documentación de Firebase pide para `signInWithRedirect`.
    */
   async handleGoogleRedirectResult(): Promise<UserCredential | null> {
-    const result = await getRedirectResult(this.auth);
-    if (!result) return null;
+    let result: UserCredential | null = null;
+    try {
+      result = await getRedirectResult(this.auth);
+      if (!result) return null;
 
-    const googleUser = result.user;
-    const googleEmail = googleUser.email?.toLowerCase().trim();
-
-    if (googleEmail) {
-      // Buscar si existe un perfil con este mismo correo pero diferente UID
-      const existingUid = await this.firestoreService.findUidByEmail(googleEmail);
-      if (existingUid && existingUid !== googleUser.uid) {
-        await this.firestoreService.migrateUserData(existingUid, googleUser.uid);
+      await this.processSuccessfulGoogleLogin(result);
+      return result;
+    } finally {
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.removeItem('google_login_pending');
+          window.dispatchEvent(new CustomEvent('google_redirect_done', { detail: { success: !!result } }));
+        } catch {}
       }
     }
-
-    // Guardar/actualizar perfil en Firestore
-    await this.firestoreService.saveUserProfile({
-      displayName: googleUser.displayName || '',
-      email: googleEmail || '',
-      emailVerified: true
-    });
-
-    return result;
   }
 
   async register(email: string, pass: string, name: string) {

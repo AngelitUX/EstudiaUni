@@ -27,25 +27,45 @@ export class LoginComponent implements OnInit, OnDestroy {
   isResetting = false;
   resetSuccess = false;
   showPassword = false;
+  isGoogleRedirectPending = false;
   private stuckGoogleLoginTimer: ReturnType<typeof setTimeout> | null = null;
   private authSub: Subscription | null = null;
 
+  private onRedirectDone = (ev: any) => {
+    if (!ev?.detail?.success && !this.auth.currentUser) {
+      this.isGoogleRedirectPending = false;
+      this.loading = false;
+    }
+  };
+
   ngOnInit() {
+    if (typeof window !== 'undefined') {
+      const isLocalhost = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+      if (isLocalhost) {
+        try { sessionStorage.removeItem('google_login_pending'); } catch {}
+        this.isGoogleRedirectPending = false;
+      } else {
+        try {
+          if (sessionStorage.getItem('google_login_pending') === 'true') {
+            this.isGoogleRedirectPending = true;
+            this.loading = true;
+            setTimeout(() => {
+              if (this.isGoogleRedirectPending && !this.auth.currentUser) {
+                this.isGoogleRedirectPending = false;
+                this.loading = false;
+                try { sessionStorage.removeItem('google_login_pending'); } catch {}
+              }
+            }, 7000);
+          }
+        } catch {}
+        window.addEventListener('google_redirect_done', this.onRedirectDone);
+      }
+    }
+
     // Si ya hay sesión iniciada, no tiene sentido mostrar el formulario. Cubre sobre todo
     // el caso de volver de un signInWithRedirect a Google: el resultado a veces tarda en
     // resolverse (sobre todo en Firefox), así que esto se queda SUSCRITO en vez de mirar
-    // el estado una sola vez al cargar — un chequeo de una sola pasada (ej. firstValueFrom)
-    // podía capturar el primer valor `null` justo antes de que Firebase terminara de
-    // procesar el redirect, y ya no volvía a reaccionar cuando el usuario sí llegaba un
-    // instante (o varios segundos) después: se quedaba viendo el formulario de login
-    // aunque el inicio de sesión sí hubiera funcionado (reportado en producción,
-    // 2026-09-04, en Chrome y Firefox).
-    // Se exige `emailVerified` a propósito: una cuenta de correo sin verificar tiene que ir a
-    // /verify-email, y de eso ya se encarga `onSubmit()`. Sin este filtro las dos rutas de
-    // navegación compiten por el mismo usuario (esta hacia /dashboard, la de onSubmit hacia
-    // /verify-email) y cuál gana depende del orden en que resuelvan. Las cuentas de Google
-    // llegan siempre con `emailVerified: true`, así que el caso que importa aquí —volver del
-    // redirect— sigue cubierto.
+    // el estado una sola vez al cargar.
     this.authSub = this.authService.user$.subscribe((user) => {
       if (user?.emailVerified) {
         this.router.navigate(['/dashboard']);
@@ -122,22 +142,21 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.error = '';
     this.loading = true;
 
-    // signInWithRedirect depende de un iframe interno de Firebase para coordinar el viaje
-    // de ida y vuelta a Google. En Firefox con protección estricta de cookies de terceros
-    // ese iframe puede quedar bloqueado o simplemente ser muy lento — confirmado en
-    // producción (2026-09-04) que a veces SÍ termina navegando a Google pasados varios
-    // segundos, así que 10s de margen (no menos) evita mostrar "está bloqueado" justo antes
-    // de que funcione solo. Si de verdad se navega, esta página se descarga y el timer
-    // nunca llega a disparar.
-    this.stuckGoogleLoginTimer = setTimeout(() => {
-      this.loading = false;
-      this.error = 'Esto está tardando más de lo normal — tu navegador podría estar bloqueando el inicio de sesión con Google (pasa seguido en Firefox, por su protección de cookies de terceros). Si no avanza solo en unos segundos más, prueba con tu correo y contraseña, o usa Chrome.';
-    }, 10000);
+    const isLocalhost = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+    if (!isLocalhost) {
+      this.stuckGoogleLoginTimer = setTimeout(() => {
+        this.loading = false;
+        this.error = 'Esto está tardando más de lo normal — tu navegador podría estar bloqueando el inicio de sesión con Google (pasa seguido en Firefox, por su protección de cookies de terceros). Si no avanza solo en unos segundos más, prueba con tu correo y contraseña, o usa Chrome.';
+      }, 10000);
+    }
 
     try {
-      // Navega a Google — no vuelve a este método. El resultado (éxito o error) se
-      // recoge en AppComponent.ngOnInit cuando la app se recarga de vuelta.
-      await this.authService.startGoogleLogin();
+      const cred = await this.authService.startGoogleLogin();
+      if (cred) {
+        if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
+        this.loading = false;
+        this.router.navigate(['/dashboard']);
+      }
     } catch (e: any) {
       if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
       this.error = mensajeErrorGoogle(e);
@@ -148,5 +167,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.stuckGoogleLoginTimer) clearTimeout(this.stuckGoogleLoginTimer);
     this.authSub?.unsubscribe();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('google_redirect_done', this.onRedirectDone);
+    }
   }
 }

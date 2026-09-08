@@ -59,19 +59,11 @@ interface FaqItem {
         <!-- QUICK ACTIONS -->
         <section class="quick-actions-section">
           <div class="quick-actions-grid">
-            <a href="mailto:soporte&#64;estudiauni.cl" class="quick-action-card clickable" id="quick-email">
+            <a href="mailto:contacto.estudiauni&#64;gmail.com" class="quick-action-card clickable" id="quick-email">
               <div class="qa-icon">📧</div>
               <div class="qa-text">
                 <h3>Email</h3>
-                <p><span class="email-user">soporte&#64;</span><span class="email-domain">estudiauni.cl</span></p>
-              </div>
-              <span class="qa-arrow">↗</span>
-            </a>
-            <a href="https://wa.me/56912345678" target="_blank" class="quick-action-card clickable" id="quick-whatsapp">
-              <div class="qa-icon">💬</div>
-              <div class="qa-text">
-                <h3>WhatsApp</h3>
-                <p>Respuesta en minutos</p>
+                <p><span class="email-user">contacto.estudiauni&#64;</span><span class="email-domain">gmail.com</span></p>
               </div>
               <span class="qa-arrow">↗</span>
             </a>
@@ -165,7 +157,7 @@ interface FaqItem {
                   <select id="contact-category" [(ngModel)]="formData.category" name="category">
                     <option value="">Selecciona una categoría</option>
                     <option value="cuenta">Cuenta y acceso</option>
-                    <option value="pago">Pagos y suscripción</option>
+                    <option value="pago">Pagos y Plan Pro</option>
                     <option value="tecnico">Problema técnico</option>
                     <option value="contenido">Contenido y preguntas</option>
                     <option value="otro">Otro</option>
@@ -183,10 +175,10 @@ interface FaqItem {
                   ></textarea>
                 </div>
                 <div *ngIf="submitSuccess" class="form-success">
-                  <span>✅</span> ¡Mensaje enviado! Te responderemos pronto.
+                  <span>✅</span> Abrimos tu correo con el mensaje listo. Si no se abrió, escríbenos directamente a <strong>{{ supportEmail }}</strong>.
                 </div>
                 <div *ngIf="submitError" class="form-error">
-                  <span>❌</span> Ocurrió un error. Por favor intenta nuevamente.
+                  <span>❌</span> No pudimos abrir tu correo. Escríbenos directamente a <strong>{{ supportEmail }}</strong>.
                 </div>
                 <button
                   type="submit"
@@ -195,8 +187,12 @@ interface FaqItem {
                   id="contact-submit-btn"
                 >
                   <span *ngIf="!sending">📤 Enviar mensaje</span>
-                  <span *ngIf="sending">⏳ Enviando...</span>
+                  <span *ngIf="sending">⏳ Abriendo tu correo...</span>
                 </button>
+                <p class="form-mail-note">
+                  Al enviar se abrirá tu aplicación de correo con el mensaje redactado hacia
+                  <a [href]="'mailto:' + supportEmail">{{ supportEmail }}</a>. También puedes escribirnos ahí directamente.
+                </p>
               </form>
             </div>
           </div>
@@ -382,7 +378,7 @@ interface FaqItem {
       transition: all 0.25s;
       cursor: default;
     }
-    /* Clickable cards (Email, WhatsApp) — stand out with accent border + glow + pointer */
+    /* Clickable card (Email) — stands out with accent border + glow + pointer */
     .quick-action-card.clickable {
       cursor: pointer;
       border: 2px solid rgba(133,92,214,0.45);
@@ -577,6 +573,9 @@ interface FaqItem {
       align-items: center;
       gap: 0.5rem;
     }
+    .form-mail-note { font-size: 0.78rem; color: var(--text-muted, #9ca3af); line-height: 1.5; margin: 0.25rem 0 0; }
+    .form-mail-note a { color: #855cd6; text-decoration: none; }
+    .form-mail-note a:hover { text-decoration: underline; }
 
     .btn-send {
       background: linear-gradient(135deg, #855cd6, #6b46b8);
@@ -671,6 +670,8 @@ export class SoporteComponent implements OnInit, OnDestroy {
   private document = inject(DOCUMENT);
   private faqSchemaScript?: HTMLScriptElement;
 
+  readonly supportEmail = 'contacto.estudiauni@gmail.com';
+
   searchQuery = '';
   openFaq: number | null = null;
   sending = false;
@@ -722,12 +723,12 @@ export class SoporteComponent implements OnInit, OnDestroy {
     },
     {
       q: '¿Cómo funciona el pago del Plan Pro?',
-      a: 'Aceptamos tarjetas de crédito y débito a través de WebPay Plus. Puedes elegir pago mensual o anual (con un 41% de descuento). El cobro es automático al inicio de cada período. Puedes cancelar en cualquier momento desde tu perfil.',
+      a: 'El Plan Pro es un pase de acceso por tiempo definido (1 mes o 1 año) que se paga con un cobro único, no una suscripción con renovación automática. Puedes pagar con tarjetas de crédito y débito a través de Flow, o por transferencia bancaria que un administrador verifica manualmente. Si eliges el pase anual obtienes un 41% de descuento frente a 12 meses sueltos. Al vencer el período, tu cuenta vuelve al Plan Básico hasta que compres un nuevo pase.',
       icon: '💳'
     },
     {
-      q: '¿Puedo cancelar mi suscripción Pro en cualquier momento?',
-      a: 'Sí. Puedes cancelar cuando quieras desde Configuración → Mi Plan. Tu acceso Pro se mantiene activo hasta el final del período pagado. No se realizan reembolsos parciales.',
+      q: '¿El Plan Pro se renueva o se me cobra automáticamente?',
+      a: 'No. Al ser un pago único por un período definido, nunca se te vuelve a cobrar de forma automática y no hay nada que "cancelar": el pase simplemente expira en la fecha que aparece en tu perfil. Si compras un nuevo pase mientras aún te quedan días vigentes, los días nuevos se suman a los que tenías. No se realizan reembolsos parciales por el tiempo no utilizado.',
       icon: '🔄'
     },
     {
@@ -752,7 +753,7 @@ export class SoporteComponent implements OnInit, OnDestroy {
     },
     {
       q: '¿Cómo elimino mi cuenta?',
-      a: 'Para eliminar tu cuenta, envíanos un correo a soporte@estudiauni.cl desde la dirección de tu cuenta con el asunto "Eliminar cuenta". Procesamos la solicitud en un plazo máximo de 5 días hábiles.',
+      a: 'Para eliminar tu cuenta, envíanos un correo a contacto.estudiauni@gmail.com desde la dirección de tu cuenta con el asunto "Eliminar cuenta". Procesamos la solicitud en un plazo máximo de 5 días hábiles.',
       icon: '🗑️'
     }
   ];
@@ -773,16 +774,44 @@ export class SoporteComponent implements OnInit, OnDestroy {
     this.openFaq = this.openFaq === i ? null : i;
   }
 
-  async sendMessage() {
+  private readonly categoryLabels: Record<string, string> = {
+    cuenta: 'Cuenta y acceso',
+    pago: 'Pagos y Plan Pro',
+    tecnico: 'Problema técnico',
+    contenido: 'Contenido y preguntas',
+    otro: 'Otro'
+  };
+
+  sendMessage() {
     if (!this.formData.name || !this.formData.email || !this.formData.message) return;
     this.sending = true;
     this.submitSuccess = false;
     this.submitError = false;
-    // Simulate send (would integrate with a real backend/email service)
-    await new Promise(r => setTimeout(r, 1500));
-    this.sending = false;
-    this.submitSuccess = true;
-    this.formData = { name: '', email: '', category: '', message: '' };
-    setTimeout(() => { this.submitSuccess = false; }, 5000);
+
+    const categoria = this.categoryLabels[this.formData.category] || 'Consulta general';
+    const subject = `[Soporte EstudiaUni] ${categoria} — ${this.formData.name}`;
+    const body =
+      `Nombre: ${this.formData.name}\n` +
+      `Correo de contacto: ${this.formData.email}\n` +
+      `Categoría: ${categoria}\n` +
+      `\n--- Mensaje ---\n${this.formData.message}\n`;
+    const mailto = `mailto:${this.supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    try {
+      const w = this.document.defaultView;
+      if (w) {
+        w.location.href = mailto;
+      } else {
+        throw new Error('no window');
+      }
+      this.submitSuccess = true;
+      this.formData = { name: '', email: '', category: '', message: '' };
+      setTimeout(() => { this.submitSuccess = false; }, 8000);
+    } catch {
+      this.submitError = true;
+      setTimeout(() => { this.submitError = false; }, 8000);
+    } finally {
+      this.sending = false;
+    }
   }
 }

@@ -439,21 +439,19 @@ body.spacing-xwide textarea {
 .mobile-overlay {
   position: fixed !important;
   inset: 0 !important;
-  background: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: blur(4px) !important;
+  background: rgba(0, 0, 0, 0.65) !important;
   z-index: 10000 !important; /* Ensure z-index is elevated on top of other content */
-  /* display:none/block can't be transitioned (it's all-or-nothing), which is why closing
-     used to snap shut instantly even though .mobile-menu's own `left` transition below looks
-     fine on the way in. Toggling opacity/visibility instead lets both the backdrop fade AND
-     the menu's slide play out smoothly in both directions. */
   opacity: 0 !important;
   visibility: hidden !important;
-  transition: opacity 0.28s ease, visibility 0.28s ease !important;
+  pointer-events: none !important;
+  transition: opacity 0.22s ease, visibility 0.22s ease !important;
+  will-change: opacity;
 }
 
 .mobile-overlay.open {
   opacity: 1 !important;
   visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -471,15 +469,19 @@ body.spacing-xwide textarea {
   background: #0F1018 !important;
   position: fixed !important;
   top: 0 !important;
-  left: -280px !important;
+  left: 0 !important;
+  transform: translate3d(-100%, 0, 0) !important;
   z-index: 10001 !important;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform;
   overflow: hidden !important; /* Prevent outer drawer container from expanding */
   padding: 1rem 0 !important; /* Clean vertical spacing */
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6) !important;
 }
 
 .mobile-overlay.open .mobile-menu {
   left: 0 !important;
+  transform: translate3d(0, 0, 0) !important;
 }
 
 .mobile-footer {
@@ -582,6 +584,9 @@ body.spacing-xwide textarea {
   }
   .mobile-header {
     display: flex !important;
+    background: #0d0f17 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   .mobile-menu-btn {
     display: flex !important;
@@ -603,6 +608,9 @@ body.spacing-xwide textarea {
   }
   .mobile-header {
     display: flex !important;
+    background: #0d0f17 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   .mobile-menu-btn {
     display: flex !important;
@@ -1025,6 +1033,7 @@ body .nav-icon-img {
   opacity: 0.9 !important;
   transition: opacity 0.15s ease !important;
   flex-shrink: 0 !important;
+  content-visibility: auto;
 }
 body .nav-item:hover .nav-icon-img {
   opacity: 1 !important;

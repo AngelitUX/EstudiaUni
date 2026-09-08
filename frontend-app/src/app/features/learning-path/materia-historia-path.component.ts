@@ -43,20 +43,20 @@ type PathItem = {
           </a>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-          <a class="nav-item active" routerLink="/ruta"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-          <a class="nav-item" routerLink="/ensayos"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-          <a class="nav-item" routerLink="/mini-ensayo"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-          <a class="nav-item" routerLink="/mente-veloz"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+          <a class="nav-item" routerLink="/dashboard"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+          <a class="nav-item active" routerLink="/ruta"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+          <a class="nav-item" routerLink="/ensayos"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+          <a class="nav-item" routerLink="/mini-ensayo"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+          <a class="nav-item" routerLink="/mente-veloz"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
           
           <div class="sidebar-section-title" (click)="toggleHerramientas()">
             HERRAMIENTAS
             <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
           </div>
           <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-            <a class="nav-item" routerLink="/calculadora-nem"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-            <a class="nav-item" routerLink="/recursos"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+            <a class="nav-item" routerLink="/encuentra-tu-carrera"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+            <a class="nav-item" routerLink="/calculadora-nem"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+            <a class="nav-item" routerLink="/recursos"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
           </div>
           <!-- Sidebar Promo Card -->
           <div *ngIf="!isProPlan() && !adminService.isAdmin()" class="sidebar-promo-card">
@@ -68,11 +68,11 @@ type PathItem = {
         </nav>
         <div class="sidebar-footer" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem 0.75rem;">
           <a class="nav-item" (click)="showSettingsModal = true">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
             <span class="nav-text">Configuración</span>
           </a>
           <a class="nav-item logout-btn-sidebar" (click)="confirmLogout()">
-            <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
+            <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
             <span class="nav-text">Cerrar Sesión</span>
           </a>
         </div>
@@ -109,29 +109,29 @@ type PathItem = {
             <button class="mobile-close-btn" (click)="mobileOpen=false" style="position: absolute; top: 0.75rem; right: 1.25rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
           </div>
           <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
-            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
-            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
-            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
-            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
+            <a class="nav-item" routerLink="/dashboard" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Inicio.avif" alt="Inicio" class="nav-icon-img"/><span class="nav-text">Inicio</span></a>
+            <a class="nav-item active" routerLink="/ruta" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RutaDeAprendizaje.avif" alt="Ruta de Aprendizaje" class="nav-icon-img"/><span class="nav-text">Ruta de Aprendizaje</span></a>
+            <a class="nav-item" routerLink="/ensayos" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnsayosPaes.avif" alt="Ensayos PAES" class="nav-icon-img"/><span class="nav-text">Ensayos PAES</span></a>
+            <a class="nav-item" routerLink="/mini-ensayo" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MiniEnsayos.avif" alt="Mini Ensayos" class="nav-icon-img"/><span class="nav-text">Mini Ensayos</span></a>
+            <a class="nav-item" routerLink="/mente-veloz" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_MenteVeloz.avif" alt="Mente Veloz" class="nav-icon-img"/><span class="nav-text">Mente Veloz</span></a>
             
             <div class="sidebar-section-title" (click)="toggleHerramientas()">
               HERRAMIENTAS
               <span class="toggle-icon" [style.transform]="herramientasExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'">▼</span>
             </div>
             <div class="sidebar-sub-items" [class.expanded]="herramientasExpanded" [class.collapsible]="isCollapsible">
-              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
-              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
-              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
+              <a class="nav-item" routerLink="/encuentra-tu-carrera" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_EnncuentraTuCarrera.avif" alt="Encuentra tu Carrera" class="nav-icon-img"/><span class="nav-text">Encuentra tu Carrera</span></a>
+              <a class="nav-item" routerLink="/calculadora-nem" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CalculadoraNEM.avif" alt="Calculadora NEM" class="nav-icon-img"/><span class="nav-text">Calculadora NEM</span></a>
+              <a class="nav-item" routerLink="/recursos" (click)="mobileOpen=false"><img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_RecursosAdicionales.avif" alt="Recursos Adicionales" class="nav-icon-img"/><span class="nav-text">Recursos Adicionales</span></a>
             </div>
           </nav>
           <div class="mobile-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.5rem;">
             <a class="nav-item" (click)="showSettingsModal = true; mobileOpen=false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_Configuracion.avif" alt="Configuración" class="nav-icon-img nav-icon-img-config"/>
               <span class="nav-text">Configuración</span>
             </a>
             <a class="nav-item logout-btn-sidebar" (click)="confirmLogout(); mobileOpen=false">
-              <img src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
+              <img decoding="async" src="assets/images/Nuevos VideosEIlustraciones/IconosAVIF/P_CerrarSesion.avif" alt="Cerrar Sesión" class="nav-icon-img"/>
               <span class="nav-text">Cerrar Sesión</span>
             </a>
           </div>
@@ -943,7 +943,7 @@ type PathItem = {
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* MOBILE */
-    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: rgba(13,15,23,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 101; box-sizing: border-box; }
+    .mobile-header { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; background: #0d0f17; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 101; box-sizing: border-box; }
     .mobile-header-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 1rem; gap: 1rem; box-sizing: border-box; width: 100%; }
     .mobile-header.mobile-header-with-pro .mobile-logo-img { animation: none; }
     .mobile-header-pro-row { display: flex; justify-content: center; padding: 0 1rem 0.55rem; box-sizing: border-box; width: 100%; }

@@ -57,7 +57,7 @@ import { RouterModule } from '@angular/router';
           <p>Ante cualquier consulta sobre estos Términos, escríbenos a contacto.estudiauni&#64;gmail.com o a través de nuestro <a routerLink="/soporte" (click)="close.emit()">Centro de Soporte</a>.</p>
         </div>
         <div class="legal-modal-body" *ngIf="type === 'privacy'">
-          <p class="legal-updated">Última actualización: 12 de agosto de 2026</p>
+          <p class="legal-updated">Última actualización: 7 de septiembre de 2026</p>
           <p>En EstudiaUni tratamos tus datos personales conforme a la Ley N° 19.628 sobre Protección de la Vida Privada y demás normativa chilena aplicable en materia de protección de datos. Esta Política explica qué información recopilamos, para qué la usamos, con quién la compartimos y qué derechos tienes sobre ella.</p>
 
           <h4>I. Responsable del tratamiento</h4>
@@ -70,7 +70,7 @@ import { RouterModule } from '@angular/router';
           <p>Usamos tus datos para: crear y administrar tu cuenta; personalizar tu ruta de estudio y las respuestas del Tutor IA; procesar pagos y gestionar suscripciones; medir y mejorar el rendimiento de la plataforma; enviarte comunicaciones operativas (confirmaciones, avisos de cambios) y, solo si lo autorizas, comunicaciones promocionales; prevenir fraudes y cumplir obligaciones legales.</p>
 
           <h4>IV. Con quién compartimos tu información</h4>
-          <p>No vendemos tus datos personales. Los compartimos únicamente con proveedores que nos ayudan a operar el Servicio, bajo acuerdos de confidencialidad y tratamiento de datos: Flow (procesamiento de pagos), Google Firebase / Google Cloud (autenticación y alojamiento de datos), proveedores de modelos de inteligencia artificial utilizados por el Tutor IA (para procesar tus consultas y generar respuestas), y herramientas de analítica para entender el uso agregado de la plataforma. También podemos divulgar información cuando la ley, un tribunal o una autoridad competente lo exija.</p>
+          <p>No vendemos tus datos personales. Los compartimos únicamente con proveedores que nos ayudan a operar el Servicio, bajo acuerdos de confidencialidad y tratamiento de datos: Flow (procesamiento de pagos), Google Firebase / Google Cloud (autenticación y alojamiento de datos), Cloudflare (protección contra bots mediante Turnstile en modo "Managed"; ver sección XIII), proveedores de modelos de inteligencia artificial utilizados por el Tutor IA (para procesar tus consultas y generar respuestas), y herramientas de analítica para entender el uso agregado de la plataforma. También podemos divulgar información cuando la ley, un tribunal o una autoridad competente lo exija.</p>
 
           <h4>V. Transferencia internacional de datos</h4>
           <p>Algunos de nuestros proveedores (por ejemplo, de infraestructura en la nube o de modelos de inteligencia artificial) pueden procesar datos fuera de Chile. En esos casos, exigimos contractualmente a dichos proveedores mantener estándares de protección de datos equivalentes a los exigidos por la normativa chilena.</p>
@@ -97,7 +97,7 @@ import { RouterModule } from '@angular/router';
           <p>Si tienes preguntas sobre esta Política o quieres ejercer tus derechos, contáctanos en contacto.estudiauni&#64;gmail.com o a través de nuestro <a routerLink="/soporte" (click)="close.emit()">Centro de Soporte</a>.</p>
 
           <h4>XIII. Turnstile de Cloudflare</h4>
-          <p>Para proteger la plataforma de bots y actividad maliciosa usamos <strong>Cloudflare Turnstile</strong>, una herramienta de verificación que no te pide resolver ningún acertijo visual. A continuación reproducimos, en su idioma original, el addendum de privacidad que Cloudflare exige incluir a los sitios que usan este servicio.</p>
+          <p>Para proteger la plataforma de bots y actividad maliciosa usamos <strong>Cloudflare Turnstile</strong>, una herramienta de verificación de <strong>Cloudflare, Inc.</strong> configurada en su <strong>modo "Managed" (gestionado)</strong>. En este modo, Turnstile decide automáticamente cómo verificar cada visita: en la gran mayoría de los casos la comprobación es invisible y no tienes que hacer nada, y solo de forma excepcional puede mostrarte una casilla de confirmación (sin acertijos de imágenes ni texto distorsionado). Turnstile no utiliza cookies de publicidad ni te rastrea entre sitios. A continuación reproducimos, en su idioma original, el addendum de privacidad que Cloudflare exige incluir a los sitios que usan este servicio.</p>
 
           <div class="legal-turnstile-addendum">
             <p class="legal-updated">Turnstile Privacy Addendum — Last updated: June 18, 2025</p>
