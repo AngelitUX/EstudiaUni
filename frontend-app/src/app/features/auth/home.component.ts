@@ -826,8 +826,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 1" class="tab-pane fade-in">
               <div class="tab-visual tab-exam-wrapper">
                 <video
-                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1789334853/videoEnsayoPAES.mp4"
-                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1789334853/videoEnsayoPAES.jpg"
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1789337694/EnsayoPAESTAMA%C3%91OBIEN.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1789337694/EnsayoPAESTAMA%C3%91OBIEN.jpg"
                   loop
                   [muted]="true"
                   playsinline
@@ -868,8 +868,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 2" class="tab-pane fade-in">
               <div class="tab-visual tab-chat-wrapper">
                 <video
-                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1789334876/videoEncuentraCarrera.mp4"
-                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1789334876/videoEncuentraCarrera.jpg"
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1789337688/EncuentraTuCarreraTAMA%C3%91OBIENmp4.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1789337688/EncuentraTuCarreraTAMA%C3%91OBIENmp4.jpg"
                   loop
                   [muted]="true"
                   playsinline
