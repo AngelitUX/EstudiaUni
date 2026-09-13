@@ -774,7 +774,7 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             </button>
             <button class="tab-btn" role="tab" [attr.aria-selected]="activeTab === 2" [class.active]="activeTab === 2" (click)="selectDemoTab(2)">
               <span class="tab-number">3</span>
-              <span class="tab-txt"><span class="tab-txt-full">Consulta al tutor IA</span><span class="tab-txt-short">Tutor IA</span></span>
+              <span class="tab-txt"><span class="tab-txt-full">Encuentra tu carrera</span><span class="tab-txt-short">Carrera</span></span>
               <div class="active-indicator"></div>
             </button>
           </div>
@@ -826,8 +826,8 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
             <div *ngIf="activeTab === 1" class="tab-pane fade-in">
               <div class="tab-visual tab-exam-wrapper">
                 <video
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_1600,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.mp4"
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1785742574/decoraciones/como_funciona/2_ensayos.jpg"
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1789334853/videoEnsayoPAES.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1789334853/videoEnsayoPAES.jpg"
                   loop
                   [muted]="true"
                   playsinline
@@ -864,12 +864,12 @@ import { LegalModalComponent } from '../../shared/components/legal-modal.compone
               </div>
             </div>
             
-            <!-- Tab 3: Consulta al tutor IA -->
+            <!-- Tab 3: Encuentra tu carrera -->
             <div *ngIf="activeTab === 2" class="tab-pane fade-in">
               <div class="tab-visual tab-chat-wrapper">
                 <video
-                  src="https://res.cloudinary.com/dqm3syhwr/video/upload/q_auto,vc_auto,w_1600,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.mp4"
-                  poster="https://res.cloudinary.com/dqm3syhwr/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1785742576/decoraciones/como_funciona/3_consulta.jpg"
+                  src="https://res.cloudinary.com/n4hzntja/video/upload/q_auto,vc_auto,w_1600,c_limit/v1789334876/videoEncuentraCarrera.mp4"
+                  poster="https://res.cloudinary.com/n4hzntja/video/upload/so_0,f_auto,q_auto,w_1600,c_limit/v1789334876/videoEncuentraCarrera.jpg"
                   loop
                   [muted]="true"
                   playsinline
