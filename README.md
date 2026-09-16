@@ -1,383 +1,484 @@
 # EstudiaUni.cl - Plataforma de Preparacion PAES
 
-Documentacion integral, arquitectura del sistema, manual de operacion y guia de desarrollo para el monorepo de EstudiaUni.cl.
+[![Angular](https://img.shields.io/badge/Angular-18.2-DD0031?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
+[![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%7C%20Auth%20%7C%20Hosting-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Cloud%20Run-4285F4?style=flat-square&logo=googlecloud&logoColor=white)](https://cloud.google.com/run)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-8E75B2?style=flat-square&logo=google&logoColor=white)](https://aistudio.google.com/)
+[![License](https://img.shields.io/badge/License-Proprietary-gray?style=flat-square)](#licencia)
+
+Plataforma web integral de alto rendimiento orientada a la preparacion de la Prueba de Acceso a la Educacion Superior (PAES) en Chile. Integra rutas de aprendizaje gamificadas, ensayos oficiales DEMRE cronometrados y asistidos, un tutor inteligente impulsado por Google Gemini 2.5 Flash, buscador vocacional con datos oficiales de admision, calculadora NEM/Ranking y un sistema freemium con pasarela de pagos.
+
+---
+
+## Tabla de Contenidos
+
+- [1. Descripcion General](#1-descripcion-general)
+- [2. Caracteristicas Principales](#2-caracteristicas-principales)
+- [3. Arquitectura del Sistema](#3-arquitectura-del-sistema)
+  - [3.1. Diagrama de Flujo y Componentes](#31-diagrama-de-flujo-y-componentes)
+  - [3.2. Patron de Comunicacion Hibrido](#32-patron-de-comunicacion-hibrido)
+- [4. Pila Tecnologica](#4-pila-tecnologica)
+- [5. Estructura del Repositorio](#5-estructura-del-repositorio)
+- [6. Modulos y Funcionalidades en Detalle](#6-modulos-y-funcionalidades-en-detalle)
+  - [6.1. Ruta de Aprendizaje](#61-ruta-de-aprendizaje)
+  - [6.2. Ensayos PAES Oficiales y Mini Ensayos](#62-ensayos-paes-oficiales-y-mini-ensayos)
+  - [6.3. Tutor Virtual Foco](#63-tutor-virtual-foco)
+  - [6.4. Herramientas Vocacionales y Academicas](#64-herramientas-vocacionales-y-academicas)
+  - [6.5. Panel de Administracion](#65-panel-de-administracion)
+- [7. Modelo de Negocio y Planes](#7-modelo-de-negocio-y-planes)
+- [8. Seguridad y Reglas de Base de Datos](#8-seguridad-y-reglas-de-base-de-datos)
+- [9. Modelo de Datos (Firestore)](#9-modelo-de-datos-firestore)
+- [10. Guia de Inicio Rapido](#10-guia-de-inicio-rapido)
+  - [10.1. Requisitos Previos](#101-requisitos-previos)
+  - [10.2. Instalacion](#102-instalacion)
+  - [10.3. Configuracion de Variables de Entorno](#103-configuracion-de-variables-de-entorno)
+  - [10.4. Ejecucion en Desarrollo](#104-ejecucion-en-desarrollo)
+- [11. Banco de Preguntas y Herramientas](#11-banco-de-preguntas-y-herramientas)
+- [12. Entornos de Prueba y Modo Offline](#12-entornos-de-prueba-y-modo-offline)
+- [13. Despliegue en Produccion](#13-despliegue-en-produccion)
+- [14. Convenciones de Codigo](#14-convenciones-de-codigo)
+- [15. Licencia y Creditos](#15-licencia-y-creditos)
 
 ---
 
 ## 1. Descripcion General
 
-EstudiaUni.cl es una plataforma web chilena de alto rendimiento orientada a la preparacion integral de la Prueba de Acceso a la Educacion Superior (PAES). Combina tecnicas de aprendizaje gamificado, simulacros oficiales cronometrados con resolucion asistida, un banco exhaustivo de ejercitacion tematica, herramientas vocacionales oficiales del sistema universitario chileno y un tutor inteligente impulsado por modelos de lenguaje de ultima generacion.
+EstudiaUni.cl es un ecosistema educativo desarrollado para optimizar el rendimiento de estudiantes chilenos que rinden la PAES. El sistema resuelve las limitaciones de los preuniversitarios tradicionales combinando:
 
-### Objetivos y Enfoque Pedagogico
-- Democratizar el acceso a preparacion PAES de alta calidad mediante un modelo freemium accesible.
-- Ofrecer una ruta de aprendizaje incremental organizada en materias, capitulos, secciones teoricas y desafios practicos.
-- Simular con exactitud las condiciones de rendicion real del Departamento de Evaluacion, Medicion y Registro Educacional (DEMRE).
-- Proporcionar retroalimentacion cualitativa y cuantitativa inmediata, detectando debilidades especificas por eje tematico y habilidad cognitiva.
+- **Estructura Pedagogica Incremental:** Curriculo organizado por materias, capitulos, secciones y evaluaciones formativas que guian al alumno paso a paso.
+- **Simulacion Realista:** Pruebas cronometradas construidas sobre los facsimiles oficiales liberados por el DEMRE, respetando ponderaciones y tiempos exactos.
+- **Retroalimentacion Inteligente:** Identificacion precisa de distractores y errores conceptuales mediante inteligencia artificial generativa.
+- **Accesibilidad y Rendimiento:** Aplicacion web moderna con prerenderizado estatico (SSR) para rutas clave, diseno responsivo optimizado para moviles y soporte para herramientas de accesibilidad (modo dislexia, alto contraste, navegacion por teclado).
 
 ---
 
-## 2. Arquitectura del Sistema y Flujo de Datos
+## 2. Caracteristicas Principales
 
-El repositorio esta estructurado como un monorepo compuesto por dos aplicaciones principales, herramientas de soporte y definiciones de infraestructura.
+- **Ruta Gamificada:** 8 materias oficiales con avance por niveles, desafios de jefe de capitulo ("Boss Levels") y minijuegos pedagogicos (clasificacion, completar oraciones, emparejar terminos, ordenamiento cronologico).
+- **Simulacros Oficiales:** Ensayos completos DEMRE (procesos regular e invierno) con modos "Real" (condiciones de examen estricto) y "Asistido" (con pausa y asistencia guiada).
+- **Mini Ensayos a la Medida:** Generacion dinamica de cuestionarios de 10, 20 o 30 preguntas focalizadas en ejes tematicos debiles, incluyendo un "Modo Mejorador" para repetir unicamente fallos anteriores.
+- **Tutor IA "Foco":** Sistema multicontexto impulsado por Google Gemini 2.5 Flash con capacidad de vision artificial para interpretar diagramas, formulas y graficos escaneados de las pruebas reales.
+- **Mente Veloz:** Minijuego de agilidad y calculo mental contrarreloj para agilizar el procesamiento numerico y verbal.
+- **Buscador Vocacional "Encuentra tu Carrera":** Base de datos indexada con estadisticas oficiales de postulacion, aranceles, ingresos y ponderaciones del sistema de admision chileno.
+- **Calculadora NEM y Ranking:** Computo homologado con las tablas de conversion oficiales del DEMRE para colegios Cientifico-Humanistas y Tecnico-Profesionales.
+- **Panel Administrativo:** Suite interna para gestion de contenido, pool de preguntas, metricas de usuarios, aprobacion de transferencias bancarias y auditoria.
+
+---
+
+## 3. Arquitectura del Sistema
+
+El proyecto opera como un monorepo modular disenado para separar responsabilidades de entrega estatica, consulta directa de datos y procesamiento seguro en backend.
+
+### 3.1. Diagrama de Flujo y Componentes
+
+```mermaid
+flowchart TD
+    subgraph Cliente ["Navegador del Estudiante"]
+        App["Angular 18 SPA / SSR"]
+        SignalsState["Gestion de Estado (Signals)"]
+        Turnstile["Cloudflare Turnstile Widget"]
+    end
+
+    subgraph FirebaseInfra ["Firebase Platform"]
+        FHosting["Firebase Hosting (CDN)"]
+        FAuth["Firebase Auth (Email & Google)"]
+        Firestore["Cloud Firestore (Base de Datos)"]
+    end
+
+    subgraph BackendServices ["Google Cloud Run (southamerica-west1)"]
+        NestAPI["NestJS API (/api/**)"]
+        AppCheckService["App Check Module"]
+        AiService["AI Feedback (Gemini 2.5)"]
+        PaymentService["Flow.cl & Subscripciones"]
+        AdminService["Admin & Auditoria"]
+    end
+
+    subgraph ExternalServices ["Servicios Externos"]
+        GeminiAPI["Google AI Studio (Gemini 2.5 Flash)"]
+        FlowAPI["Pasarela Flow.cl"]
+        CloudflareVerify["Cloudflare Siteverify API"]
+    end
+
+    App -->|Descarga inicial / SSR| FHosting
+    App -->|Login / Sesion| FAuth
+    App -->|Consultas directas: progreso, ensayos, perfil| Firestore
+
+    App -->|Peticiones seguras /api/**| FHosting
+    FHosting -->|Rewrite proxy| NestAPI
+
+    Turnstile -->|Token de verificacion| AppCheckService
+    AppCheckService -->|Valida sitekey| CloudflareVerify
+    AppCheckService -->|Genera token App Check| FAuth
+
+    AiService -->|Inferencia de prompts e imagenes| GeminiAPI
+    PaymentService -->|Creacion de cobros y webhooks| FlowAPI
+    AdminService -->|Admin SDK con permisos totales| Firestore
+```
+
+### 3.2. Patron de Comunicacion Hibrido
+
+1. **Lectura y Escritura Directa en Firestore:**
+   - La aplicacion Angular se conecta directamente a Cloud Firestore para perfiles de usuario, avance en materias, registro de actividades, lectura de ensayos y almacenamiento de intentos de examen.
+   - La seguridad no reside en una capa intermediaria de software, sino en reglas declarativas en `firestore.rules` validadas por los propios servidores de Google.
+
+2. **Servicios de Backend Especializados (NestJS en Cloud Run):**
+   - El backend solo interviene en operaciones sensibles que demandan secretos de servidor o procesamiento de alto costo:
+     - Orquestacion de prompts e inferencia en Google Gemini (`/api/ai/*`).
+     - Creacion y confirmacion criptografica de pagos con Flow.cl (`/api/subscriptions/*`).
+     - Emision de tokens de Firebase App Check con Cloudflare Turnstile (`/api/app-check/*`).
+     - Control administrativo de usuarios, aprobacion de pagos y auditoria (`/api/admin/*`).
+
+---
+
+## 4. Pila Tecnologica
+
+| Capa | Tecnologia | Version | Proposito |
+|---|---|---|---|
+| **Frontend** | Angular | 18.2.0 | Framework SPA reactivo basado en Standalone Components y Signals |
+| **Frontend SSR** | @angular/ssr | 18.2.21 | Prerenderizado estatico para SEO en rutas publicas institucionales |
+| **SDK Firebase** | @angular/fire / firebase | 18.0.1 / 10.14.1 | Autenticacion y conexion reactiva en tiempo real a Firestore |
+| **Renderizado Matematico** | KaTeX | 0.16.45 | Renderizado nativo de formulas matematicas complejas (M1 y M2) |
+| **Renderizado Markdown** | Marked | 17.0.5 | Formateo dinamico de respuestas pedagodicas del tutor IA |
+| **Onboarding** | Driver.js | 1.4.0 | Tours guiados interactivos para nuevos estudiantes |
+| **Backend** | NestJS | 10.4.0 | Framework modular en TypeScript para APIs REST estructuradas |
+| **Inteligencia Artificial** | @google/generative-ai | 0.24.1 | Integracion con el modelo Google Gemini 2.5 Flash |
+| **SDK Administrativo** | firebase-admin | 12.0.0 | Gestion de usuarios, App Check y Firestore con privilegios de sistema |
+| **Rate Limiting** | @nestjs/throttler | 6.0.0 | Proteccion contra saturacion (60 peticiones/minuto global) |
+| **Proteccion Anti-Bots** | Cloudflare Turnstile | v0 | Desafios invisibles sin friccion para verificacion de clientes |
+| **Pasarela de Pagos** | Flow.cl | REST API | Procesamiento de pagos en Chile (Webpay, debito, credito) |
+| **Hosting & Base de Datos** | Firebase / GCP | - | Firebase Hosting, Cloud Firestore y Google Cloud Run |
+
+---
+
+## 5. Estructura del Repositorio
 
 ```
 estudiauni.cl/
-|-- frontend-app/          Cliente web SPA/SSR en Angular 18 (incluye landing y aplicacion privada)
-|-- backend/               API REST modular en NestJS 10 (IA, pasarela de pagos, tareas admin)
-|-- content/               Fuente de verdad versionada del banco de preguntas (pool_preguntas)
-|-- tools/                 Scripts de validacion, subida de contenido y compilacion de metadatos
-|-- pdfs/                  Documentos tecnicos y facsimiles oficiales DEMRE
-|-- firestore.rules        Reglas de seguridad y control de acceso para Cloud Firestore
-|-- firestore.indexes.json Indices compuestos optimizados para Firestore
-|-- firebase.json          Configuracion de Firebase Hosting y enrutamiento hacia Cloud Run
-|-- actualizar.bat         Script de compilacion y publicacion del frontend en Firebase Hosting
-`-- desplegar-backend.bat  Script de compilacion y despliegue del backend en Google Cloud Run
+|-- frontend-app/                     Aplicacion cliente en Angular 18
+|   |-- src/
+|   |   |-- app/
+|   |   |   |-- core/                Servicios transversales, guards e interceptores
+|   |   |   |   |-- guards/          authGuard, adminGuard, emailVerifiedGuard
+|   |   |   |   `-- services/        firestore, auth, ai-assist, dashboard, seo, toast
+|   |   |   |-- features/            Modulos funcionales de la plataforma
+|   |   |   |   |-- admin/           Panel administrativo unificado y submodulos
+|   |   |   |   |-- auth/            Home/Landing, login, registro, verificacion de email
+|   |   |   |   |-- career-finder/   Buscador vocacional y chat con Foco
+|   |   |   |   |-- dashboard/       Panel del estudiante, metas PAES y rachas
+|   |   |   |   |-- dev/             Harness de pruebas aislado (/dev/ruta)
+|   |   |   |   |-- learning-path/   Ruta de aprendizaje, nodos, practicas y KaTeX
+|   |   |   |   |-- mente-veloz/     Juego de velocidad numerica contrarreloj
+|   |   |   |   |-- mini-ensayos/    Generador y runner de mini evaluaciones
+|   |   |   |   |-- nem-calculator/  Calculadora oficial de NEM y puntaje ranking
+|   |   |   |   |-- payment/         Modal de checkout y confirmacion de Flow
+|   |   |   |   |-- recursos/        Biblioteca de guias, libros y material de estudio
+|   |   |   |   `-- simulations/     Ensayos PAES oficiales (runner y revision)
+|   |   |   `-- shared/              Componentes visuales y layouts compartidos
+|   |   |-- assets/                  Bases de datos JSON de facsimiles y recursos multimedia
+|   |   |-- environments/            Variables de configuracion (produccion y desarrollo)
+|   |   `-- prerender-routes.txt     Rutas estaticas prerenderizadas para Googlebot
+|   `-- angular.json                 Configuracion del build y optimizacion de empaquetado
+|
+|-- backend/                          API REST en NestJS 10
+|   |-- src/
+|   |   |-- admin/                   Endpoints protegidos para administradores
+|   |   |-- ai-feedback/             Orquestacion de Google Gemini, prompts y vision
+|   |   |-- app-check/               Validador de Turnstile y emisor de tokens App Check
+|   |   |-- common/                  Guards globales (Throttler, FirebaseAuthGuard)
+|   |   |-- firebase/                Inicializador del SDK de Firebase Admin
+|   |   |-- subscriptions/           Integracion con Flow.cl, pases PRO y transferencias
+|   |   `-- users/                   Servicio de usuarios y perfiles
+|   `-- .env.example                 Plantilla de variables de entorno de servidor
+|
+|-- content/                          Fuente de verdad versionada de contenidos
+|   `-- pool-preguntas/              Bancos JSON estructurados por materia y eje tematico
+|
+|-- tools/                            Herramientas de soporte y mantenimiento
+|   |-- pool-preguntas/              Scripts de validacion, balance y subida a Firestore
+|   `-- meta/                        Compilador de resumenes de conteo (build-meta.js)
+|
+|-- firestore.rules                   Politicas de seguridad y permisos de Cloud Firestore
+|-- firestore.indexes.json            Indices compuestos para consultas ordenadas
+|-- firebase.json                     Reglas de Hosting, caching y enrutamiento hacia Cloud Run
+|-- actualizar.bat                    Script de despliegue del frontend a Firebase Hosting
+`-- desplegar-backend.bat             Script de despliegue del backend a Google Cloud Run
 ```
 
-### Patron de Comunicacion y Flujo de Datos
-La aplicacion utiliza un patron hibrido de conexion directa y backend especializado:
+---
 
-1. **Comunicacion Directa Frontend a Cloud Firestore:**
-   - La aplicacion cliente consulta y suscribe directamente a colecciones de Firestore utilizando Firebase SDK y AngularFire.
-   - Aplica a: perfiles de usuario, avance en rutas de aprendizaje, historial de intentos, lectura de ensayos, preguntas, recursos y noticias.
-   - La seguridad e integridad de los datos no depende de controladores intermediarios, sino de la estricta validacion declarada en `firestore.rules`.
+## 6. Modulos y Funcionalidades en Detalle
 
-2. **Comunicacion Frontend a Backend NestJS (`/api/**`):**
-   - El backend corre de forma aislada en Google Cloud Run y es enrutado bajo el mismo dominio (`https://estudiauni.cl/api/**`) mediante las reglas de reescritura de Firebase Hosting.
-   - Maneja exclusivamente operaciones de alta seguridad o consumo de servicios externos:
-     - Tutor Virtual Foco (orquestacion de prompts e inferencia en Google Gemini 2.5 Flash).
-     - Procesamiento de pagos y pasarela Flow.cl (creacion de transacciones, recepcion de webhooks y confirmacion criptografica).
-     - Aprobacion de transferencias bancarias y administracion de suscripciones.
-     - Emision e intercambio de tokens de Firebase App Check con Cloudflare Turnstile.
-     - Gestion avanzada de usuarios y auditoria.
+### 6.1. Ruta de Aprendizaje
+Organizada bajo el curriculo vigente del DEMRE en cuatro niveles: **Materia -> Capitulo -> Seccion -> Test**.
+
+- **8 Materias Disponibles:** Competencia Lectora, M1, M2, Biologia, Fisica, Quimica, Ciencias TP e Historia.
+- **Tipos de Nodos:**
+  - *Guias en Diapositivas:* Sintesis teorica paso a paso para lectura rapida.
+  - *Minijuegos Didacticos:* Clasificacion semantica, seleccion de sinonimos, completar oraciones, emparejamiento conceptual y preguntas rapidas.
+  - *Fórmulas con KaTeX:* Representacion grafica fiel de expresiones algebraicas y modelos fisicos.
+  - *Jefes de Capitulo:* Evaluaciones acumulativas que habilitan el desbloqueo del siguiente capitulo.
+
+### 6.2. Ensayos PAES Oficiales y Mini Ensayos
+- **Simulacros Oficiales:** Pruebas reales digitalizadas con dos modalidades:
+  - *Modo Real:* Temporizador inexorable con condiciones oficiales, sin pausas ni ayudas externas. Al concluir, los resultados pasan por un periodo de retencion para usuarios del plan gratuito y se aplica un periodo de descanso (cooldown) de 48 horas.
+  - *Modo Asistido:* Flexibilidad horaria, posibilidad de guardar el avance y boton de consulta asistida a Foco.
+- **Mini Ensayos:** Cuestionarios tematicos de extension reducida (10 a 30 preguntas) para sesiones rapidas de estudio.
+- **Modo Mejorador:** Algoritmo que filtra los errores cometidos en ensayos previos para transformarlos en una sesion de refuerzo correctivo.
+
+### 6.3. Tutor Virtual Foco
+Foco es la mascota y tutor de la plataforma, dotado de una personalidad empatica inspirada en el contexto estudiantil chileno. Emplea el modelo `gemini-2.5-flash` con prompts estrictamente aislados:
+
+- **Prompt Asistente en Examen:** Solo aporta preguntas de andamiaje, pistas metodologicas y recordatorios teoricos. Tiene terminantemente vetado revelar la alternativa correcta o descartar opciones explicitamente.
+- **Prompt de Revision Post-Entrega:** Analiza la prueba ya calificada. Informa la clave correcta, detalla la resolucion paso a paso y desglosa minuciosamente el error de razonamiento que justificaba la alternativa fallada por el estudiante.
+- **Soporte de Vision:** Al procesar preguntas digitalizadas de ensayos DEMRE, el sistema adjunta directamente la captura grafica original para que el modelo interprete figuras, tablas y expresiones matematicas sin deformaciones de OCR.
+
+### 6.4. Herramientas Vocacionales y Academicas
+- **Mente Veloz:** Dinamica de alta intensidad con temporizador regressivo de 60 o 180 segundos. Registra marcas historicas de desempeno en almacenamiento local.
+- **Encuentra tu Carrera:** Buscador universitario conectado a los registros oficiales de matricula y ponderaciones de universidades chilenas, asistido por un consultor vocacional de orientacion.
+- **Calculadora NEM y Ranking:** Computa el promedio de ensenanza media (1° a 4° medio) truncado a dos decimales y calcula el puntaje oficial correspondiente a la tabla DEMRE del tipo de colegio del estudiante.
+- **Recursos Adicionales:** Repositorio digital ordenado por formato (guias PDF, clases en video, lecturas y resumenes sinteticos).
+
+### 6.5. Panel de Administracion
+Modulo de acceso restringido para directores y editores de la plataforma:
+- Inspeccion, edicion y creacion de reactivos del pool de preguntas.
+- Visualizacion del padron de usuarios registrados con buscador en tiempo real.
+- Asignacion manual, extension temporal o anulacion de membresias PRO.
+- Bandeja de aprobacion de transferencias bancarias con previsualizacion de comprobantes.
+- Publicador de avisos y novedades del carrusel del home (`news`).
+- Registro y clasificacion de reportes de bugs informados por los alumnos.
 
 ---
 
-## 3. Modulos y Funcionalidades del Sistema
+## 7. Modelo de Negocio y Planes
 
-### 3.1. Ruta de Aprendizaje
-Estructurada bajo una jerarquia de cuatro niveles: **Materia -> Capitulo -> Seccion -> Test**.
-Cubre las ocho materias evaluadas en el proceso de admision:
-- Competencia Lectora
-- Competencia Matematica 1 (M1)
-- Competencia Matematica 2 (M2)
-- Ciencias - Biologia
-- Ciencias - Fisica
-- Ciencias - Quimica
-- Ciencias - Tecnico Profesional
-- Historia y Ciencias Sociales
+El sistema cuenta con dos modalidades de servicio disenadas para equilibrar sostenibilidad y acceso:
 
-#### Tipologia de Secciones
-Cada seccion contiene material especializado segun su naturaleza:
-- **Guias en Diapositivas (`isSlideGuide`):** Material teorico sintetico con navegacion interactiva paso a paso.
-- **Minijuegos y Practicas (`isPractice`):** Evaluaciones rapidas con mecanicas variadas:
-  - `categorize`: Clasificacion de elementos en contenedores semanticos.
-  - `fill-blanks`: Completar oraciones con conceptos clave.
-  - `synonyms`: Identificacion de vocabulario contextual.
-  - `match-pairs`: Emparejamiento de conceptos, formulas o procesos.
-  - `rapid`: Preguntas de respuesta veloz bajo presion temporal.
-  - `true-false`: Evaluacion de enunciados directos.
-  - `sort`: Ordenamiento cronologico o secuencial.
-- **Secciones de Jefe (`isBoss`):** Desafios de fin de capitulo con mayor nivel de complejidad.
-- **Consejos Clave (`isProTip`):** Sugerencias metodologicas y estrategias de resolucion sin evaluacion sumativa.
-- **Soporte Matematico KaTeX:** Renderizado nativo de formulas matematicas complejas en M1 y M2.
-
-### 3.2. Ensayos PAES Oficiales y Mini Ensayos
-- **Ensayos Completos:**
-  - Facsimiles oficiales del DEMRE categorizados por prueba, proceso de admision y temporada (invierno y regular).
-  - Dos modalidades de ejecucion:
-    - **Modo Real:** Temporizador estricto segun pautas oficiales, sin pausas, sin acceso a pistas, con retencion de resultados para cuentas basicas y aplicacion de cooldown de 48 horas.
-    - **Modo Asistido:** Permite pausar la sesion, guardar progreso para retomar posteriormente y solicitar orientacion al tutor Foco.
-- **Mini Ensayos:**
-  - Evaluaciones breves y personalizables donde el usuario selecciona materia, subtemas especificos y volumen de preguntas (10, 20 o 30 preguntas).
-  - **Modo Mejorador:** Capacidad de reintentar exclusivamente preguntas falladas en ensayos anteriores, calculando la tasa de superacion y afianzamiento conceptual.
-
-### 3.3. Tutor Virtual Foco (Google Gemini 2.5 Flash)
-Representado por Foco, un pulpo tutor de ocho tentaculos, uno por cada materia de la PAES. Utiliza el modelo `gemini-2.5-flash` con prompts especializados y disociados para evitar contradicciones pedagogicas:
-- **Asistencia durante Examen (`ASSIST_SYSTEM_PROMPT`):** Prohibe terminantemente entregar la respuesta correcta o descartar alternativas directamente. Proporciona pistas conceptuales, preguntas guia y referencias teoricas para estimular la deduccion.
-- **Revision Post-Entrega (`REVIEW_CHAT_SYSTEM_PROMPT`):** Revela la alternativa correcta, desglosa el paso a paso metodologico y analiza especificamente la opcion que el estudiante selecciono, explicitando por que era un distractor verosimil y que error conceptual provoco el fallo.
-- **Orientacion Vocacional (`CAREER_CHAT_SYSTEM_PROMPT`):** Asesora en eleccion de carreras, requisitos de ponderacion y perfiles academicos.
-- **Recomendaciones de Estudio (`RECOMMENDATIONS_SYSTEM_PROMPT`):** Sintetiza los ultimos registros de actividad del alumno y genera directrices concretas de refuerzo para el dashboard.
-- **Procesamiento de Imagenes (Vision):** Las preguntas digitalizadas de pruebas oficiales se procesan enviando la imagen directamente a la API de Gemini, permitiendo la interpretacion de diagramas cientificos, esquemas geometricos y graficos estadisticos.
-
-### 3.4. Herramientas Complementarias
-- **Mente Veloz:** Juego de agilidad cognitiva contrarreloj con tres niveles de dificultad (Normal, Hardcore y Muerte Subita) enfocado en operaciones numericas y comprension rapida.
-- **Encuentra tu Carrera:** Buscador universitario conectado a datos reales de matricula, cortes de puntaje y aranceles del sistema de admision chileno.
-- **Calculadora NEM y Ranking:** Computa el promedio oficial de Ensenanza Media y su conversion a puntaje estandarizado DEMRE segun el tipo de establecimiento educacional (Cientifico-Humanista o Tecnico-Profesional).
-- **Recursos Adicionales:** Repositorio filtrable de documentos tecnicos, esquemas, libros y enlaces de apoyo.
-
-### 3.5. Panel de Administracion
-Accesible unicamente para identidades verificadas registradas en la coleccion `admins`:
-- Gestion centralizada del pool de preguntas y su metadata.
-- Modulo de administracion de usuarios: busqueda por correo/UID, visualizacion de actividad, y otorgamiento, extension o revocacion directa de pases PRO.
-- Modulo de suscripciones y pagos: revision y aprobacion manual de comprobantes de transferencia bancaria.
-- Gestion del carrusel de noticias publicas del home (`news`).
-- Bandeja de reportes de errores enviados por los usuarios (`bug_reports`).
-- Acceso a pruebas del Modo Infinito por materia.
+| Caracteristica | Plan Basico (Gratis) | Plan PRO (Membresia por Pases) |
+|---|---|---|
+| **Precio** | $0 CLP | $9.990 CLP (1 mes) / $69.990 CLP (1 ano) |
+| **Modalidad de Cobro** | Sin costo | Pago unico no recurrente (sin cargos sorpresa) |
+| **Ruta de Aprendizaje** | Solo Capitulo 1 de cada materia | Acceso completo e ilimitado a las 8 materias |
+| **Ensayos PAES Reales** | 1 ensayo cada 48 horas (cooldown) | Ilimitados y sin tiempo de espera |
+| **Entrega de Resultados** | Retenidos durante 3 horas post-entrega | Inmediata con solucionario detallado |
+| **Consultas a Tutor Foco**| 5 fichas de interaccion diarias | 500 fichas de interaccion diarias |
+| **Mente Veloz** | 3 sesiones diarias en materias basicas | Sesiones ilimitadas en todas las asignaturas |
+| **Mini Ensayos** | Limitados a disponibilidad diaria | Cuestionarios y Modo Mejorador ilimitados |
+| **Acumulacion de Tiempo** | No aplica | Los nuevos pases suman dias al saldo vigente |
 
 ---
 
-## 4. Modelo de Negocio, Planes y Limites
+## 8. Seguridad y Reglas de Base de Datos
 
-La plataforma opera bajo un modelo freemium sin renovacion automatica forzada.
+La integridad del sistema se respalda en reglas declarativas en `firestore.rules`:
 
-### 4.1. Plan Basico (Gratuito)
-- Acceso al primer capitulo completo de cada una de las 8 materias en la Ruta de Aprendizaje.
-- Rendicion de 1 ensayo PAES en Modo Real cada 48 horas (periodo de cooldown forzado).
-- Limite diario de 1 ensayo y 5 quizzes.
-- 5 fichas diarias de interaccion con el tutor Foco.
-- Retencion de resultados de ensayos completados durante 3 horas antes de habilitar el reporte y la revision.
-- Sesiones limitadas en Mente Veloz (materias basicas, tiempos restringidos y maximo 3 sesiones por 24 horas).
-
-### 4.2. Plan PRO (Pases por Periodo Definido)
-El Plan PRO se adquiere mediante **pases de tiempo definido** (1 mes o 1 ano) pagados en una unica transaccion, sin cobros recurrentes automaticos:
-- Acceso ilimitado a todos los capitulos, secciones, practicas y evaluaciones de la Ruta de Aprendizaje.
-- Ensayos PAES y Mini Ensayos ilimitados, sin cooldown y con entrega inmediata de resultados.
-- 500 fichas diarias para consultas con el tutor Foco.
-- Acceso total a todas las materias y modalidades de Mente Veloz.
-- **Pases Acumulativos:** Si el usuario adquiere un nuevo pase antes del vencimiento del periodo vigente, los nuevos dias se suman automaticamente al saldo restante (`endDate = max(now, currentEndDate) + periodo`).
-- Opcion de compra para terceros (regalo de pase indicando el UID o correo del beneficiario).
-
-### 4.3. Pasarelas de Pago y Descuentos
-1. **Flow.cl:** Procesamiento de pagos en pesos chilenos (CLP) mediante Webpay, tarjetas de credito, debito y transferencias interbancarias.
-2. **Transferencia Bancaria Manual:** El estudiante transfiere a la cuenta bancaria de la plataforma y carga el comprobante digital. El pase queda en estado de espera hasta su validacion en el panel admin.
-3. **Cupones de Descuento:** Sistema de codigos promocionales administrados en la coleccion `discount_codes`, con reduccion porcentual o de monto fijo aplicable en el checkout.
+- **Prevencion de Escalada de Privilegios:** La creacion o actualizacion de perfiles de usuario en `users/{uid}` prohibe mutaciones del campo `plan`, `subscription` o `dailyCredits`. Solo el backend mediante el SDK de Firebase Admin posee autoridad para alterar esos atributos.
+- **Verificacion Temporal de Cooldowns:** El campo `lastSimulationFinishedAt` exige una ventana de validacion de tiempo respecto al reloj del servidor (-10 minutos a +2 minutos), bloqueando modificaciones fraudulentas destinadas a eludir el periodo de espera de 48 horas.
+- **Validacion de Retencion de Resultados:** Al concluir un intento en `intentos/{id}`, el servidor de reglas comprueba si el usuario cuenta con membresia activa. En cuentas gratuitas, se exige forzosamente que `resultsAvailableAt >= finishedAt + 3h`.
+- **Inmutabilidad de Intentos:** Los registros de examenes finalizados o abandonados no pueden eliminarse ni sobrescribirse.
+- **Proteccion Anti-Bots con Cloudflare Turnstile:** Integracion personalizada de Firebase App Check sin dependencias de extensiones obsoletas, mitigando intentos de scraping o ejecucion automatizada de llamadas al backend.
 
 ---
 
-## 5. Seguridad y Reglas de Base de Datos
+## 9. Modelo de Datos (Firestore)
 
-### 5.1. Reglas de Firestore (`firestore.rules`)
-Las politicas de acceso estan disenadas bajo el principio de minimo privilegio:
-- **Proteccion contra Autoasignacion de Privilegios:** Los usuarios solo pueden modificar datos no criticos de su documento en `users/{uid}`. No pueden alterar los campos `plan`, `subscription.tier`, `subscription.endDate` ni `dailyCredits`.
-- **Integridad de Cooldown Antifraude:** La actualizacion de `lastSimulationFinishedAt` exige validacion de reloj en el servidor (entre -10 minutos y +2 minutos respecto a `request.time`), evitando que el cliente manipule la fecha para eludir el cooldown.
-- **Cumplimiento de Retencion de Resultados:** Al finalizar un intento en `intentos/{id}`, si el usuario no cuenta con un Plan PRO vigente, la regla exige que `resultsAvailableAt` sea al menos 3 horas posterior a `finishedAt`.
-- **Inmutabilidad de Intentos:** Un intento completado o abandonado no puede ser eliminado ni modificado por el usuario. Durante la ejecucion solo se autoriza la mutacion del objeto `answers`.
-- **Privacidad de Administradores:** La coleccion `admins/{uid}` no puede ser enumerada por usuarios comunes; cada usuario solo puede comprobar la existencia de su propio UID.
+Principales colecciones que componen la base de datos de la plataforma:
 
-### 5.2. Proteccion contra Bots (Firebase App Check y Cloudflare Turnstile)
-- La aplicacion implementa Firebase App Check empleando Cloudflare Turnstile como proveedor personalizado.
-- El intercambio se efectua en el endpoint propio `POST /api/app-check/exchange`, donde el backend valida el token de Turnstile contra los servidores de Cloudflare y, tras la verificacion, genera un token firmado de App Check mediante el SDK de Firebase Admin.
-- El flujo previene la ejecucion de scraping y abuso automatizado en los servicios de autenticacion y base de datos.
-
----
-
-## 6. Modelo de Datos (Colecciones Firestore)
-
-| Coleccion | Proposito | Escritura | Lectura |
-|---|---|---|---|
-| `users/{uid}` | Perfil, plan, vigencia de suscripcion, creditos diarios y configuracion | Usuario (restringido) / Backend Admin SDK | Usuario autenticado |
-| `users/{uid}/actividad/{id}` | Registro cronologico de practicas, ensayos y racha | Usuario dueno | Usuario dueno / Admin |
-| `ensayos/{id}` | Metadata de ensayos PAES oficiales | Admin | Usuario autenticado |
-| `preguntas/{id}` | Preguntas asignadas a ensayos oficiales | Admin | Usuario autenticado |
-| `pool_preguntas/{id}` | Banco de preguntas para Mini Ensayos, Mente Veloz y Modo Infinito | Admin / Scripts de carga | Usuario autenticado |
-| `pool_preguntas_meta/summary` | Conteo consolidado de preguntas por materia y tema | Admin / Scripts | Usuario autenticado |
-| `lp_materias/{id}` | Materias de la ruta con conteos precalculados | Admin / Scripts | Usuario autenticado |
-| `lp_capitulos/{id}` | Capitulos de cada materia | Admin | Usuario autenticado |
-| `lp_capitulos/{id}/secciones/{id}` | Secciones de contenido, guias y practicas | Admin | Usuario autenticado |
-| `lp_tests/{id}` | Evaluaciones de fin de seccion | Admin | Usuario autenticado |
-| `intentos/{id}` | Registro de intentos de ensayos (dueno identificado por campo `odId`) | Usuario (restringido a su UID) | Usuario dueno |
-| `recursos_adicionales/{id}` | Guias, enlaces y material complementario | Admin | Usuario autenticado |
-| `news/{id}` | Noticias del carrusel informativo | Admin | Publico sin autenticacion |
-| `bug_reports/{id}` | Informes de error enviados por estudiantes | Usuario autenticado | Solo Admin |
-| `admins/{uid}` | Lista blanca de administradores | Manual en Consola Firebase | Dueno del UID o Admin |
-| `flow_payments/{token}` | Registro transaccional de pagos via Flow | Solo Backend | Solo Backend |
-| `manual_payments/{id}` | Registro de transferencias bancarias manuales | Usuario (creacion) / Backend | Usuario dueno / Admin |
-| `discount_codes/{code}` | Definicion de cupones de descuento | Admin / Backend | Solo Backend |
+```
+Cloud Firestore
+|-- users/                           Documentos de perfil del estudiante
+|   `-- {uid}/
+|       |-- plan, subscription       Nivel de acceso y fecha de vencimiento
+|       |-- dailyCredits             Fichas Foco y cuotas de uso diario
+|       `-- actividad/{id}           Historial de sesiones y calculo de rachas
+|
+|-- ensayos/{ensayoId}               Metadatos de ensayos oficiales DEMRE
+|-- preguntas/{preguntaId}           Reactivos de los ensayos oficiales
+|-- pool_preguntas/{preguntaId}      Banco para Mini Ensayos y Mente Veloz
+|-- pool_preguntas_meta/summary      Conteo consolidado de reactivos por tema
+|
+|-- lp_materias/{materiaId}          Materias principales de la Ruta
+|-- lp_capitulos/{capituloId}        Capitulos de contenido curricular
+|   `-- secciones/{seccionId}        Subcoleccion: guias, practicas y teoria
+|-- lp_tests/{testId}                Evaluaciones de cierre de seccion
+|
+|-- intentos/{intentoId}             Sesiones de examen (propiedad: campo odId)
+|-- recursos_adicionales/{recursoId} Documentos y enlaces de estudio
+|-- news/{newsId}                    Noticias publicas del home
+|-- bug_reports/{reportId}           Reportes de error enviados por usuarios
+`-- admins/{adminId}                 Lista blanca de UIDs con rol administrativo
+```
 
 ---
 
-## 7. Pila Tecnologica (Tech Stack)
+## 10. Guia de Inicio Rapido
 
-### Frontend (`frontend-app/`)
-- **Framework:** Angular 18.2.0 (arquitectura basada en Standalone Components y Signals reactivos).
-- **Renderizado:** Angular SSR y prerendering estatico para rutas publicas institucionales (`/`, `/login`, `/register`, `/verify-email`, `/soporte`, `/trabaja-con-nosotros`).
-- **Integracion Firebase:** `@angular/fire` v18.0.1 y `firebase` v10.14.1.
-- **Tipografia Matematica:** `katex` v0.16.45 para renderizado de expresiones LaTeX.
-- **Procesamiento de Texto:** `marked` v17.0.5 para formateo de explicaciones del tutor.
-- **Tours Guiados:** `driver.js` v1.4.0 para onboarding interactivo en el dashboard.
-- **Estilos:** CSS Vanilla modularizado, variables y tokens de diseno sin dependencias pesadas de frameworks externos.
+### 10.1. Requisitos Previos
+- **Node.js:** Version 20 LTS o superior.
+- **npm:** Version 10 o superior.
+- **Firebase CLI:** Instalado globalmente (`npm install -g firebase-tools`).
+- **Google Cloud SDK:** Requerido unicamente si se realizan despliegues del backend a Cloud Run.
 
-### Backend (`backend/`)
-- **Framework:** NestJS 10.4.0 estructurado modularmente con TypeScript.
-- **Inteligencia Artificial:** `@google/generative-ai` v0.24.1 (modelo `gemini-2.5-flash`).
-- **Control de Acceso y Datos:** `firebase-admin` v12.0.0.
-- **Control de Frecuencia (Rate Limiting):** `@nestjs/throttler` v6.0.0 (limite global de 60 peticiones/minuto por cliente).
-- **Validacion de Entrada:** `class-validator` y `class-transformer` con exclusion forzada de propiedades no declaradas.
-- **Almacenamiento Multimedia:** `cloudinary` v2.10.0 (utilizado en scripts de carga).
+### 10.2. Instalacion
 
-### Infraestructura y Servicios Externos
-- **Alojamiento Web:** Firebase Hosting (distribucion estatica optimizada con politicas de cache granulares).
-- **Ejecucion de API:** Google Cloud Run (servicio serverless contenerizado `estudiauni-api` en la region `southamerica-west1` - Santiago de Chile).
-- **Base de Datos y Autenticacion:** Google Cloud Firestore y Firebase Auth (Correo/Contrasena y Google Identity Provider).
-- **Pasarela de Pagos:** Flow.cl (integracion REST para compras directas).
-- **Seguridad Web:** Cloudflare Turnstile para verificacion invisible de clientes.
-- **CDN Multimedia:** Cloudinary para almacenamiento y distribucion de imagenes optimizadas en AVIF/WebP.
-
----
-
-## 8. Requisitos Previos e Instalacion
-
-### Requisitos del Sistema
-- Node.js version 20 LTS o superior.
-- npm version 10 o superior.
-- Firebase CLI (`firebase-tools`) instalado globalmente: `npm install -g firebase-tools`.
-- Google Cloud SDK (`gcloud`) configurado si se requiere el despliegue del backend.
-
-### Pasos de Instalacion
-
-1. **Clonar el repositorio:**
+1. Clonar el repositorio:
    ```bash
-   git clone https://gitlab.com/MaltSolutions/estudiauni.cl.git
+   git clone https://github.com/tu-usuario/estudiauni.cl.git
    cd estudiauni.cl
    ```
 
-2. **Instalar dependencias de todo el proyecto:**
+2. Instalar dependencias en todos los paquetes del monorepo:
    ```bash
    npm run install:all
    ```
-   *Este comando ejecuta la instalacion de paquetes en `backend/` y `frontend-app/` de forma secuencial.*
 
----
+### 10.3. Configuracion de Variables de Entorno
 
-## 9. Variables de Entorno y Configuracion
-
-### 9.1. Backend (`backend/.env`)
-Crear el archivo `backend/.env` basandose en `backend/.env.example`:
+#### Backend (`backend/.env`)
+Crear el archivo `backend/.env` tomando como referencia `backend/.env.example`:
 
 ```env
-# Credenciales de Servicio Firebase
+# Firebase Admin Credentials
 FIREBASE_PROJECT_ID=estudiauni
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@estudiauni.iam.gserviceaccount.com
+FIREBASE_CLIENT_EMAIL=tu-cuenta-de-servicio@estudiauni.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
-# Inteligencia Artificial (Google Gemini)
-GEMINI_API_KEY=AIzaSy...
+# Inteligencia Artificial
+GEMINI_API_KEY=tu_api_key_de_google_ai_studio
 
-# Pasarela de Pagos Flow.cl
+# Pasarela Flow (Entorno Sandbox para desarrollo)
 FLOW_ENVIRONMENT=sandbox
-FLOW_API_KEY=tu_api_key_de_flow
-FLOW_SECRET_KEY=tu_secret_key_de_flow
-BACKEND_PUBLIC_URL=https://tu-url-publica-o-tunel.com
+FLOW_API_KEY=tu_flow_api_key
+FLOW_SECRET_KEY=tu_flow_secret_key
+BACKEND_PUBLIC_URL=https://tu-tunel-cloudflared.com
 
-# Seguridad App Check (Cloudflare Turnstile)
+# App Check & Turnstile
 TURNSTILE_SECRET_KEY=0x4AAAAAA...
 FIREBASE_APP_ID=1:976475724065:web:586b9c2609d84674158660
 
-# Servidor y CORS
+# Servidor Local
 PORT=3000
 FRONTEND_APP_URL=http://localhost:4200
 ```
 
-### 9.2. Frontend (`frontend-app/src/environments/`)
-- `environment.development.ts`: Configurado para desarrollo local apuntando `apiUrl` a `http://localhost:3000` y `appCheckEnabled: false`.
-- `environment.ts`: Configurado para produccion apuntando `apiUrl` a `https://estudiauni.cl` con `appCheckEnabled: true`.
+#### Frontend (`frontend-app/src/environments/`)
+- `environment.development.ts`: Apunta `apiUrl` a `http://localhost:3000` con `appCheckEnabled: false` para evitar bloqueos en pruebas locales.
+- `environment.ts`: Configurado para produccion apuntando a `https://estudiauni.cl` con `appCheckEnabled: true`.
 
----
+### 10.4. Ejecucion en Desarrollo
 
-## 10. Comandos de Desarrollo y Operaciones
+Abrir dos terminales para ejecutar ambos servicios simultaneamente:
 
-### 10.1. Servidores de Desarrollo
-- **Iniciar Frontend Angular:**
-  ```bash
-  npm run dev:app
-  ```
-  *Disponible en `http://localhost:4200`.*
-
-- **Iniciar Backend NestJS:**
+- **Terminal 1: Servidor de Backend (NestJS)**
   ```bash
   npm run dev:backend
   ```
-  *Disponible en `http://localhost:3000/api` con recarga automatica.*
+  *La API iniciara en `http://localhost:3000/api` con recarga automatica.*
 
-### 10.2. Compilacion
-- **Compilar Frontend:**
+- **Terminal 2: Servidor de Frontend (Angular)**
   ```bash
-  npm run build:app
+  npm run dev:app
   ```
-- **Compilar Backend:**
-  ```bash
-  npm run build:backend
-  ```
-- **Compilacion Completa:**
-  ```bash
-  npm run build:all
-  ```
+  *La aplicacion web estara disponible en `http://localhost:4200`.*
 
-### 10.3. Gestion del Banco de Preguntas (`content/pool-preguntas/`)
-La fuente de verdad del banco de preguntas reside en `content/pool-preguntas/<materiaId>/<tema>.json`.
+---
 
-- **Validar formato y coherencia del pool:**
-  ```bash
-  node tools/pool-preguntas/build.js --check
-  ```
-- **Verificar suficiencia para Mini Ensayos y Mente Veloz:**
-  ```bash
-  node tools/pool-preguntas/verificar-modulos.js
-  ```
-- **Subir preguntas validadas a Firestore:**
-  ```bash
-  node tools/pool-preguntas/upload.js --commit
-  ```
-- **Reconstruir documento resumen de conteos (`pool_preguntas_meta/summary`):**
-  ```bash
-  node tools/meta/build-meta.js --commit
-  ```
+## 11. Banco de Preguntas y Herramientas
 
-### 10.4. Pruebas Aisladas y Modo de Mocks Locales
-Para trabajar sin consumir cuotas de Firebase Firestore o sin conexion a internet:
-1. Abrir la consola del navegador (`F12`) en `http://localhost:4200`.
-2. Activar mocks locales:
+La fuente de verdad del banco de preguntas no reside exclusivamente en la nube, sino en archivos versionados en `content/pool-preguntas/<materiaId>/<tema>.json`.
+
+### Flujo de Trabajo para Nuevas Preguntas
+
+1. **Validacion de Sintaxis y Reglas:**
+   Verifica que los reactivos cuenten con identificadores unicos, alternativas completas y retroalimentacion pedagogica:
+   ```bash
+   node tools/pool-preguntas/build.js --check
+   ```
+
+2. **Verificacion de Cobertura Tematica:**
+   Comprueba que cada tema posea al menos 30 preguntas para alimentar adecuadamente a los Mini Ensayos y Mente Veloz:
+   ```bash
+   node tools/pool-preguntas/verificar-modulos.js
+   ```
+
+3. **Carga Sincronizada a Firestore:**
+   Sube las preguntas al entorno de produccion de forma idempotente:
+   ```bash
+   node tools/pool-preguntas/upload.js --commit
+   ```
+
+4. **Regeneracion de Metadatos:**
+   Actualiza el documento `pool_preguntas_meta/summary` con los nuevos totales por materia:
+   ```bash
+   node tools/meta/build-meta.js --commit
+   ```
+
+---
+
+## 12. Entornos de Prueba y Modo Offline
+
+### 12.1. Modo Mocks Locales (Sin Consumo de Cuota Firebase)
+Para sesiones intensivas de desarrollo sin alterar la base de datos ni agotar cuotas gratuitas:
+1. Abrir la consola de desarrollo en el navegador (`F12`) en `http://localhost:4200`.
+2. Activar la bandera de almacenamiento:
    ```javascript
    localStorage.setItem('USE_LOCAL_MOCKS', 'true');
    location.reload();
    ```
-   *La aplicacion leera los datos desde `frontend-app/src/assets/mocks/`.*
-3. Para regresar al modo en vivo con Firestore:
+   *El servicio `PaesContentService` conmutara para leer archivos JSON locales desde `src/assets/mocks/`.*
+3. Para regresar a la conexion en vivo con Firestore:
    ```javascript
    localStorage.removeItem('USE_LOCAL_MOCKS');
    location.reload();
    ```
 
-Para probar componentes de la Ruta de Aprendizaje de forma aislada sin autenticacion real:
+### 12.2. Banco de Pruebas Aislado de la Ruta (`/dev/ruta`)
+Permite inspeccionar y depurar visualmente cualquier nodo de la Ruta de Aprendizaje simulando diferentes estados de usuario sin requerir autenticacion en la base de datos:
 ```
 http://localhost:4200/dev/ruta/comp-lectora?materia=comp-lectora&plan=free
 ```
-*(Valores aceptados para el parametro `plan`: `free`, `pro`, `admin`).*
+*Parametros de plan admitidos en la URL: `free`, `pro`, `admin`.*
 
 ---
 
-## 11. Despliegue en Produccion
+## 13. Despliegue en Produccion
 
-### 11.1. Despliegue del Frontend (Firebase Hosting)
-El script de automatizacion para Windows realiza las comprobaciones previas, compila en modo produccion con prerendering y sube el build a Firebase:
+### 13.1. Frontend a Firebase Hosting
+La publicacion del cliente web estatico y prerenderizado se realiza mediante el script automatizado para Windows:
 
 ```cmd
 actualizar.bat
 ```
-El script ofrece dos opciones operativas:
-- **Opcion 1 (Vista Previa):** Publica el build en una URL temporal de canal de vista previa (`preview channel`) sin afectar el sitio publico.
-- **Opcion 2 (Produccion):** Despliega directamente sobre `https://estudiauni.cl`.
+El asistente ofrece:
+- **Modo Vista Previa:** Publica en un canal de prelanzamiento temporal para verificar el empaquetado antes del lanzamiento.
+- **Modo Produccion:** Actualiza el sitio oficial `https://estudiauni.cl`.
 
-Para desplegar solo reglas e indices de base de datos:
+Para desplegar unicamente las politicas de seguridad e indices de base de datos:
 ```bash
 npm run deploy:firestore
 ```
 
-### 11.2. Despliegue del Backend (Google Cloud Run)
-El despliegue del backend se realiza sobre Google Cloud Run en la region `southamerica-west1` (Santiago de Chile):
+### 13.2. Backend a Google Cloud Run
+El despliegue de la API de NestJS se ejecuta con el script dedicado:
 
 ```cmd
 desplegar-backend.bat
 ```
-Este proceso empaqueta el directorio `backend/`, transfiere las variables de produccion de forma segura y genera la nueva revision del servicio `estudiauni-api`. Las solicitudes del cliente dirigidas a `https://estudiauni.cl/api/**` son absorbidas automaticamente por el proxy de Firebase Hosting y redirigidas a Cloud Run.
+El procedimiento empaqueta `backend/`, inyecta las variables de produccion de forma protegida y publica el contenedor en la region `southamerica-west1` (Santiago de Chile). Las peticiones hacia `https://estudiauni.cl/api/**` son canalizadas directamente a Cloud Run por las directivas de Firebase Hosting.
 
 ---
 
-## 12. Convenciones de Codigo y Buenas Practicas
+## 14. Convenciones de Codigo
 
-- **Idioma de Dominio:** Los terminos del modelo educativo y de negocio se mantienen en espanol (`Materia`, `Capitulo`, `Seccion`, `Pregunta`, `Intento`, `enunciado`, `alternativas`, `respuesta_correcta`).
-- **Arquitectura de Componentes:** Componentes Angular Standalone con estilos encapsulados y declaracion directa.
-- **Gestion del Estado:** Uso extensivo de `signals` y servicios singleton inyectables en raiz (`providedIn: 'root'`).
-- **Estilos y Selectores CSS:** Los nombres de clases en nuevos componentes deben evitar colisiones con clases globales de `styles.css`. En modulos como el panel de administracion se utiliza el prefijo `admin-`.
-- **Assets Multimedia:** Toda iconografia de interfaz utiliza recursos optimizados en formato AVIF (`assets/images/.../IconosAVIF/`) o vectores SVG inline. Se prohibe el uso de emojis dentro de la interfaz de usuario de la plataforma.
+- **Dominio en Espanol:** La nomenclatura de negocio y variables de modelo educativo respetan el espanol chileno (`Materia`, `Capitulo`, `Seccion`, `Pregunta`, `Intento`, `enunciado`, `alternativas`). Los comentarios tecnicos y patrones arquitectonicos pueden redactarse en ingles o espanol.
+- **Aislamiento de Estilos CSS:** Para evitar que reglas globales de `styles.css` colisionen con componentes de administracion u otras vistas, los selectores de modulos especificos deben utilizar prefijos claros (por ejemplo, `.admin-sidebar`, `.admin-main-content`).
+- **Restriccion Visual:** Se prohibe el empleo de emojis nativos en elementos de interfaz de usuario. Las iconografias deben provenir exclusivamente de recursos vectoriales SVG inline o archivos AVIF optimizados en `assets/images/`.
+
+---
+
+## 15. Licencia y Creditos
+
+Propiedad exclusiva de EstudiaUni.cl y MaltSolutions. Todos los derechos reservados.
+
+El contenido curricular, facsimiles y reactivos oficiales son adaptaciones didacticas basadas en las publicaciones publicas de caracter informativo emitidas por el DEMRE y el Ministerio de Educacion de Chile.
